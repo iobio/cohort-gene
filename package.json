@@ -1,5 +1,5 @@
 {
-  "name": "iobio-vue-skeleton",
+  "name": "cohort-gene",
   "version": "0.0.0",
   "scripts": {
     "start": "./node_modules/webpack/bin/webpack.js && DEBUG=http ./node_modules/nodemon/bin/nodemon.js --inspect --ignore client/ www.js",
@@ -7,13 +7,18 @@
     "test": "mocha-webpack --webpack-config webpack.test.config.js --require client/spec/spec_helper.js \"client/spec/**/*_spec.js\""
   },
   "dependencies": {
+    "bootstrap": "^3.3.7",
     "d3": "^3.5.17",
     "debug": "^2.6.8",
     "express": "^4.15.3",
     "jquery": "^3.2.1",
+    "lodash": "^4.17.4",
     "serve-favicon": "^2.4.3",
+    "uiv": "^0.16.0",
     "vue": "^2.3.4",
-    "vue-router": "^2.5.3"
+    "vue-material": "^1.0.0-beta-7",
+    "vue-router": "^2.5.3",
+    "vuetify": "^0.17.6"
   },
   "devDependencies": {
     "babel-core": "^6.25.0",
@@ -24,7 +29,7 @@
     "chai-almost": "^1.0.1",
     "clean-webpack-plugin": "^0.1.16",
     "cross-env": "^5.0.1",
-    "css-loader": "^0.28.4",
+    "css-loader": "^0.28.8",
     "extract-text-webpack-plugin": "^2.1.2",
     "file-loader": "^0.11.2",
     "jsdom": "^11.3.0",
