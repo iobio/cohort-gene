@@ -4,7 +4,8 @@
   "scripts": {
     "start": "./node_modules/webpack/bin/webpack.js && DEBUG=http ./node_modules/nodemon/bin/nodemon.js --inspect --ignore client/ www.js",
     "webpack": "./node_modules/webpack/bin/webpack.js --watch",
-    "test": "mocha-webpack --webpack-config webpack.test.config.js --require client/spec/spec_helper.js \"client/spec/**/*_spec.js\""
+    "test": "mocha-webpack --webpack-config webpack.test.config.js --require client/spec/spec_helper.js \"client/spec/**/*_spec.js\"",
+    "build:dev": "webpack-dev-server --content-base ./server/views"
   },
   "dependencies": {
     "bootstrap": "^3.3.7",
@@ -46,6 +47,7 @@
     "vue-loader": "^12.2.1",
     "vue-template-compiler": "^2.3.4",
     "vue-test-utils": "^1.0.0-beta.3",
-    "webpack": "^2.6.1"
+    "webpack": "^2.6.1",
+    "webpack-dev-server": "^2.11.1"
   }
 }

@@ -129,14 +129,17 @@ export default {
           .regionStart(this.regionStart)
           .regionEnd(this.regionEnd)
           .on("d3rendered", function() {
+            // TODO: implement
           })
           .on('d3click', function(d) {
+            // TODO: implement
           })
           .on('d3mouseover', function(d) {
+            // TODO: implement
           })
           .on('d3mouseout', function() {
+            // TODO: implement
           })
-
 
           this.setVariantChart();
       },

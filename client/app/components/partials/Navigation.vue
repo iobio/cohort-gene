@@ -97,7 +97,7 @@ export default {
         miniVariant: false,
         right: true,
         rightDrawer: false,
-        title: 'gene.iobio',
+        title: 'cohort-gene.iobio',
         selectedGene: {},
         allGenes: geneData
       }

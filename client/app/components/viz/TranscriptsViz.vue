@@ -1,5 +1,4 @@
 <style lang="css">
-
   #select-transcripts-box .theme--light .btn,
   #select-transcripts-box.application .theme--light.btn {
     color:  rgb(113,113,113);
@@ -22,7 +21,7 @@
 </style>
 
 <style lang="sass">
-@import "../../../assets/sass/_variables.sass";
+@import "../../../assets/sass/_variables.sass"
 #select-transcript-viz
 
   .selected
@@ -38,8 +37,6 @@
 </style>
 
 <template>
-
-
   <div id="select-transcripts-box"  style="vertical-align:top;margin-top:-5px;margin-left:20px;display:inline-block">
     <v-layout row justify-center>
       <v-dialog  v-model="showTranscriptsDialog"   width="700px">
@@ -62,7 +59,6 @@
                   :showXAxis=false
                   @transcript-selected="onTranscriptSelected">
                 </gene-viz>
-
             </v-card-text>
             <v-divider></v-divider>
             <v-card-actions>
@@ -72,19 +68,11 @@
       </v-dialog>
     </v-layout>
   </div>
-
-
-
   </v-card>
-
-
-
 </template>
 
 <script>
-
 import GeneViz from '../viz/GeneViz.vue'
-
 
 export default {
   name: 'transcripts-viz',
@@ -104,7 +92,6 @@ export default {
       newTranscript: null
     }
   },
-
   methods: {
     onTranscriptSelected: function(theTranscript) {
       this.newTranscript = theTranscript;
@@ -115,12 +102,6 @@ export default {
       self.showTranscriptsDialog = false;
       self.$emit('transcriptSelected', self.newTranscript);
     }
-
   },
-
-
-
 }
 </script>
-
-

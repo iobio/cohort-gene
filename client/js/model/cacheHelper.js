@@ -666,7 +666,7 @@ CacheHelper.prototype.promiseRefreshGeneBadgesGeneCoverage = function(refreshOnl
                   if (geneCoverageAll && dangerObject) {
                     var clearOtherDanger = refreshOnly ? false : true;
 
-                    VariantModel.summarizeDangerForGeneCoverage(dangerObject, geneCoverageAll, clearOtherDanger, refreshOnly);
+                    SampleModel.summarizeDangerForGeneCoverage(dangerObject, geneCoverageAll, clearOtherDanger, refreshOnly);
 
                     counts.all.analyzed++;
                     if (isAlignmentsOnly()) {

@@ -1,4 +1,5 @@
 function variantD3() {
+   // Registering events with this object
    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout");
 
   // dimensions
@@ -274,11 +275,12 @@ function variantD3() {
       var symbolSize = symbolScale(minWidth);
 
 
-
+      // SJG TODO: review this code & event handling in d3
       // Brush
       var brush = d3.svg.brush()
         .x(x)
         .on("brushend", function() {
+           // SJG is this re-registering handler after brushend is called?
             dispatch.d3brush(brush);
          });
 
@@ -433,6 +435,7 @@ function variantD3() {
 
       g.selectAll('.variant')
            .on("click", function(d) {
+             // SJG - not understanding what is happening here, is d3click a method defined somewhere?
               dispatch.d3click(d);
            })
            .on("mouseover", function(d) {

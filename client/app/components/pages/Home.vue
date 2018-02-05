@@ -1,3 +1,7 @@
+<!--
+Main application page
+Updated: SJG 01Feb2018
+-->
 <style lang="sass">
 .app-card
   margin-bottom: 10px
@@ -8,43 +12,51 @@
   <navigation v-on:input="onGeneSelected"></navigation>
   <v-content>
     <v-container fluid>
-      <gene-card :selectedGene="selectedGene" :selectedTranscript="selectedTranscript" @transcript-selected="onTranscriptSelected" @gene-source-selected="onGeneSourceSelected" @gene-region-buffer-change="onGeneRegionBufferChange" @gene-region-zoom="onGeneRegionZoom"
-        @gene-region-zoom-reset="onGeneRegionZoomReset">
-      </gene-card>
-
-      <variant-card
-          v-for="model in models"
-          :name="model.name"
-          :relationship="model.relationship"
-          :width="cardWidth"
-          :key="model.relationship"
-          :selectedGene="selectedGene"
-          :selectedTranscript="selectedTranscript"
-          :regionStart="geneRegionStart"
-          :regionEnd="geneRegionEnd"
-          :loadedVariants="model.loadedVariants"
-          :coverage="model.coverage"
-          :maxDepth="cohortModel.maxDepth"
-          :inProgress="inProgress"
-          :showGeneViz="model.relationship == 'proband' || model.relationship == 'known-variants'"
-          :showDepthViz="model.relationship != 'known-variants'"
-          :showVariantViz="model.relationship != 'known-variants' || showClinvarVariants"
-          >
-          </variant-card>
-
+      <sfari-variant-card
+        ref="sfariVariantCardRef"
+        :key="model.name"
+        v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !sfariModel  || sfariModel.allInProgress.loadingDataSources }"
+        :sfariModel="model"
+        :classifyVariantSymbolFunc="model.classifyByImpact"
+        :variantTooltip="variantTooltip"
+        :selectedGene="selectedGene"
+        :selectedTranscript="selectedTranscript"
+        :selectedVariant="selectedVariant"
+        :regionStart="geneRegionStart"
+        :regionEnd="geneRegionEnd"
+        :width="cardWidth"
+        :showGeneViz="true"
+        :showVariantViz="true"
+        @sfariVariantClick="onSfariVariantClick"
+        @sfariVariantClickEnd="onSfariVariantClickEnd"
+        @sfariVariantHover="onSfariVariantHover"
+        @sfariVariantHoverEnd="onSfariVariantHoverEnd"
+        @knownVariantsVizChange="onKnownVariantsVizChange"
+        @knownVariantsFilterChange="onKnownVariantsFilterChange"
+      ></sfari-variant-card>
+      <!-- TODO: bind model w/ summary logic -->
+      <variant-summary-card
+        :effect="effect",
+        :impact="impact",
+        :clinVar="clinVar",
+        :sift="sift",
+        :polyPhen="polyPhen"
+      ></variant-summary-card>
     </v-container>
   </v-content>
 </div>
 </template>
 
 <script>
-// Internal imports
+// Vue components
 import Navigation from '../partials/Navigation.vue'
 import GeneCard from '../viz/GeneCard.vue'
 import VariantCard from  '../viz/VariantCard.vue'
+import VariantSummaryCard from '../viz/VariantSummaryCard.vue'
 
+// Back-end models
 import GeneModel from '../../models/GeneModel.js'
-import CohortModel    from  '../../models/CohortModel.js'
+import SfariModel    from  '../../models/SfariModel.js'
 import FilterModel    from  '../../models/FilterModel.js'
 
 export default {
@@ -52,7 +64,8 @@ export default {
   components: {
     Navigation,
     VariantCard,
-    GeneCard
+    GeneCard,
+    VariantSummaryCard
   },
   props: [],
   data() {
@@ -63,13 +76,20 @@ export default {
       geneRegionBuffer: 1000,
       geneRegionStart: null,
       geneRegionEnd: null,
-      cohortModel: null,
-      models: [],
+      sfariModel: null,
+      model: null,
       geneModel: null,
       filterModel: null,
       inProgress: false,
       cardWidth: 0,
-      showClinvarVariants: false
+      showClinvarVariants: false,
+
+      // SJG new additions for variant summary card
+      effect: null,
+      inpact: null,
+      clinVar: null,
+      sift: null,
+      polyPhen: null
     }
   },
 
@@ -102,8 +122,8 @@ export default {
         self.geneModel = new GeneModel();
         self.geneModel.geneSource = siteGeneSource;
 
-        // Construct back end cohort model
-        self.cohortModel = new CohortModel(self.geneModel);
+        // Construct back end sfari model
+        self.sfariModel = new SfariModel(self.geneModel);
         return self.cohortModel.promiseInitDemo();
       })
       // Construct back end filter model
@@ -115,9 +135,9 @@ export default {
   },
   computed: {},
   watch: {
-    cohortModel: function() {
-      if (this.cohortModel) {
-        this.models = this.cohortModel.sampleModels;
+    sfariModel: function() {
+      if (this.sfariModel) {
+        this.models = this.sfariModel.sampleModels;
       }
     }
   },
@@ -142,7 +162,7 @@ export default {
       self.inProgress = true;
 
       return new Promise(function(resolve, reject) {
-        self.cohortModel.promiseLoadData(self.selectedGene,
+        self.sfariModel.promiseLoadData(self.selectedGene,
             self.selectedTranscript,
             self.filterModel, {
               getKnownVariants: self.showClinvarVariants
@@ -194,13 +214,13 @@ export default {
     onGeneRegionZoom: function(theStart, theEnd) {
       this.geneRegionStart = theStart;
       this.geneRegionEnd = theEnd;
-      this.cohortModel.setLoadedVariants(this.selectedGene, this.geneRegionStart, this.geneRegionEnd);
+      this.sfariModel.setLoadedVariants(this.selectedGene, this.geneRegionStart, this.geneRegionEnd);
       console.log("gene region zoom = " + this.geneRegionStart + '-' + this.geneRegionEnd);
     },
     onGeneRegionZoomReset: function() {
       this.geneRegionStart = this.selectedGene.start;
       this.geneRegionEnd = this.selectedGene.end;
-      this.cohortModel.setLoadedVariants(this.selectedGene);
+      this.sfariModel.setLoadedVariants(this.selectedGene);
       console.log("gene region zoom reset");
     }
   }

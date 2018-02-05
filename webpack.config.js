@@ -25,6 +25,7 @@ module.exports = {
         test: /\.vue$/,
         loader: 'vue-loader',
         options: {
+	  hotReload: true,
           loaders: {
           }
           // other vue-loader options go here
