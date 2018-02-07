@@ -15,8 +15,8 @@ Updated: SJG 01Feb2018
       <sfari-variant-card
         ref="sfariVariantCardRef"
         :key="model.name"
-        v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !sfariModel  || sfariModel.allInProgress.loadingDataSources }"
-        :sfariModel="model"
+        v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !cohortModel  || cohortModel.allInProgress.loadingDataSources }"
+        :cohortModel="model"
         :classifyVariantSymbolFunc="model.classifyByImpact"
         :variantTooltip="variantTooltip"
         :selectedGene="selectedGene"
@@ -56,7 +56,7 @@ import VariantSummaryCard from '../viz/VariantSummaryCard.vue'
 
 // Back-end models
 import GeneModel from '../../models/GeneModel.js'
-import SfariModel    from  '../../models/SfariModel.js'
+import CohortModel    from  '../../models/CohortModel.js'
 import FilterModel    from  '../../models/FilterModel.js'
 
 export default {
@@ -76,7 +76,7 @@ export default {
       geneRegionBuffer: 1000,
       geneRegionStart: null,
       geneRegionEnd: null,
-      sfariModel: null,
+      cohortModel: null,
       model: null,
       geneModel: null,
       filterModel: null,
@@ -123,7 +123,7 @@ export default {
         self.geneModel.geneSource = siteGeneSource;
 
         // Construct back end sfari model
-        self.sfariModel = new SfariModel(self.geneModel);
+        self.cohortModel = new CohortModel(self.geneModel);
         return self.cohortModel.promiseInitDemo();
       })
       // Construct back end filter model
@@ -135,9 +135,9 @@ export default {
   },
   computed: {},
   watch: {
-    sfariModel: function() {
-      if (this.sfariModel) {
-        this.models = this.sfariModel.sampleModels;
+    cohortModel: function() {
+      if (this.cohortModel) {
+        this.models = this.cohortModel.sampleModels;
       }
     }
   },
@@ -162,7 +162,7 @@ export default {
       self.inProgress = true;
 
       return new Promise(function(resolve, reject) {
-        self.sfariModel.promiseLoadData(self.selectedGene,
+        self.cohortModel.promiseLoadData(self.selectedGene,
             self.selectedTranscript,
             self.filterModel, {
               getKnownVariants: self.showClinvarVariants
@@ -214,13 +214,13 @@ export default {
     onGeneRegionZoom: function(theStart, theEnd) {
       this.geneRegionStart = theStart;
       this.geneRegionEnd = theEnd;
-      this.sfariModel.setLoadedVariants(this.selectedGene, this.geneRegionStart, this.geneRegionEnd);
+      this.cohortModel.setLoadedVariants(this.selectedGene, this.geneRegionStart, this.geneRegionEnd);
       console.log("gene region zoom = " + this.geneRegionStart + '-' + this.geneRegionEnd);
     },
     onGeneRegionZoomReset: function() {
       this.geneRegionStart = this.selectedGene.start;
       this.geneRegionEnd = this.selectedGene.end;
-      this.sfariModel.setLoadedVariants(this.selectedGene);
+      this.cohortModel.setLoadedVariants(this.selectedGene);
       console.log("gene region zoom reset");
     }
   }

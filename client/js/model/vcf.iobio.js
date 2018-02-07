@@ -338,6 +338,7 @@ var effectCategories = [
     return str.indexOf(suffix, str.length - suffix.length) !== -1;
   }
 
+  // TODO: this has no point of call?
   exports.setSamples = function(sampleNames) {
     samples = sampleNames;
   }
@@ -565,12 +566,12 @@ var effectCategories = [
   }
 
 
-  exports.promiseGetVariants = function(refName, geneObject, selectedTranscript, regions, isMultiSample, samplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache) {
+  exports.promiseGetVariants = function(refName, geneObject,
+    selectedTranscript, regions, isMultiSample, samplesToRetrieve,
+    annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache) {
     var me = this;
 
-
     return new Promise( function(resolve, reject) {
-
 
       // This comma separated string of samples to perform vcf subset on
       var vcfSampleNames = samplesToRetrieve.filter(function(sample) {
@@ -608,9 +609,7 @@ var effectCategories = [
               reject();
             }
           });
-
       }
-
     });
   }
 
@@ -679,10 +678,11 @@ var effectCategories = [
 
   }
 
-  exports._getRemoteVariantsImpl = function(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback) {
+  exports._getRemoteVariantsImpl = function(refName, geneObject, selectedTranscript, regions, isMultiSample,
+     vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF,
+     useServerCache, callback, errorCallback) {
 
     var me = this;
-
 
     if (regions == null || regions.length == 0) {
       regions = [];
@@ -692,7 +692,6 @@ var effectCategories = [
     var serverCacheKey = me._getServerCacheKey(vcfURL, annotationEngine, refName, geneObject, vcfSampleNames, {refseq: isRefSeq, hgvs: hgvsNotation, rsid: getRsId});
 
     var cmd = endpoint.annotateVariants({'vcfUrl': vcfURL, 'tbiUrl': tbiUrl}, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey);
-
 
     var annotatedData = "";
     // Get the results from the iobio command

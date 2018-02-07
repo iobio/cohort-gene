@@ -39,7 +39,9 @@ EndpointCmd.prototype.getVcfDepth = function(vcfUrl, tbiUrl) {
   return cmd;
 }
 
-EndpointCmd.prototype.annotateVariants = function(vcfSource, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey) {
+EndpointCmd.prototype.annotateVariants = function(vcfSource, refName, regions,
+   vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF,
+   useServerCache, serverCacheKey) {
   var me = this;
 
   // Figure out the file location of the reference seq files

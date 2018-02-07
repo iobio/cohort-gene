@@ -1,12 +1,11 @@
 /* Represents a group of samples displayed on a single variant track. */
 class MultiSampleModel {
   constructor() {
-    // Iobio representations
-    this.vcf = null;
-    this.bam = null;
+    this.vcf = null;                // vcf.iobio.js
+    this.bam = null;                // bam.iobio.js
 
     // BAM, VCF data fields
-    this.vcfData = null;
+    this.vcfData = null;            // Lookup for features, not samples
     this.fbData = null;
     this.bamData = null;
     this.vcfUrlEntered = false;
@@ -17,7 +16,7 @@ class MultiSampleModel {
     this.getBamRefName = null;
 
     this.name = "";
-    this.sampleIdList = [];        // If subset, contains list of ids composing subset
+    //this.subsetIdList = [];        // If subset, contains list of ids composing subset
     this.vcfRefNamesMap = {};
     this.lastVcfAlertify = null;
     this.lastBamAlertify = null;
@@ -25,19 +24,7 @@ class MultiSampleModel {
     this.loadedVariants = null;
     this.coverage = [[]];
 
-    // From Cohort class
-    this.endpoint = endpoint;
-    this.geneModel = geneModel;
-    this.affectedInfo = null;
-    this.translator = translator;
-    this.cacheHelper = cacheHelper;
-    this.genomeBuildHelper = genomeBuildHelper;
-    this.genericAnnotation = genericAnnotation;
-    this.annotationScheme = 'vep';
-
-
-    // TODO: add demo data
-
+    this.cohort = null;
     // SJG: got rid of affectedStatus, relationship, cohort, isMultiSample and OTHERS
   }
 
@@ -112,7 +99,7 @@ class MultiSampleModel {
   }
 
   getGeneModel() {
-    return this.geneModel;
+    return this.cohort.geneModel;
   }
 
   getAffectedInfo() {
@@ -120,15 +107,15 @@ class MultiSampleModel {
   }
 
   getTranslator() {
-    return this.translator;
+    return this.cohort.translator;
   }
 
   getCacheHelper() {
-    return this.cacheHelper;
+    return this.cohort.cacheHelper;
   }
 
   getGenomeBuildHelper() {
-    return this.genomeBuildHelper;
+    return this.cohort.genomeBuildHelper;
   }
 
   getAnnotationScheme() {
@@ -139,7 +126,7 @@ class MultiSampleModel {
       if (this.getGeneModel().geneSource == 'refseq') {
         return "VEP";
       } else {
-        return this.annotationScheme;
+        return this.cohort.annotationScheme;
       }
   }
 
@@ -628,21 +615,22 @@ class MultiSampleModel {
     }
   }
 
-  addSampleId(sampleId) {
-    this.sampleIdList.push(sampleId);
-  }
-
-  getSampleIdList() {
-    return this.sampleIdList;
-  }
+  // addSubsetSampleId(sampleId) {
+  //   this.subsetIdList.push(sampleId);
+  // }
+  //
+  // getSubsetSampleIdList() {
+  //   return this.subsetIdList;
+  // }
 
   /* Setup VCF fields */
-  init() {
+  init(cohort) {
     var me = this;
+    me.cohort = cohort;
     me.vcf = vcfiobio();
-    me.vcf.setEndpoint(this.endpoint);
-    me.vcf.setGenericAnnotation(this.genericAnnotation);
-    me.vcf.setGenomeBuildHelper(this.genomeBuildHelper);
+    me.vcf.setEndpoint(this.cohort.endpoint);
+    me.vcf.setGenericAnnotation(this.cohort.genericAnnotation);
+    me.vcf.setGenomeBuildHelper(this.cohort.genomeBuildHelper);
   };
 
   promiseBamFilesSelected(event) {
@@ -683,7 +671,7 @@ class MultiSampleModel {
       this.bam = null;
     } else {
       this.bamUrlEntered = true;
-      this.bam = new Bam(this.endpoint, bamUrl, baiUrl);
+      this.bam = new Bam(this.cohort.endpoint, bamUrl, baiUrl);
       this.bam.checkBamUrl(bamUrl, baiUrl, function(success, errorMsg) {
         if (me.lastBamAlertify) {
           me.lastBamAlertify.dismiss();
@@ -1068,7 +1056,7 @@ class MultiSampleModel {
              fakeGeneObject,
                theTranscript,
                null,   // regions
-               false,  // is multi-sample
+               true,  // is multi-sample
                me._getSamplesToRetrieve(),  // sample names
                me.getAnnotationScheme().toLowerCase(), // annot scheme
                me.getTranslator().clinvarMap,  // clinvar map
@@ -1097,12 +1085,11 @@ class MultiSampleModel {
                   alt.split(",").forEach(function(theAlt) {
                     if (!found &&
                       me.getVcfRefName(theGene.chr) == chrom &&
-                      start    == variant.start &&
-                        theAlt   == variant.alt &&
-                      ref      == variant.ref) {
+                      start == variant.start &&
+                      theAlt == variant.alt &&
+                      ref == variant.ref) {
                       found = true;
                     }
-
                   })
                   return found;
                 }
@@ -1273,7 +1260,8 @@ class MultiSampleModel {
     });
   }
 
-  promiseAnnotateVariants(theGene, theTranscript, variantModels, isMultiSample, isBackground, onVcfData) {
+  // TODO: make this so that variantModels -> variantModel (just sfariModel coming in, or sfariSubset, etc)
+  promiseAnnotateVariants(theGene, theTranscript, variantModel, isMultiSample, isBackground, onVcfData, samp, subsetIds) {
     var me = this;
 
     return new Promise( function(resolve, reject) {
@@ -1282,11 +1270,13 @@ class MultiSampleModel {
       var resultMap = {};
       var promises = [];
       var bookmarkPromises = [];
+
+      // Only passing one model in here as of now - sfariModel
       variantModels.forEach(function(model) {
         var p = model._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript)
          .then(function(vcfData) {
           if (vcfData != null && vcfData != '') {
-            resultMap[model.relationship] = vcfData;
+            resultMap[model.name] = vcfData;
 
             if (!isBackground) {
               model.vcfData = vcfData;
@@ -1317,8 +1307,8 @@ class MultiSampleModel {
                theTranscript,
                null,   // regions
                isMultiSample, // is multi-sample
-               me._getSamplesToRetrieve(),
-               me.getRelationship() == 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
+               subsetIds,  // Optionally blank if entire multi-sample vcf TB analyzed
+               me.getName() == 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
                me.getTranslator().clinvarMap,
                me.getGeneModel().geneSource == 'refseq' ? true : false,
                window.isLevelBasic || global_getVariantIdsForGene,  // hgvs notation
