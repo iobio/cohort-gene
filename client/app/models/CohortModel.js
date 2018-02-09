@@ -2,8 +2,6 @@
 class CohortModel {
   constructor(endpoint, genericAnnotation, translator, geneModel, cacheHelper, genomeBuildHelper) {
     // Data
-
-    // TODO: in the future, can turn these into lists/maps if necessary
     this.sfariSamplesModel = null;
     this.subsetSfariSampleIds = {};
     this.subsetSfariPhenotypes = "";
@@ -12,17 +10,13 @@ class CohortModel {
     this.subsetAltSampleIds = {};
     this.subsetAltPhenotyps = "";
 
-    // TODO: get rid of any sample map references
-
     // Back-end data properties
     this.endpoint = endpoint;
     this.genericAnnotation = genericAnnotation;
     this.translator = translator;
     this.geneModel = geneModel;
-    this.bookmarkModel = bookmarkModel;
     this.cacheHelper = cacheHelper;
     this.genomeBuildHelper = genomeBuildHelper;
-    this.freebayesSettings = freebayesSettings;
     this.filterModel = null;
     this.annotationScheme = 'vep';
     this.isLoaded = false;
@@ -34,12 +28,10 @@ class CohortModel {
     this.maxAlleleCount = null;
     this.affectedInfo = null;
     this.maxDepth = 0;
-    this.inProgress = {
-      'loadingDataSources': false
-    };
+    this.inProgress = { 'loadingDataSources': false };
 
     // TODO: fill in demo data for testing
-    this.demoVcf = '';
+    this.demoVcf = 'https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz';
     this.demoBam = '';
     this.demoGenes = ['RAI1', 'MYLK2', 'PDHA1', 'PDGFB', 'AIRE'];
   }
@@ -50,53 +42,60 @@ class CohortModel {
   /* Retrieves variant information and sets in backing models */
   setLoadedVariants(theGene, regionStart, regionEnd) {
     let self = this;
-    self.sampleModels.forEach(function(model) {
-      if (model.vcfData && model.vcfData.features) {
-        var loadedVariants = $.extend({}, model.vcfData);
-        loadedVariants.features = model.vcfData.features.filter( function(feature) {
-          var loaded = feature.fbCalled == null;
-          var inRegion = true;
-          if (regionStart && regionEnd) {
-            inRegion = feature.start >= regionStart && feature.start <= regionEnd;
-          }
-          return loaded && inRegion;
-        });
-        var pileupObject = model._pileupVariants(loadedVariants.features, theGene.start, theGene.end);
-        loadedVariants.maxLevel = pileupObject.maxLevel + 1;
-        loadedVariants.featureWidth = pileupObject.featureWidth;
-        model.loadedVariants = loadedVariants;
-      } else {
-        model.loadedVariants = {loadState: {}, features: []};
-      }
-    })
+    var model = this.sfariSamplesModel;
+    if (model.vcfData && model.vcfData.features) {
+      var loadedVariants = $.extend({}, model.vcfData);
+      loadedVariants.features = model.vcfData.features.filter(function(feature) {
+        var loaded = feature.fbCalled == null;
+        var inRegion = true;
+        if (regionStart && regionEnd) {
+          inRegion = feature.start >= regionStart && feature.start <= regionEnd;
+        }
+        return loaded && inRegion;
+      });
+      var pileupObject = model._pileupVariants(loadedVariants.features, theGene.start, theGene.end);
+      loadedVariants.maxLevel = pileupObject.maxLevel + 1;
+      loadedVariants.featureWidth = pileupObject.featureWidth;
+      model.loadedVariants = loadedVariants;
+    } else {
+      model.loadedVariants = {loadState: {}, features: []};
+    }
+    // TODO future: set variants for alt data set
   }
 
-  /* Retrieves coverage information and sets in backing models */
-  setCoverage() {
-    let self = this;
-    self.getCanonicalModels().forEach(function(model) {
-      if (model.bamData) {
-        model.coverage = model.bamData.coverage;
-        if (model.coverage) {
-          var max = d3.max(model.coverage, function(d,i) { return d[1]});
-          if (max > self.maxDepth) {
-            self.maxDepth = max;
-          }
-        }
-      }
-    })
-  }
+  /* TODO: this only applies to canonical models, do I need this? */
+  // setCoverage() {
+  //   let self = this;
+  //   self.getCanonicalModels().forEach(function(model) {
+  //     if (model.bamData) {
+  //       model.coverage = model.bamData.coverage;
+  //       if (model.coverage) {
+  //         var max = d3.max(model.coverage, function(d,i) { return d[1]});
+  //         if (max > self.maxDepth) {
+  //           self.maxDepth = max;
+  //         }
+  //       }
+  //     }
+  //   })
+  // }
 
   /*** Whole Data Retrieval ***/
   /* Promises to load in demo data from 1000g */
   promiseInitDemo() {
     let self = this;
-    // TODO: pass in some parameter to control demo vs. live data
-    return self.promiseInit();
+    // Enforce sfari always added first
+    var modelInfos = [
+      {name: 'sfari', 'vcf': self.demoVcf, 'bam': self.demoBam}
+      // TODO future: add entry for alt data set if exists
+    ];
+    // TODO: put appropriate demo info in these
+    self.subsetSfariSampleIds = [];
+    self.subsetSfariPhenotypes= [];
+    return self.promiseInit(modelInfos, true);
   }
 
   /* Initializes backing models and gets data load promises going. */
-  promiseInit() {
+  promiseInit(modelInfos, demoMode) {
     let self = this;
 
     // Return promise object
@@ -106,22 +105,27 @@ class CohortModel {
       let promises = [];
 
       // Initialize sfari model
-      this.sfariSampleModel = new MultiSampleModel();
-
-      // Pull out phenotypic info and sample IDs from multi-vcf
-      var subsetInfoPromise = promiseGetSubsetSampleInfo(this.sfariSampleModel);
-      promises.push(subsetInfoPromise);
+      var sfariInfo = modelInfos[0];
+      self.sfariSamplesModel = new MultiSampleModel();
+      self.sfariSamplesModel.setName(sfariInfo.name);
 
       // Add samples for sfari data set
-      var sfariPromise = promiseAddSamples();
+      var sfariPromise = self.promiseAddSamples(self.sfariSamplesModel, sfariInfo.vcf, sfariInfo.bam);
       promises.push(sfariPromise);
+
+      // Pull out phenotypic info and sample IDs from multi-vcf
+      // TODO: need to make sure this can take advantage of cacheing here
+      if (!demoMode) {
+        var subsetInfoPromise = self.promiseGetSubsetSampleInfo(sfariInfo.vcf);
+        promises.push(subsetInfoPromise);
+      }
 
       // TODO Future: fill in altSubsetModel
 
       // Resolve
       Promise.all(promises)
       .then(function() {
-        self.setAffectedInfo();
+        //self.setAffectedInfo();
         self.inProgress.loadingDataSources = false;
         self.isLoaded = true;
         resolve();
@@ -133,19 +137,19 @@ class CohortModel {
   }
 
   /* Loads VCF and BAM information for given sample model. */
-  promiseAddSamples(multiSampleModel) {
+  promiseAddSamples(multiSampleModel, sampleVcf, sampleBam) {
+    debugger;
     let self = this;
 
     return new Promise(function(resolve,reject) {
       var vm = multiSampleModel;
       vm.init(self);
-      // TODO: missing reference for modelInfo throughout this method
-      vm.setName(modelInfo.name);
 
       var vcfPromise = null;
-      if (modelInfo.vcf) {
+      if (sampleVcf) {
         vcfPromise = new Promise(function(vcfResolve, vcfReject) {
-          vm.onVcfUrlEntered(modelInfo.vcf, modelInfo.tbi, function() {
+          // SJG TODO: 2nd param previously modelInfo.tbi but not assigned anywhere
+          vm.onVcfUrlEntered(sampleVcf, null, function() {
             vcfResolve();
           })
         },
@@ -157,9 +161,10 @@ class CohortModel {
       }
 
       var bamPromise = null;
-      if (modelInfo.bam) {
+      if (sampleBam) {
         bamPromise = new Promise(function(bamResolve, bamReject) {
-          vm.onBamUrlEntered(modelInfo.bam, modelInfo.bai, function() {
+          // SJG TODO: 2nd param previously modelInfo.bai but not assigned anywhere
+          vm.onBamUrlEntered(sampleBam, null, function() {
             bamResolve();
           })
         },
@@ -177,8 +182,7 @@ class CohortModel {
     })
   }
 
-
-  /*** Filtering Methods called from Home.vue ***/
+  /*** Externally called ***/
   /* Coordinates annotation, coverage, & danger promises  */
   // TODO: need to make sure this is not called prior to promiseInit resolving
   promiseLoadData(theGene, theTranscript, filterModel, options) {
@@ -199,7 +203,7 @@ class CohortModel {
         })
         promises.push(p1);
 
-        /* TODO: refactor away from sampleModels array
+        /* TODO: incorporate coverage back in
         let p2 = self.promiseLoadCoverage(theGene, theTranscript)
         .then(function() {
           self.setCoverage();
@@ -208,9 +212,9 @@ class CohortModel {
 
         Promise.all(promises)
         .then(function() {
-            // Now summarize the danger for the selected gene
-            // TODO: summarize danger on sfari, not proband
-            self.promiseSummarizeDanger(theGene, theTranscript, cohortResultMap.proband, null)
+            // TODO: I have this summarizing danger for the subset - do I need to do it for full sfari data set?
+            // To answer this: what is promiseSummarizeDanger doing?
+            self.promiseSummarizeDanger(theGene, theTranscript, cohortResultMap[1], null)
             .then(function() {
               resolve();
             })
@@ -241,7 +245,6 @@ class CohortModel {
   promiseAnnotateVariants(theGene, theTranscript, isBackground, options={}) {
     let self = this;
     var i = 0;
-
     return new Promise(function(resolve, reject) {
       var annotatePromises = [];
       var theResultMap = {};
@@ -254,18 +257,20 @@ class CohortModel {
         sfariModel.inProgress.loadingVariants = true;
         if (sfariModel.isVcfReadyToLoad() || vc.model.isLoaded()) {
           var pAll = sfariModel.promiseAnnotateVariants(theGene, theTranscript, sfariModel, true, isBackground, null, null, [])
-                .then(function(data) {
-                  theResultMap[i] = data;
-                  i++;
+                .then(function(resultMap) {
+                  for (var track in resultMap) {
+                    theResultMap[track] = resultMap[track];
+                  }
                 })
           annotatePromises.push(pAll);
 
           // Annotate variants for phenotypically filtered sfari subset
           var subsetIds = this.subsetSfariSampleIds ? this.subsetSfariSampleIds : [];
           var pSubset = sfariModel.promiseAnnotateVariants(theGene, theTranscript, sfariModel, true, isBackground, null, null, subsetIds)
-          .then(function(data) {
-              theResultMap[i] = data;
-              i++;
+          .then(function(resultMap) {
+            for (var track in resultMap) {
+                theResultMap[track] = retsultMap[track];
+              }
           })
           annotatePromises.push(pSubset);
         }
@@ -601,26 +606,65 @@ class CohortModel {
     });
   }
 
-  promiseGetSubsetSampleInfo(multiSampleModel) {
-    // TODO: populate map of phenotype keys to comma-delimited list of phenotype values
+  // SJG TODO: verify that passing correct param here and making use of cache
+  promiseGetSubsetSampleInfo(sampleVcf) {
+    var promises = [];
+
+    var idPromise = new Promise(function(resolve, reject) {
+      sampleVcf.promiseGetSubsetIds() // TODO: implement this
+        .then(function(ids) {
+          subsetSfariSampleIds = ids;
+          resolve();
+        })
+        .catch(function(error) {
+          var msg = "An error occurred in vcf.iobio.js.promiseGetSubsetIds()";
+          console.log(msg);
+          reject(msg);
+        });
+    });
+    promises.push(idPromise);
+
+    var phenoPromise = new Promise(function(resolve, reject) {
+      sampleVcf.promiseGetSubsetPhenotypes() // TODO: implement this
+        .then(function(phenotypes) {
+          subsetSfariPhenotypes = phenotypes;
+          resolve();
+        })
+        .catch(function(error) {
+          var msg = "An error occurred in vcf.iobio.js.promiseGetSubsetPhenotypes()";
+          console.log(msg);
+          reject(msg);
+        });
+    });
+    promises.push(phenoPromise);
+
+    Promise.all(promises)
+    .then(function() {
+        resolve();
+    })
+    .catch(function(error) {
+      var msg = "An error occurred in promiseGetSubsetSampleInfo()";
+      console.log(msg);
+      reject(msg);
+    });
   }
 
   /*** HELPERS ***/
   /* Returns true if model contains only bam data, and not vcf */
   isAlignmentsOnly(callback) {
-    var theModels = this.sampleModels.filter(function(model) {
-      return model.isAlignmentsOnly();
-    });
-    return theModels.length == this.sampleModels.length;
+    return this.sfariSamplesModel.isAlignmentsOnly();
+    // TODO future: incorporate alt data set model
   }
 
   /* Clears data from each model */
   clearLoadedData() {
     let self = this;
-    self.sampleModels.forEach(function(model) {
-      model.loadedVariants = {loadState: {}, features: [], maxLevel: 1, featureWidth: 0};
-      model.coverage = [[0,0]];
-    });
-  }
+    var model = this.sfariSamplesModel;
+    model.loadedVariants = {loadState: {}, features: [], maxLevel: 1, featureWidth: 0};
+    model.coverage = [[0,0]];
 
+    // TODO future: incorporate alt data set model
+  }
 }
+
+export default CohortModel;

@@ -1,63 +1,141 @@
-/* Encapsulates all information relevant to the selected gene */
 class GeneModel {
   constructor() {
-    // SJG TODO: will I need all of these properties, will I need to add more?
+
     this.geneSource = null;
     this.refseqOnly = {};
     this.gencodeOnly = {};
+
+    this.translator = null;
+
+    this.genomeBuildHelper = null;
+
     this.geneNames = [];
-    this.transcriptCodingRegions = {};
+    this.geneDangerSummaries = {};
+    this.sortedGeneNames = [];
+
+
     this.geneNCBISummaries = {};
     this.genePhenotypes = {};
     this.geneObjects = {};
     this.geneToLatestTranscript = {};
+
+
+    this.allKnownGenes = [];
     this.allKnownGeneNames = {};
     this.clinvarGenes = {};
+
+    this.transcriptCodingRegions = {};
+
+    this.geneRegionBuffer = 1000;
+
+    this.ACMG_GENES = ["BRCA1", "BRCA2", "TP53", "STK11", "MLH1", "MSH2", "MSH6", "PMS2", "APC", "MUTYH", "VHL", "MEN1", "RET", "PTEN", "RB1", "SDHD", "SDHAF2", "SDHC", "SDHB", "TSC1", "TSC2", "WT1", "NF2", "COL3A1", "FBN1", "TGFBR1", "TGFBR2", "SMAD3", "ACTA2", "MYH11", "MYBPC3", "MYH7", "TNNT2", "TNNI3", "TPM1", "MYL3", "ACTC1", "PRKAG2", "GLA", "MYL2", "LMNA", "RYR2", "PKP2", "DSP", "DSC2", "TMEM43", "DSG2", "KCNQ1", "KCNH2", "SCN5A", "LDLR", "APOB", "PCSK9", "RYR1", "CACNA1S", "ATP7B", "BMPR1A", "SMAD4", "OTC"];
+
+
   }
 
-  /* Adds parameter to object list of gene names, if it DNE. */
   addGeneName(theGeneName) {
     let me = this;
     let geneName = theGeneName.toUpperCase();
 
     if (me.geneNames.indexOf(geneName) < 0) {
       me.geneNames.push(geneName);
+      me.sortedGeneNames.push(geneName);
+      me.promiseGetGenePhenotypes(geneName);
     }
   }
 
-  /* Populates object list of known gene names, based on included json file. */
-  promiseLoadFullGeneSet(callback) {
-    let me = this;
-    return new Promise(function(resolve, reject) {
-      $.ajax({url: 'genes.json',
-        data_type: 'json',
-        success: function( data ) {
-          var sortedGenes = me.getRidOfDuplicates(data);
-          me.allKnownGeneNames = {};
-          sortedGenes.forEach(function(geneObject) {
-            if (geneObject && geneObject.name && geneObject.name.length > 0) {
-              me.allKnownGeneNames[geneObject.name.toUpperCase()] = true;
-            }
-          })
-          resolve(sortedGenes);
-        },
-        error: function(xhr, ajaxOptions, thrownError) {
-          var msg = "failed to get genes.json " + thrownError;
-          console.log(msg);
-          console.log(xhr.status);
-          reject(msg);
-        }
-      })
+  setAllKnownGenes(allKnownGenes) {
+    var me = this;
+    me.allKnownGenes = allKnownGenes;
+    me.allKnownGeneNames = {};
+    me.allKnownGenes.forEach(function(gene) {
+      me.allKnownGeneNames[gene.gene_name] = true;
     })
   }
 
-  /* Populates object list of ClinVar genes from global url. */
+  ACMGGenes() {
+    this.copyPasteGenes(this.ACMG_GENES.join(","));
+  }
+
+
+  copyPasteGenes(genesString) {
+    var me = this;
+
+    // trim newline at very end
+    genesString = genesString.replace(/\s*$/, "");
+    var geneNameList = genesString.split(/(?:\s+|,\s+|,|^W|\n)/g);
+
+    me.geneNames = [];
+    me.sortedGeneNames = [];
+    var unknownGeneNames = {};
+    var duplicateGeneNames = {};
+    geneNameList.forEach( function(geneName) {
+      if (geneName.trim().length > 0) {
+        if (me.isKnownGene(geneName)) {
+          if (me.geneNames.indexOf(geneName.trim().toUpperCase()) < 0) {
+            me.geneNames.push(geneName.trim().toUpperCase());
+            me.sortedGeneNames.push(geneName.trim().toUpperCase());
+          } else {
+            duplicateGeneNames[geneName.trim().toUpperCase()] = true;
+          }
+        } else {
+          unknownGeneNames[geneName.trim().toUpperCase()] = true;
+        }
+      }
+    });
+
+    var message = "";
+    if (Object.keys(unknownGeneNames).length > 0) {
+      message = "Bypassing unknown genes: " + Object.keys(unknownGeneNames).join(", ") + ".";
+      alertify.alert("Warning", message);
+    }
+    if (Object.keys(duplicateGeneNames).length > 0) {
+      if (message.length > 0) {
+        message += "   ";
+      }
+      message += "Bypassing duplicate gene name(s): " + Object.keys(duplicateGeneNames).join(", ") + ".";
+    }
+    if (message.length > 0) {
+      alertify.alert("Warning", message);
+    }
+
+    if (CacheHelper.useLocalStorage()) {
+      if (global_maxGeneCount && me.geneNames.length > global_maxGeneCount) {
+        var bypassedCount = me.geneNames.length - global_maxGeneCount;
+        me.geneNames = me.geneNames.slice(0, global_maxGeneCount);
+        alertify.alert("Due to browser cache limitations, only the first " + global_maxGeneCount
+          + " genes were added. "
+          + bypassedCount.toString()
+          + " "
+          + (bypassedCount == 1 ? "gene" : "genes")
+          +  " bypassed.");
+      }
+
+    }
+
+    me.geneNames.forEach(function(geneName) {
+      me.promiseGetGeneObject(geneName);
+    })
+ }
+
+
+  setDangerSummary(geneObject, dangerSummary) {
+    delete this.geneDangerSummaries[geneObject.gene_name];
+    this.geneDangerSummaries[geneObject.gene_name] = dangerSummary;
+  }
+
+  getDangerSummary(geneName) {
+    return this.geneDangerSummaries[geneName];
+  }
+
+
   promiseLoadClinvarGenes() {
     let me = this;
     var p = new Promise(function(resolve, reject) {
+
       me.clinvarGenes = {};
+
       $.ajax({
-          // SJG - this is a static global url, can we change this to be class specific
           url: global_clinvarGenesUrl,
           type: "GET",
           crossDomain: true,
@@ -67,17 +145,21 @@ class GeneModel {
               let recs = res.split("\n");
               var firstTime = true;
               recs.forEach(function(rec) {
-                if (firstTime) {          // ignore col headers
+                if (firstTime) {
+                  // ignore col headers
                   firstTime = false;
                 } else {
                   var fields = rec.split("\t");
                   me.clinvarGenes[fields[0]] = +fields[1];
                 }
               })
+
               resolve();
             } else {
               reject("Empty results returned from promiseLoadClinvarGenes");
+
             }
+
           },
           error: function( xhr, status, errorThrown ) {
             console.log( "Error: " + errorThrown );
@@ -86,10 +168,13 @@ class GeneModel {
             reject("Error " + errorThrown + " occurred in promiseLoadClinvarGenes() when attempting get clinvar gene counts ");
           }
       });
+
     });
+
   }
 
-  /* Returns list of genes without any duplicates */
+
+
   getRidOfDuplicates(genes) {
     let me = this;
     var sortedGenes = genes.sort( function(g1, g2) {
@@ -102,16 +187,20 @@ class GeneModel {
       }
     });
     // Flag gene objects with same name
-    for (var i = 0; i < sortedGenes.length - 1; i++) {
+    for (var i =0; i < sortedGenes.length - 1; i++) {
           var gene = sortedGenes[i];
+
+
           var nextGene = sortedGenes[i+1];
           if (i == 0) {
             gene.dup = false;
           }
           nextGene.dup = false;
+
           if (gene.gene_name == nextGene.gene_name && gene.refseq == nextGene.refseq && gene.gencode == nextGene.gencode) {
             nextGene.dup = true;
         }
+
         // Some more processing to gather unique gene sets and add field 'name'
         gene.name = gene.gene_name;
         if (gene.refseq != gene.gencode) {
@@ -127,10 +216,8 @@ class GeneModel {
     });
   }
 
-  /* Returns canonical transcript */
   getCanonicalTranscript(theGeneObject) {
     let me = this;
-    // SJG TODO: get rid of global reference
     var geneObject = theGeneObject != null ? theGeneObject : window.gene;
     var canonical;
 
@@ -152,6 +239,7 @@ class GeneModel {
         transcript.cdsLength = +0;
       }
       transcript.order = order++;
+
     });
     var sortedTranscripts = geneObject.transcripts.slice().sort(function(a, b) {
       var aType = +2;
@@ -171,6 +259,7 @@ class GeneModel {
         bType = +1;
       }
 
+
       var aLevel = +2;
       var bLevel = +2;
       if (me.geneSource.toLowerCase() == 'refseq') {
@@ -186,6 +275,7 @@ class GeneModel {
         //aLevel = +a.level;
         //bLevel = +b.level;
       }
+
 
       var aSource = +2;
       var bSource = +2;
@@ -276,7 +366,6 @@ class GeneModel {
     return canonical;
   }
 
-  /* Populates object list of coding regions with the given parameter's coding region */
   getCodingRegions(transcript) {
     let me = this;
     if (transcript && transcript.features) {
@@ -296,57 +385,16 @@ class GeneModel {
     return [];
   }
 
-  /* TODO: not sure of exact functionality */
-  promiseMarkCodingRegions(geneObject, transcript) {
-    let me = this;
-    return new Promise(function(resolve, reject) {
 
-      var exonPromises = [];
-      transcript.features.forEach(function(feature) {
-        if (!feature.hasOwnProperty("danger")) {
-          feature.danger = {proband: false, mother: false, father: false};
-        }
-        if (!feature.hasOwnProperty("geneCoverage")) {
-          feature.geneCoverage = {proband: false, mother: false, father: false};
-        }
 
-        getRelevantVariantCards().forEach(function(vc) {
-          var promise = vc.model.promiseGetCachedGeneCoverage(geneObject, transcript)
-           .then(function(geneCoverage) {
-              if (geneCoverage) {
-                var matchingFeatureCoverage = geneCoverage.filter(function(gc) {
-                  return feature.start == gc.start && feature.end == gc.end;
-                });
-                if (matchingFeatureCoverage.length > 0) {
-                  var gc = matchingFeatureCoverage[0];
-                  feature.geneCoverage[vc.getRelationship()] = gc;
-                  feature.danger[vc.getRelationship()] = filterCard.isLowCoverage(gc);
-                } else {
-                  feature.danger[vc.getRelationship()]  = false;
-                }
-              } else {
-                feature.danger[vc.getRelationship()] = false;
-              }
-           })
-          exonPromises.push(promise);
-        })
-      })
 
-      Promise.all(exonPromises).then(function() {
-        var sortedExons = me._getSortedExonsForTranscript(transcript);
-        me._setTranscriptExonNumbers(transcript, sortedExons);
-        resolve({'gene': geneObject, 'transcript': transcript});
-      });
-    })
-  }
-
-  /* Returns sorted list of exons, location wise, for the parameter transcript. */
   _getSortedExonsForTranscript(transcript) {
     var sortedExons = transcript
       .features.filter(function(feature) {
         return feature.feature_type.toUpperCase() == 'EXON';
       })
       .sort(function(feature1, feature2) {
+
         var compare = 0;
         if (feature1.start < feature2.start) {
           compare = -1;
@@ -355,8 +403,11 @@ class GeneModel {
         } else {
           compare = 0;
         }
+
         var strandMultiplier = transcript.strand == "+" ? 1 : -1;
+
         return compare * strandMultiplier;
+
       })
 
     var exonCount = 0;
@@ -372,15 +423,16 @@ class GeneModel {
     return sortedExons;
   }
 
-  /* Returns NCBI gene summary object(?) corresponding to provided gene name */
+
   promiseGetNCBIGeneSummary(geneName) {
     let me = this;
     return new Promise( function(resolve, reject) {
+
       var geneInfo = me.geneNCBISummaries[geneName];
       if (geneInfo != null) {
         resolve(geneInfo);
       } else {
-        // Search NCBI based on the gene name to obtain the gene ID
+          // Search NCBI based on the gene name to obtain the gene ID
         var url = NCBI_GENE_SEARCH_URL + "&term=" + "(" + geneName + "[Gene name]" + " AND 9606[Taxonomy ID]";
         $.ajax( url )
         .done(function(data) {
@@ -391,6 +443,7 @@ class GeneModel {
           var summaryUrl = NCBI_GENE_SUMMARY_URL + "&query_key=" + queryKey + "&WebEnv=" + webenv;
           $.ajax( summaryUrl )
           .done(function(sumData) {
+
               if (sumData.result == null || sumData.result.uids.length == 0) {
                 if (sumData.esummaryresult && sumData.esummaryresult.length > 0) {
                   sumData.esummaryresult.forEach( function(message) {
@@ -398,7 +451,9 @@ class GeneModel {
                   });
                 }
                 reject("No NCBI gene summary returned for gene " + geneName);
+
               } else {
+
                 var uid = sumData.result.uids[0];
                 var geneInfo = sumData.result[uid];
 
@@ -416,10 +471,12 @@ class GeneModel {
         })
       }
     });
+
   }
 
-  /* Applies exon number to coding regions of the given transcript */
+
   _setTranscriptExonNumbers(transcript, sortedExons) {
+    // Set the exon number on each UTR and CDS within the corresponding exon
     transcript.features.forEach(function(feature) {
       if (feature.feature_type.toUpperCase() == 'CDS' || feature.feature_type.toUpperCase() == 'UTR') {
         sortedExons.forEach(function(exon) {
@@ -431,29 +488,47 @@ class GeneModel {
     })
   }
 
-  /* Removes given gene name from any of the containing object lists */
-  clearGene(geneName) {
-    let me = this;
-    if (me.geneObjects && me.geneObjects.hasOwnProperty(geneName)) {
-      delete me.geneObjects[geneName];
+  removeGene(geneName) {
+    let self = this;
+
+    var index = self.geneNames.indexOf(geneName);
+    if (index >= 0) {
+      self.geneNames.splice(index, 1);
     }
 
-    if (me.geneNCBISummaries && me.geneNCBISummaries.hasOwnProperty(geneName)) {
-      delete me.geneNCBISummaries[geneName];
+    index = self.sortedGeneNames.indexOf(geneName);
+    if (index >= 0) {
+      self.sortedGeneNames.splice(index, 1);
     }
 
-    if (me.geneToLatestTranscript && me.geneToLatestTranscript.hasOwnProperty(geneName)) {
-      delete me.geneToLatestTranscript[geneName];
+    if (self.geneDangerSummaries && self.geneDangerSummaries.hasOwnProperty(geneName)) {
+      delete self.geneDangerSummaries[geneName];
     }
-    if (me.geneToLatestTranscript && me.geneToLatestTranscript[geneName]) {
-      delete me.geneToLatestTranscript[geneName];
+      if (self.genePhenotypes && self.genePhenotypes.hasOwnProperty(geneName)) {
+      delete self.genePhenotypes[geneName];
+    }
+
+    if (self.geneObjects && self.geneObjects.hasOwnProperty(geneName)) {
+      delete self.geneObjects[geneName];
+    }
+
+    if (self.geneNCBISummaries && self.geneNCBISummaries.hasOwnProperty(geneName)) {
+      delete self.geneNCBISummaries[geneName];
+    }
+
+    if (self.geneToLatestTranscript && self.geneToLatestTranscript.hasOwnProperty(geneName)) {
+      delete self.geneToLatestTranscript[geneName];
+    }
+    if (self.geneToLatestTranscript && self.geneToLatestTranscript[geneName]) {
+      delete self.geneToLatestTranscript[geneName];
     }
   }
 
-  /* Adds entry to object list of phenotypes, corresponding to the given gene, if they exist. */
   promiseGetGenePhenotypes(geneName) {
     var me = this;
+
     return new Promise( function(resolve, reject) {
+
       var phenotypes = me.genePhenotypes[geneName];
       if (phenotypes != null) {
         resolve([phenotypes, geneName]);
@@ -484,11 +559,12 @@ class GeneModel {
         }
        });
       }
+
     });
   }
 
-  /* Returns cached gene object corresponding to provided gene name.
-     If object is not cached, goes out and fetches it. */
+
+
   promiseGetCachedGeneObject(geneName, resolveOnError=false) {
     var me = this;
     return new Promise( function(resolve, reject) {
@@ -507,22 +583,26 @@ class GeneModel {
           }
         });
       }
+
     });
   }
 
-  /* Returns in-house gene object from iobio servers. */
+
   promiseGetGeneObject(geneName) {
     var me = this;
     return new Promise(function(resolve, reject) {
+
       var url = geneInfoServer + 'api/gene/' + geneName;
 
       // If current build not specified, default to GRCh37
-      var buildName = genomeBuildHelper.getCurrentBuildName() ? genomeBuildHelper.getCurrentBuildName() : "GRCh37";
+      var buildName = me.genomeBuildHelper.getCurrentBuildName() ? me.genomeBuildHelper.getCurrentBuildName() : "GRCh37";
       $('#build-link').text(buildName);
 
+
       url += "?source="  + (me.geneSource ? me.geneSource : siteGeneSource);
-      url += "&species=" + genomeBuildHelper.getCurrentSpeciesLatinName();
+      url += "&species=" + me.genomeBuildHelper.getCurrentSpeciesLatinName();
       url += "&build="   + buildName;
+
 
       $.ajax({
         url: url,
@@ -540,23 +620,25 @@ class GeneModel {
           }
         },
         error: function( xhr, status, errorThrown ) {
+
           console.log("Gene model for " +  geneName + " not found.  Error occurred.");
           console.log( "Error: " + errorThrown );
           console.log( "Status: " + status );
           console.log( xhr );
           reject("Error " + errorThrown + " occurred when attempting to get gene model for gene " + geneName);
+
         }
       });
+
     });
   }
 
-  /* Returns true if provided gene name is in the object's known gene list. */
   isKnownGene(geneName) {
     return this.allKnownGeneNames[geneName] || this.allKnownGeneNames[geneName.toUpperCase()]
   }
 
-  /* Adjusts the gene object start and end locations */
-  adjustGeneRegion(geneObject, geneRegionBuffer) {
+
+  adjustGeneRegion(geneObject) {
     let me = this;
     if (geneObject.startOrig == null) {
       geneObject.startOrig = geneObject.start;
@@ -565,10 +647,186 @@ class GeneModel {
       geneObject.endOrig = geneObject.end;
     }
     // Open up gene region to include upstream and downstream region;
-    geneObject.start = geneObject.startOrig < geneRegionBuffer ? 0 : geneObject.startOrig - geneRegionBuffer;
+    geneObject.start = geneObject.startOrig < me.geneRegionBuffer ? 0 : geneObject.startOrig - me.geneRegionBuffer;
     // TODO: Don't go past length of reference
-    geneObject.end   = geneObject.endOrig + geneRegionBuffer;
+    geneObject.end   = geneObject.endOrig + me.geneRegionBuffer;
+
   }
+
+  sortGenes(sortBy) {
+    var me = this;
+
+    me.sortedGeneNames = null;
+
+
+    if (sortBy.indexOf("gene name") >= 0) {
+      me.sortedGeneNames = me.geneNames.slice().sort();
+    } else if (sortBy.indexOf("harmful variant") >= 0) {
+      me.sortedGeneNames = me.geneNames.slice().sort( function(a,b) {
+        return me.compareDangerSummary(a,b);
+      });
+    } else if (sortBy.indexOf("converage") >= 0) {
+      me.sortedGeneNames = me.geneNames.slice().sort( function(a,b) {
+        return me.compareDangerSummaryByLowCoverage(a,b);
+      });
+    } else if (sortBy.indexOf("original") >= 0) {
+      me.sortedGeneNames = me.geneNames.slice();
+    }
+
+  }
+
+  compareDangerSummary(geneName1, geneName2) {
+    var me = this;
+
+    var danger1 = me.geneDangerSummaries[geneName1];
+    var danger2 = me.geneDangerSummaries[geneName2];
+
+    if (danger1 == null && danger2 == null) {
+      return 0;
+    } else if (danger2 == null) {
+      return -1;
+    } else if (danger1 == null) {
+      return 1;
+    }
+
+    var dangers = [danger1, danger2];
+
+
+    // lowests (non-zero) harmful variant level  = highest relevance
+    var harmfulVariantValues = [9999, 9999];
+    dangers.forEach(function(danger, index) {
+      if (danger.harmfulVariantsLevel) {
+        harmfulVariantValues[index] = danger.harmfulVariantsLevel;
+      }
+    });
+    if (harmfulVariantValues[0] !== harmfulVariantValues[1]) {
+      return harmfulVariantValues[0] - harmfulVariantValues[1];
+    }
+
+    // lowest clinvar value = highest relevance
+    var clinvarValues = [9999, 9999];
+    dangers.forEach(function(danger, index) {
+      if (danger.CLINVAR) {
+        for (var key in danger.CLINVAR) {
+          var showBadge = me.translator.clinvarMap[key].badge;
+          if (showBadge) {
+            clinvarValues[index] = danger.CLINVAR[key].value;
+          }
+        }
+      }
+    });
+    if (clinvarValues[0] !== clinvarValues[1]) {
+      return clinvarValues[0] - clinvarValues[1];
+    }
+
+    // sift
+    var siftValues = [9999, 9999];
+    dangers.forEach(function(danger, index) {
+      if (danger.SIFT) {
+        for (var key in danger.SIFT) {
+          var siftClass = Object.keys(danger.SIFT[key])[0];
+          var showBadge = me.translator.siftMap[siftClass].badge;
+          if (showBadge) {
+            siftValues[index] = me.translator.siftMap[siftClass].value;
+          }
+        }
+      }
+    });
+    if (siftValues[0] !== siftValues[1]) {
+      return siftValues[0] - siftValues[1];
+    }
+
+    // polyphen
+    var polyphenValues = [9999, 9999];
+    dangers.forEach(function(danger, index) {
+      if (danger.POLYPHEN) {
+        for (var key in danger.POLYPHEN) {
+          var polyphenClass = Object.keys(danger.POLYPHEN[key])[0];
+          var showBadge = me.translator.polyphenMap[polyphenClass].badge;
+          if (showBadge) {
+            polyphenValues[index] = me.translator.polyphenMap[polyphenClass].value;
+          }
+        }
+      }
+    });
+    if (polyphenValues[0] !== polyphenValues[1]) {
+      return polyphenValues[0] - polyphenValues[1];
+    }
+
+    // lowest impact value = highest relevance
+    var impactValues = [9999, 9999];
+    dangers.forEach(function(danger, index) {
+      if (danger.IMPACT) {
+        for (var key in danger.IMPACT) {
+          impactValues[index] = me.translator.impactMap[key].value;
+        }
+      }
+    });
+    if (impactValues[0] !== impactValues[1]) {
+      return impactValues[0] - impactValues[1];
+    }
+
+    // lowest allele frequency = highest relevance
+    var afValues = [9999,9999];
+    dangers.forEach(function(danger, index) {
+      if (danger.AF && Object.keys(danger.AF).length > 0) {
+        var clazz   = Object.keys(danger.AF)[0];
+        var afValue  = danger.AF[clazz].value;
+        afValues[index] = afValue;
+      }
+    });
+    if (afValues[0] !== afValues[1]) {
+      return afValues[0] - afValues[1];
+    }
+
+
+
+    if (geneName1 < geneName2) {
+      return -1;
+    } else if (geneName2 < geneName1) {
+      return 1;
+    }
+    return 0;
+  }
+
+
+  compareDangerSummaryByLowCoverage(geneName1, geneName2) {
+    var me = this;
+
+    var danger1 = me.geneDangerSummaries[geneName1];
+    var danger2 = me.geneDangerSummaries[geneName2];
+
+
+    if (danger1 == null && danger2 == null) {
+      return 0;
+    } else if (danger2 == null) {
+      return -1;
+    } else if (danger1 == null) {
+      return 1;
+    }
+
+    geneCoverageProblem1 = danger1.geneCoverageProblem ? danger1.geneCoverageProblem : false;
+    geneCoverageProblem2 = danger2.geneCoverageProblem ? danger2.geneCoverageProblem : false;
+
+
+    if (geneCoverageProblem1 == geneCoverageProblem2) {
+      if (geneName1 < geneName2) {
+        return -1;
+      } else if (geneName2 < geneName1) {
+        return 1;
+      } else {
+        return 0;
+      }
+    } else if (geneCoverageProblem1) {
+      return -1;
+    } else if (geneCoverageProblem2) {
+      return 1;
+    }
+
+  }
+
 }
+
+
 
 export default GeneModel

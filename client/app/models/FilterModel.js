@@ -333,8 +333,6 @@ class FilterModel {
 
     return self.affectedInfo;
   }
-
-
 }
 
 export default FilterModel;

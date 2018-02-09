@@ -1260,143 +1260,127 @@ class MultiSampleModel {
     });
   }
 
-  // TODO: make this so that variantModels -> variantModel (just sfariModel coming in, or sfariSubset, etc)
   promiseAnnotateVariants(theGene, theTranscript, variantModel, isMultiSample, isBackground, onVcfData, samp, subsetIds) {
     var me = this;
 
-    return new Promise( function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
       // First the gene vcf data has been cached, just return
       // it.  (No need to retrieve the variants from the iobio service.)
-      var resultMap = {};
-      var promises = [];
-      var bookmarkPromises = [];
 
       // Only passing one model in here as of now - sfariModel
-      variantModels.forEach(function(model) {
-        var p = model._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript)
-         .then(function(vcfData) {
-          if (vcfData != null && vcfData != '') {
-            resultMap[model.name] = vcfData;
-
-            if (!isBackground) {
-              model.vcfData = vcfData;
-              model.fbData = me.reconstituteFbData(vcfData);
-            }
+      var model = variantModel;
+      var p = model._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript)
+       .then(function(vcfData) {
+        if (vcfData != null && vcfData != '') {
+          if (!isBackground) {
+            model.vcfData = vcfData;
+            model.fbData = me.reconstituteFbData(vcfData);
           }
-         })
-         promises.push(p);
-      })
+          resolve(p);
+        }
+        // We don't have the variants for the gene in cache,
+        // so call the iobio services to retreive the variants for the gene region
+        // and annotate them.
+        else {
+            // Get reference
+            me._promiseVcfRefName(theGene.chr)
+            .then(function() {
+              // Get variants - returns array of annotated data, results
+              return me.vcf.promiseGetVariants(
+                 me.getVcfRefName(theGene.chr),
+                 theGene,
+                 theTranscript,
+                 null,   // regions
+                 isMultiSample, // is multi-sample
+                 subsetIds,  // Optionally blank if entire multi-sample vcf TB analyzed
+                 me.getName() == 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
+                 me.getTranslator().clinvarMap,
+                 me.getGeneModel().geneSource == 'refseq' ? true : false,
+                 window.isLevelBasic || global_getVariantIdsForGene,  // hgvs notation
+                 global_getVariantIdsForGene,  // rsid
+                 global_vepAF    // vep af
+                );
+            })
+            //
+            .then(function(data) {
+              var annotatedRecs = data[0];
+              var results = data[1];
 
-      Promise.all(promises)
-      //.then(function() {
-      //  return Promise.all(bookmarkPromises)
-      //})
-      .then(function() {
-        if (Object.keys(resultMap).length == variantModels.length) {
-          resolve(resultMap);
-        } else {
-
-          // We don't have the variants for the gene in cache,
-          // so call the iobio services to retreive the variants for the gene region
-          // and annotate them.
-          me._promiseVcfRefName(theGene.chr)
-          .then( function() {
-            return me.vcf.promiseGetVariants(
-               me.getVcfRefName(theGene.chr),
-               theGene,
-               theTranscript,
-               null,   // regions
-               isMultiSample, // is multi-sample
-               subsetIds,  // Optionally blank if entire multi-sample vcf TB analyzed
-               me.getName() == 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
-               me.getTranslator().clinvarMap,
-               me.getGeneModel().geneSource == 'refseq' ? true : false,
-               window.isLevelBasic || global_getVariantIdsForGene,  // hgvs notation
-               global_getVariantIdsForGene,  // rsid
-               global_vepAF    // vep af
-              );
-          })
-          .then( function(data) {
-
-            var annotatedRecs = data[0];
-            var results = data[1];
-
-            if (!isMultiSample) {
-              results = [results];
-            }
-
-            if (results && results.length > 0) {
-              var data = results[0];
-
-              // Associate the correct gene with the data
-              var theGeneObject = null;
-              for( var key in me.getGeneModel().geneObjects) {
-                var geneObject = me.getGeneModel().geneObjects[key];
-                if (me.getVcfRefName(geneObject.chr) == data.ref &&
-                  geneObject.start == data.start &&
-                  geneObject.end == data.end &&
-                  geneObject.strand == data.strand) {
-                  theGeneObject = geneObject;
-                }
+              if (!isMultiSample) {
+                results = [results];
               }
-              if (theGeneObject) {
 
-                var resultMap = {};
-                var idx = 0;
+              if (results && results.length > 0) {
+                var data = results[0];
 
-                var postProcessNextVariantCard = function(idx, callback) {
-                  if (idx == variantModels.length) {
-                    if (callback) {
-                      callback();
-                    }
-                    return;
-                  } else {
-                    var model = variantModels[idx];
-                    var theVcfData  = results[idx];
-                    if (theVcfData == null) {
+                // Associate the correct gene with the data
+                var theGeneObject = null;
+                for( var key in me.getGeneModel().geneObjects) {
+                  var geneObject = me.getGeneModel().geneObjects[key];
+                  if (me.getVcfRefName(geneObject.chr) == data.ref &&
+                    geneObject.start == data.start &&
+                    geneObject.end == data.end &&
+                    geneObject.strand == data.strand) {
+                    theGeneObject = geneObject;
+                  }
+                }
+                var variantModels = [variantModel];       // Throwing into array for code re-use
+                if (theGeneObject) {
+                  var resultMap = {};
+                  var idx = 0;
+                  var postProcessNextVariantCard = function(idx, callback) {
+                    if (idx == variantModels.length) {
                       if (callback) {
                         callback();
                       }
                       return;
-                    }
-                    theVcfData.gene = theGeneObject;
-                    resultMap[model.relationship] = theVcfData;
-
-                    // Flag any bookmarked variants
-                    //me._promiseDetermineVariantBookmarks(theVcfData, theGeneObject, theTranscript).then(function() {
-
-                        if (!isBackground) {
-                          model.vcfData = theVcfData;
+                    } else {
+                      var model = variantModels[idx];
+                      var theVcfData  = results[idx];
+                      if (theVcfData == null) {
+                        if (callback) {
+                          callback();
                         }
-                        idx++;
-                        postProcessNextVariantCard(idx, callback);
-                    //})
+                        return;
+                      }
+                      theVcfData.gene = theGeneObject;
+                      resultMap[model.name] = theVcfData;
+
+                      // Flag any bookmarked variants
+                      //me._promiseDetermineVariantBookmarks(theVcfData, theGeneObject, theTranscript).then(function() {
+
+                          if (!isBackground) {
+                            model.vcfData = theVcfData;
+                          }
+                          idx++;
+                          postProcessNextVariantCard(idx, callback);
+                      //})
+                    }
                   }
+
+                  postProcessNextVariantCard(idx, function() {
+                    resolve(resultMap);
+                  });
+
+                } else {
+                  var error = "ERROR - cannot locate gene object to match with vcf data " + data.ref + " " + data.start + "-" + data.end;
+                  console.log(error);
+                  reject(error);
                 }
-
-                postProcessNextVariantCard(idx, function() {
-                  resolve(resultMap);
-                });
-
               } else {
-                var error = "ERROR - cannot locate gene object to match with vcf data " + data.ref + " " + data.start + "-" + data.end;
+                var error = "ERROR - empty vcf results for " + theGene.gene_name;;
                 console.log(error);
                 reject(error);
               }
-            } else {
-              var error = "ERROR - empty vcf results for " + theGene.gene_name;;
-              console.log(error);
-              reject(error);
-            }
-          },
-          function(error) {
-            reject("missing reference")
-          });
+            },
+            function(error) {
+              reject("missing reference")
+            });
         }
       },
       function(error) {
         reject(error);
-      });
+      })
     });
   }
 
@@ -2055,6 +2039,55 @@ class MultiSampleModel {
 
   isAlignmentsOnly() {
     return !this.isVcfReadyToLoad() && this.isBamLoaded();
+  }
+
+  classifyByImpact(d, annotationScheme) {
+    let self = this;
+    var impacts = "";
+    var colorimpacts = "";
+    var effects = "";
+    var sift = "";
+    var polyphen = "";
+    var regulatory = "";
+
+    var effectList = (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.effect : d.vepConsequence);
+    for (var key in effectList) {
+      if (annotationScheme.toLowerCase() == 'vep' && key.indexOf("&") > 0) {
+          var tokens = key.split("&");
+          tokens.forEach( function(token) {
+          effects += " " + token;
+
+          });
+      } else {
+        effects += " " + key;
+      }
+    }
+    var impactList =  (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_FILTER]);
+    for (var key in impactList) {
+      impacts += " " + key;
+    }
+    var colorImpactList =  (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_COLOR]);
+    for (var key in colorImpactList) {
+      colorimpacts += " " + 'impact_'+key;
+    }
+    if (colorimpacts == "") {
+      colorimpacts = "impact_none";
+    }
+    for (var key in d.sift) {
+      sift += " " + key;
+    }
+    for (var key in d.polyphen) {
+      polyphen += " " + key;
+    }
+    for (var key in d.regulatory) {
+      regulatory += " " + key;
+    }
+
+    return  'variant ' + d.type.toLowerCase()  + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' '  + sift + ' ' + polyphen + ' ' + regulatory +  ' ' + + ' ' + d.clinvar + ' ' + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts;
+  }
+
+  classifyByClinvar(d) {
+    return  'variant ' + d.type.toLowerCase()  +  ' '  + d.clinvar + ' colorby_' + d.clinvar;
   }
 
   /*

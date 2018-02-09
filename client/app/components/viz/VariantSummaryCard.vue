@@ -38,7 +38,7 @@ export default {
     sift: "",
     polyPhen: ""
   },
-  data: {},
+  data() { return {}},
   methods: {},
   filters: {},
   computed: {},

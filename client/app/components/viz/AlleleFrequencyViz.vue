@@ -18,7 +18,12 @@
 export default {
   name: 'allele-frequency-viz',
   // TODO
-  props: {},
+  props: {
+    oneKGenomes: '',
+    exAc: '',
+    simonsSimplexComplex: '',
+    simonsVip: ''
+  },
   created: function() {},
   mounted: function() {},
   methods: {},

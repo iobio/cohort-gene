@@ -107,6 +107,30 @@ var effectCategories = [
     vcfFile = null;
     annotators = [];
   }
+  exports.setEndpoint = function(theEndpoint) {
+    endpoint = theEndpoint;
+  }
+
+  exports.getEndpoint = function() {
+    return endpoint;
+  }
+
+
+  exports.setGenericAnnotation = function(theGenericAnnotation) {
+    genericAnnotation = theGenericAnnotation;
+  }
+
+  exports.getGenericAnnotation = function() {
+    return genericAnnotation;
+  }
+
+  exports.setGenomeBuildHelper = function(theGenomeBuildHelper) {
+    genomeBuildHelper = theGenomeBuildHelper;
+  }
+
+  exports.getGenomeBuildHelper = function() {
+    return genomeBuildHelper;
+  }
 
   exports.getAnnotators = function() {
     return this.infoFields ? Object.keys(this.infoFields) : [];
@@ -534,13 +558,8 @@ var effectCategories = [
         callbackError("Error occurred in loadRemoteIndex. " +  error);
       }
     })
-
     // execute command
     cmd.run();
-
-
-
-
   };
 
 
@@ -565,7 +584,7 @@ var effectCategories = [
       });
   }
 
-
+  /* Returns array of annotated data, then results */
   exports.promiseGetVariants = function(refName, geneObject,
     selectedTranscript, regions, isMultiSample, samplesToRetrieve,
     annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache) {

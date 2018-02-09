@@ -58,7 +58,7 @@ Updated: SJG 01Feb2018
         <variant-viz id="all-sfari-variant-viz"
           v-if="showAllSfariVariantViz",
           ref="allSfariVariantVizRef"
-          :data="sampleModel.loadedVariants"
+          :data="sfariModel.loadedVariants"
           :regionStart="regionStart"
           :regionEnd="regionEnd"
           :annotationScheme="annotationScheme"
@@ -78,7 +78,7 @@ Updated: SJG 01Feb2018
         <variant-viz id="subset-sfari-variant-viz"
           v-if="showSubsetSfariVariantViz",
           ref="subsetSfariVariantVizRef"
-          :data="sampleModel.loadedSubsetSfariVariants"
+          :data="sfariModel.loadedSubsetSfariVariants"
           :regionStart="regionStart"
           :regionEnd="regionEnd"
           :annotationScheme="annotationScheme"
@@ -114,9 +114,10 @@ Updated: SJG 01Feb2018
   </v-card>
 </template>
 
-
-<!-- TODO: export -->
 <script>
+
+import VariantViz from './VariantViz.vue'
+import GeneViz from './GeneViz.vue'
 
 export default {
   name: 'sfari-variant-card',
@@ -127,17 +128,18 @@ export default {
     // TODO: if I add bam stuff to this card, add DepthViz
   },
   props: {
-    sampleModel: null,
+    sfariModel: null,
     annotationScheme: null,
     classifyVariantSymbolFunc: null,
     variantTooltip: null,
     selectedGene: {},
-    selectedTranscript {},
+    selectedTranscript: {},
     selectedVariant: null,
     regionStart: 0,
     regionEnd: 0,
     width: 0,
-    showVariantViz: true,
+    showAllSfariVariantViz: true,
+    showSubsetSfariVariantViz: true,
     showGeneViz: true
     // TODO: if I add bam stuff, add showDepthViz: true
   },
@@ -234,9 +236,10 @@ export default {
         variant,
         lock,
         coord,
-        self.sampleModel.getAffectedInfo(),
-        self.sampleModel.cohort.mode,
-        self.sampleModel.cohort.maxAlleleCount);
+        self.sfariModel.name,
+        self.sfariModel.getAffectedInfo(),
+        self.sfariModel.cohort.mode,
+        self.sfariModel.cohort.maxAlleleCount);
 
       tooltip.selectAll("#unpin").on('click', function() {
         self.unpin(null, true);
@@ -290,14 +293,15 @@ export default {
   filters: {
   },
   computed: {
-    // TODO: Add depthviz fxn if bam data
+    depthVizHeight: function() {
+      this.showDepthViz ? 0 : 60;
     }
   },
   watch: {
   },
   mounted: function() {
+    this.name = this.sfariModel.name;
   },
-  // TODO: converage depth stuff related to bams?
   created: function() {
     this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
   }
