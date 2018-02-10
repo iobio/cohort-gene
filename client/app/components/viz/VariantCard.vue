@@ -1,9 +1,10 @@
-/*
- * Variant.vue
- *
- */
-<style lang="sass">
+<!--
+Encapsulates Variant card
+Updated: SJG 01Feb2018
 
+TODO: refactor this to match new back end - namely get rid of SfariModel refs
+-->
+<style lang="sass">
 #variant-card
   #gene-viz
     .axis
@@ -29,61 +30,69 @@
         path
           transform: translateY(-20px)
           display: none
-
-</style>
-
-<style lang="css">
-
 </style>
 
 
 <template>
-
-  <v-card tile id="variant-card" class="app-card">
-    <v-card-title primary-title>
-      {{ name }}
+  <v-card tile id="sfari-variant-card" class="app-card">
+    <v-card-title primary-title>SFARI VARIANTS
       <div style="width:100%">
-
-        <div style="text-align: center;clear: both;">
-          <div class="loader vcfloader" v-bind:class="{ hide: !inProgress }" style="display: inline-block;">
+        <!-- <div style="text-align: center; clear: both;">
+          <div class="loader vcfloader" v-bind:class="{ hide: !sfariModel.inProgress.loadingVariants }" style="display: inline-block;">
             <span class="loader-label">Annotating variants</span>
             <img src="../../../assets/images/wheel.gif">
           </div>
-          <div class="loader fbloader hide" style="display: inline-block;padding-left: 20px;">
+          <div class="loader fbloader" v-bind:class="{ hide: !sfariModel.inProgress.callingVariants }" style="display: inline-block;padding-left: 20px;">
             <span class="loader-label">Calling variants</span>
             <img src="../../../assets/images/wheel.gif">
           </div>
-          <div class="loader covloader hide" style="display: inline-block;padding-left: 20px;">
+          <div class="loader covloader" v-bind:class="{ hide: !sfariModel.inProgress.loadingCoverage }"style="display: inline-block;padding-left: 20px;">
             <span class="loader-label">Analyzing gene coverage</span>
             <img src="../../../assets/images/wheel.gif">
           </div>
-        </div>
+        </div> -->
 
-<div>
-        <variant-viz
-          v-if="showVariantViz"
-          :data="loadedVariants"
+        <!-- SJG TODO: what is the known-variants-toolbar and do I need it? -->
+
+        <variant-viz id="all-sfari-variant-viz"
+          v-if="showAllSfariVariantViz",
+          ref="allSfariVariantVizRef"
+          :data="sfariModel.loadedVariants"
           :regionStart="regionStart"
-          :reginEnd="regionEnd"
+          :regionEnd="regionEnd"
+          :annotationScheme="annotationScheme"
           :width="width"
           :margin="variantVizMargin"
           :variantHeight="variantSymbolHeight"
           :variantPadding="variantSymbolPadding"
           :showBrush="false"
-          :showXAxis="true">
+          :showXAxis="true"
+          :classifySymbolFunc="classifyVariantSymbolFunc"
+          @variantClick="onVariantClick"
+          @variantHover="onVariantHover"
+          @variantHoverEnd="onVariantHoverEnd">
+          >
         </variant-viz>
-</div>
 
-        <depth-viz
-          v-if="showDepthViz"
-          :data="coverage"
-          :maxDepth="maxDepth"
+        <variant-viz id="subset-sfari-variant-viz"
+          v-if="showSubsetSfariVariantViz",
+          ref="subsetSfariVariantVizRef"
+          :data="sfariModel.loadedSubsetSfariVariants"
+          :regionStart="regionStart"
+          :regionEnd="regionEnd"
+          :annotationScheme="annotationScheme"
           :width="width"
-          :margin="depthVizMargin"
-          :height="80"
-          :showXAxis="false"
-        >
-        </depth-viz>
+          :margin="variantVizMargin"
+          :variantHeight="variantSymbolHeight"
+          :variantPadding="variantSymbolPadding"
+          :showBrush="false"
+          :showXAxis="true"
+          :classifySymbolFunc="classifyVariantSymbolFunc"
+          @variantClick="onVariantClick"
+          @variantHover="onVariantHover"
+          @variantHoverEnd="onVariantHoverEnd">
+          >
+        </variant-viz>
 
         <gene-viz id="gene-viz"
           v-bind:class="{ hide: !showGeneViz }"
@@ -98,88 +107,71 @@
           :showBrush="false"
           >
         </gene-viz>
+
       </div>
     </v-card-title>
-
   </v-card>
-
-
-
 </template>
 
 <script>
 
-
-import GeneViz    from "../viz/GeneViz.vue"
-import VariantViz from "../viz/VariantViz.vue"
-import DepthViz   from "../viz/DepthViz.vue"
-
+import VariantViz from './VariantViz.vue'
+import GeneViz from './GeneViz.vue'
 
 export default {
   name: 'variant-card',
   components: {
     VariantViz,
-    GeneViz,
-    DepthViz
+    GeneViz
+    // TODO: if I add knownVariantsToolbar, add that component
+    // TODO: if I add bam stuff to this card, add DepthViz
   },
   props: {
-    name: "",
-    relationship: "",
-    loadedVariants: {},
-    coverage: {
-      type: Array,
-      default: function() {
-        return [[0,0]];
-      }
-    },
-    maxDepth: 0,
+    dataSetModel: null,
+    annotationScheme: null,
+    classifyVariantSymbolFunc: null,
+    variantTooltip: null,
     selectedGene: {},
     selectedTranscript: {},
+    selectedVariant: null,
     regionStart: 0,
     regionEnd: 0,
     width: 0,
-    inProgress: false,
-    showVariantViz: true,
-    showGeneViz: true,
-    showDepthViz: true
+    showAllVariantViz: true,
+    showSubsetVariantViz: true,
+    showGeneViz: true
+    // TODO: if I add bam stuff, add showDepthViz: true
   },
+  // TODO: ignoring simplified Edu interface variables for now
   data() {
     return {
       margin: {
-        top: isLevelBasic || isLevelEdu ? 0 : 20,
-        right: isLevelBasic || isLevelEdu ? 7 : 2,
+        top: 20,
+        right: 2,
         bottom: 18,
-        left: isLevelBasic || isLevelEdu ? 9 : 4
+        left: 4
       },
       variantVizMargin: {
         top: 0,
-        right: isLevelBasic || isLevelEdu ? 7 : 2,
+        right: 2,
         bottom: 5,
-        left: isLevelBasic || isLevelEdu ? 9 : 4
+        left: 4
       },
-      variantSymbolHeight: isLevelEdu  || isLevelBasic ? EDU_TOUR_VARIANT_SIZE : 8,
+      variantSymbolHeight: 8,
       variantSymbolPadding: 2,
 
       geneVizMargin: {
         top: 0,
-        right: isLevelBasic || isLevelEdu ? 7 : 2,
-        bottom: 18, left:
-        isLevelBasic || isLevelEdu ? 9 : 4
+        right: 2,
+        bottom: 18,
+        left: 4
       },
-      geneVizTrackHeight: isLevelEdu || isLevelBasic ? 32 : 16,
-      geneVizCdsHeight: isLevelEdu || isLevelBasic ? 24 : 12,
-      depthVizMargin: {
-        top: 22,
-        right: isLevelBasic || isLevelEdu ? 7 : 2,
-        bottom: 20,
-        left: isLevelBasic || isLevelEdu ? 9 : 4
-      },
-      depthVizYTickFormatFunc: null
-
+      geneVizTrackHeight: 16,
+      geneVizCdsHeight: 12,
+      // TODO: if bam stuff, add depthViz margin info
+      coveragePoint: null
     }
   },
-
-
   methods: {
     depthVizYTickFormat: function(val) {
       if (val == 0) {
@@ -187,34 +179,131 @@ export default {
       } else {
         return val + "x";
       }
+    },
+    onVariantClick: function(variant) {
+      if (this.showVariantViz) {
+        this.showVariantCircle(variant);
+        this.showVariantTooltip(variant, true);
+      }
+      this.$emit('sfariVariantClick', variant, this);
+    },
+    onVariantHover: function(variant, showTooltip=true) {
+      if (this.selectedVariant == null) {
+        if (this.showVariantViz) {
+          this.showVariantCircle(variant);
+          this.showVariantTooltip(variant, false);
+        }
+        this.$emit('sfariVariantHover', variant, this);
+      }
+    },
+    onVariantHoverEnd: function() {
+      if (this.selectedVariant == null) {
+        if (this.showVariantViz) {
+          this.hideVariantCircle();
+          this.hideVariantTooltip(this);
+        }
+        this.$emit('sfariVariantHoverEnd');
+      }
+
+    },
+    showVariantTooltip: function(variant, lock) {
+      let self = this;
+
+      let tooltip = d3.select("#main-tooltip");
+
+      if (lock) {
+        tooltip.style("pointer-events", "all");
+      } else {
+        tooltip.style("pointer-events", "none");
+      }
+
+
+      var x = variant.screenX;
+      var y = variant.screenY;
+
+      var coord = {'x':                  x,
+                   'y':                  y,
+                   'height':             33,
+                   'parentWidth':        self.$el.offsetWidth,
+                   'preferredPositions': [ {top:    ['center', 'right','left'  ]},
+                                           {right:  ['middle', 'top',  'bottom']},
+                                           {left:   ['middle', 'top',  'bottom']},
+                                           {bottom: ['center', 'right','left'  ]} ] };
+
+
+      self.variantTooltip.fillAndPositionTooltip(tooltip,
+        variant,
+        lock,
+        coord,
+        self.sfariModel.name,
+        self.sfariModel.getAffectedInfo(),
+        self.sfariModel.cohort.mode,
+        self.sfariModel.cohort.maxAlleleCount);
+
+      tooltip.selectAll("#unpin").on('click', function() {
+        self.unpin(null, true);
+      });
+      tooltip.selectAll("#tooltip-scroll-up").on('click', function() {
+        self.tooltipScroll("up");
+      });
+      tooltip.selectAll("#tooltip-scroll-down").on('click', function() {
+        self.tooltipScroll("down");
+      });
+
+    },
+    tooltipScroll(direction) {
+      this.variantTooltip.scroll(direction, "#main-tooltip");
+    },
+    unpin(saveClickedVariant, unpinMatrixTooltip) {
+      this.$emit("sfariVariantClickEnd", this);
+
+      this.hideVariantTooltip();
+      this.hideVariantCircle();
+      this.hideCoverageCircle();
+    },
+    hideVariantTooltip: function() {
+      let tooltip = d3.select("#main-tooltip");
+      tooltip.transition()
+           .duration(500)
+           .style("opacity", 0)
+           .style("z-index", 0)
+           .style("pointer-events", "none");
+    },
+    showVariantCircle: function(variant) {
+      if (this.showVariantViz) {
+        var container = d3.select(this.$el).select('#loaded-variant-viz > svg');
+        this.$refs.variantVizRef.showVariantCircle(variant, container, false);
+      }
+    },
+    hideVariantCircle: function(variant) {
+      if (this.showVariantViz) {
+        var container = d3.select(this.$el).select('#loaded-variant-viz > svg');
+        this.$refs.variantVizRef.hideVariantCircle(container);
+      }
+    },
+    // TODO: took out fxns related to showDepthViz
+    onKnownVariantsVizChange: function(viz) {
+      this.$emit("knownVariantsVizChange", viz);
+    },
+    onKnownVariantsFilterChange: function(selectedCategories) {
+      this.$emit("knownVariantsFilterChange", selectedCategories);
     }
-
   },
-
-
   filters: {
   },
-
   computed: {
-
+    depthVizHeight: function() {
+      this.showDepthViz ? 0 : 60;
+    }
   },
-
   watch: {
   },
-
-
-
-
   mounted: function() {
-
-
+    this.name = this.sfariModel.name;
   },
-
   created: function() {
     this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
   }
-
-
-
 }
+
 </script>

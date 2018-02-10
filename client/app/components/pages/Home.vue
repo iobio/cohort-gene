@@ -1,6 +1,8 @@
 <!--
 Main application page
 Updated: SJG 07Feb2018
+
+Note: all CohortModel refs changed to CoreModel
 -->
 <style lang="sass">
 .app-card
@@ -14,13 +16,23 @@ Updated: SJG 07Feb2018
     <v-container fluid>
       <!-- TODO: do I need data-sources-loader -->
 
-      <sfari-variant-card
-        ref="sfariVariantCardRef"
-        v-if="sfariModel"
-        :key="sfariModel.name"
-        v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !cohortModel  || cohortModel.allInProgress.loadingDataSources }"
-        :sfariModel="sfariModel"
-        :classifyVariantSymbolFunc="sfariModel.classifyByImpact"
+      <!-- TODO: bind model w/ summary logic -->
+      <variant-summary-card
+        :effect="effect"
+        :impact="impact"
+        :clinVar="clinVar"
+        :sift="sift"
+        :polyPhen="polyPhen"
+      ></variant-summary-card>
+      <br>
+      <br>
+      <variant-card
+        ref="variantCardRef"
+        v-for="model in dataSetModels"
+        :key="model.name"
+        v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !coreModel  || coreModel.inProgress.loadingDataSources }"
+        :dataSetModel="model"
+        :classifyVariantSymbolFunc="model.classifyByImpact"
         :variantTooltip="variantTooltip"
         :selectedGene="selectedGene"
         :selectedTranscript="selectedTranscript"
@@ -30,22 +42,13 @@ Updated: SJG 07Feb2018
         :width="cardWidth"
         :showGeneViz="true"
         :showVariantViz="true"
-        @sfariVariantClick="onSfariVariantClick"
-        @sfariVariantClickEnd="onSfariVariantClickEnd"
-        @sfariVariantHover="onSfariVariantHover"
-        @sfariVariantHoverEnd="onSfariVariantHoverEnd"
+        @dataSetVariantClick="onDataSetVariantClick"
+        @dataSetVariantClickEnd="onDataSetVariantClickEnd"
+        @dataSetVariantHover="onDataSetVariantHover"
+        @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
         @knownVariantsVizChange="onKnownVariantsVizChange"
         @knownVariantsFilterChange="onKnownVariantsFilterChange"
-      ></sfari-variant-card>
-
-      <!-- TODO: bind model w/ summary logic -->
-      <variant-summary-card
-        :effect="effect"
-        :impact="impact"
-        :clinVar="clinVar"
-        :sift="sift"
-        :polyPhen="polyPhen"
-      ></variant-summary-card>
+      ></variant-card>
     </v-container>
   </v-content>
 </div>
@@ -55,12 +58,11 @@ Updated: SJG 07Feb2018
 // Vue components
 import Navigation from '../partials/Navigation.vue'
 import GeneCard from '../viz/GeneCard.vue'
-import SfariVariantCard from  '../viz/SfariVariantCard.vue'
+import VariantCard from  '../viz/VariantCard.vue'
 import VariantSummaryCard from '../viz/VariantSummaryCard.vue'
 
 // Back-end models
-import MultiSampleModel from '../../models/MultiSampleModel.js'
-import CohortModel      from '../../models/CohortModel.js'
+import CoreModel      from '../../models/CoreModel.js'
 import GeneModel        from '../../models/GeneModel.js'
 import FilterModel      from '../../models/FilterModel.js'
 
@@ -72,7 +74,7 @@ export default {
     Navigation,
     GeneCard,
     VariantSummaryCard,
-    SfariVariantCard
+    VariantCard
   },
   props: {
     paramGene:             null,
@@ -105,8 +107,9 @@ export default {
       geneRegionEnd: null,
       allGenes: allGenesData,
 
-      cohortModel: null,
-      sfariModel: null,
+      coreModel: null,
+      dataSetModels: [],
+      //featureMatrixModel: null,   // TODO: get this working or take it out
       geneModel: null,
       bookmarkModel: null,
       filterModel: null,
@@ -165,14 +168,14 @@ export default {
         self.genomeBuildHelper,
         utility.getHumanRefNames);
 
-      self.cohortModel = new CohortModel(endpoint,
+      self.coreModel = new CoreModel(endpoint,
         genericAnnotation,
         translator,
         self.geneModel,
         self.cacheHelper,
         self.genomeBuildHelper);
 
-      self.inProgress = self.cohortModel.inProgress;
+      self.inProgress = self.coreModel.inProgress;
 
       //self.featureMatrixModel = new FeatureMatrixModel(self.cohortModel);
       //self.featureMatrixModel.init();
@@ -180,17 +183,15 @@ export default {
       self.variantTooltip = new VariantTooltip(genericAnnotation,
         glyph,
         translator,
-        self.cohortModel.annotationScheme,
+        self.coreModel.annotationScheme,
         self.genomeBuildHelper);
     })
-    .then(function () {
-      self.cohortModel.promiseInitDemo();
-    })
     .then(function() {
-      self.sfariModel = self.cohortModel.sfariSamplesModel;
-      self.filterModel = new FilterModel(self.cohortModel.affectedInfo);
-      self.cohortModel.filterModel = self.filterModel;
+      self.dataSetModels = self.coreModel.dataSetModels;
+      self.filterModel = new FilterModel(self.dataSetModel.affectedInfo);
+      self.dataSetModel.filterModel = self.filterModel;
 
+      self.onLoadDemoData();  // TODO: does this work?
       // TODO: comment back in after demo working - will have to move sfari model assignmebts below as well
       //self.initFromUrl();
     },
@@ -198,13 +199,7 @@ export default {
     })
   },
   computed: {},
-  watch: {
-    cohortModel: function() {
-      if (this.cohortModel) {
-        this.sfariModel = this.cohortModel.sfariSamplesModel;
-      }
-    }
-  },
+  watch: {},
   methods: {
     promiseInitCache: function() {
       let self = this;
@@ -228,11 +223,11 @@ export default {
     },
     onLoadDemoData: function() {
       let self = this;
-      self.geneModel.copyPasteGenes(self.cohortModel.demoGenes.join(", "));
-      self.onGeneSelected(self.cohortModel.demoGenes[0]);
-      self.cohortModel.promiseInitDemo()
+      self.geneModel.copyPasteGenes(self.coreModel.demoGenes.join(", "));
+      self.onGeneSelected(self.coreModel.demoGenes[0]);
+      self.coreModel.promiseInitDemo()
       .then(function() {
-        self.sfariModel = self.cohortModel.sfariSamplesModel;
+        self.dataModels = self.coreModel.dataSetModels;
         if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
           self.promiseLoadData();
         }
@@ -242,17 +237,16 @@ export default {
       let self = this;
 
       return new Promise(function(resolve, reject) {
-        debugger;
-        if (self.sfariModel) {
-          self.featureMatrixModel.inProgress.loadingVariants = true;
+        if (self.dataModels && self.dataModels.length > 0) {
+          //self.featureMatrixModel.inProgress.loadingVariants = true;
           var options = {'getKnownVariants': self.showClinvarVariants};
 
-          self.cohortModel.promiseLoadData(self.selectedGene,
+          self.coreModel.promiseLoadData(self.selectedGene,
             self.selectedTranscript,
             options)
           .then(function(resultMap) {
-              self.featureMatrixModel.inProgress.loadingVariants = false;
-              self.featureMatrixModel.promiseRankVariants(self.cohortModel.sfariSamplesModel.loadedVariants);
+              //self.featureMatrixModel.inProgress.loadingVariants = false;
+              //self.featureMatrixModel.promiseRankVariants(self.cohortModel.sfariSamplesModel.loadedVariants);
               self.filterModel.populateEffectFilters(resultMap);
               self.filterModel.populateRecFilters(resultMap);
               //var bp = me._promiseDetermineVariantBookmarks(vcfData, theGene, theTranscript);
@@ -302,27 +296,26 @@ export default {
       this.geneRegionStart = theStart;
       this.geneRegionEnd = theEnd;
 
-      this.featureMatrixModel.setRankedVariants(this.geneRegionStart, this.geneRegionEnd);
+      //this.featureMatrixModel.setRankedVariants(this.geneRegionStart, this.geneRegionEnd);
 
       this.filterModel.regionStart = this.geneRegionStart;
       this.filterModel.regionEnd = this.geneRegionEnd;
-      this.cohortModel.setLoadedVariants(this.selectedGene);
+      this.coreModel.setLoadedVariants(this.selectedGene);
 
-      this.cohortModel.setCoverage(this.geneRegionStart, this.geneRegionEnd);
+      this.coreModel.setCoverage(this.geneRegionStart, this.geneRegionEnd);
     },
     onGeneRegionZoomReset: function() {
       this.geneRegionStart = this.selectedGene.start;
       this.geneRegionEnd = this.selectedGene.end;
 
-      this.featureMatrixModel.setRankedVariants();
+      //this.featureMatrixModel.setRankedVariants();
 
       this.filterModel.regionStart = null;
       this.filterModel.regionEnd = null;
-      this.cohortModel.setLoadedVariants(this.selectedGene);
-
-      this.cohortModel.setCoverage();
+      this.coreModel.setLoadedVariants(this.selectedGene);
+      this.coreModel.setCoverage();
     },
-    onCohortVariantClick: function(variant, sourceComponent) {
+    onDataSetVariantClick: function(variant, sourceComponent) {
       let self = this;
       self.selectedVariant = variant;
       self.showVariantExtraAnnots(sourceComponent, variant);
@@ -333,7 +326,7 @@ export default {
         }
       })
     },
-    onCohortVariantClickEnd: function(sourceVariantCard) {
+    onDataSetVariantClickEnd: function(sourceVariantCard) {
       let self = this;
       self.selectedVariant = null;
       self.$refs.variantCardRef.forEach(function(variantCard) {
@@ -341,7 +334,7 @@ export default {
         variantCard.hideCoverageCircle();
       })
     },
-    onCohortVariantHover: function(variant, sourceVariantCard) {
+    onDataSetVariantHover: function(variant, sourceVariantCard) {
       let self = this;
       if (self.selectedVariant == null) {
         self.$refs.variantCardRef.forEach(function(variantCard) {
@@ -352,7 +345,7 @@ export default {
         })
       }
     },
-    onCohortVariantHoverEnd: function(sourceVariantCard) {
+    onDataSetVariantHoverEnd: function(sourceVariantCard) {
       let self = this;
       if (self.selectedVariant == null && self.$refs.variantCardRef) {
         self.$refs.variantCardRef.forEach(function(variantCard) {
@@ -372,31 +365,33 @@ export default {
         })
       }
     },
-    showVariantExtraAnnots: function(sourceComponent, variant) {
-      let self = this;
-      if (!isLevelEdu && !isLevelBasic)  {
-
-        self.cohortModel
-          .getModel(sourceComponent.relationship)
-          .promiseGetImpactfulVariantIds(self.selectedGene, self.selectedTranscript)
-          .then( function(annotatedVariants) {
-            // If the clicked variant is in the list of annotated variants, show the
-            // tooltip; otherwise, the callback will get the extra annots for this
-            // specific variant
-            self.showVariantTooltipExtraAnnots(sourceComponent, variant, annotatedVariants, function() {
-              // The clicked variant wasn't annotated in the batch of variants.  Get the
-              // extra annots for this specific variant.
-              self.cohortModel
-                .getModel(sourceComponent.relationship)
-                .promiseGetVariantExtraAnnotations(self.selectedGene, self.selectedTranscript, self.selectedVariant)
-                .then( function(refreshedVariant) {
-                  self.showVariantTooltipExtraAnnots(sourceComponent, variant, [refreshedVariant]);
-                })
-            })
-          });
-
-      }
-    },
+    // TODO: currently broken / referencing old properties
+    // showVariantExtraAnnots: function(sourceComponent, variant) {
+    //   let self = this;
+    //   if (!isLevelEdu && !isLevelBasic)  {
+    //
+    //     self.coreModel
+    //       // TODO: figure out what this is doing - should I be returning a cohortModel here?
+    //       .getModel(sourceComponent.relationship)
+    //       .promiseGetImpactfulVariantIds(self.selectedGene, self.selectedTranscript)
+    //       .then( function(annotatedVariants) {
+    //         // If the clicked variant is in the list of annotated variants, show the
+    //         // tooltip; otherwise, the callback will get the extra annots for this
+    //         // specific variant
+    //         self.showVariantTooltipExtraAnnots(sourceComponent, variant, annotatedVariants, function() {
+    //           // The clicked variant wasn't annotated in the batch of variants.  Get the
+    //           // extra annots for this specific variant.
+    //           self.coreModel
+    //             .getModel(sourceComponent.relationship)
+    //             .promiseGetVariantExtraAnnotations(self.selectedGene, self.selectedTranscript, self.selectedVariant)
+    //             .then( function(refreshedVariant) {
+    //               self.showVariantTooltipExtraAnnots(sourceComponent, variant, [refreshedVariant]);
+    //             })
+    //         })
+    //       });
+    //
+    //   }
+    // },
     showVariantTooltipExtraAnnots: function(sourceComponent, variant, annotatedVariants, callbackNotFound) {
       let self = this;
       var targetVariants = annotatedVariants.filter(function(v) {
@@ -429,20 +424,21 @@ export default {
       let self = this;
       self.showClinvarVariants = viz == 'variants';
       if (self.showClinvarVariants) {
-        self.cohortModel.promiseLoadKnownVariants(self.selectedGene, self.selectedTranscript);
+        self.coreModel.promiseLoadKnownVariants(self.selectedGene, self.selectedTranscript);
       }
     },
     onKnownVariantsFilterChange: function(selectedCategories) {
       let self = this;
       self.filterModel.setModelFilter('known-variants', 'clinvar', selectedCategories);
 
-      self.cohortModel.setLoadedVariants(self.selectedGene, 'known-variants');
+      self.coreModel.setLoadedVariants(self.selectedGene, 'known-variants');
     },
     onRemoveGene: function(geneName) {
       this.cacheHelper.clearCacheForGene(geneName);
     },
+    // TODO: this is currently broken
     onAnalyzeAll: function() {
-      this.cacheHelper.analyzeAll(this.cohortModel);
+      this.cacheHelper.analyzeAll(this.coreModel);
     },
     clearCache: function() {
       this.cacheHelper.promiseClearCache(this.cacheHelper.launchTimestamp);
@@ -502,9 +498,9 @@ export default {
           modelInfos.push(modelInfo);
         }
       }
-      self.cohortModel.promiseInit()
+      self.coreModel.promiseInit()
         .then(function() {
-          self.sfariModel = self.cohortModel.sfariSamplesModel;
+          self.dataSetModels = self.coreModel.dataSets;
           if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
             self.promiseLoadData();
           }

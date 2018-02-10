@@ -9,6 +9,7 @@ function EndpointCmd(useSSL, IOBIOServiceNames, launchTimestamp, genomeBuildHelp
 
 
 EndpointCmd.prototype.getVcfHeader = function(vcfUrl, tbiUrl) {
+  debugger;
   var me = this;
   var args = ['-H', '"'+vcfUrl+'"'];
   if (tbiUrl) {

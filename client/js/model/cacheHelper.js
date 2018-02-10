@@ -22,7 +22,7 @@ CacheHelper.DANGER_SUMMARY_DATA = "dangerSummary";
 CacheHelper.GENE_COVERAGE_DATA  = "geneCoverage";
 
 
-
+// TODO: this needs to be updated to take in what is equivalent to old cohort using the new core->dataset->cohort structure
 CacheHelper.prototype.analyzeAll = function(cohort, analyzeCalledVariants = false) {
   var me = this;
   this.cohort = cohort;
