@@ -1,6 +1,6 @@
 /* Represents a group of samples displayed on a single variant track. */
 class CohortModel {
-  constructor(parentDataSetModel, inputVcfUrl = '', inputBamUrl = '') {
+  constructor(parentDataSetModel) {
     this.vcf = null;                // vcf.iobio.js
     this.bam = null;                // bam.iobio.js
 
@@ -9,11 +9,9 @@ class CohortModel {
     this.fbData = null;
     this.bamData = null;
     this.vcfUrlEntered = false;
-    this.vcfUrl = inputVcfUrl;
     this.vcfFileOpened = false;
     this.getVcfRefName = null;
     this.bamUrlEntered = false;
-    this.bamUrl = inputBamUrl;
     this.bamFileOpened = false;
     this.getBamRefName = null;
 
@@ -25,7 +23,13 @@ class CohortModel {
     this.loadedVariants = null;
     this.coverage = [[]];
 
-    this.dataSet = parentDataSetModel;  // Parent data set model (allows access to endpoint, etc)
+    // Relational references
+    var _dataSet = parentDatSetModel;
+    this.getDataSet = function() { return _dataSet; }
+
+    // Optional subset IDs
+    this.subsetIds = [];
+    this.subsetPhenotypes = [];
 
     this.inProgress = {
       'loadingVariants': false,
@@ -105,23 +109,24 @@ class CohortModel {
   }
 
   getGeneModel() {
-    return this.cohort.geneModel;
+    return this.getDataSet().getGeneModel();
   }
 
+  // SJG TODO: what level should affectedInfo be at?
   getAffectedInfo() {
     return this.affectedInfo;
   }
 
   getTranslator() {
-    return this.cohort.translator;
+    return this.getDataSet().getTranslator();
   }
 
   getCacheHelper() {
-    return this.cohort.cacheHelper;
+    return this.getDataSet().getCacheHelper();
   }
 
   getGenomeBuildHelper() {
-    return this.cohort.genomeBuildHelper;
+    return this.getDataSet().getGenomeBuildHelper();
   }
 
   getAnnotationScheme() {
@@ -132,7 +137,7 @@ class CohortModel {
       if (this.getGeneModel().geneSource == 'refseq') {
         return "VEP";
       } else {
-        return this.cohort.annotationScheme;
+        return this.getDataSet().getAnnotationScheme();
       }
   }
 
@@ -630,13 +635,13 @@ class CohortModel {
   // }
 
   /* Setup VCF fields */
-  init(cohort) {
+  init() {
     var me = this;
-    me.cohort = cohort;
+
     me.vcf = vcfiobio();
-    me.vcf.setEndpoint(this.cohort.endpoint);
-    me.vcf.setGenericAnnotation(this.cohort.genericAnnotation);
-    me.vcf.setGenomeBuildHelper(this.cohort.genomeBuildHelper);
+    me.vcf.setEndpoint(this.getDataSet().getEndpoint());
+    me.vcf.setGenericAnnotation(this.getDataSet().getGenericAnnotation());
+    me.vcf.setGenomeBuildHelper(this.getDataSet().getGenomeBuildHelper());
   };
 
   promiseBamFilesSelected(event) {
@@ -1266,21 +1271,21 @@ class CohortModel {
     });
   }
 
-  promiseAnnotateVariants(theGene, theTranscript, variantModel, isMultiSample, isBackground, onVcfData, samp, subsetIds) {
+  // TODO: I took out passing the model here and am just calling fxn on model
+  // Make sure this still works
+  promiseAnnotateVariants(theGene, theTranscript, isMultiSample, isBackground) {
     var me = this;
 
     return new Promise(function(resolve, reject) {
       // First the gene vcf data has been cached, just return
       // it.  (No need to retrieve the variants from the iobio service.)
 
-      // Only passing one model in here as of now - sfariModel
-      var model = variantModel;
-      var p = model._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript)
+      var p = me._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript)
        .then(function(vcfData) {
         if (vcfData != null && vcfData != '') {
           if (!isBackground) {
-            model.vcfData = vcfData;
-            model.fbData = me.reconstituteFbData(vcfData);
+            me.vcfData = vcfData;
+            me.fbData = me.reconstituteFbData(vcfData);
           }
           resolve(p);
         }
@@ -1298,7 +1303,7 @@ class CohortModel {
                  theTranscript,
                  null,   // regions
                  isMultiSample, // is multi-sample
-                 subsetIds,  // Optionally blank if entire multi-sample vcf TB analyzed
+                 me.subsetIds,  // Optionally blank if entire multi-sample vcf TB analyzed
                  me.getName() == 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
                  me.getTranslator().clinvarMap,
                  me.getGeneModel().geneSource == 'refseq' ? true : false,
@@ -1330,7 +1335,7 @@ class CohortModel {
                     theGeneObject = geneObject;
                   }
                 }
-                var variantModels = [variantModel];       // Throwing into array for code re-use
+                var variantModels = [me];       // Throwing into array for code re-use
                 if (theGeneObject) {
                   var resultMap = {};
                   var idx = 0;
@@ -1355,11 +1360,11 @@ class CohortModel {
                       // Flag any bookmarked variants
                       //me._promiseDetermineVariantBookmarks(theVcfData, theGeneObject, theTranscript).then(function() {
 
-                          if (!isBackground) {
-                            model.vcfData = theVcfData;
-                          }
-                          idx++;
-                          postProcessNextVariantCard(idx, callback);
+                      if (!isBackground) {
+                        model.vcfData = theVcfData;
+                      }
+                      idx++;
+                      postProcessNextVariantCard(idx, callback);
                       //})
                     }
                   }

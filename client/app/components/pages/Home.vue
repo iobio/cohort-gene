@@ -243,12 +243,13 @@ export default {
 
           self.coreModel.promiseLoadData(self.selectedGene,
             self.selectedTranscript,
+            self.filterModel,
             options)
           .then(function(resultMap) {
               //self.featureMatrixModel.inProgress.loadingVariants = false;
               //self.featureMatrixModel.promiseRankVariants(self.cohortModel.sfariSamplesModel.loadedVariants);
-              self.filterModel.populateEffectFilters(resultMap);
-              self.filterModel.populateRecFilters(resultMap);
+              //self.filterModel.populateEffectFilters(resultMap);
+              //self.filterModel.populateRecFilters(resultMap);
               //var bp = me._promiseDetermineVariantBookmarks(vcfData, theGene, theTranscript);
               //bookmarkPromises.push(bp);
               resolve();
@@ -423,9 +424,9 @@ export default {
     onKnownVariantsVizChange: function(viz) {
       let self = this;
       self.showClinvarVariants = viz == 'variants';
-      if (self.showClinvarVariants) {
-        self.coreModel.promiseLoadKnownVariants(self.selectedGene, self.selectedTranscript);
-      }
+      // if (self.showClinvarVariants) {
+      //   self.coreModel.promiseLoadKnownVariants(self.selectedGene, self.selectedTranscript);
+      // }
     },
     onKnownVariantsFilterChange: function(selectedCategories) {
       let self = this;
