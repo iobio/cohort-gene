@@ -20,11 +20,12 @@ class CohortModel {
     this.lastVcfAlertify = null;
     this.lastBamAlertify = null;
     this.debugMe = false;
+    this.calledVariants = null;
     this.loadedVariants = null;
     this.coverage = [[]];
 
     // Relational references
-    var _dataSet = parentDatSetModel;
+    var _dataSet = parentDataSetModel;
     this.getDataSet = function() { return _dataSet; }
 
     // Optional subset IDs
@@ -64,7 +65,7 @@ class CohortModel {
           resolveIt(resolve, data.vcfData);
          },
          function(error) {
-          var msg = "A problem occurred in SampleModel.promiseSetLoadState(): " + error;
+          var msg = "A problem occurred in CohortModel.promiseSetLoadState(): " + error;
           console.log(msg);
           reject(msg);
          })
@@ -146,7 +147,7 @@ class CohortModel {
     var dataKind = CacheHelper.VCF_DATA;
     return new Promise(function(resolve, reject) {
       if (geneObject == null) {
-        reject("Empty geneObject in SampleModel.promiseGetVcfData()");
+        reject("Empty geneObject in CohortModel.promiseGetVcfData()");
       }
 
       // If only alignments have specified, but not variant files, we will need to use the
@@ -206,7 +207,7 @@ class CohortModel {
 
                },
                function(error) {
-                var msg = "Problem occurred in SampleModel.promiseGetVcfData: " + error;
+                var msg = "Problem occurred in CohortModel.promiseGetVcfData: " + error;
                 console.log(msg);
                 reject(error);
                });
@@ -240,14 +241,14 @@ class CohortModel {
                 }
                },
                function(error) {
-                var msg = "An error occurred in SampleModel.promiseGetFbData: " + error;
+                var msg = "An error occurred in CohortModel.promiseGetFbData: " + error;
                 console.log(msg);
                 reject(msg);
                })
 
              },
              function(error) {
-                var msg = "An error occurred in SampleModel.promiseGetFbData: " + error;
+                var msg = "An error occurred in CohortModel.promiseGetFbData: " + error;
                 console.log(msg);
                 reject(msg);
              });
@@ -259,7 +260,7 @@ class CohortModel {
         }
        },
        function(error) {
-        var msg = "Problem in SampleModel.promiseGetFbData(): " + error;
+        var msg = "Problem in CohortModel.promiseGetFbData(): " + error;
         console.log(msg);
         reject(msg);
        })
@@ -428,7 +429,7 @@ class CohortModel {
     return new Promise(function(resolve, reject) {
       var data = null;
       if (geneObject == null) {
-        reject("Error SampleModel.promiseGetBamData(): geneObject is null");
+        reject("Error CohortModel.promiseGetBamData(): geneObject is null");
       }
       if (me.bamData != null) {
         if (me.getBamRefName(geneObject.chr) == me.bamData.ref &&
@@ -448,7 +449,7 @@ class CohortModel {
           resolve( data ? data.coverage : null);
          },
          function(error) {
-          var msg = "An error occurred in SampleModel.promiseGetBamData(): " + error;
+          var msg = "An error occurred in CohortModel.promiseGetBamData(): " + error;
           reject(msg);
          })
       }
@@ -489,7 +490,7 @@ class CohortModel {
           resolveIt(resolve, theData.vcfData);
          },
          function(error) {
-          var msg = "Problem in SampleModel.promiseGetVariantCount(): " + error;
+          var msg = "Problem in CohortModel.promiseGetVariantCount(): " + error;
           console.log(msg);
           reject(msg);
          })
@@ -501,7 +502,7 @@ class CohortModel {
   promiseSummarizeDanger(geneName, theVcfData, options, geneCoverageAll, filterModel) {
     var me = this;
     return new Promise(function(resolve, reject) {
-      var dangerSummary = MultiSampleModel._summarizeDanger(geneName, theVcfData, options, geneCoverageAll, filterModel, me.getTranslator(), me.getAnnotationScheme());
+      var dangerSummary = CohortModel._summarizeDanger(geneName, theVcfData, options, geneCoverageAll, filterModel, me.getTranslator(), me.getAnnotationScheme());
       me.promiseCacheDangerSummary(dangerSummary, geneName).then(function() {
         resolve(dangerSummary);
       },
@@ -514,7 +515,7 @@ class CohortModel {
   promiseSummarizeError(geneName, error) {
     var me = this;
     return new Promise(function(resolve, reject) {
-      var dangerSummary = MultiSampleModel.summarizeError(error);
+      var dangerSummary = CohortModel.summarizeError(error);
       me.promiseCacheDangerSummary(dangerSummary, geneName)
        .then(function() {
         resolve(dangerSummary);
@@ -588,7 +589,7 @@ class CohortModel {
           resolve(data.fbData != null && data.fbData.features != null && data.fbData.features.length > 0);
          },
          function(error) {
-          var msg = "Problem in SampleModel.promiseHasCalledVariants(): " + error;
+          var msg = "Problem in CohortModel.promiseHasCalledVariants(): " + error;
           console.log(msg);
           reject(msg);
          })
@@ -607,7 +608,7 @@ class CohortModel {
           resolve(data.fbData != null);
          },
          function(error) {
-          var msg = "Problem in SampleModel.promiseVariantsHaveBeenCalled(): " + error;
+          var msg = "Problem in CohortModel.promiseVariantsHaveBeenCalled(): " + error;
           console.log(msg);
           reject(msg);
          });
@@ -884,7 +885,7 @@ class CohortModel {
         resolve(matchingVariant);
        },
        function(error) {
-        var msg = "A problem occurred in SampleModel.promiseGetMatchingVariant(): " + error;
+        var msg = "A problem occurred in CohortModel.promiseGetMatchingVariant(): " + error;
         console.log(msg);
         reject(msg);
        })
@@ -1156,7 +1157,7 @@ class CohortModel {
                             // return the annotated variant
                           resolve(theVariant);
                            }, function(error) {
-                            var msg = "Problem caching data in SampleModel.promiseGetVariantExtraAnnotations(): " + error;
+                            var msg = "Problem caching data in CohortModel.promiseGetVariantExtraAnnotations(): " + error;
                             console.log(msg);
                             reject(msg);
                            });
@@ -1177,7 +1178,7 @@ class CohortModel {
                   reject('Cannot find vcf record for variant ' + theGene.gene_name + " " + variant.start + " " + variant.ref + "->" + variant.alt);
                 }
               } else {
-                var msg = "Empty results returned from SampleModel.promiseGetVariantExtraAnnotations() for variant " + variant.chrom + " " + variant.start + " " + variant.ref + "->" + variant.alt;
+                var msg = "Empty results returned from CohortModel.promiseGetVariantExtraAnnotations() for variant " + variant.chrom + " " + variant.start + " " + variant.ref + "->" + variant.alt;
                 console.log(msg);
                 if (format == 'csv' || format == 'vcf') {
                   resolve([variant, variant, []]);
@@ -1246,12 +1247,12 @@ class CohortModel {
                   resolve(theVcfData.features);
                  },
                  function(error) {
-                  var msg = "Problem caching data in SampleModel.promiseGetImpactfulVariantIds(): " + error;
+                  var msg = "Problem caching data in CohortModel.promiseGetImpactfulVariantIds(): " + error;
                   console.log(msg);
                   reject(msg);
                  })
               } else {
-                var msg = "Empty results returned from SampleModel.promiseGetImpactfulVariantIds() for gene " + theGeneObject.gene_name;
+                var msg = "Empty results returned from CohortModel.promiseGetImpactfulVariantIds() for gene " + theGeneObject.gene_name;
                 console.log(msg);
                 reject(msg);
               }
@@ -1264,7 +1265,7 @@ class CohortModel {
         }
        },
        function(error) {
-        var msg = "A problem occurred in SampleModel.promiseGetImpactfulVariantIds(): " + error;
+        var msg = "A problem occurred in CohortModel.promiseGetImpactfulVariantIds(): " + error;
         console.log(msg);
         reject(msg);
        })
@@ -1557,7 +1558,7 @@ class CohortModel {
   _determineAffectedStatusImpl(theVcfData, affectedStatus, affectedInfo) {
     var me = this;
     theVcfData.features.forEach( function(variant) {
-      SampleModel._determineAffectedStatusForVariant(variant, affectedStatus, affectedInfo);
+      CohortModel._determineAffectedStatusForVariant(variant, affectedStatus, affectedInfo);
     });
   }
 
@@ -1589,7 +1590,7 @@ class CohortModel {
          })
        },
        function(error) {
-        var msg = "A problem occurred in SampleModel.promiseIsCachedAndInheritanceDetermined(): " + error;
+        var msg = "A problem occurred in CohortModel.promiseIsCachedAndInheritanceDetermined(): " + error;
         console.log(msg);
         reject(msg);
        });
@@ -1599,8 +1600,8 @@ class CohortModel {
   _getCacheKey(dataKind, geneName, transcript) {
     var me = this;
     return me.getCacheHelper().getCacheKey(
-      {relationship: this.getRelationship(),
-       sample: (this.sampleName != null ? this.sampleName : "null"),
+      {name: me.name,
+       sample: (me.sampleName != null ? me.sampleName : "null"),
        gene: (geneName != null ? geneName : gene.gene_name),
        transcript: (transcript != null ? transcript.transcript_id : "null"),
        annotationScheme: (me.getAnnotationScheme().toLowerCase()),
@@ -1823,8 +1824,8 @@ class CohortModel {
     }
 
     // Load the clinvar info for the variants loaded from the vcf
-    var sortedFeatures      = theVcfData.features.sort(SampleModel.orderVariantsByPosition);
-    var sortedAnnotVariants = annotatedVcfData.features.sort(SampleModel.orderVariantsByPosition)
+    var sortedFeatures      = theVcfData.features.sort(CohortModel.orderVariantsByPosition);
+    var sortedAnnotVariants = annotatedVcfData.features.sort(CohortModel.orderVariantsByPosition)
     loadVariantIds(sortedFeatures, sortedAnnotVariants);
   }
 
@@ -1871,7 +1872,7 @@ class CohortModel {
     }
 
     // Load the clinvar info for the variants loaded from the vcf
-    var sortedFeatures = theVcfData.features.sort(SampleModel.orderVariantsByPosition);
+    var sortedFeatures = theVcfData.features.sort(CohortModel.orderVariantsByPosition);
     loadClinvarProperties(sortedFeatures);
 
   }
@@ -1925,8 +1926,8 @@ class CohortModel {
     }
 
     // Load the clinvar info for the variants loaded from the vcf
-    var sortedFeatures = theVcfData.features.sort(SampleModel.orderVariantsByPosition);
-    var sortedClinvarVariants = clinvarVariants.sort(SampleModel.orderVariantsByPosition)
+    var sortedFeatures = theVcfData.features.sort(CohortModel.orderVariantsByPosition);
+    var sortedClinvarVariants = clinvarVariants.sort(CohortModel.orderVariantsByPosition)
     loadClinvarProperties(sortedFeatures, sortedClinvarVariants);
 
   }
@@ -2115,8 +2116,8 @@ class CohortModel {
     }
 
     // We have to order the variants in both sets before comparing
-    theVcfData.features = theVcfData.features.sort(SampleModel.orderVariantsByPosition);
-    theFbData.features  = theFbData.features.sort(SampleModel.orderVariantsByPosition);
+    theVcfData.features = theVcfData.features.sort(CohortModel.orderVariantsByPosition);
+    theFbData.features  = theFbData.features.sort(CohortModel.orderVariantsByPosition);
 
     // We will call this multiple times, so clear out any called variants from the
     // vcf data to start fresh
@@ -2160,8 +2161,8 @@ class CohortModel {
 
 
     // We have to order the variants in both sets before comparing
-    theVcfData.features = theVcfData.features.sort(SampleModel.orderVariantsByPosition);
-    theFbData.features  = theFbData.features.sort(SampleModel.orderVariantsByPosition);
+    theVcfData.features = theVcfData.features.sort(CohortModel.orderVariantsByPosition);
+    theFbData.features  = theFbData.features.sort(CohortModel.orderVariantsByPosition);
 
     // Compare the variant sets, marking the variants as unique1 (only in vcf),
     // unique2 (only in freebayes set), or common (in both sets).
@@ -2507,7 +2508,7 @@ class CohortModel {
               var annotatedRecs = data[0];
                 me.vcfData = data[1];
 
-              me.vcfData.features = me.vcfData.features.sort(SampleModel.orderVariantsByPosition);
+              me.vcfData.features = me.vcfData.features.sort(CohortModel.orderVariantsByPosition);
               me.vcfData.features.forEach( function(feature) {
                 feature[compareAttribute] = '';
               });
@@ -2529,7 +2530,7 @@ class CohortModel {
         });
 
       } else {
-        me.vcfData.features = me.vcfData.features.sort(SampleModel.orderVariantsByPosition);
+        me.vcfData.features = me.vcfData.features.sort(CohortModel.orderVariantsByPosition);
         if (compareAttribute) {
           me.vcfData.features.forEach( function(feature) {
             feature[compareAttribute] = '';
@@ -2593,12 +2594,13 @@ class CohortModel {
     return  'variant ' + d.type.toLowerCase()  +  ' '  + d.clinvar + ' colorby_' + d.clinvar;
   }
 
+  // SJG TODO: something wrong with this
   _promiseGetData(dataKind, geneName, transcript) {
     var me = this;
     return new Promise(function(resolve, reject) {
 
       if (geneName == null) {
-        var msg = "SampleModel._promiseGetData(): empty gene name";
+        var msg = "CohortModel._promiseGetData(): empty gene name";
         console.log(msg);
         reject(msg);
       } else {
@@ -2608,7 +2610,7 @@ class CohortModel {
           resolve(data);
          },
          function(error) {
-          var msg = "An error occurred in SampleModel._promiseGetData(): " + error;
+          var msg = "An error occurred in CohortModel._promiseGetData(): " + error;
           console.log(msg);
           reject(msg);
          })
@@ -2625,7 +2627,7 @@ class CohortModel {
         resolve();
        },
        function(error) {
-        CacheHelper.showError(key, error);
+        me.getCacheHelper().showError(key, error);
           genesCard.hideGeneBadgeLoading(geneName);
           genesCard.clearGeneGlyphs(geneName);
           genesCard.setGeneBadgeError(geneName);
@@ -2863,7 +2865,7 @@ CohortModel.summarizeDangerForGeneCoverage = function(dangerObject, geneCoverage
   return dangerObject;
 }
 
-MultiSampleModel.summarizeError =  function(theError) {
+CohortModel.summarizeError =  function(theError) {
   var summaryObject = {};
 
   summaryObject.CONSEQUENCE = {};
@@ -2877,7 +2879,7 @@ MultiSampleModel.summarizeError =  function(theError) {
 }
 
 
-MultiSampleModel._determineAffectedStatusForVariant = function(variant, affectedStatus, affectedInfo) {
+CohortModel._determineAffectedStatusForVariant = function(variant, affectedStatus, affectedInfo) {
   var matchesCount = 0;
   var summaryField    = affectedStatus + "_summary";
 
@@ -2905,7 +2907,7 @@ MultiSampleModel._determineAffectedStatusForVariant = function(variant, affected
   }
 }
 
-MultiSampleModel.calcMaxAlleleCount = function(theVcfData, maxAlleleCount=0) {
+CohortModel.calcMaxAlleleCount = function(theVcfData, maxAlleleCount=0) {
   if (theVcfData && theVcfData.features) {
     theVcfData.features.forEach(function(theVariant) {
       if (theVariant.genotypeDepth) {
@@ -2920,7 +2922,7 @@ MultiSampleModel.calcMaxAlleleCount = function(theVcfData, maxAlleleCount=0) {
 
 
 
-MultiSampleModel.orderVariantsByPosition = function(a, b) {
+CohortModel.orderVariantsByPosition = function(a, b) {
   var refAltA = a.ref + "->" + a.alt;
   var refAltB = b.ref + "->" + b.alt;
 
@@ -2956,7 +2958,7 @@ MultiSampleModel.orderVariantsByPosition = function(a, b) {
   }
 }
 
-MultiSampleModel.orderVcfRecords = function(rec1, rec2) {
+CohortModel.orderVcfRecords = function(rec1, rec2) {
   var fields1 = rec1.split("\t");
   var fields2 = rec2.split("\t");
 

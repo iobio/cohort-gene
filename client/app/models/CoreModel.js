@@ -9,10 +9,10 @@ class CoreModel {
     this.endpoint = endpoint;
     this.genericAnnotation = genericAnnotation;
     this.translator = translator;
-    this.geneModel = geneModel;
-    this.cacheHelper = cacheHelper;
+    this.geneModel = geneModel;       // TODO: this contains state information - take out of models
+    this.cacheHelper = cacheHelper;   // TODO: this contains state information - take out of models
     this.genomeBuildHelper = genomeBuildHelper;
-    this.filterModel = null;    // This gets set from Home on mounting
+    this.filterModel = null;    // TODO: this contains state information - take out of models
 
     // These might need to be getters that iterate through each of the data set models and take max or some combinatory fxn?
     this.inProgress = { 'loadingDataSources': false };
@@ -30,8 +30,8 @@ class CoreModel {
 
     var demoModel = new DataSetModel(self);
     demoModel.vcf = 'https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz';
-    dataSets.push(demoModel);
-    dataSetMap.push({'demo': demoModel});
+    self.dataSets.push(demoModel);
+    self.dataSetMap['demo'] = demoModel;
 
     return new Promise(function(resolve, reject) {
       demoModel.promiseInitDemo()
@@ -53,11 +53,11 @@ class CoreModel {
     var dataSetModel = new DataSetModel(self);
     dataSetModel.vcf = '';
     // TODO: if vcf is blank return error
-    dataSets.push(dataSetModel);
-    dataSetMap.push({dataSetName: dataSetModel});
+    self.dataSets.push(dataSetModel);
+    self.dataSetMap[dataSetName] = dataSetModel;
 
     return new Promise(function(resolve, reject) {
-      dataSetModel.promiseInit(dataSetName)
+      self.dataSetModel.promiseInit(dataSetName)
       .then(function() {
         resolve();
       })
@@ -72,13 +72,14 @@ class CoreModel {
   promiseLoadData(gene, transcript, options) {
     let self = this;
 
+    debugger;
     return new Promise(function(resolve, reject) {
       let promises = [];
 
-      if (!dataSets) {
+      if (!self.dataSets) {
         resolve();
       }
-      dataSets.forEach(function(dataSet) {
+      self.dataSets.forEach(function(dataSet) {
           promises.push(dataSet.promiseLoadData(gene, transcript, options));
       })
 
@@ -93,10 +94,10 @@ class CoreModel {
     });
   }
 
-  setLoadedVariants(gene, relationship = null) {
+  setLoadedVariants(gene, name = null) {
     let self = this;
 
-    dataSets.forEach(function(dataSet) {
+    self.dataSets.forEach(function(dataSet) {
       dataSet.setLoadedVariants();
     })
   }
@@ -104,4 +105,14 @@ class CoreModel {
   setCoverage(regionStart, regionEnd) {
     // TODO: implement once BAMs incorporated
   }
+
+  clearLoadedData() {
+    let self = this;
+    self.dataSets.forEach(function(dataSet) {
+      dataSet.clearLoadedData();
+    })
+  }
+
 }
+
+export default CoreModel;

@@ -34,50 +34,18 @@ TODO: refactor this to match new back end - namely get rid of SfariModel refs
 
 
 <template>
-  <v-card tile id="sfari-variant-card" class="app-card">
-    <v-card-title primary-title>SFARI VARIANTS
+  <v-card tile id="variant-card" class="app-card">
+    <v-card-title primary-title>VARIANT CARD
       <div style="width:100%">
-        <!-- <div style="text-align: center; clear: both;">
-          <div class="loader vcfloader" v-bind:class="{ hide: !sfariModel.inProgress.loadingVariants }" style="display: inline-block;">
-            <span class="loader-label">Annotating variants</span>
-            <img src="../../../assets/images/wheel.gif">
-          </div>
-          <div class="loader fbloader" v-bind:class="{ hide: !sfariModel.inProgress.callingVariants }" style="display: inline-block;padding-left: 20px;">
-            <span class="loader-label">Calling variants</span>
-            <img src="../../../assets/images/wheel.gif">
-          </div>
-          <div class="loader covloader" v-bind:class="{ hide: !sfariModel.inProgress.loadingCoverage }"style="display: inline-block;padding-left: 20px;">
-            <span class="loader-label">Analyzing gene coverage</span>
-            <img src="../../../assets/images/wheel.gif">
-          </div>
-        </div> -->
 
         <!-- SJG TODO: what is the known-variants-toolbar and do I need it? -->
 
         <variant-viz id="all-sfari-variant-viz"
-          v-if="showAllSfariVariantViz",
-          ref="allSfariVariantVizRef"
-          :data="sfariModel.loadedVariants"
-          :regionStart="regionStart"
-          :regionEnd="regionEnd"
-          :annotationScheme="annotationScheme"
-          :width="width"
-          :margin="variantVizMargin"
-          :variantHeight="variantSymbolHeight"
-          :variantPadding="variantSymbolPadding"
-          :showBrush="false"
-          :showXAxis="true"
-          :classifySymbolFunc="classifyVariantSymbolFunc"
-          @variantClick="onVariantClick"
-          @variantHover="onVariantHover"
-          @variantHoverEnd="onVariantHoverEnd">
-          >
-        </variant-viz>
-
-        <variant-viz id="subset-sfari-variant-viz"
-          v-if="showSubsetSfariVariantViz",
-          ref="subsetSfariVariantVizRef"
-          :data="sfariModel.loadedSubsetSfariVariants"
+          v-if="showVariantViz"
+          v-for="cohort in cohorts"
+          :key="cohort.name"
+          ref="variantVizRef"
+          :data="cohort.loadedVariants"
           :regionStart="regionStart"
           :regionEnd="regionEnd"
           :annotationScheme="annotationScheme"
@@ -137,12 +105,10 @@ export default {
     regionStart: 0,
     regionEnd: 0,
     width: 0,
-    showAllVariantViz: true,
-    showSubsetVariantViz: true,
+    showVariantViz: true,
     showGeneViz: true
     // TODO: if I add bam stuff, add showDepthViz: true
   },
-  // TODO: ignoring simplified Edu interface variables for now
   data() {
     return {
       margin: {
@@ -294,12 +260,16 @@ export default {
   computed: {
     depthVizHeight: function() {
       this.showDepthViz ? 0 : 60;
+    },
+    cohorts: function() {
+      return this.dataSetModel.cohorts;
     }
   },
   watch: {
   },
   mounted: function() {
-    this.name = this.sfariModel.name;
+    this.name = this.dataSetModel.name;
+
   },
   created: function() {
     this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;

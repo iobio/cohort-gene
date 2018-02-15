@@ -9,6 +9,12 @@ class DataSetModel {
     this.cohorts = [];    // List of cohort models
     this.cohortMap = {};  // Maps cohort models to names
 
+    this.genesInProgress = [];
+
+    this.inProgress = {
+      'loadingDataSources': false
+    };
+
     // Private access to core
     var _core = parentCore;
     this.getCore = function() { return _core; }
@@ -16,6 +22,10 @@ class DataSetModel {
 
   getMainCohort() {
     return this.cohorts[0];
+  }
+
+  getCohort(name) {
+    return this.cohortMap[name];
   }
 
   getEndpoint() {
@@ -54,17 +64,25 @@ class DataSetModel {
   promiseInitDemo() {
     let self = this;
 
+    // Set status
+    self.isLoaded = false;
+    self.inProgress.loadingDataSources = true;
+
     var allSampleModel = new CohortModel(self);
+    allSampleModel.name = 'demo_all';
     self.cohorts.push(allSampleModel);
-    self.cohortMap.push({'demo_all': allSampleModel});
+    self.cohortMap[allSampleModel.name] = allSampleModel;
 
     var subsetModel = new CohortModel(self);
+    subsetModel.name = 'demo_subset';
+    subsetModel.subsetIds.push('');
+    subsetModel.subsetPhenotypes.push('Test Phenotype');
     self.cohorts.push(subsetModel);
-    self.cohortMap.push({'demo_subset': subsetModel});
+    self.cohortMap[subsetModel.name] = subsetModel;
 
     return new Promise(function(resolve, reject) {
       let promises = [];
-      cohorts.forEach(function(cohort) {
+      self.cohorts.forEach(function(cohort) {
         promises.push(self.promiseAddSamples(cohort));
       })
 
@@ -75,7 +93,7 @@ class DataSetModel {
           resolve();
         })
         .catch(function(error) {
-          console.log("There was a problem in data set model promiseInitDemo: " + error);
+          console.log("There was a problem in dataSetModel.promiseInitDemo: " + error);
           reject(error);
         })
     });
@@ -91,9 +109,10 @@ class DataSetModel {
 
     // Add cohort model for entire data set
     var cohortAllModel = new CohortModel(self);
-    var cohortAllName = dataSetName ? (dataSetName + '_all' : 'data_all');
+    var cohortAllName = dataSetName ? (dataSetName + '_all') : 'data_all';
+    cohortAllModel.name = cohortAllName;
     self.cohorts.push(cohortAllModel);
-    self.cohortMap.push({cohortAllName: cohortAllModel});
+    self.cohortMap[cohortAllName] = cohortAllModel;
 
     // Return promise to pull out subset cohort(s) and load samples
     return new Promise(function(resolve, reject) {
@@ -107,13 +126,14 @@ class DataSetModel {
               var cohortSubsetModel = new CohortModel(self);
               cohortSubsetModel.subsetPhenotypes = key;
               cohortSubsetModel.subsetIds = value;
-              var cohortSubsetName = dataSetName ? (dataSetName + '_subset' : 'data_subset');
+              var cohortSubsetName = dataSetName ? (dataSetName + '_subset') : 'data_subset';
+              cohortSubsetModel.name = cohortSubsetName;
               self.cohorts.push(cohortSubsetModel);
-              self.cohortMap.push({cohortSubsetName: cohortSubsetModel});
+              self.cohortMap[cohortSubsetName] = cohortSubsetModel;
             });
           }
           // Load samples for each cohort model
-          cohorts.forEach(function(cohort) {
+          self.cohorts.forEach(function(cohort) {
             promises.push(self.promiseAddSamples(cohort));
           })
         })
@@ -144,7 +164,7 @@ class DataSetModel {
       if (self.vcf) {
         vcfPromise = new Promise(function(vcfResolve, vcfReject) {
           // SJG TODO: 2nd param previously modelInfo.tbi but not assigned anywhere
-          vm.onVcfUrlEntered(sampleVcf, null, function() {
+          vm.onVcfUrlEntered(self.vcf, null, function() {
             vcfResolve();
           })
         },
@@ -155,22 +175,22 @@ class DataSetModel {
         vcfPromise = Promise.resolve();
       }
 
-      var bamPromise = null;
-      if (self.bams) {
-        bamPromise = new Promise(function(bamResolve, bamReject) {
-          // SJG TODO: 2nd param previously modelInfo.bai but not assigned anywhere
-          vm.onBamUrlEntered(sampleBam, null, function() {
-            bamResolve();
-          })
-        },
-        function(error) {
-          bamReject(error);
-        });
-      } else {
-        bamPromise = Promise.resolve();
-      }
+      // var bamPromise = null;
+      // if (self.bams && self.bams.length > 0) {
+      //   bamPromise = new Promise(function(bamResolve, bamReject) {
+      //     // SJG TODO: 2nd param previously modelInfo.bai but not assigned anywhere
+      //     vm.onBamUrlEntered(self.bams, null, function() {
+      //       bamResolve();
+      //     })
+      //   },
+      //   function(error) {
+      //     bamReject(error);
+      //   });
+      // } else {
+      //   bamPromise = Promise.resolve();
+      // }
 
-      Promise.all([vcfPromise, bamPromise])
+      Promise.all([vcfPromise/*, bamPromise*/])
       .then(function() {
         resolve();
       })
@@ -246,11 +266,11 @@ class DataSetModel {
       var theResultMap = {};
 
       // Annotate variants for every cohort model
-        cohorts.forEach(function(cohortModel) {
+        self.cohorts.forEach(function(cohortModel) {
           cohortModel.inProgress.loadingVariants = true;
           if (cohortModel.isVcfReadyToLoad() || cohortModel.isLoaded()) {
             var p = cohortModel.promiseAnnotateVariants(theGene, theTranscript, true, isBackground)
-              .then(function(resultMap) {
+              .then(function(resultMap) { // TODO: what format does resultMap have?
                 cohortModel.inProgress.loadingVariants = false;
                 for (var track in resultMap) {
                   theResultMap[track] = resultMap[track];
@@ -262,12 +282,111 @@ class DataSetModel {
 
         Promise.all(annotatePromises)
           .then(function() {
-              resolve(data)
+            self.promiseAnnotateWithClinvar(theResultMap, theGene, theTranscript, isBackground)
+            resolve(data);
           })
           .catch(function(error) {
-            console.log("There was a problem in data set promiseAnnotateVariants: " + error);
+            console.log("There was a problem in DataSetModel promiseAnnotateVariants: " + error);
           });
     });
+  }
+
+  promiseAnnotateWithClinvar(resultMap, geneObject, transcript, isBackground) {
+    let self = this;
+    var formatClinvarKey = function(variant) {
+      var delim = '^^';
+      return variant.chrom + delim + variant.ref + delim + variant.alt + delim + variant.start + delim + variant.end;
+    }
+
+    var formatClinvarThinVariant = function(key) {
+      var delim = '^^';
+      var tokens = key.split(delim);
+      return {'chrom': tokens[0], 'ref': tokens[1], 'alt': tokens[2], 'start': tokens[3], 'end': tokens[4]};
+    }
+
+    var refreshVariantsWithClinvarLookup = function(theVcfData, clinvarLookup) {
+      theVcfData.features.forEach(function(variant) {
+        var clinvarAnnot = clinvarLookup[formatClinvarKey(variant)];
+        if (clinvarAnnot) {
+          for (var key in clinvarAnnot) {
+            variant[key] = clinvarAnnot[key];
+          }
+        }
+      })
+      if (theVcfData.loadState == null) {
+        theVcfData.loadState = {};
+      }
+      theVcfData.loadState['clinvar'] = true;
+    }
+
+    return new Promise(function(resolve, reject) {
+      // Combine the trio variants into one set of variants so that we can access clinvar once
+      // instead of on a per sample basis
+      var uniqueVariants = {};
+      var unionVcfData = {features: []}
+      for (var rel in resultMap) {
+        var vcfData = resultMap[rel];
+        if (!vcfData.loadState['clinvar'] && rel != 'known-variants') {
+         vcfData.features.forEach(function(feature) {
+            uniqueVariants[formatClinvarKey(feature)] = true;
+         })
+        }
+      }
+      if (Object.keys(uniqueVariants).length == 0) {
+        resolve(resultMap);
+      } else {
+
+        for (var key in uniqueVariants) {
+          unionVcfData.features.push(formatClinvarThinVariant(key));
+        }
+
+        var refreshVariantsFunction = isClinvarOffline || clinvarSource == 'vcf'
+          ? self.getMainCohort()._refreshVariantsWithClinvarVCFRecs.bind(self.getMainCohort(), unionVcfData)
+          : self.getMainCohort()._refreshVariantsWithClinvarEutils.bind(self.getMainCohort(), unionVcfData);
+
+        self.getMainCohort().vcf.promiseGetClinvarRecords(
+            unionVcfData,
+            self.getMainCohort()._stripRefName(geneObject.chr),
+            geneObject,
+            self.getGeneModel().clinvarGenes,
+            refreshVariantsFunction)
+        .then(function() {
+            // Create a hash lookup of all clinvar variants
+            var clinvarLookup = {};
+            unionVcfData.features.forEach(function(variant) {
+              var clinvarAnnot = {};
+
+              for (var key in self.getMainCohort().vcf.getClinvarAnnots()) {
+                  clinvarAnnot[key] = variant[key];
+                  clinvarLookup[formatClinvarKey(variant)] = clinvarAnnot;
+              }
+            })
+
+            var refreshPromises = [];
+
+            // Use the clinvar variant lookup to initialize variants with clinvar annotations
+            for (var cohort in resultMap) {
+              var vcfData = resultMap[cohort];
+              if (!vcfData.loadState['clinvar']) {
+                var p = refreshVariantsWithClinvarLookup(vcfData, clinvarLookup);
+                if (!isBackground) {
+                  self.getCohort(cohort).vcfData = vcfData;
+                }
+                //var p = getVariantCard(rel).model._promiseCacheData(vcfData, CacheHelper.VCF_DATA, vcfData.gene.gene_name, vcfData.transcript);
+                refreshPromises.push(p);
+              }
+            }
+
+            Promise.all(refreshPromises)
+            .then(function() {
+              resolve(resultMap);
+            })
+            .catch(function(error) {
+              reject(error);
+            })
+        })
+      }
+    })
   }
 
   promiseSummarizeError(error) {
@@ -401,6 +520,20 @@ class DataSetModel {
     })
   }
 
+  startGeneProgress(geneName) {
+    var idx = this.genesInProgress.indexOf(geneName);
+    if (idx < 0) {
+      this.genesInProgress.push(geneName);
+    }
+  }
+
+  endGeneProgress(geneName) {
+    var idx = this.genesInProgress.indexOf(geneName);
+    if (idx >= 0) {
+      this.genesInProgress.splice(idx,1);
+    }
+  }
+
   /*** HELPERS ***/
   /* Returns true if model contains only bam data, and not vcf */
   isAlignmentsOnly(callback) {
@@ -419,4 +552,4 @@ class DataSetModel {
   }
 }
 
-export default CohortModel;
+//export default DataSetModel;

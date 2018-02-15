@@ -16,7 +16,6 @@ Note: all CohortModel refs changed to CoreModel
     <v-container fluid>
       <!-- TODO: do I need data-sources-loader -->
 
-      <!-- TODO: bind model w/ summary logic -->
       <variant-summary-card
         :effect="effect"
         :impact="impact"
@@ -24,15 +23,14 @@ Note: all CohortModel refs changed to CoreModel
         :sift="sift"
         :polyPhen="polyPhen"
       ></variant-summary-card>
-      <br>
-      <br>
+
       <variant-card
         ref="variantCardRef"
-        v-for="model in dataSetModels"
-        :key="model.name"
+        v-for="dataSet in dataSets"
+        :key="dataSet.name"
         v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !coreModel  || coreModel.inProgress.loadingDataSources }"
-        :dataSetModel="model"
-        :classifyVariantSymbolFunc="model.classifyByImpact"
+        :dataSetModel="dataSet"
+        :classifyVariantSymbolFunc="dataSet.classifyByImpact"
         :variantTooltip="variantTooltip"
         :selectedGene="selectedGene"
         :selectedTranscript="selectedTranscript"
@@ -40,7 +38,7 @@ Note: all CohortModel refs changed to CoreModel
         :regionStart="geneRegionStart"
         :regionEnd="geneRegionEnd"
         :width="cardWidth"
-        :showGeneViz="true"
+        :showGeneViz="false"
         :showVariantViz="true"
         @dataSetVariantClick="onDataSetVariantClick"
         @dataSetVariantClickEnd="onDataSetVariantClickEnd"
@@ -62,7 +60,8 @@ import VariantCard from  '../viz/VariantCard.vue'
 import VariantSummaryCard from '../viz/VariantSummaryCard.vue'
 
 // Back-end models
-import CoreModel      from '../../models/CoreModel.js'
+import CoreModel        from '../../models/CoreModel.js'
+import DataSetModel     from '../../models/DataSetModel.js'
 import GeneModel        from '../../models/GeneModel.js'
 import FilterModel      from '../../models/FilterModel.js'
 
@@ -76,27 +75,7 @@ export default {
     VariantSummaryCard,
     VariantCard
   },
-  props: {
-    paramGene:             null,
-    paramGenes:            null,
-    paramSpecies:          null,
-    paramBuild:            null,
-    paramBatchSize:        null,
-    paramGeneSource:       null,
-    paramMyGene2:          null,
-    paramMode:             null,
-    paramAffectedSibs:     null,
-    paramUnaffectedSibs:   null,
-
-    paramRelationships:    null,
-    paramSamples:          null,
-    paramNames:            null,
-    paramBams:             null,
-    paramBais:             null,
-    paramVcfs:             null,
-    paramTbis:             null,
-    paramAffectedStatuses: null
-  },
+  props: {},
   data() {
     return {
       greeting: 'cohort-gene.iobio.vue',
@@ -105,10 +84,11 @@ export default {
       geneRegionBuffer: 1000,
       geneRegionStart: null,
       geneRegionEnd: null,
+
       allGenes: allGenesData,
 
       coreModel: null,
-      dataSetModels: [],
+      dataSets: [],
       //featureMatrixModel: null,   // TODO: get this working or take it out
       geneModel: null,
       bookmarkModel: null,
@@ -121,8 +101,6 @@ export default {
       cardWidth: 0,
       showClinvarVariants: false,
       activeBookmarksDrawer: null,
-
-      // SJG new additions for variant summary card
       effect: null,
       impact: null,
       clinVar: null,
@@ -187,13 +165,11 @@ export default {
         self.genomeBuildHelper);
     })
     .then(function() {
-      self.dataSetModels = self.coreModel.dataSetModels;
-      self.filterModel = new FilterModel(self.dataSetModel.affectedInfo);
-      self.dataSetModel.filterModel = self.filterModel;
+      self.dataSets = self.coreModel.dataSets;
+      self.filterModel = new FilterModel(self.coreModel.affectedInfo);
+      self.coreModel.filterModel = self.filterModel;
 
-      self.onLoadDemoData();  // TODO: does this work?
-      // TODO: comment back in after demo working - will have to move sfari model assignmebts below as well
-      //self.initFromUrl();
+      self.initFromUrl();
     },
     function(error) {
     })
@@ -224,10 +200,11 @@ export default {
     onLoadDemoData: function() {
       let self = this;
       self.geneModel.copyPasteGenes(self.coreModel.demoGenes.join(", "));
+      // SJG TODO: param going into here is not formatted correctly
       self.onGeneSelected(self.coreModel.demoGenes[0]);
       self.coreModel.promiseInitDemo()
       .then(function() {
-        self.dataModels = self.coreModel.dataSetModels;
+        self.dataSets = self.coreModel.dataSets;
         if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
           self.promiseLoadData();
         }
@@ -235,9 +212,9 @@ export default {
     },
     promiseLoadData: function() {
       let self = this;
-
+      debugger;
       return new Promise(function(resolve, reject) {
-        if (self.dataModels && self.dataModels.length > 0) {
+        if (self.dataSets && self.dataSets.length > 0) {
           //self.featureMatrixModel.inProgress.loadingVariants = true;
           var options = {'getKnownVariants': self.showClinvarVariants};
 
@@ -246,12 +223,8 @@ export default {
             self.filterModel,
             options)
           .then(function(resultMap) {
-              //self.featureMatrixModel.inProgress.loadingVariants = false;
-              //self.featureMatrixModel.promiseRankVariants(self.cohortModel.sfariSamplesModel.loadedVariants);
-              //self.filterModel.populateEffectFilters(resultMap);
-              //self.filterModel.populateRecFilters(resultMap);
-              //var bp = me._promiseDetermineVariantBookmarks(vcfData, theGene, theTranscript);
-              //bookmarkPromises.push(bp);
+            // self.filterModel.populateEffectFilters(resultMap);
+            // self.filterModel.populateRecFilters(resultMap);
               resolve();
           })
           .catch(function(error) {
@@ -262,21 +235,40 @@ export default {
         }
       })
     },
-    onGeneSelected: function(geneObject) {
+    onGeneSelected: function(geneName) {
       var self = this;
 
-      self.geneModel.addGeneName(geneObject.gene_name);
-      self.geneModel.promiseGetGeneObject(geneObject.gene_name)
+      self.deselectVariant();
+      self.promiseLoadGene(geneName);
+    },
+    promiseLoadGene: function(geneName) {
+      let self = this;
+
+      return new Promise(function(resolve, reject) {
+        if (self.coreModel) {
+          self.coreModel.clearLoadedData();
+        }
+        if (self.featureMatrixModel) {
+          self.featureMatrixModel.clearRankedVariants();
+        }
+
+        self.geneModel.addGeneName(geneName);
+        self.geneModel.promiseGetGeneObject(geneName)
         .then(function(theGeneObject) {
-          self.geneModel.adjustGeneRegion(theGeneObject, parseInt(self.geneRegionBuffer));
+          self.geneModel.adjustGeneRegion(theGeneObject);
+          self.geneRegionStart = theGeneObject.start;
+          self.geneRegionEnd   = theGeneObject.end;
           self.selectedGene = theGeneObject;
-          self.geneRegionStart = self.selectedGene.start;
-          self.geneRegionEnd = self.selectedGene.end;
           self.selectedTranscript = self.geneModel.getCanonicalTranscript(self.selectedGene);
           self.promiseLoadData()
-            .then(function() {
-            })
+          .then(function() {
+            resolve();
+          })
         })
+        .catch(function(error) {
+          reject(error);
+        })
+      })
     },
     onTranscriptSelected: function(transcript) {
       var self = this;
@@ -453,15 +445,6 @@ export default {
     initFromUrl: function() {
       let self = this;
 
-      if ( self.paramMygene2 && self.paramMygene2 != "" ) {
-        isMygene2   = self.paramMygene2 == "false" || self.paramMygene2.toUpperCase() == "N" ? false : true;
-      }
-      if (self.paramMode && self.paramMode != "") {
-        isLevelBasic     = self.paramMode == "basic" ? true : false;
-        isLevelEdu       = (self.paramMode == "edu" || self.paramMode == "edutour") ? true : false;
-      }
-
-
       if (self.paramGeneSource) {
         self.geneModel.geneSource = self.paramGeneSource;
       }
@@ -484,7 +467,7 @@ export default {
         DEFAULT_BATCH_SIZE = self.paramBatchSize;
       }
 
-      var modelInfos = [];
+      /*var modelInfos = [];
       for (var i = 0; i < self.paramRelationships.length; i++) {
         var rel  = self.paramRelationships[i];
         if (rel) {
@@ -498,15 +481,21 @@ export default {
           modelInfo.affectedStatus = self.paramAffectedStatuses[i];
           modelInfos.push(modelInfo);
         }
-      }
-      self.coreModel.promiseInit()
+      } */
+      // TODO: have to incorporate front end modelInfo somehow
+      // TODO: comment promiseInit() back in once front end stuff incorporated
+      //self.coreModel.promiseInit()
+      self.coreModel.promiseInitDemo()
         .then(function() {
-          self.dataSetModels = self.coreModel.dataSets;
+          // I already bound this above, shouldn't need to do it again?
+          //self.dataSets = self.coreModel.dataSets;
           if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
-            self.promiseLoadData();
+            self.promiseLoadData()
+            .then(function() {
+            })
           }
         });
-    },
+    }
     // onBookmarkVariant(variant) {
     //   this.$refs.navRef.onBookmarks();
     //   this.bookmarkModel.addBookmark(variant, this.selectedGene);

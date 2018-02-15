@@ -11,7 +11,7 @@
 //
 vcfiobio = function module() {
 
-  var debug =  false;
+  var debug =  true;
   var exports = {};
   var dispatch = d3.dispatch( 'dataReady', 'dataLoading');
 
@@ -214,7 +214,6 @@ var effectCategories = [
 
 
   exports.checkVcfUrl = function(url, tbiUrl, callback) {
-    debugger;
     var me = this;
     var success = null;
     var buffer = "";
@@ -223,7 +222,6 @@ var effectCategories = [
     var cmd = endpoint.getVcfHeader(url, tbiUrl);
 
     cmd.on('data', function(data) {
-      debugger;
       if (data != undefined) {
         success = true;
         buffer += data;
@@ -945,14 +943,11 @@ var effectCategories = [
 
   exports._getRemoteSampleNames = function(callback) {
     var me = this;
-    debugger;
     var cmd = endpoint.getVcfHeader(vcfURL, tbiUrl);
-
 
     var headerData = "";
     // Use Results
     cmd.on('data', function(data) {
-         debugger;
          if (data == undefined) {
             return;
          }
@@ -960,7 +955,6 @@ var effectCategories = [
     });
 
     cmd.on('end', function(data) {
-        debugger;
         var headerRecords = headerData.split("\n");
          headerRecords.forEach(function(headerRec) {
               if (headerRec.indexOf("#CHROM") == 0) {
@@ -2388,7 +2382,7 @@ exports._getServerCacheKey = function(vcfName, service, refName, geneObject, sam
   var me = this;
 
   var key =  "backend.gene.iobio"
-    + "-" + cacheHelper.launchTimestamp
+  //  + "-" + cacheHelper.launchTimestamp
     + "-" + vcfName
     + "-" + service
     + "-" + refName
