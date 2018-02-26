@@ -1085,7 +1085,7 @@ class CohortModel {
                theTranscript,
                null,   // regions
                true,  // is multi-sample
-               me._getSamplesToRetrieve(),  // sample names
+               me._getSamplesToRetrieve(),
                me.getAnnotationScheme().toLowerCase(), // annot scheme
                me.getTranslator().clinvarMap,  // clinvar map
                me.getGeneModel().geneSource == 'refseq' ? true : false,
@@ -1449,17 +1449,16 @@ class CohortModel {
 
           // We don't have the variants for the gene in cache,
           // so call the iobio services to retreive the variants for the gene region
-          // and annotate them.
+          // and annotate them._get
           me._promiseVcfRefName(theGene.chr)
           .then( function() {
-            // TODO: do we get in here? YES
             return me.vcf.promiseGetVariants(
                me.getVcfRefName(theGene.chr),
                theGene,
                theTranscript,
                null,   // regions
                isMultiSample, // is multi-sample
-               me._getSamplesToRetrieve(),
+               me._getSubsetSamples(),    // TODO: changed from _getSamplesToRetrieve()
                me.getName() == 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
                me.getTranslator().clinvarMap,
                me.getGeneModel().geneSource == 'refseq' ? true : false,
@@ -1755,6 +1754,17 @@ class CohortModel {
     var me = this;
     var key = me._getCacheKey(dataKind, geneName, transcript, cacheHelper);
     me.getCacheHelper().promiseRemoveCacheItem(dataKind, key);
+  }
+
+  _getSubsetSamples() {
+    var me = this;
+    var subsetSamples = [];
+
+    me.subsetIds.forEach(function (id) {
+      subsetSamples.push( {vcfSampleName: id, sampleName: me.getSampleName()} );
+    })
+    
+    return subsetSamples;
   }
 
   _getSamplesToRetrieve() {

@@ -80,7 +80,7 @@ EndpointCmd.prototype.annotateVariants = function(vcfSource, refName, regions, v
     return null;
   }
 
-
+  debugger;
   if (vcfSampleNames && vcfSampleNames.length > 0) {
     var sampleNameFile = new Blob([vcfSampleNames.split(",").join("\n")])
     cmd = cmd.pipe(me.IOBIO.vt, ["subset", "-s", sampleNameFile, '-'], {ssl: me.useSSL})

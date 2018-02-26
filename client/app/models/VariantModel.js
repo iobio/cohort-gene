@@ -55,8 +55,9 @@ class VariantModel {
 
     var subsetModel = new CohortModel(self);
     subsetModel.name = 'demo_subset';
-    subsetModel.subsetIds.push('NA12877');
-    subsetModel.subsetIds.push('NA12878');
+    // Ids for platinum are NA12877, NA12878, NA12891, NA12892
+    subsetModel.subsetIds.push('NA12891');
+    subsetModel.subsetIds.push('NA12892');
     subsetModel.subsetPhenotypes.push('Test Phenotype');
     demoDataSet.cohorts.push(subsetModel);
     demoDataSet.cohortMap[subsetModel.name] = subsetModel;
@@ -150,7 +151,6 @@ class VariantModel {
         var dataSetResultMap = null;
         let p1 = self.promiseLoadVariants(theGene, theTranscript, options)
         .then(function(data) {
-          // SJG never hitting this
           dataSetResultMap = data.resultMap;
           self.setLoadedVariants(data.gene);
         })
@@ -298,19 +298,17 @@ class VariantModel {
           if (Object.keys(dataSet.cohorts).length > 0) {
             dataSet.cohorts.forEach(function(cohortModel) {
               cohortModel.inProgress.loadingVariants = true;
-            })
-            var p = dataSet.cohorts[0].promiseAnnotateVariants(theGene,
-                theTranscript, dataSet.cohorts,
-                true, isBackground, self.cacheHelper)
-              .then(function(resultMap) {
-                dataSet.cohorts.forEach(function(cohortModel) {
+              var p = cohortModel.promiseAnnotateVariants(theGene,
+                  theTranscript, [cohortModel],
+                  true, isBackground, self.cacheHelper)
+                .then(function(resultMap) {
                   cohortModel.inProgress.loadingVariants = false;
-                })
-                theResultMap = resultMap;
-              })
+                  theResultMap = resultMap;
+                  })
               annotatePromises.push(p)
-            }
-          })
+            })
+          }
+        })
 
         if (options.getKnownVariants) {
           self.getModel('known-variants').inProgress.loadingVariants = true;
@@ -370,9 +368,9 @@ class VariantModel {
       // instead of on a per sample basis
       var uniqueVariants = {};
       var unionVcfData = {features: []}
-      for (var rel in resultMap) {
-        var vcfData = resultMap[rel];
-        if (!vcfData.loadState['clinvar'] && rel != 'known-variants') {
+      for (var cohort in resultMap) {
+        var vcfData = resultMap[cohort];
+        if (!vcfData.loadState['clinvar'] && cohort != 'known-variants') {
          vcfData.features.forEach(function(feature) {
             uniqueVariants[formatClinvarKey(feature)] = true;
          })
@@ -411,11 +409,13 @@ class VariantModel {
             var refreshPromises = [];
 
             // Use the clinvar variant lookup to initialize variants with clinvar annotations
+            // TODO: this only has demo_all in it here
             for (var cohort in resultMap) {
               var vcfData = resultMap[cohort];
               if (!vcfData.loadState['clinvar']) {
                 var p = refreshVariantsWithClinvarLookup(vcfData, clinvarLookup);
                 if (!isBackground) {
+                  // SJG2 - this is where vcfData gets set
                   self.getCohort(cohort).vcfData = vcfData;
                 }
                 //var p = getVariantCard(rel).model._promiseCacheData(vcfData, CacheHelper.VCF_DATA, vcfData.gene.gene_name, vcfData.transcript);

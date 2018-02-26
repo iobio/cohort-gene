@@ -178,10 +178,9 @@ export default {
         var polyphen = "";
         var regulatory = "";
 
-        var annotationScheme = this.annotationScheme;
-        var effectList = (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.effect : d.vepConsequence);
+        var effectList = (this.annotationScheme == null || this.annotationScheme.toLowerCase() == 'snpeff' ? d.effect : d.vepConsequence);
         for (var key in effectList) {
-          if (annotationScheme.toLowerCase() == 'vep' && key.indexOf("&") > 0) {
+          if (this.annotationScheme.toLowerCase() == 'vep' && key.indexOf("&") > 0) {
               var tokens = key.split("&");
               tokens.forEach( function(token) {
               effects += " " + token;
@@ -191,11 +190,11 @@ export default {
               effects += " " + key;
             }
           }
-          var impactList =  (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_FILTER]);
+          var impactList =  (this.annotationScheme == null || this.annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_FILTER]);
           for (var key in impactList) {
             impacts += " " + key;
           }
-          var colorImpactList =  (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_COLOR]);
+          var colorImpactList =  (this.annotationScheme == null || this.annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_COLOR]);
           for (var key in colorImpactList) {
             colorimpacts += " " + 'impact_'+key;
           }

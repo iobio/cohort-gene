@@ -362,7 +362,6 @@ var effectCategories = [
     return str.indexOf(suffix, str.length - suffix.length) !== -1;
   }
 
-  // TODO: this has no point of call?
   exports.setSamples = function(sampleNames) {
     samples = sampleNames;
   }
@@ -589,7 +588,6 @@ var effectCategories = [
     selectedTranscript, regions, isMultiSample, samplesToRetrieve,
     annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache) {
     var me = this;
-
     return new Promise( function(resolve, reject) {
 
       // This comma separated string of samples to perform vcf subset on
@@ -602,6 +600,7 @@ var effectCategories = [
       .join(",");
 
       // This comma separated string of samples to be contained in the maps of genotypes
+      debugger;
       var sampleNamesToGenotype = samplesToRetrieve.map(function(sample) {
         return sample.sampleName;
       })
@@ -609,6 +608,7 @@ var effectCategories = [
 
 
       if (sourceType == SOURCE_TYPE_URL) {
+        debugger;
         me._getRemoteVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
           function(annotatedData, results) {
             if (annotatedData && results) {
@@ -702,7 +702,7 @@ var effectCategories = [
      useServerCache, callback, errorCallback) {
 
     var me = this;
-
+    debugger;
     if (regions == null || regions.length == 0) {
       regions = [];
       regions.push({'name': refName, 'start': geneObject.start, 'end': geneObject.end});
