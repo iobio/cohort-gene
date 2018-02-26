@@ -178,6 +178,7 @@ export default {
         var polyphen = "";
         var regulatory = "";
 
+        var annotationScheme = this.annotationScheme;
         var effectList = (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.effect : d.vepConsequence);
         for (var key in effectList) {
           if (annotationScheme.toLowerCase() == 'vep' && key.indexOf("&") > 0) {
