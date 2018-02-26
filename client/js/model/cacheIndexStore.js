@@ -1,7 +1,7 @@
 function CacheIndexStore() {
   this.db = null;
   this.version = 3;
-  this.app = "gene.iobio";
+  this.app = "cohort-gene.iobio";
   this.objectStores = {'vcfData': null, 'fbData' : null, 'dangerSummary': null, 'geneCoverage': null, 'bamData': null};
 }
 

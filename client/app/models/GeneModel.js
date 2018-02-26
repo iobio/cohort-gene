@@ -822,11 +822,6 @@ class GeneModel {
     } else if (geneCoverageProblem2) {
       return 1;
     }
-
   }
-
 }
-
-
-
-export default GeneModel
+export default GeneModel;

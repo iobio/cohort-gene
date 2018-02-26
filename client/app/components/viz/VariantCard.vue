@@ -40,7 +40,7 @@ TODO: refactor this to match new back end - namely get rid of SfariModel refs
 
         <!-- SJG TODO: what is the known-variants-toolbar and do I need it? -->
 
-        <variant-viz id="all-sfari-variant-viz"
+        <variant-viz id="all-variant-viz"
           v-if="showVariantViz"
           v-for="cohort in cohorts"
           :key="cohort.name"
@@ -62,20 +62,6 @@ TODO: refactor this to match new back end - namely get rid of SfariModel refs
           >
         </variant-viz>
 
-        <gene-viz id="gene-viz"
-          v-bind:class="{ hide: !showGeneViz }"
-          :data="[selectedTranscript]"
-          :margin="geneVizMargin"
-          :width="width"
-          :height="40"
-          :trackHeight="geneVizTrackHeight"
-          :cdsHeight="geneVizCdsHeight"
-          :regionStart="regionStart"
-          :regionEnd="regionEnd"
-          :showBrush="false"
-          >
-        </gene-viz>
-
       </div>
     </v-card-title>
   </v-card>
@@ -84,15 +70,12 @@ TODO: refactor this to match new back end - namely get rid of SfariModel refs
 <script>
 
 import VariantViz from './VariantViz.vue'
-import GeneViz from './GeneViz.vue'
 
 export default {
   name: 'variant-card',
   components: {
-    VariantViz,
-    GeneViz
+    VariantViz
     // TODO: if I add knownVariantsToolbar, add that component
-    // TODO: if I add bam stuff to this card, add DepthViz
   },
   props: {
     dataSetModel: null,
@@ -105,9 +88,7 @@ export default {
     regionStart: 0,
     regionEnd: 0,
     width: 0,
-    showVariantViz: true,
-    showGeneViz: true
-    // TODO: if I add bam stuff, add showDepthViz: true
+    showVariantViz: true
   },
   data() {
     return {
@@ -151,7 +132,7 @@ export default {
         this.showVariantCircle(variant);
         this.showVariantTooltip(variant, true);
       }
-      this.$emit('sfariVariantClick', variant, this);
+      this.$emit('variantClick', variant, this);
     },
     onVariantHover: function(variant, showTooltip=true) {
       if (this.selectedVariant == null) {
@@ -159,7 +140,7 @@ export default {
           this.showVariantCircle(variant);
           this.showVariantTooltip(variant, false);
         }
-        this.$emit('sfariVariantHover', variant, this);
+        this.$emit('variantHover', variant, this);
       }
     },
     onVariantHoverEnd: function() {
@@ -168,7 +149,7 @@ export default {
           this.hideVariantCircle();
           this.hideVariantTooltip(this);
         }
-        this.$emit('sfariVariantHoverEnd');
+        this.$emit('variantHoverEnd');
       }
 
     },

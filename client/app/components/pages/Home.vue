@@ -16,7 +16,9 @@ Note: all CohortModel refs changed to CoreModel
     <v-container fluid>
       <!-- TODO: do I need data-sources-loader -->
 
+      <!-- TODO: would like to get away from passing giant variantModel here-->
       <variant-summary-card
+        :variantModel="variantModel"
         :effect="effect"
         :impact="impact"
         :clinVar="clinVar"
@@ -28,8 +30,10 @@ Note: all CohortModel refs changed to CoreModel
         ref="variantCardRef"
         v-for="dataSet in dataSets"
         :key="dataSet.name"
-        v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !coreModel  || coreModel.inProgress.loadingDataSources }"
+        v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !variantModel  || variantModel.inProgress.loadingDataSources }"
         :dataSetModel="dataSet"
+        :annotationScheme="variantModel.annotationScheme"
+        :variantModel="variantModel"
         :classifyVariantSymbolFunc="dataSet.classifyByImpact"
         :variantTooltip="variantTooltip"
         :selectedGene="selectedGene"
@@ -60,10 +64,9 @@ import VariantCard from  '../viz/VariantCard.vue'
 import VariantSummaryCard from '../viz/VariantSummaryCard.vue'
 
 // Back-end models
-import CoreModel        from '../../models/CoreModel.js'
-import DataSetModel     from '../../models/DataSetModel.js'
 import GeneModel        from '../../models/GeneModel.js'
 import FilterModel      from '../../models/FilterModel.js'
+import VariantModel     from '../../models/VariantModel.js'
 
 import allGenesData from '../../../data/genes.json'
 
@@ -74,33 +77,42 @@ export default {
     GeneCard,
     VariantSummaryCard,
     VariantCard
+    //FeatureMatrixCard, TODO
+    //GenesCard, TODO
   },
   props: {},
   data() {
     return {
       greeting: 'cohort-gene.iobio.vue',
+
+      // Selection properties
       selectedGene: {},
       selectedTranscript: {},
+      selectedVariant: null,
+
       geneRegionBuffer: 1000,
       geneRegionStart: null,
       geneRegionEnd: null,
+      genesInProgress: {},
 
       allGenes: allGenesData,
-
-      coreModel: null,
       dataSets: [],
-      //featureMatrixModel: null,   // TODO: get this working or take it out
+
+      // Models
+      variantModel: null,
       geneModel: null,
       bookmarkModel: null,
       filterModel: null,
       cacheHelper: null,
       genomeBuildHelper: null,
+
+      // Things to incorporate later on
       variantTooltip: null,
-      selectedVariant: null,
-      inProgress: false,
+      inProgress: {},
       cardWidth: 0,
       showClinvarVariants: false,
       activeBookmarksDrawer: null,
+
       effect: null,
       impact: null,
       clinVar: null,
@@ -115,7 +127,6 @@ export default {
 
   mounted: function() {
     let self = this;
-
     self.cardWidth = self.$el.offsetWidth;
 
     self.genomeBuildHelper = new GenomeBuildHelper();
@@ -129,15 +140,13 @@ export default {
     .then(function() {
       var glyph = new Glyph();
       var translator = new Translator(glyph);
-      var genericAnnotation = new GenericAnnotation(glyph); // This is coming in as undefined
+      var genericAnnotation = new GenericAnnotation(glyph);
 
-      self.geneModel = new GeneModel();                     // This is throwing an error
+      self.geneModel = new GeneModel();
       self.geneModel.geneSource = siteGeneSource;
       self.geneModel.genomeBuildHelper = self.genomeBuildHelper;
       self.geneModel.setAllKnownGenes(self.allGenes);
       self.geneModel.translator = translator;
-
-      //self.bookmarkModel = new BookmarkModel();
 
       // Instantiate helper class than encapsulates IOBIO commands
       let endpoint = new EndpointCmd(useSSL,
@@ -146,41 +155,50 @@ export default {
         self.genomeBuildHelper,
         utility.getHumanRefNames);
 
-      self.coreModel = new CoreModel(endpoint,
-        genericAnnotation,
-        translator,
-        self.geneModel,
-        self.cacheHelper,
-        self.genomeBuildHelper);
-
-      self.inProgress = self.coreModel.inProgress;
+      self.variantModel = new VariantModel(endpoint,
+        genericAnnotation, translator, self.geneModel,
+        self.cacheHelper, self.genomeBuildHelper);
+      self.inProgress = self.variantModel.inProgress;
 
       //self.featureMatrixModel = new FeatureMatrixModel(self.cohortModel);
       //self.featureMatrixModel.init();
 
-      self.variantTooltip = new VariantTooltip(genericAnnotation,
-        glyph,
-        translator,
-        self.coreModel.annotationScheme,
-        self.genomeBuildHelper);
+      // self.variantTooltip = new VariantTooltip(genericAnnotation,
+      //   glyph,
+      //   translator,
+      //   self.variantModel.annotationScheme,
+      //   self.genomeBuildHelper);
     })
     .then(function() {
-      self.dataSets = self.coreModel.dataSets;
-      self.filterModel = new FilterModel(self.coreModel.affectedInfo);
-      self.coreModel.filterModel = self.filterModel;
+      self.dataSets = self.variantModel.dataSets;
+      self.filterModel = new FilterModel(self.variantModel.affectedInfo);
+      self.variantModel.filterModel = self.filterModel;
 
       self.initFromUrl();
     },
     function(error) {
     })
   },
-  computed: {},
+  // ONLY REDRAWS IF DEPENDENCY CHANGES (push/pop should do it)
+  computed: {
+    // dataSets: function() {
+    //   if (this.variantModel) {
+    //     return this.variantModel.dataSets;
+    //   }
+    //   return [];
+    // }
+  },
   watch: {},
   methods: {
     promiseInitCache: function() {
       let self = this;
       return new Promise(function(resolve, reject) {
         self.cacheHelper = new CacheHelper();
+        self.cacheHelper.on("geneAnalyzed", function(geneName) {
+          self.$refs.genesCardRef.determineFlaggedGenes();
+          self.$refs.navRef.onShowFlaggedVariants();
+        })
+        globalCacheHelper = self.cacheHelper;
         self.cacheHelper.promiseInit()
          .then(function() {
           self.cacheHelper.isolateSession();
@@ -199,12 +217,11 @@ export default {
     },
     onLoadDemoData: function() {
       let self = this;
-      self.geneModel.copyPasteGenes(self.coreModel.demoGenes.join(", "));
-      // SJG TODO: param going into here is not formatted correctly
-      self.onGeneSelected(self.coreModel.demoGenes[0]);
-      self.coreModel.promiseInitDemo()
+      self.geneModel.copyPasteGenes(self.variantModel.demoGenes.join(", "));
+      self.onGeneSelected(self.variantModel.demoGenes[0]);
+      self.variantModel.promiseInitDemo()
       .then(function() {
-        self.dataSets = self.coreModel.dataSets;
+        self.dataSets = self.variantModel.dataSets;
         if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
           self.promiseLoadData();
         }
@@ -212,19 +229,26 @@ export default {
     },
     promiseLoadData: function() {
       let self = this;
-      debugger;
+
       return new Promise(function(resolve, reject) {
         if (self.dataSets && self.dataSets.length > 0) {
           //self.featureMatrixModel.inProgress.loadingVariants = true;
           var options = {'getKnownVariants': self.showClinvarVariants};
 
-          self.coreModel.promiseLoadData(self.selectedGene,
+          self.variantModel.promiseLoadData(self.selectedGene,
             self.selectedTranscript,
             self.filterModel,
             options)
           .then(function(resultMap) {
             // self.filterModel.populateEffectFilters(resultMap);
             // self.filterModel.populateRecFilters(resultMap);
+
+            // self.variantModel.promiseMarkCodingRegions(self.selectedGene, self.selectedTranscript)
+            // .then(function(data) {
+            //   self.analyzedTranscript = data.transcript;
+            //   self.coverageDangerRegions = data.dangerRegions;
+            //   resolve();
+            // })
               resolve();
           })
           .catch(function(error) {
@@ -235,6 +259,20 @@ export default {
         }
       })
     },
+    // TODO: incorporate GenesCard and this
+    // callVariants: function(theGene) {
+    //   let self = this;
+    //   if (theGene == null) {
+    //     self.cacheHelper.analyzeAll(self.variantModel, true);
+    //   } else {
+    //     self.variantModel.promiseJointCallVariants(self.selectedGene,
+    //       self.selectedTranscript,
+    //       self.variantModel.getCurrentTrioVcfData(),
+    //       {checkCache: false, isBackground: false})
+    //     .then(function() {
+    //     })
+    //   }
+    // },
     onGeneSelected: function(geneName) {
       var self = this;
 
@@ -245,8 +283,8 @@ export default {
       let self = this;
 
       return new Promise(function(resolve, reject) {
-        if (self.coreModel) {
-          self.coreModel.clearLoadedData();
+        if (self.variantModel) {
+          self.variantModel.clearLoadedData();
         }
         if (self.featureMatrixModel) {
           self.featureMatrixModel.clearRankedVariants();
@@ -293,9 +331,9 @@ export default {
 
       this.filterModel.regionStart = this.geneRegionStart;
       this.filterModel.regionEnd = this.geneRegionEnd;
-      this.coreModel.setLoadedVariants(this.selectedGene);
+      this.variantModel.setLoadedVariants(this.selectedGene);
 
-      this.coreModel.setCoverage(this.geneRegionStart, this.geneRegionEnd);
+      this.coverageModel.setCoverage(this.geneRegionStart, this.geneRegionEnd);
     },
     onGeneRegionZoomReset: function() {
       this.geneRegionStart = this.selectedGene.start;
@@ -305,8 +343,8 @@ export default {
 
       this.filterModel.regionStart = null;
       this.filterModel.regionEnd = null;
-      this.coreModel.setLoadedVariants(this.selectedGene);
-      this.coreModel.setCoverage();
+      this.variantModel.setLoadedVariants(this.selectedGene);
+      this.coverageModel.setCoverage();
     },
     onDataSetVariantClick: function(variant, sourceComponent) {
       let self = this;
@@ -385,34 +423,35 @@ export default {
     //
     //   }
     // },
-    showVariantTooltipExtraAnnots: function(sourceComponent, variant, annotatedVariants, callbackNotFound) {
-      let self = this;
-      var targetVariants = annotatedVariants.filter(function(v) {
-        return variant &&
-               variant.start == v.start &&
-               variant.ref   == v.ref &&
-               variant.alt   == v.alt;
-      });
-      if (targetVariants.length > 0) {
-        var annotatedVariant = targetVariants[0];
-        annotatedVariant.screenX = variant.screenX;
-        annotatedVariant.screenY = variant.screenY;
-        annotatedVariant.screenXMatrix = variant.screenXMatrix;
-        annotatedVariant.screenYMatrix = variant.screenYMatrix;
 
-        variant.extraAnnot      = true;
-        variant.vepHGVSc        = annotatedVariant.vepHGVSc;
-        variant.vepHGVSp        = annotatedVariant.vepHGVSp;
-        variant.vepVariationIds = annotatedVariant.vepVariationIds;
-
-        sourceComponent.showVariantTooltip(variant, true);
-      } else {
-        if (callbackNotFound) {
-          callbackNotFound();
-        }
-      }
-
-    },
+    // TODO: incorporate tool tip stuff
+    // showVariantTooltipExtraAnnots: function(sourceComponent, variant, annotatedVariants, callbackNotFound) {
+    //   let self = this;
+    //   var targetVariants = annotatedVariants.filter(function(v) {
+    //     return variant &&
+    //            variant.start == v.start &&
+    //            variant.ref   == v.ref &&
+    //            variant.alt   == v.alt;
+    //   });
+    //   if (targetVariants.length > 0) {
+    //     var annotatedVariant = targetVariants[0];
+    //     annotatedVariant.screenX = variant.screenX;
+    //     annotatedVariant.screenY = variant.screenY;
+    //     annotatedVariant.screenXMatrix = variant.screenXMatrix;
+    //     annotatedVariant.screenYMatrix = variant.screenYMatrix;
+    //
+    //     variant.extraAnnot      = true;
+    //     variant.vepHGVSc        = annotatedVariant.vepHGVSc;
+    //     variant.vepHGVSp        = annotatedVariant.vepHGVSp;
+    //     variant.vepVariationIds = annotatedVariant.vepVariationIds;
+    //
+    //     sourceComponent.showVariantTooltip(variant, true);
+    //   } else {
+    //     if (callbackNotFound) {
+    //       callbackNotFound();
+    //     }
+    //   }
+    // },
     onKnownVariantsVizChange: function(viz) {
       let self = this;
       self.showClinvarVariants = viz == 'variants';
@@ -424,14 +463,14 @@ export default {
       let self = this;
       self.filterModel.setModelFilter('known-variants', 'clinvar', selectedCategories);
 
-      self.coreModel.setLoadedVariants(self.selectedGene, 'known-variants');
+      self.variantModel.setLoadedVariants(self.selectedGene, 'known-variants');
     },
     onRemoveGene: function(geneName) {
       this.cacheHelper.clearCacheForGene(geneName);
     },
     // TODO: this is currently broken
     onAnalyzeAll: function() {
-      this.cacheHelper.analyzeAll(this.coreModel);
+      this.cacheHelper.analyzeAll(this.variantModel);
     },
     clearCache: function() {
       this.cacheHelper.promiseClearCache(this.cacheHelper.launchTimestamp);
@@ -445,56 +484,18 @@ export default {
     initFromUrl: function() {
       let self = this;
 
-      if (self.paramGeneSource) {
-        self.geneModel.geneSource = self.paramGeneSource;
-      }
-      if (self.paramGenes) {
-        self.paramGenes.split(",").forEach( function(geneName) {
-          self.geneModel.addGeneName(geneName);
-        });
-      }
-      if (self.paramGene) {
-        self.geneModel.addGeneName(self.paramGene);
-        self.onGeneSelected(self.paramGene);
-      }
-      if (self.paramSpecies) {
-        self.genomeBuildHelper.setCurrentSpecies(self.paramSpecies);
-      }
-      if (self.paramBuild) {
-        self.genomeBuildHelper.setCurrentBuild(self.paramBuild);
-      }
-      if (self.paramBatchSize) {
-        DEFAULT_BATCH_SIZE = self.paramBatchSize;
-      }
-
-      /*var modelInfos = [];
-      for (var i = 0; i < self.paramRelationships.length; i++) {
-        var rel  = self.paramRelationships[i];
-        if (rel) {
-          var modelInfo = {'relationship': rel};
-          modelInfo.name           = self.paramNames[i];
-          modelInfo.vcf            = self.paramVcfs[i];
-          modelInfo.tbi            = self.paramTbis[i];
-          modelInfo.bam            = self.paramBams[i];
-          modelInfo.bai            = self.paramBais[i];
-          modelInfo.sample         = self.paramSamples[i];
-          modelInfo.affectedStatus = self.paramAffectedStatuses[i];
-          modelInfos.push(modelInfo);
-        }
-      } */
-      // TODO: have to incorporate front end modelInfo somehow
-      // TODO: comment promiseInit() back in once front end stuff incorporated
-      //self.coreModel.promiseInit()
-      self.coreModel.promiseInitDemo()
+      self.geneModel.addGeneName('RAI1');
+      self.onGeneSelected('RAI1');
+      self.variantModel.promiseInitDemo()
         .then(function() {
-          // I already bound this above, shouldn't need to do it again?
-          //self.dataSets = self.coreModel.dataSets;
+          self.dataSets = self.variantModel.dataSets;
           if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
-            self.promiseLoadData()
-            .then(function() {
-            })
+            self.promiseLoadData();
           }
-        });
+          else {
+            console.log("failed to load data because selected gene length is 0");
+          }
+        })
     }
     // onBookmarkVariant(variant) {
     //   this.$refs.navRef.onBookmarks();

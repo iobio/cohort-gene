@@ -1,0 +1,531 @@
+/* Encapsulates logic for Variant Card and Variant Summary Card */
+
+class VariantModel {
+  constructor(endpoint, genericAnnotation, translator, geneModel,
+    cacheHelper, genomeBuildHelper) {
+
+    this.dataSets = [];
+    this.dataSetMap = {};    // Maps a dataset name to the dataset object
+
+    this.endpoint = endpoint;
+    this.genericAnnotation = genericAnnotation;
+    this.translator = translator;
+    this.geneModel = geneModel;
+    //this.variantExporter = variantExporter;
+    this.cacheHelper = cacheHelper;
+    this.genomeBuildHelper = genomeBuildHelper;
+    //this.freebayesSettings = freebayesSettings;
+    this.filterModel = null;        // TODO: can I take this out of here?
+    this.featureMatrixModel = null;
+
+    this.annotationScheme = 'vep';
+    this.isLoaded = false;
+    this.maxAlleleCount = null;
+    this.affectedInfor = null;
+    this.maxDepth = 0;
+
+    this.inProgress = { 'loadingDataSources': false };
+    this.genesInProgress = [];
+
+    this.demoVcf = "https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz";
+    this.demoGenes = ['RAI1', 'MYLK2', 'PDHA1', 'PDGFB', 'AIRE'];
+  }
+
+  getMainCohort() {
+    if (Object.keys(this.dataSets).length > 0 && Object.keys(this.dataSets[0]).length > 0)
+      return this.dataSets[0].cohorts[0];
+    alert("no data sets or cohorts to find in getMainCohort");
+  }
+
+  promiseInitDemo() {
+    let self = this;
+
+    var demoDataSet = new DataSetModel();
+    demoDataSet.name = 'Platinum Exome';
+    demoDataSet.vcfUrl = self.demoVcf;
+
+    // Set status
+    self.isLoaded = false;
+    self.inProgress.loadingDataSources = true;
+
+    var allSampleModel = new CohortModel(self);
+    allSampleModel.name = 'demo_all';
+    demoDataSet.cohorts.push(allSampleModel);
+    demoDataSet.cohortMap[allSampleModel.name] = allSampleModel;
+
+    var subsetModel = new CohortModel(self);
+    subsetModel.name = 'demo_subset';
+    subsetModel.subsetIds.push('NA12877');
+    subsetModel.subsetIds.push('NA12878');
+    subsetModel.subsetPhenotypes.push('Test Phenotype');
+    demoDataSet.cohorts.push(subsetModel);
+    demoDataSet.cohortMap[subsetModel.name] = subsetModel;
+
+    self.dataSets.push(demoDataSet);
+    self.dataSetMap[demoDataSet.name] = demoDataSet;
+
+    return new Promise(function(resolve, reject) {
+      let promises = [];
+      demoDataSet.cohorts.forEach(function(cohort) {
+        promises.push(self.promiseAddSamples(cohort, demoDataSet.vcfUrl));
+      })
+
+      Promise.all(promises)
+        .then(function() {
+          self.inProgress.loadingDataSources = false;
+          self.isLoaded = true;
+          resolve();
+        })
+        .catch(function(error) {
+          console.log("There was a problem in variantModel.promiseInitDemo: " + error);
+          reject(error);
+        })
+    });
+  }
+
+  promiseInit() {
+
+  }
+
+  promiseAddSamples(cohortModel, vcfUrl) {
+    let self = this;
+
+    return new Promise(function(resolve,reject) {
+      var cm = cohortModel;
+      cm.init(self);
+
+      var vcfPromise = null;
+      if (cohortModel.vcf) {
+        vcfPromise = new Promise(function(vcfResolve, vcfReject) {
+          cm.onVcfUrlEntered(vcfUrl, null, function() {
+            vcfResolve();
+          })
+        },
+        function(error) {
+          vcfReject(error);
+        });
+      } else {
+        vcfPromise = Promise.resolve();
+      }
+
+      Promise.all([vcfPromise])
+      .then(function() {
+        resolve();
+      })
+    })
+  }
+
+  promiseAddClinvarSample() {
+
+  }
+
+  setAffectedInfo() {
+
+  }
+
+  getCohort(cohortName) {
+    // TODO: this is brute force and needs to be changed!!!
+    // Really TODO super bad code
+    var cohort = null;
+    this.dataSets.forEach(function(dataSet) {
+      if (dataSet.cohortMap[cohortName] != null) {
+        cohort = dataSet.cohortMap[cohortName];
+      }
+    })
+    return cohort;
+  }
+
+  promiseLoadData(theGene, theTranscript, options) {
+    let self = this;
+    let promises = [];
+
+    return new Promise(function(resolve, reject) {
+      if (Object.keys(self.dataSetMap).length == 0) {
+        resolve();
+      } else {
+        // Load variants
+        self.startGeneProgress(theGene.gene_name);
+        self.clearLoadedData();
+
+        var dataSetResultMap = null;
+        let p1 = self.promiseLoadVariants(theGene, theTranscript, options)
+        .then(function(data) {
+          // SJG never hitting this
+          dataSetResultMap = data.resultMap;
+          self.setLoadedVariants(data.gene);
+        })
+        promises.push(p1);
+
+        Promise.all(promises)
+        .then(function() {
+          resolve(dataSetResultMap);
+            // TODO: what sample needs to go in here?
+            // self.promiseSummarizeDanger(theGene, theTranscript, , null)
+            // .then(function() {
+            //   resolve();
+            // })
+        })
+        .catch(function(error) {
+          reject(error);
+        })
+      }
+    })
+  }
+
+  startGeneProgress(geneName) {
+    var idx = this.genesInProgress.indexOf(geneName);
+    if (idx < 0) {
+      this.genesInProgress.push(geneName);
+    }
+  }
+
+  endGeneProgress() {
+
+  }
+
+  promiseLoadKnownVariants() {
+
+  }
+
+  promiseLoadVariants(theGene, theTranscript, options) {
+    let self = this;
+
+    return new Promise(function(resolve, reject) {
+      self.promiseAnnotateVariants(theGene, theTranscript, false, options)
+      .then(function(resultMap) {
+        // TODO: bookmark stuff
+        return self.promiseAnnotateInheritance(theGene, theTranscript, resultMap, {isBackground: false, cacheData: true})
+      })
+      .then(function(data) {
+        resolve(data);
+      })
+      .catch(function(error) {
+        reject(error);
+      })
+    })
+  }
+
+
+  clearLoadedData() {
+    let self = this;
+    self.dataSets.forEach(function(dataSet) {
+      dataSet.cohorts.forEach(function(cohort) {
+        cohort.loadedVariants = {loadState: {}, features: [], maxLevel: 1, featureWidth: 0};
+        cohort.calledVariants = {loadState: {}, features: [], maxLevel: 1, featureWidth: 0};
+        cohort.coverage = [[]];
+      })
+    });
+  }
+
+  clearCalledVariants() {
+    alert("not implemented yet");
+  }
+
+  setLoadedVariants(gene, name=null) {
+    let self = this;
+
+    var filterAndPileupVariants = function(model, start, end, target='loaded') {
+      var filteredVariants = $.extend({}, model.vcfData);
+      filteredVariants.features = model.vcfData.features.filter( function(feature) {
+
+        var isTarget = false;
+        if (target == 'loaded' && (!feature.fbCalled || feature.fbCalled != 'Y')) {
+          isTarget = true;
+        } else if (target == 'called' && feature.fbCalled && feature.fbCalled == 'Y') {
+          isTarget = true;
+        }
+
+        var isHomRef = feature.zygosity == null
+           || feature.zygosity.toUpperCase() == "HOMREF"
+           || feature.zygosity.toUpperCase() == "NONE"
+           || feature.zygosity == "";
+
+        var inRegion = true;
+        if (self.filterModel.regionStart && self.filterModel.regionEnd) {
+          inRegion = feature.start >= self.filterModel.regionStart && feature.start <= self.filterModel.regionEnd;
+        }
+        var passesModelFilter = self.filterModel.passesModelFilter(model.name, feature);
+
+        return isTarget && !isHomRef && inRegion && passesModelFilter;
+      });
+
+      var pileupObject = model._pileupVariants(filteredVariants.features, start, end);
+      filteredVariants.maxLevel = pileupObject.maxLevel + 1;
+      filteredVariants.featureWidth = pileupObject.featureWidth;
+
+      return filteredVariants;
+    }
+
+    self.dataSets.forEach(function(dataSet) {
+      dataSet.cohorts.forEach(function(cohort) {
+        if (name == null || name == cohort.name) {
+          if (cohort.vcfData && cohort.vcfData.features) {
+            var start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
+            var end   = self.filterModel.regionEnd   ? self.filterModel.regionEnd   : gene.end;
+
+            var loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
+            cohort.loadedVariants = loadedVariants;
+
+            var calledVariants = filterAndPileupVariants(cohort, start, end, 'called');
+            cohort.calledVariants = calledVariants;
+
+            // SJG TODO: will have to change logic here from demo_all - was prev 'proband'
+            if (cohort.getName() == 'demo_all') {
+              var allVariants = $.extend({}, cohort.loadedVariants);
+              allVariants.features = cohort.loadedVariants.features.concat(cohort.calledVariants.features);
+              // TODO: comment this back in after initializing featureMatrixModel
+              //self.featureMatrixModel.promiseRankVariants(allVariants);
+            }
+          } else {
+            cohort.loadedVariants = {loadState: {}, features: []};
+            cohort.calledVariants = {loadState: {}, features: []}
+          }
+        }
+      })
+    })
+  }
+
+  // SJG1
+  promiseAnnotateVariants(theGene, theTranscript, isBackground, options={}) {
+    let self = this;
+
+    return new Promise(function(resolve, reject) {
+      var annotatePromises = [];
+      var theResultMap = {};
+
+      // Annotate variants for every cohort model
+        self.dataSets.forEach(function(dataSet) {
+          if (Object.keys(dataSet.cohorts).length > 0) {
+            dataSet.cohorts.forEach(function(cohortModel) {
+              cohortModel.inProgress.loadingVariants = true;
+            })
+            var p = dataSet.cohorts[0].promiseAnnotateVariants(theGene,
+                theTranscript, dataSet.cohorts,
+                true, isBackground, self.cacheHelper)
+              .then(function(resultMap) {
+                dataSet.cohorts.forEach(function(cohortModel) {
+                  cohortModel.inProgress.loadingVariants = false;
+                })
+                theResultMap = resultMap;
+              })
+              annotatePromises.push(p)
+            }
+          })
+
+        if (options.getKnownVariants) {
+          self.getModel('known-variants').inProgress.loadingVariants = true;
+          p = self.sampleMap['known-variants'].model.promiseAnnotateVariants(theGene, theTranscript, false, isBackground)
+          .then(function(resultMap) {
+            self.getModel('known-variants').inProgress.loadingVariants = false;
+            for (var rel in resultMap) {
+              theResultMap[rel] = resultMap[rel];
+            }
+          })
+          annotatePromises.push(p);
+        }
+
+        Promise.all(annotatePromises)
+          .then(function() {
+            self.promiseAnnotateWithClinvar(theResultMap, theGene, theTranscript, isBackground)
+            .then(function(data) {
+              resolve(data);
+            })
+          })
+          .catch(function(error) {
+            console.log("There was a problem in VariantModel promiseAnnotateVariants: " + error);
+          })
+    });
+  }
+
+  promiseAnnotateWithClinvar(resultMap, geneObject, transcript, isBackground) {
+    let self = this;
+    var formatClinvarKey = function(variant) {
+      var delim = '^^';
+      return variant.chrom + delim + variant.ref + delim + variant.alt + delim + variant.start + delim + variant.end;
+    }
+
+    var formatClinvarThinVariant = function(key) {
+      var delim = '^^';
+      var tokens = key.split(delim);
+      return {'chrom': tokens[0], 'ref': tokens[1], 'alt': tokens[2], 'start': tokens[3], 'end': tokens[4]};
+    }
+
+    var refreshVariantsWithClinvarLookup = function(theVcfData, clinvarLookup) {
+      theVcfData.features.forEach(function(variant) {
+        var clinvarAnnot = clinvarLookup[formatClinvarKey(variant)];
+        if (clinvarAnnot) {
+          for (var key in clinvarAnnot) {
+            variant[key] = clinvarAnnot[key];
+          }
+        }
+      })
+      if (theVcfData.loadState == null) {
+        theVcfData.loadState = {};
+      }
+      theVcfData.loadState['clinvar'] = true;
+    }
+
+    return new Promise(function(resolve, reject) {
+      // Combine the trio variants into one set of variants so that we can access clinvar once
+      // instead of on a per sample basis
+      var uniqueVariants = {};
+      var unionVcfData = {features: []}
+      for (var rel in resultMap) {
+        var vcfData = resultMap[rel];
+        if (!vcfData.loadState['clinvar'] && rel != 'known-variants') {
+         vcfData.features.forEach(function(feature) {
+            uniqueVariants[formatClinvarKey(feature)] = true;
+         })
+        }
+      }
+      if (Object.keys(uniqueVariants).length == 0) {
+        resolve(resultMap);
+      } else {
+
+        for (var key in uniqueVariants) {
+          unionVcfData.features.push(formatClinvarThinVariant(key));
+        }
+
+        var refreshVariantsFunction = isClinvarOffline || clinvarSource == 'vcf'
+          ? self.getMainCohort()._refreshVariantsWithClinvarVCFRecs.bind(self.getMainCohort(), unionVcfData)
+          : self.getMainCohort()._refreshVariantsWithClinvarEutils.bind(self.getMainCohort(), unionVcfData);
+
+        self.getMainCohort().vcf.promiseGetClinvarRecords(
+            unionVcfData,
+            self.getMainCohort()._stripRefName(geneObject.chr),
+            geneObject,
+            self.geneModel.clinvarGenes,
+            refreshVariantsFunction)
+        .then(function() {
+            // Create a hash lookup of all clinvar variants
+            var clinvarLookup = {};
+            unionVcfData.features.forEach(function(variant) {
+              var clinvarAnnot = {};
+
+              for (var key in self.getMainCohort().vcf.getClinvarAnnots()) {
+                  clinvarAnnot[key] = variant[key];
+                  clinvarLookup[formatClinvarKey(variant)] = clinvarAnnot;
+              }
+            })
+
+            var refreshPromises = [];
+
+            // Use the clinvar variant lookup to initialize variants with clinvar annotations
+            for (var cohort in resultMap) {
+              var vcfData = resultMap[cohort];
+              if (!vcfData.loadState['clinvar']) {
+                var p = refreshVariantsWithClinvarLookup(vcfData, clinvarLookup);
+                if (!isBackground) {
+                  self.getCohort(cohort).vcfData = vcfData;
+                }
+                //var p = getVariantCard(rel).model._promiseCacheData(vcfData, CacheHelper.VCF_DATA, vcfData.gene.gene_name, vcfData.transcript);
+                refreshPromises.push(p);
+              }
+            }
+
+            Promise.all(refreshPromises)
+            .then(function() {
+              resolve(resultMap);
+            })
+            .catch(function(error) {
+              reject(error);
+            })
+        })
+      }
+    })
+  }
+
+  // TODO: LEFT OFF HERE REFACTORING THIS
+  promiseAnnotateInheritance(geneObject, theTranscript, resultMap, options={isBackground: false, cacheData: true}) {
+    let self = this;
+
+    var resolveIt = function(resolve, resultMap, geneObject, theTranscript, options) {
+    // TODO: incorporate
+    // self.dataSets.forEach(function(dataSet) {
+    //   dataSet.cohorts.forEach(function(cohort) {
+    //     if (resultMap[model.getname()]) {
+    //       cohort.assessVariantImpact(resultMap[cohort.getName()], theTranscript);
+    //     }
+    //   })
+    // })
+
+      self.promiseCacheCohortVcfData(geneObject, theTranscript, CacheHelper.VCF_DATA, resultMap, options.cacheData)
+      .then(function() {
+        resolve({'resultMap': resultMap, 'gene': geneObject, 'transcript': theTranscript});
+      })
+    }
+
+    // SJG: exchanged 'proband' for 'mainCohort'
+    return new Promise(function(resolve, reject) {
+      if (self.isAlignmentsOnly() && !autocall && resultMap == null) {
+          resolve({'resultMap': {'mainCohort': {features: []}}, 'gene': geneObject, 'transcript': theTranscript});
+      } else {
+        // TODO: this is considering a 'single' mode at the moment, not a 'trio'
+        // May need to incorporate both options like before if importing trios
+        resolveIt(resolve, resultMap, geneObject, theTranscript, options);
+      }
+    })
+  }
+
+  promiseCacheCohortVcfData(geneObject, theTranscript, dataKind, resultMap, cacheIt) {
+    let self = this;
+    return new Promise(function(resolve, reject) {
+      // Cache vcf data for trio
+      var cachePromise = null;
+      if (cacheIt) {
+        var cachedPromises = [];
+        self.dataSets.forEach(function(dataSet) {
+          dataSet.cohorts.forEach(function(cohort) {
+            if (resultMap[cohort.getName()]) {
+              var p = cohort._promiseCacheData(resultMap[cohort.getName()], dataKind, geneObject.gene_name, theTranscript, self.cacheHelper);
+              cachedPromises.push(p);
+            }
+          })
+        })
+        Promise.all(cachedPromises).then(function() {
+          resolve();
+        })
+      } else {
+        resolve();
+      }
+    })
+  }
+
+  promiseSummarizeError() {
+    alert("not implemented yet");
+  }
+
+  promiseSummarizeDanger() {
+    alert("not implemented yet");
+  }
+
+  getCurrentTrioVcfData() {
+    alert("not implemented yet");
+    // TODO: how will I adapt this?
+  }
+
+  promiseJointCallVariants() {
+    alert("not implemented yet");
+  }
+
+  promiseHasCalledVariants() {
+    alert("not implemented yet");
+  }
+
+  promiseHasCachedCalledVariants() {
+    alert("not implemented yet");
+  }
+
+  isAlignmentsOnly() {
+    var theDataSets = this.dataSets.filter(function(dataSet) {
+      return dataSet.isAlignmentsOnly();
+    });
+    return theDataSets.length == this.dataSets.length;
+  }
+
+  _parseCalledVariants() {
+    alert("not implemented yet");
+  }
+}
+
+export default VariantModel;

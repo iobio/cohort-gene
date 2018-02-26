@@ -72,7 +72,7 @@ class CoreModel {
   promiseLoadData(gene, transcript, options) {
     let self = this;
 
-    debugger;
+    alert("promiseLoadData called in core model");
     return new Promise(function(resolve, reject) {
       let promises = [];
 

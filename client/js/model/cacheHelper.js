@@ -1,6 +1,8 @@
 var recordedCacheErrors = {};
 var cacheErrorTypes = {};
 
+// SJG I changed all 'relationship' references to 'name'
+
 function CacheHelper() {
 
   this.genesToCache = [];
@@ -12,6 +14,9 @@ function CacheHelper() {
   this.cacheIndexStore = new CacheIndexStore();
 
   this.cohort = null;
+
+  this.dispatch = d3.dispatch("geneAnalyzed");
+  d3.rebind(this, this.dispatch, "on");
 }
 
 CacheHelper.KEY_DELIM = "^";
@@ -22,12 +27,12 @@ CacheHelper.DANGER_SUMMARY_DATA = "dangerSummary";
 CacheHelper.GENE_COVERAGE_DATA  = "geneCoverage";
 
 
-// TODO: this needs to be updated to take in what is equivalent to old cohort using the new core->dataset->cohort structure
+
 CacheHelper.prototype.analyzeAll = function(cohort, analyzeCalledVariants = false) {
   var me = this;
   this.cohort = cohort;
 
-  if (this.isAlignmentsOnly) {
+  if (this.cohort.isAlignmentsOnly()) {
     analyzeCalledVariants = true;
   }
 
@@ -42,6 +47,23 @@ CacheHelper.prototype.analyzeAll = function(cohort, analyzeCalledVariants = fals
   } else {
     me._analyzeAllImpl(analyzeCalledVariants)
   }
+}
+
+CacheHelper.prototype.promiseAnalyzeSubset = function(cohort, theGeneNames, analyzeCalledVariants=false) {
+  var me = this;
+  me.cohort = cohort;
+
+  return new Promise(function(resolve, reject) {
+    theGeneNames.forEach(function(geneName) {
+      me.genesToCache.push(geneName);
+    });
+    me.cacheGenes(analyzeCalledVariants, function() {
+      me.cohort.geneModel.sortGenes("harmful variants");
+      resolve();
+    });
+
+  })
+
 }
 
 CacheHelper.prototype.setLoaderDisplay = function(loaderDisplay) {
@@ -60,6 +82,7 @@ CacheHelper.prototype.isolateSession = function() {
 CacheHelper.prototype.promiseClearStaleCache = function() {
   var me = this;
   return new Promise(function(resolve, reject) {
+
     var staleSessions = localStorage["gene.iobio.stale"];
     if (staleSessions && staleSessions.length > 0) {
       var promises = [];
@@ -144,6 +167,7 @@ CacheHelper.prototype.queueGene = function(geneName) {
   if (this.cacheQueue.indexOf(geneName) < 0) {
     this.cacheQueue.push(geneName);
   }
+  this.cohort.startGeneProgress(geneName);
 }
 
 CacheHelper.prototype.dequeueGene = function(geneName) {
@@ -151,6 +175,7 @@ CacheHelper.prototype.dequeueGene = function(geneName) {
   if (idx >= 0) {
     this.cacheQueue.splice(idx,1);
   }
+  this.cohort.endGeneProgress(geneName);
 }
 
 
@@ -216,16 +241,13 @@ CacheHelper.prototype.cacheGenes = function(analyzeCalledVariants, callback) {
 
   // Place next batch of genes in caching queue
   for (var i = 0; i < sizeToQueue; i++) {
-    me.cacheQueue.push(me.genesToCache[i]);
+    me.queueGene(me.genesToCache[i]);
   }
   // Remove this batch of genes from the list of all genes to be cached
   for (var i = 0; i < sizeToQueue; i++) {
     me.genesToCache.shift();
   }
-  // Make sure we are still showing the genes as 'loading...' that are still in the cache
-  //for (var idx = 0; idx < startingPos; idx++) {
-  //   genesCard._geneBadgeLoading(me.cacheQueue[idx], true);
-  //}
+
 
   // Invoke method to cache each of the genes in the queue
   var count = 0;
@@ -341,13 +363,13 @@ CacheHelper.prototype.promiseCacheGene = function(geneName, analyzeCalledVariant
       // Now clear out mother and father from cache (localStorage browser cache only)
       //if (window.gene == null || window.gene.gene_name != geneObject.gene_name) {
         if (CacheHelper.useLocalStorage()) {
-          getVariantCard("mother" ).model.clearCacheItem(CacheHelper.VCF_DATA, geneObject.gene_name, transcript);
-          getVariantCard("father" ).model.clearCacheItem(CacheHelper.VCF_DATA, geneObject.gene_name, transcript);
+          me.cohort.getModel("mother").clearCacheItem(CacheHelper.VCF_DATA, geneObject.gene_name, transcript);
+          me.cohort.getModel("father").model.clearCacheItem(CacheHelper.VCF_DATA, geneObject.gene_name, transcript);
         }
       //}
       // Clear out the called variants cache since this is now cached in vcf data
       if (analyzeCalledVariants) {
-        getVariantCard("proband" ).model.clearCacheItem(CacheHelper.FB_DATA, geneObject.gene_name, transcript);
+        me.cohort.getProbandModel().clearCacheItem(CacheHelper.FB_DATA, geneObject.gene_name, transcript);
       }
 
       // We have analyzed the gene, now move on to another gene
@@ -374,26 +396,9 @@ CacheHelper.prototype.isGeneInProgress = function(geneName) {
 
 CacheHelper.prototype.cacheNextGene = function(geneName, analyzeCalledVariants, callback) {
 
-  // Take the analyzed (and cached) gene off of the cache queue
-  var idx = this.cacheQueue.indexOf(geneName);
-  if (idx >= 0) {
-    this.cacheQueue.splice(idx,1);
-    //this.geneBadgeLoaderDisplay.setPageCount(genesCard.getPageCount())
-      //                         .removeGene(geneName);
-  } else {
-    idx = this.cacheQueue.indexOf(geneName.toUpperCase());
-    if (idx >= 0) {
-      this.cacheQueue.splice(idx,1);
-      //this.geneBadgeLoaderDisplay.setPageCount(genesCard.getPageCount())
-       //                          .removeGene(geneName);
-    } else {
-      console.log("Unexpected error occurred during caching of genes.  Could not remove " + geneName + " from cache queue");
-      if (callback) {
-        callback();
-      }
-      return;
-    }
-  }
+  this.dispatch.geneAnalyzed(geneName);
+
+  this.dequeueGene(geneName);
   // Invoke cacheGenes, which will kick off the next batch
   // of genes to analyze once all of the genes in
   // the current batch have been analyzed.
@@ -457,9 +462,9 @@ CacheHelper.prototype.refreshNextGeneBadge = function(keys, geneCount, callback)
       }
 
       var theFbData = null;
-      getVariantCard("proband").promiseGetDangerSummary(theGeneObject.gene_name).then(function(ds) {
+      me.cohort.getProbandModel().promiseGetDangerSummary(theGeneObject.gene_name).then(function(ds) {
         if (theVcfData && theVcfData.features && ds && ds.CALLED) {
-          theFbData = getVariantCard("proband").model.reconstituteFbData(theVcfData);
+          theFbData = me.cohort.getProbandModel().reconstituteFbData(theVcfData);
         }
 
         var options = {};
@@ -469,7 +474,7 @@ CacheHelper.prototype.refreshNextGeneBadge = function(keys, geneCount, callback)
 
         me.cohort.promiseGetCachedGeneCoverage(theGeneObject, {transcript_id: theKeyObject.transcript}).then(function(data) {
           var geneCoverageAll = data.geneCoverage;
-          getVariantCard("proband").promiseSummarizeDanger(data.gene.gene_name, filteredVcfData, options, geneCoverageAll).then(function(dangerObject) {
+          me.cohort.getProbandModel().promiseSummarizeDanger(data.gene.gene_name, filteredVcfData, options, geneCoverageAll).then(function(dangerObject) {
             //genesCard.setGeneBadgeGlyphs(data.gene.gene_name, dangerObject, false);
             me.refreshNextGeneBadge(keys, geneCount, callback);
           })
@@ -484,7 +489,7 @@ CacheHelper.prototype.getCacheKey = function(cacheObject) {
   var me = this;
   var key =  "gene.iobio"
     + CacheHelper.KEY_DELIM + this.launchTimestamp
-    + CacheHelper.KEY_DELIM + cacheObject.relationship
+    + CacheHelper.KEY_DELIM + cacheObject.name
     + CacheHelper.KEY_DELIM + cacheObject.sample
     + CacheHelper.KEY_DELIM + cacheObject.gene
     + CacheHelper.KEY_DELIM + cacheObject.transcript
@@ -619,7 +624,7 @@ CacheHelper.prototype._promiseClearCache = function(launchTimestampToClear, clea
         if (keyObject) {
           if (keyObject.launchTimestamp == theLaunchTimeStamp && !clearOther && !clearOtherApp) {
             keysToRemove.push(key);
-            if (keyObject.gene && keyObject.relationship == 'proband') {
+            if (keyObject.gene && keyObject.name == 'proband') {
               //genesCard.clearGeneGlyphs(keyObject.gene);
               //genesCard.clearGeneInfo(keyObject.gene);
 
@@ -689,7 +694,7 @@ CacheHelper.prototype.clearAll = function() {
 CacheHelper.prototype.clearOther = function() {
   var me = this;
   // confirm dialog
-  alertify.confirm("Clear all cached data for other gene.iobio sessions?  IMPORTANT: To save analysis, bookmark any variants of interest in other browser tabs before clearing the cache.", function (e) {
+  alertify.confirm("Clear all cached data for other gene.iobio sessions?  IMPORTANT: To save analysis, flag any variants of interest in other browser tabs before clearing the cache.", function (e) {
       if (e) {
       // user clicked "ok"
       me._promiseClearCache(null, true, false)
@@ -862,7 +867,7 @@ CacheHelper.prototype._isProbandVariantCache = function(key) {
   return (cacheObject
     && cacheObject.launchTimestamp == this.launchTimestamp
     && ( cacheObject.dataKind == CacheHelper.VCF_DATA  || cacheObject.dataKind == CacheHelper.FB_DATA)
-    && cacheObject.relationship == "proband");
+    && cacheObject.name == "proband");
 
 }
 
@@ -884,7 +889,7 @@ CacheHelper._parseCacheKey = function(cacheKey) {
       var keyObject = {
            app: tokens[0],
            launchTimestamp: tokens[1],
-           relationship: tokens[2],
+           name: tokens[2],
            sample: tokens[3],
            gene: tokens[4],
            transcript: tokens[5],
@@ -955,7 +960,19 @@ CacheHelper.useIndexedDB = function() {
 CacheHelper.promiseCompressData = function(data) {
   return new Promise(function(resolve, reject) {
     if (data && data != "") {
-      var dataString = JSON.stringify(data);
+      var cache = [];
+      var dataString = JSON.stringify(data, function(key, value) {
+        if (typeof value === 'object' && value !== null) {
+            if (cache.indexOf(value) !== -1) {
+                // Circular reference found, discard key
+                return;
+            }
+            // Store value in our collection
+            cache.push(value);
+        }
+        return value;
+      });
+      cache = null;
       var dataStringCompressed = null;
       try {
         dataStringCompressed = LZString.compressToUTF16(dataString);
@@ -1214,8 +1231,8 @@ CacheHelper.prototype._logCacheContents = function(keys, filterObject, showData=
     if (filterObject && Object.keys(filterObject).length > 0) {
       keep = false;
       var matchesRel = true;
-      if (filterObject.hasOwnProperty('relationship')) {
-        if (keyObject.relationship != filterObject.relationship) {
+      if (filterObject.hasOwnProperty('name')) {
+        if (keyObject.name != filterObject.name) {
           matchesRel = false;
         }
       }

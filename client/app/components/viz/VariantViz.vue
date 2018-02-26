@@ -47,6 +47,10 @@ export default {
     name: 'variant-viz',
     props: {
       data: {},
+      annotationScheme: {
+        default: 'vep',
+        type: String
+      },
       regionStart: {
         default: 0,
         type: Number
@@ -101,8 +105,7 @@ export default {
     },
     data() {
       return {
-        variantChart: {},
-        classifyFunc: null
+        variantChart: {}
       }
     },
     created: function() {
@@ -147,6 +150,7 @@ export default {
         var self = this;
         if (self.data) {
 
+          // SJG TODO: stopped here - something up with margin values - see console
           // Set the vertical layer count so that the height of the chart can be recalculated
           if (self.data.maxLevel == null) {
             self.data.maxLevel = d3.max(self.data.features, function(d) { return d.level; });
