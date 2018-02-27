@@ -3,7 +3,7 @@
 
 <template>
   <v-card>
-    <v-card-title primary-title style="margin-bottom: 8px">Variant Summary</v-card-title>
+    <v-card-title primary-title style="margin-bottom: 8px">VARIANT SUMMARY</v-card-title>
       <!-- TODO: conditionally display -->
       <!-- TODO: assign ref if need to manipulate w/ methods -->
       <feature-viz id="loaded-feature-viz"

@@ -37,6 +37,18 @@ class VariantModel {
     alert("no data sets or cohorts to find in getMainCohort");
   }
 
+  // SJG TODO: could incorporate optional dataSet param here if we need specific ones
+  getCohorts() {
+    let self = this;
+    let theCohorts = [];
+    self.dataSets.forEach(function(dataSet) {
+      dataSet.cohorts.forEach(function(cohort) {
+        theCohorts.push(cohort);
+      })
+    })
+    return theCohorts;
+  }
+
   promiseInitDemo() {
     let self = this;
 
@@ -50,15 +62,18 @@ class VariantModel {
 
     var allSampleModel = new CohortModel(self);
     allSampleModel.name = 'demo_all';
+    allSampleModel.trackName = 'All Variants';
     demoDataSet.cohorts.push(allSampleModel);
     demoDataSet.cohortMap[allSampleModel.name] = allSampleModel;
 
     var subsetModel = new CohortModel(self);
     subsetModel.name = 'demo_subset';
+    subsetModel.trackName = 'Variants for:';
     // Ids for platinum are NA12877, NA12878, NA12891, NA12892
-    subsetModel.subsetIds.push('NA12891');
     subsetModel.subsetIds.push('NA12892');
-    subsetModel.subsetPhenotypes.push('Test Phenotype');
+    //subsetModel.subsetIds.push('NA12891');
+    subsetModel.subsetPhenotypes.push('NA12892');
+    //subsetModel.subsetPhenotypes.push('NA12891');
     demoDataSet.cohorts.push(subsetModel);
     demoDataSet.cohortMap[subsetModel.name] = subsetModel;
 
@@ -117,11 +132,11 @@ class VariantModel {
   }
 
   promiseAddClinvarSample() {
-
+    alert("not implemented yet");
   }
 
   setAffectedInfo() {
-
+    alert("not implemented yet");
   }
 
   getCohort(cohortName) {

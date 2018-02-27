@@ -650,7 +650,6 @@ class GeneModel {
     geneObject.start = geneObject.startOrig < me.geneRegionBuffer ? 0 : geneObject.startOrig - me.geneRegionBuffer;
     // TODO: Don't go past length of reference
     geneObject.end   = geneObject.endOrig + me.geneRegionBuffer;
-
   }
 
   sortGenes(sortBy) {

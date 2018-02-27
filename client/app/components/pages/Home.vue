@@ -11,21 +11,20 @@ Note: all CohortModel refs changed to CoreModel
 
 <template>
 <div>
-  <navigation v-on:input="onGeneSelected"></navigation>
+  <navigation
+    v-if="geneModel"
+    ref="navRef"
+    :variantModel="variantModel"
+    :geneModel="geneModel"
+    @input="onGeneSelected">
+  </navigation>
   <v-content>
     <v-container fluid>
       <!-- TODO: do I need data-sources-loader -->
 
       <!-- TODO: would like to get away from passing giant variantModel here-->
-      <variant-summary-card
-        :variantModel="variantModel"
-        :effect="effect"
-        :impact="impact"
-        :clinVar="clinVar"
-        :sift="sift"
-        :polyPhen="polyPhen"
-      ></variant-summary-card>
 
+      <br/>
       <variant-card
         ref="variantCardRef"
         v-for="dataSet in dataSets"
@@ -42,8 +41,9 @@ Note: all CohortModel refs changed to CoreModel
         :regionStart="geneRegionStart"
         :regionEnd="geneRegionEnd"
         :width="cardWidth"
-        :showGeneViz="false"
+        :showGeneViz="true"
         :showVariantViz="true"
+        :geneVizShowXAxis="true"
         @dataSetVariantClick="onDataSetVariantClick"
         @dataSetVariantClickEnd="onDataSetVariantClickEnd"
         @dataSetVariantHover="onDataSetVariantHover"
@@ -51,6 +51,18 @@ Note: all CohortModel refs changed to CoreModel
         @knownVariantsVizChange="onKnownVariantsVizChange"
         @knownVariantsFilterChange="onKnownVariantsFilterChange"
       ></variant-card>
+
+      <!-- <variant-summary-card
+        v-if="showVariantSummary"
+        :showVariantSummary="false"
+        :variantModel="variantModel"
+        :effect="effect"
+        :impact="impact"
+        :clinVar="clinVar"
+        :sift="sift"
+        :polyPhen="polyPhen"
+      ></variant-summary-card> -->
+
     </v-container>
   </v-content>
 </div>
@@ -93,6 +105,8 @@ export default {
       geneRegionBuffer: 1000,
       geneRegionStart: null,
       geneRegionEnd: null,
+      adjustedVariantStart: null,
+      adjustedVariantEnd: null,
       genesInProgress: {},
 
       allGenes: allGenesData,
@@ -113,6 +127,7 @@ export default {
       showClinvarVariants: false,
       activeBookmarksDrawer: null,
 
+      showVariantSummary: "false",
       effect: null,
       impact: null,
       clinVar: null,
@@ -156,8 +171,12 @@ export default {
         utility.getHumanRefNames);
 
       self.variantModel = new VariantModel(endpoint,
-        genericAnnotation, translator, self.geneModel,
-        self.cacheHelper, self.genomeBuildHelper);
+        genericAnnotation,
+        translator,
+        self.geneModel,
+        self.cacheHelper,
+        self.genomeBuildHelper);
+
       self.inProgress = self.variantModel.inProgress;
 
       //self.featureMatrixModel = new FeatureMatrixModel(self.cohortModel);
@@ -181,12 +200,7 @@ export default {
   },
   // ONLY REDRAWS IF DEPENDENCY CHANGES (push/pop should do it)
   computed: {
-    // dataSets: function() {
-    //   if (this.variantModel) {
-    //     return this.variantModel.dataSets;
-    //   }
-    //   return [];
-    // }
+    // TODO: maxDepth
   },
   watch: {},
   methods: {
@@ -218,7 +232,7 @@ export default {
     onLoadDemoData: function() {
       let self = this;
       self.geneModel.copyPasteGenes(self.variantModel.demoGenes.join(", "));
-      self.onGeneSelected(self.variantModel.demoGenes[0]);
+      self.onGeneSelected('AIRE');
       self.variantModel.promiseInitDemo()
       .then(function() {
         self.dataSets = self.variantModel.dataSets;
@@ -278,6 +292,7 @@ export default {
 
       self.deselectVariant();
       self.promiseLoadGene(geneName);
+      // SJG TODO: put promiseLoadVariant here?
     },
     promiseLoadGene: function(geneName) {
       let self = this;
@@ -321,7 +336,10 @@ export default {
       let self = this;
 
       self.geneRegionBuffer = theGeneRegionBuffer;
-      self.onGeneSelected(self.selectedGene.gene_name);
+      self.promiseClearCache()
+      .then(function() {
+        self.onGeneSelected(self.selectedGene.gene_name);
+      })
     },
     onGeneRegionZoom: function(theStart, theEnd) {
       this.geneRegionStart = theStart;
@@ -484,8 +502,8 @@ export default {
     initFromUrl: function() {
       let self = this;
 
-      self.geneModel.addGeneName('RAI1');
-      self.onGeneSelected('RAI1');
+      self.geneModel.addGeneName('AIRE');
+      self.onGeneSelected('AIRE');
       self.variantModel.promiseInitDemo()
         .then(function() {
           self.dataSets = self.variantModel.dataSets;

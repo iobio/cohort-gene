@@ -111,8 +111,21 @@
 
   }
 </style>
+  <style lang="sass">
+
+  @import ../../../assets/sass/variables
+
+  #gene-viz.ibo-gene
+    .cds.danger
+      fill:   $danger-exon-color
+      stroke: $danger-exon-border-color
+    .utr.danger
+      fill:   $danger-exon-color
+      stroke: $danger-exon-border-color
+  </style>
+
 <template>
-    <div>
+  <div id="gene-viz">
 
     </div>
 </template>
@@ -194,6 +207,7 @@ export default {
     },
     mounted: function() {
       this.draw();
+      this.update();
     },
     methods: {
       draw: function() {
@@ -210,7 +224,9 @@ export default {
               .cdsHeight(this.cdsHeight)
               .showLabel(this.showLabel)
               .transcriptClass(this.transcriptClass)
-              .featureClass(this.featureClass)
+              .featureClass( function(feature, i) {
+                return self.featureClass(feature, i);
+              })
               .regionStart(this.regionStart)
               .regionEnd(this.regionEnd)
               .on("d3brush", function(brush) {
@@ -224,27 +240,44 @@ export default {
               })
               .on("d3selected", function(d) {
                 self.$emit('transcript-selected', d);
-              });
+              })
+              .on("d3featuretooltip", function(featureObject, feature, lock) {
+                self.$emit("feature-selected", featureObject, feature, lock );
+              })
 
         this.setGeneChart();
       },
       update: function() {
         var self = this;
-        if (self.data && self.data.length > 0 && self.data[0] != null) {
+        if (self.data && self.data.length > 0 && self.data[0] != null && Object.keys(self.data[0]).length > 0) {
           this.geneChart.regionStart(this.regionStart);
           this.geneChart.regionEnd(this.regionEnd);
           this.geneChart.width(self.fixedWidth > 0 ? self.fixedWidth : this.$el.clientWidth);
-          var selection = d3.select(this.$el).datum( self.data );
-          this.geneChart(selection);
+          if (this.geneChart.width() > 0) {
+            var selection = d3.select(this.$el).datum( self.data );
+            this.geneChart(selection);
+          }
         }
       },
       setGeneChart: function() {
         this.$emit('updateGeneChart', this.geneChart);
+      },
+      concatKeys: function(transcripts) {
+        if (transcripts) {
+          return transcripts.map(function(tx) {
+            return tx.transcript_id;
+          }).join(" ");
+        } else {
+          return "";
+        }
       }
     },
     watch: {
-      data: function() {
-        this.update();
+      data: function(newData, oldData) {
+        let self = this;
+        if ( $(self.$el).find("svg").length == 0 ||  self.concatKeys(newData) != self.concatKeys(oldData) ) {
+          this.update();
+        }
       }
     }
 }

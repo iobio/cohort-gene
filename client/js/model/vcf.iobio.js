@@ -600,7 +600,6 @@ var effectCategories = [
       .join(",");
 
       // This comma separated string of samples to be contained in the maps of genotypes
-      debugger;
       var sampleNamesToGenotype = samplesToRetrieve.map(function(sample) {
         return sample.sampleName;
       })
@@ -608,7 +607,6 @@ var effectCategories = [
 
 
       if (sourceType == SOURCE_TYPE_URL) {
-        debugger;
         me._getRemoteVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
           function(annotatedData, results) {
             if (annotatedData && results) {
@@ -702,7 +700,6 @@ var effectCategories = [
      useServerCache, callback, errorCallback) {
 
     var me = this;
-    debugger;
     if (regions == null || regions.length == 0) {
       regions = [];
       regions.push({'name': refName, 'start': geneObject.start, 'end': geneObject.end});

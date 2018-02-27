@@ -16,6 +16,7 @@ class CohortModel {
     this.getBamRefName = null;
 
     this.sampleName = '';
+    this.trackName = '';
     this.isGeneratedSampleName = false;
     this.name = '';
     this.vcfRefNamesMap = {};
@@ -1763,7 +1764,7 @@ class CohortModel {
     me.subsetIds.forEach(function (id) {
       subsetSamples.push( {vcfSampleName: id, sampleName: me.getSampleName()} );
     })
-    
+
     return subsetSamples;
   }
 

@@ -7,6 +7,8 @@ TODO: refactor this to match new back end - namely get rid of SfariModel refs
 <style lang="sass">
 #variant-card
   #gene-viz
+    .current
+     outline: none
     .axis
       padding-left: 0px
       padding-right: 0px
@@ -35,10 +37,24 @@ TODO: refactor this to match new back end - namely get rid of SfariModel refs
 
 <template>
   <v-card tile id="variant-card" class="app-card">
-    <v-card-title primary-title>VARIANT CARD
+    <v-card-title primary-title style="margin-bottom: 5px">VARIANTS
       <div style="width:100%">
 
-        <!-- SJG TODO: what is the known-variants-toolbar and do I need it? -->
+
+        <!-- TODO: <div style="text-align: center;clear: both;">
+          <div class="loader vcfloader" v-bind:class="{ hide: !cohort.inProgress.loadingVariants }" style="display: inline-block;padding-bottom:10px">
+            <span class="loader-label">Annotating variants</span>
+            <img src="../../../assets/images/wheel.gif">
+          </div>
+          <div class="loader fbloader" v-bind:class="{ hide: !cohort.inProgress.callingVariants }" style="display: inline-block;padding-left: 20px;adding-bottom:10px">
+            <span class="loader-label">Calling variants</span>
+            <img src="../../../assets/images/wheel.gif">
+          </div>
+          <div class="loader covloader" v-bind:class="{ hide: !cohort.inProgress.loadingCoverage }" style="display: inline-block;padding-left: 20px;padding-bottom:10px">
+            <span class="loader-label">Analyzing gene coverage</span>
+            <img src="../../../assets/images/wheel.gif">
+          </div>
+        </div> -->
 
         <variant-viz id="all-variant-viz"
           v-if="showVariantViz"
@@ -46,6 +62,8 @@ TODO: refactor this to match new back end - namely get rid of SfariModel refs
           :key="cohort.name"
           ref="variantVizRef"
           :data="cohort.loadedVariants"
+          :title="cohort.trackName"
+          :phenotypes="cohort.subsetPhenotypes"
           :regionStart="regionStart"
           :regionEnd="regionEnd"
           :annotationScheme="annotationScheme"
@@ -62,6 +80,23 @@ TODO: refactor this to match new back end - namely get rid of SfariModel refs
           >
         </variant-viz>
 
+        <gene-viz id="gene-viz"
+          v-bind:class="{ hide: !showGeneViz }"
+          :data="[selectedTranscript]"
+          :margin="geneVizMargin"
+          :width="width"
+          :height="40"
+          :trackHeight="geneVizTrackHeight"
+          :cdsHeight="geneVizCdsHeight"
+          :regionStart="regionStart"
+          :regionEnd="regionEnd"
+          :showXAxis="geneVizShowXAxis"
+          :showBrush="false"
+          :featureClass="getExonClass"
+          @feature-selected="showExonTooltip"
+          >
+        </gene-viz>
+
       </div>
     </v-card-title>
   </v-card>
@@ -70,11 +105,13 @@ TODO: refactor this to match new back end - namely get rid of SfariModel refs
 <script>
 
 import VariantViz from './VariantViz.vue'
+import GeneViz from './GeneViz.vue'
 
 export default {
   name: 'variant-card',
   components: {
-    VariantViz
+    VariantViz,
+    GeneViz
     // TODO: if I add knownVariantsToolbar, add that component
   },
   props: {
@@ -88,7 +125,9 @@ export default {
     regionStart: 0,
     regionEnd: 0,
     width: 0,
-    showVariantViz: true
+    showVariantViz: true,
+    showGeneViz: true,
+    geneVizShowXAxis: null
   },
   data() {
     return {
@@ -234,6 +273,100 @@ export default {
     },
     onKnownVariantsFilterChange: function(selectedCategories) {
       this.$emit("knownVariantsFilterChange", selectedCategories);
+    },
+    getExonClass: function(exon, i) {
+      if (this.showDepthViz && exon.danger) {
+        return exon.feature_type.toLowerCase() + (exon.danger[this.sampleModel.relationship] ? " danger" : "");
+      } else {
+        return exon.feature_type.toLowerCase();
+      }
+    },
+    showExonTooltip: function(featureObject, feature, lock) {
+      let self = this;
+      let tooltip = d3.select("#exon-tooltip");
+
+      if (featureObject == null) {
+        self.hideExonTooltip();
+        return;
+      }
+
+      if (self.selectedExon) {
+        return;
+      }
+
+      if (lock) {
+        self.selectedExon = feature;
+        tooltip.style("pointer-events", "all");
+        tooltip.classed("locked", true);
+      } else {
+        tooltip.style("pointer-events", "none");
+        tooltip.classed("locked", false);
+      }
+
+      var coverageRow = function(fieldName, coverageVal, covFields) {
+        var row = '<div>';
+        row += '<span style="padding-left:10px;width:60px;display:inline-block">' + fieldName   + '</span>';
+        row += '<span style="width:40px;display:inline-block">' + d3.round(coverageVal) + '</span>';
+        row += '<span class="' + (covFields[fieldName] ? 'danger' : '') + '">' + (covFields[fieldName] ? covFields[fieldName]: '') + '</span>';
+        row += "</div>";
+        return row;
+      }
+
+      var html = '<div>'
+               + '<span id="exon-tooltip-title"' + (lock ? 'style="margin-top:8px">' : '>') + (feature.hasOwnProperty("exon_number") ? "Exon " + feature.exon_number : "") + '</span>'
+               + (lock ? '<a href="javascript:void(0)" id="exon-tooltip-close">X</a>' : '')
+               + '</div>';
+      html     += '<div style="clear:both">' + feature.feature_type + ' ' + utility.addCommas(feature.start) + ' - '       + utility.addCommas(feature.end) + '</div>';
+
+      if (feature.geneCoverage && feature.geneCoverage[self.sampleModel.getRelationship()]) {
+          var covFields = self.sampleModel.cohort.filterModel.whichLowCoverage(feature.geneCoverage[self.sampleModel.getRelationship()]);
+          html += "<div style='margin-top:4px'>" + "Coverage:"
+               +  coverageRow('min',    feature.geneCoverage[self.sampleModel.getRelationship()].min, covFields)
+               +  coverageRow('median', feature.geneCoverage[self.sampleModel.getRelationship()].median, covFields)
+               +  coverageRow('mean',   feature.geneCoverage[self.sampleModel.getRelationship()].mean, covFields)
+               +  coverageRow('max',    feature.geneCoverage[self.sampleModel.getRelationship()].max, covFields)
+               +  coverageRow('sd',     feature.geneCoverage[self.sampleModel.getRelationship()].sd, covFields)
+
+      }
+      if (lock) {
+        html += '<div style="text-align:right;margin-top:8px">'
+        + '<a href="javascript:void(0)" id="exon-tooltip-thresholds" class="danger" style="float:left"  >Set cutoffs</a>'
+        + '</div>'
+      }
+      tooltip.html(html);
+      if (lock) {
+        //tooltip.select("#exon-tooltip-thresholds").on("click", function() {
+          //$('#filter-track #coverage-thresholds').addClass('attention');
+        //})
+        tooltip.select("#exon-tooltip-close").on("click", function() {
+          self.selectedExon = null;
+          self.hideExonTooltip(true);
+        })
+      }
+
+      var coord = utility.getTooltipCoordinates(featureObject.node(),
+        tooltip, self.$el.offsetWidth, $('nav.toolbar').outerHeight());
+      tooltip.style("left", coord.x + "px")
+             .style("text-align", 'left')
+             .style("top", (coord.y-60) + "px");
+
+      tooltip.style("z-index", 1032);
+      tooltip.transition()
+             .duration(200)
+             .style("opacity", .9);
+    },
+    hideExonTooltip: function(force) {
+      let self = this;
+      let tooltip = d3.select("#exon-tooltip");
+      if (force || !self.selectedExon) {
+        tooltip.classed("locked", false);
+        tooltip.classed("black-arrow-left", false);
+        tooltip.classed("black-arrow-right", false);
+        tooltip.style("pointer-events", "none");
+        tooltip.transition()
+           .duration(500)
+           .style("opacity", 0);
+      }
     }
   },
   filters: {

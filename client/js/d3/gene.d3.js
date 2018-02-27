@@ -86,6 +86,7 @@ function geneD3() {
        container = d3.select(this).classed('ibo-gene', true);
 
       // Update the x-scale.
+      debugger;
       if (geneD3_regionStart && geneD3_regionEnd) {
         x.domain([geneD3_regionStart, geneD3_regionEnd]);
       } else {
@@ -161,6 +162,7 @@ function geneD3() {
 
 
       var axisEnter = svg.selectAll("g.x.axis").data([0]).enter().append('g');
+      // SJG TODO: trace margin left
       if (geneD3_showXAxis) {
         axisEnter.attr("class", "x axis")
                  .attr("transform",   "translate(" + margin.left + "," + "0" + ")");

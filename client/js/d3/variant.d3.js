@@ -182,8 +182,7 @@ function variantD3() {
 
        container.selectAll("svg").remove();
 
-
-      // Update the x-scale.
+       // SJG TODO These are coming in null
       // Update the x-scale.
       if (regionStart && regionEnd) {
         x.domain([regionStart, regionEnd]);
@@ -221,6 +220,7 @@ function variantD3() {
         data.forEach( function(d) {
           // For each variant.  Calculate the distance on the screen
           // between the 2 variants.
+          // SJG TODO:
           for (var i = 0; i < d.features.length - 1; i++) {
             if (d.features[i].level == l) {
               // find the next feature at the same level
@@ -275,7 +275,6 @@ function variantD3() {
       var symbolSize = symbolScale(minWidth);
 
 
-      // SJG TODO: review this code & event handling in d3
       // Brush
       var brush = d3.svg.brush()
         .x(x)

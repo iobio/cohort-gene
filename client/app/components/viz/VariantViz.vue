@@ -23,6 +23,7 @@
     stroke: rgb(150, 150, 150)
     fill: none
 
+
   .axis
     path, line
       fill: none
@@ -36,7 +37,10 @@
 
 <template>
     <div>
-
+      <span>{{title}}</span>
+      <v-chip color="primary" small text-color="white" v-for="phenotype in phenotypes" :key="phenotype">
+         {{phenotype}}
+      </v-chip>
     </div>
 </template>
 
@@ -101,7 +105,9 @@ export default {
           return "";
         }
       },
-      clazz: null
+      clazz: null,
+      title: '',
+      phenotypes: []
     },
     data() {
       return {
@@ -149,8 +155,6 @@ export default {
       update: function() {
         var self = this;
         if (self.data) {
-
-          // SJG TODO: stopped here - something up with margin values - see console
           // Set the vertical layer count so that the height of the chart can be recalculated
           if (self.data.maxLevel == null) {
             self.data.maxLevel = d3.max(self.data.features, function(d) { return d.level; });
@@ -162,6 +166,9 @@ export default {
           } else {
             self.variantChart.showXAxis(self.showXAxis);
           }
+
+          self.variantChart.regionStart(self.regionStart);
+          self.variantChart.regionEnd(self.regionEnd);
 
           var selection = d3.select(self.$el).datum( [self.data] );
           self.variantChart(selection);
