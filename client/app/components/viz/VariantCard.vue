@@ -262,9 +262,49 @@ export default {
       }
     },
     hideVariantCircle: function(variant) {
+      // Previously was only for one variant track per card
       if (this.showVariantViz) {
         var container = d3.select(this.$el).select('#loaded-variant-viz > svg');
-        this.$refs.variantVizRef.hideVariantCircle(container);
+        this.$refs.variantVizRef.forEach(function(variantViz) {
+          variantViz.hideVariantCircle(container);
+        })
+      }
+    },
+    getVariantSVG: function(variant) {
+      return variant.fbCalled && variant.fbCalled == 'Y'
+          ? d3.select(this.$el).select('#called-variant-viz > svg')
+          : d3.select(this.$el).select('#loaded-variant-viz > svg');
+    },
+    hideCoverageCircle: function() {
+      if (this.showDepthViz) {
+        this.$refs.depthVizRef.hideCurrentPoint();
+      }
+    },
+    showCoverageCircle: function(variant) {
+      let self = this;
+
+      if (self.showDepthViz && self.sampleModel.coverage != null) {
+        let theDepth = null;
+        if (variant.bamDepth != null && variant.bamDepth != '') {
+          theDepth = variant.bamDepth;
+        } else {
+          var matchingVariants = self.sampleModel.loadedVariants.features.filter(function(v) {
+            return v.start == variant.start && v.alt == variant.alt && v.ref == variant.ref;
+          })
+
+          if (matchingVariants.length > 0) {
+            theDepth = matchingVariants[0].bamDepth;
+            // If samtools mpileup didn't return coverage for this position, use the variant's depth
+            // field.
+            if (theDepth == null || theDepth == '') {
+              theDepth = matchingVariants[0].genotypeDepth;
+            }
+          }
+        }
+
+        if (theDepth) {
+          self.$refs.depthVizRef.showCurrentPoint({pos: variant.start, depth: theDepth});
+        }
       }
     },
     // TODO: took out fxns related to showDepthViz

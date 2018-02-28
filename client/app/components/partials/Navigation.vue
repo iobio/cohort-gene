@@ -30,12 +30,12 @@ nav.toolbar
         <v-form >
           <v-text-field id="search-gene-name" label="Gene">
           </v-text-field>
-          <typeahead v-model="selectedGene" force-select match-start  target="#search-gene-name" :data="geneModel.allKnownGenes" item-key="gene_name"/>
+          <typeahead v-model="selectedGene" force-select match-start  target="#search-gene-name" :data="variantModel.geneModel.allKnownGenes" item-key="gene_name"/>
         </v-form>
 
 
         <!-- TODO<genes-menu
-         :gene-model="geneModel"
+         :gene-model="variantModel.geneModel"
          @apply-genes="onApplyGenes">
         </genes-menu> -->
 
@@ -127,8 +127,7 @@ export default {
     LegendPanel
   },
   props: {
-    geneModel: null,
-    cohortModel: null
+    variantModel: null
     //flaggedVariants: null,
   },
   data () {

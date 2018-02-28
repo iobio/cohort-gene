@@ -1,23 +1,31 @@
-<!--
-Main application page
-Updated: SJG 07Feb2018
-
-Note: all CohortModel refs changed to CoreModel
--->
 <style lang="sass">
+
+@import ../../../assets/sass/variables
+
 .app-card
   margin-bottom: 10px
+
+#data-sources-loader
+  margin-top: 20px
+  margin-left: auto
+  margin-right: auto
+  text-align: center
+
 </style>
 
 <template>
 <div>
+  <!-- SJG TODO: put in flagged variant stuff -->
   <navigation
-    v-if="geneModel"
+    v-if="variantModel"
     ref="navRef"
     :variantModel="variantModel"
-    :geneModel="geneModel"
-    @input="onGeneSelected">
-  </navigation>
+    @input="onGeneSelected"
+    @load-demo-data="onLoadDemoData"
+    @clear-cache="clearCache"
+    @apply-genes="onApplyGenes"
+    @on-files-loaded="onFilesLoaded"
+  ></navigation>
   <v-content>
     <v-container fluid>
       <!-- TODO: do I need data-sources-loader -->
@@ -198,7 +206,6 @@ export default {
     function(error) {
     })
   },
-  // ONLY REDRAWS IF DEPENDENCY CHANGES (push/pop should do it)
   computed: {
     // TODO: maxDepth
   },
@@ -287,12 +294,24 @@ export default {
     //     })
     //   }
     // },
+    onFilesLoaded: function() {
+      let self = this;
+      self.promiseClearCache()
+      .then(function() {
+        if (self.selectedGene && self.selectedGene.gene_name) {
+          self.promiseLoadGene(self.selectedGene.gene_name);
+        } else if (self.geneModel.sortedGeneNames && self.geneModel.sortedGeneNames.length > 0) {
+          self.onGeneSelected(self.geneModel.sortedGeneNames[0]);
+        } else {
+          alertify.set('notifier','position', 'top-left');
+          alertify.warning("Please enter a gene name");
+        }
+      })
+    },
     onGeneSelected: function(geneName) {
       var self = this;
-
       self.deselectVariant();
       self.promiseLoadGene(geneName);
-      // SJG TODO: put promiseLoadVariant here?
     },
     promiseLoadGene: function(geneName) {
       let self = this;
@@ -492,6 +511,9 @@ export default {
     },
     clearCache: function() {
       this.cacheHelper.promiseClearCache(this.cacheHelper.launchTimestamp);
+    },
+    onApplyGenes: function(genesString) {
+      this.geneModel.copyPasteGenes(genesString);
     },
     onCopyPasteGenes: function(genesString) {
       this.geneModel.copyPasteGenes(genesString);

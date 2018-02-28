@@ -106,8 +106,14 @@ export default {
         }
       },
       clazz: null,
-      title: '',
-      phenotypes: []
+      title: {
+        default: '',
+        type: String
+      },
+      phenotypes: {
+        type: Array,
+        default: () => []
+      }
     },
     data() {
       return {
@@ -138,16 +144,15 @@ export default {
           .regionStart(this.regionStart)
           .regionEnd(this.regionEnd)
           .on("d3rendered", function() {
-            // TODO: implement
           })
           .on('d3click', function(d) {
-            // TODO: implement
+            self.onVariantClick(variant);
           })
           .on('d3mouseover', function(d) {
-            // TODO: implement
+            self.onVariantHover(variant);
           })
           .on('d3mouseout', function() {
-            // TODO: implement
+            self.onVariantHoverEnd();
           })
 
           this.setVariantChart();
@@ -173,6 +178,27 @@ export default {
           var selection = d3.select(self.$el).datum( [self.data] );
           self.variantChart(selection);
         }
+      },
+      onVariantClick: function(variant) {
+        let self = this;
+        self.$emit("variantClick", variant);
+      },
+      onVariantHover: function(variant) {
+        let self = this;
+        self.$emit("variantHover", variant);
+      },
+      onVariantHoverEnd: function(variant) {
+        let self = this;
+        self.$emit("variantHoverEnd", variant);
+      },
+      showVariantCircle: function(variant, container, lock) {
+        this.variantChart.showCircle()(variant,
+          container,
+          variant.fbCalled && variant.fbCalled == 'Y' ? false : true,
+          lock);
+      },
+      hideVariantCircle: function(container) {
+        this.variantChart.hideCircle()(container);
       },
       setVariantChart: function() {
         this.$emit('updateVariantChart', this.variantChart);

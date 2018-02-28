@@ -86,7 +86,6 @@ function geneD3() {
        container = d3.select(this).classed('ibo-gene', true);
 
       // Update the x-scale.
-      debugger;
       if (geneD3_regionStart && geneD3_regionEnd) {
         x.domain([geneD3_regionStart, geneD3_regionEnd]);
       } else {

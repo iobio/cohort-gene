@@ -47,12 +47,13 @@
 
       <v-layout row wrap class="mt-2">
 
-        <v-flex xs2  >
+        <!-- <v-flex xs2>
+          <v-radio-group v-model="mode" @change="onModeChanged"  hide-details column>
             <v-radio-group v-model="mode" @change="onModeChanged"  hide-details column>
                   <v-radio label="Single"  value="single"></v-radio>
                   <v-radio label="Trio"    value="trio"></v-radio>
             </v-radio-group>
-        </v-flex>
+        </v-flex> -->
 
         <v-flex xs3 class="mt-2" >
             <v-switch  label="Separate URL for index" hide-details v-model="separateUrlForIndex">
