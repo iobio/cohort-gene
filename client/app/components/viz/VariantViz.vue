@@ -145,10 +145,10 @@ export default {
           .regionEnd(this.regionEnd)
           .on("d3rendered", function() {
           })
-          .on('d3click', function(d) {
+          .on('d3click', function(variant) {
             self.onVariantClick(variant);
           })
-          .on('d3mouseover', function(d) {
+          .on('d3mouseover', function(variant) {
             self.onVariantHover(variant);
           })
           .on('d3mouseout', function() {

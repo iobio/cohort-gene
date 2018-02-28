@@ -56,7 +56,7 @@ TODO: refactor this to match new back end - namely get rid of SfariModel refs
           </div>
         </div> -->
 
-        <variant-viz id="all-variant-viz"
+        <variant-viz id="loaded-variant-viz"
           v-if="showVariantViz"
           v-for="cohort in cohorts"
           :key="cohort.name"
@@ -177,7 +177,8 @@ export default {
       if (this.selectedVariant == null) {
         if (this.showVariantViz) {
           this.showVariantCircle(variant);
-          this.showVariantTooltip(variant, false);
+          // SJG TODO: fix this once variantCircle fixed
+          //this.showVariantTooltip(variant, false);
         }
         this.$emit('variantHover', variant, this);
       }
@@ -216,15 +217,18 @@ export default {
                                            {left:   ['middle', 'top',  'bottom']},
                                            {bottom: ['center', 'right','left'  ]} ] };
 
-
+                                           debugger;
       self.variantTooltip.fillAndPositionTooltip(tooltip,
         variant,
         lock,
         coord,
-        self.sfariModel.name,
-        self.sfariModel.getAffectedInfo(),
-        self.sfariModel.cohort.mode,
-        self.sfariModel.cohort.maxAlleleCount);
+        // SJG TODO: how do I know which variant track I'm on...
+        // Can I use coord to look within bounds of which track?
+        self.dataSetModel.cohorts[0].name,
+        // SJG TODO: hardcoding first data set right now - how to get this parameterized
+        self.dataSetModel.cohorts[0].getAffectedInfo(),
+        "", // SJG previously mode TODO get rid of this param
+        0);    // SJG TODO put max allele count in here
 
       tooltip.selectAll("#unpin").on('click', function() {
         self.unpin(null, true);
@@ -258,7 +262,9 @@ export default {
     showVariantCircle: function(variant) {
       if (this.showVariantViz) {
         var container = d3.select(this.$el).select('#loaded-variant-viz > svg');
-        this.$refs.variantVizRef.showVariantCircle(variant, container, false);
+        this.$refs.variantVizRef.forEach(function(variantViz) {
+          variantViz.showVariantCircle(variant, container, false);
+        })
       }
     },
     hideVariantCircle: function(variant) {

@@ -21,7 +21,7 @@ class VariantModel {
     this.annotationScheme = 'vep';
     this.isLoaded = false;
     this.maxAlleleCount = null;
-    this.affectedInfor = null;
+    this.affectedInfo = null;
     this.maxDepth = 0;
 
     this.inProgress = { 'loadingDataSources': false };
@@ -135,6 +135,7 @@ class VariantModel {
     alert("not implemented yet");
   }
 
+  // SJG TODO: this is being called by tooltip annotation stuff
   setAffectedInfo() {
     alert("not implemented yet");
   }
