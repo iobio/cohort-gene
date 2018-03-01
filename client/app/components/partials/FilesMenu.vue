@@ -1,4 +1,5 @@
-
+<!-- SJG TODO: this needs to be modified as appropriate for dataset input and phenotype hasFilters
+will wait to get details from CM and AW about data prior to implementing -->
 <style lang="sass">
 
 .menuable__content__active
@@ -40,25 +41,12 @@
 
     <v-btn flat slot="activator">
      <v-icon>input</v-icon>
-     Files
+     Input Sources
     </v-btn>
 
     <v-form id="files-form">
 
       <v-layout row wrap class="mt-2">
-
-        <!-- <v-flex xs2>
-          <v-radio-group v-model="mode" @change="onModeChanged"  hide-details column>
-            <v-radio-group v-model="mode" @change="onModeChanged"  hide-details column>
-                  <v-radio label="Single"  value="single"></v-radio>
-                  <v-radio label="Trio"    value="trio"></v-radio>
-            </v-radio-group>
-        </v-flex> -->
-
-        <v-flex xs3 class="mt-2" >
-            <v-switch  label="Separate URL for index" hide-details v-model="separateUrlForIndex">
-            </v-switch>
-        </v-flex>
 
         <v-flex xs2 class="px-2">
           <v-select
@@ -89,12 +77,6 @@
               hide-details
               label="Demo data"></v-select>
         </v-flex>
-
-         <v-flex xs12
-           v-for="rel in rels[mode]"
-              :key="rel"
-              :id="rel"
-              v-if="modelInfoMap && modelInfoMap[rel] && Object.keys(modelInfoMap[rel]).length > 0">
 
             <sample-data
              ref="sampleDataRef"
@@ -141,7 +123,6 @@ export default {
     return {
       showFilesMenu: false,
       isValid: false,
-      mode: 'single',
       speciesList: [],
       speciesName: null,
       buildName: null,
@@ -151,13 +132,9 @@ export default {
         mother: {},
         father: {}
       },
-      rels: {
-        single: ['proband'],
-        trio: ['proband', 'mother', 'father']
-      },
       demoActions: [
-        {'display': 'Demo WES trio', 'value': 'exome'},
-        {'display': 'Demo WGS trio', 'value': 'genome'}
+        // THis used ot be value = exome
+        {'display': 'Demo Simons Subset', 'value': 'simons_subset'},
       ],
       demoAction: null,
       separateUrlForIndex: false
@@ -166,8 +143,6 @@ export default {
   watch: {
     showFilesMenu: function() {
       if (this.variantModel && this.showFilesMenu) {
-        // SJG TODO: incorporate w/ trio
-        //this.mode = this.variantModel.mode;
         this.init();
       }
     }
@@ -315,7 +290,7 @@ export default {
           modelInfo.samples      = cohort.sampleNames;
           modelInfo.isAffected   = cohort.isAffected();
           modelInfo.model        = cohort;
-          self.$set(self.modelInfoMap, cohort.relationship, modelInfo);
+          self.$set(self.modelInfoMap, cohort.name, modelInfo);
         }
       })
     },

@@ -32,7 +32,6 @@
 
       <!-- TODO: would like to get away from passing giant variantModel here-->
 
-      <br/>
       <variant-card
         ref="variantCardRef"
         v-for="dataSet in dataSets"
@@ -41,7 +40,7 @@
         :dataSetModel="dataSet"
         :annotationScheme="variantModel.annotationScheme"
         :variantModel="variantModel"
-        :classifyVariantSymbolFunc="dataSet.classifyByImpact"
+        :classifyVariantSymbolFunc="variantModel.classifyByImpact"
         :variantTooltip="variantTooltip"
         :selectedGene="selectedGene"
         :selectedTranscript="selectedTranscript"
@@ -110,7 +109,6 @@ export default {
       selectedTranscript: {},
       selectedVariant: null,
 
-      geneRegionBuffer: 1000,
       geneRegionStart: null,
       geneRegionEnd: null,
       adjustedVariantStart: null,
@@ -190,11 +188,11 @@ export default {
       //self.featureMatrixModel = new FeatureMatrixModel(self.cohortModel);
       //self.featureMatrixModel.init();
 
-      // self.variantTooltip = new VariantTooltip(genericAnnotation,
-      //   glyph,
-      //   translator,
-      //   self.variantModel.annotationScheme,
-      //   self.genomeBuildHelper);
+      self.variantTooltip = new VariantTooltip(genericAnnotation,
+        glyph,
+        translator,
+        self.variantModel.annotationScheme,
+        self.genomeBuildHelper);
     })
     .then(function() {
       self.dataSets = self.variantModel.dataSets;
@@ -408,7 +406,7 @@ export default {
         self.$refs.variantCardRef.forEach(function(variantCard) {
           if (variantCard != sourceVariantCard) {
             variantCard.showVariantCircle(variant);
-            variantCard.showCoverageCircle(variant);
+            //variantCard.showCoverageCircle(variant);
           }
         })
       }

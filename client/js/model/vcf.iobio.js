@@ -11,18 +11,23 @@
 //
 vcfiobio = function module() {
 
-  var debug =  true;
+  var debug =  false;
+
   var exports = {};
+
   var dispatch = d3.dispatch( 'dataReady', 'dataLoading');
 
   var SOURCE_TYPE_URL = "URL";
   var SOURCE_TYPE_FILE = "file";
   var sourceType = "url";
+
   var vcfURL;
   var tbiUrl;
+
   var vcfReader;
   var vcfFile;
   var tabixFile;
+
   var size16kb = Math.pow(2, 14);
   var refData = [];
   var refDensity = [];
@@ -32,6 +37,11 @@ vcfiobio = function module() {
   var regions = [];
   var regionIndex = 0;
   var stream = null;
+
+  var endpoint = null;
+  var genericAnnotation = null;
+  var genomeBuildHelper = null;
+
 
   var VEP_FIELDS_AF_1000G  = "AF|AFR_AF|AMR_AF|EAS_AF|EUR_AF|SAS_AF".split("|");
   var VEP_FIELDS_AF_ESP    = "AA_AF|EA_AF".split("|");
@@ -107,6 +117,7 @@ var effectCategories = [
     vcfFile = null;
     annotators = [];
   }
+
   exports.setEndpoint = function(theEndpoint) {
     endpoint = theEndpoint;
   }
@@ -131,7 +142,6 @@ var effectCategories = [
   exports.getGenomeBuildHelper = function() {
     return genomeBuildHelper;
   }
-
   exports.getAnnotators = function() {
     return this.infoFields ? Object.keys(this.infoFields) : [];
   }
@@ -172,12 +182,13 @@ var effectCategories = [
   }
 
   exports.getHeader = function(callback) {
+    var me = this;
     if (sourceType.toLowerCase() == SOURCE_TYPE_URL.toLowerCase() && vcfURL != null) {
 
       var buffer = "";
       var success = false;
 
-      var cmd = endpoint.getVcfHeader(vcfURL, tbiUrl);
+      var cmd = me.getEndpoint().getVcfHeader(vcfURL, tbiUrl);
 
       cmd.on('data', function(data) {
         if (data != undefined) {
@@ -219,7 +230,7 @@ var effectCategories = [
     var buffer = "";
     var recordCount = 0;
 
-    var cmd = endpoint.getVcfHeader(url, tbiUrl);
+    var cmd = me.getEndpoint().getVcfHeader(url, tbiUrl);
 
     cmd.on('data', function(data) {
       if (data != undefined) {
@@ -281,22 +292,28 @@ var effectCategories = [
     return message ? message : error;
   }
 
-  exports.openVcfFile = function(event, callback) {
+  exports.clearVcfFile = function() {
+    vcfReader = null;
+    vcfFile = null;
+    tabixFile = null;
+  }
+
+  exports.openVcfFile = function(fileSelection, callback) {
     sourceType = SOURCE_TYPE_FILE;
 
-    if (event.target.files.length != 2) {
+    if (fileSelection.files.length != 2) {
        callback(false, 'must select 2 files, both a .vcf.gz and .vcf.gz.tbi file');
        return;
     }
 
-    if (endsWith(event.target.files[0].name, ".vcf") ||
-        endsWith(event.target.files[1].name, ".vcf")) {
+    if (endsWith(fileSelection.files[0].name, ".vcf") ||
+        endsWith(fileSelection.files[1].name, ".vcf")) {
       callback(false, 'You must select a compressed vcf file (.vcf.gz), not a vcf file');
       return;
     }
 
-    var fileType0 = /([^.]*)\.(vcf\.gz(\.tbi)?)$/.exec(event.target.files[0].name);
-    var fileType1 = /([^.]*)\.(vcf\.gz(\.tbi)?)$/.exec(event.target.files[1].name);
+    var fileType0 = /([^.]*)\.(vcf\.gz(\.tbi)?)$/.exec(fileSelection.files[0].name);
+    var fileType1 = /([^.]*)\.(vcf\.gz(\.tbi)?)$/.exec(fileSelection.files[1].name);
 
     var fileExt0 = fileType0 && fileType0.length > 1 ? fileType0[2] : null;
     var fileExt1 = fileType1 && fileType1.length > 1 ? fileType1[2] : null;
@@ -316,16 +333,16 @@ var effectCategories = [
         callback(false, 'The index (.tbi) file must be named ' +  rootFileName0 + ".tbi");
         return;
       } else {
-        vcfFile   = event.target.files[0];
-        tabixFile = event.target.files[1];
+        vcfFile   = fileSelection.files[0];
+        tabixFile = fileSelection.files[1];
       }
     } else if (fileExt1 == 'vcf.gz' && fileExt0 == 'vcf.gz.tbi') {
       if (rootFileName0 != rootFileName1) {
         callback(false, 'The index (.tbi) file must be named ' +  rootFileName1 + ".tbi");
         return;
       } else {
-        vcfFile   = event.target.files[1];
-        tabixFile = event.target.files[0];
+        vcfFile   = fileSelection.files[1];
+        tabixFile = fileSelection.files[0];
       }
     } else {
       callback(false, 'You must select BOTH  a compressed vcf file (.vcf.gz) and an index (.tbi)  file');
@@ -380,6 +397,10 @@ var effectCategories = [
 
   exports.getVcfURL = function() {
     return vcfURL;
+  }
+
+  exports.getTbiURL = function() {
+    return tbiUrl;
   }
 
   exports.setVcfURL = function(url, tbiUrl) {
@@ -478,7 +499,7 @@ var effectCategories = [
     var buffer = "";
     var refName;
 
-    var cmd = endpoint.getVcfDepth(vcfURL, tbiUrl)
+    var cmd = me.getEndpoint().getVcfDepth(vcfURL, tbiUrl)
 
     cmd.on('data', function(data) {
 
@@ -557,8 +578,13 @@ var effectCategories = [
         callbackError("Error occurred in loadRemoteIndex. " +  error);
       }
     })
+
     // execute command
     cmd.run();
+
+
+
+
   };
 
 
@@ -583,12 +609,13 @@ var effectCategories = [
       });
   }
 
-  /* Returns array of annotated data, then results */
-  exports.promiseGetVariants = function(refName, geneObject,
-    selectedTranscript, regions, isMultiSample, samplesToRetrieve,
-    annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache) {
+
+  exports.promiseGetVariants = function(refName, geneObject, selectedTranscript, regions, isMultiSample, samplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache) {
     var me = this;
+
+
     return new Promise( function(resolve, reject) {
+
 
       // This comma separated string of samples to perform vcf subset on
       var vcfSampleNames = samplesToRetrieve.filter(function(sample) {
@@ -626,7 +653,9 @@ var effectCategories = [
               reject();
             }
           });
+
       }
+
     });
   }
 
@@ -695,11 +724,11 @@ var effectCategories = [
 
   }
 
-  exports._getRemoteVariantsImpl = function(refName, geneObject, selectedTranscript, regions, isMultiSample,
-     vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF,
-     useServerCache, callback, errorCallback) {
+  exports._getRemoteVariantsImpl = function(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback) {
 
     var me = this;
+
+
     if (regions == null || regions.length == 0) {
       regions = [];
       regions.push({'name': refName, 'start': geneObject.start, 'end': geneObject.end});
@@ -707,7 +736,8 @@ var effectCategories = [
 
     var serverCacheKey = me._getServerCacheKey(vcfURL, annotationEngine, refName, geneObject, vcfSampleNames, {refseq: isRefSeq, hgvs: hgvsNotation, rsid: getRsId});
 
-    var cmd = endpoint.annotateVariants({'vcfUrl': vcfURL, 'tbiUrl': tbiUrl}, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey);
+    var cmd = me.getEndpoint().annotateVariants({'vcfUrl': vcfURL, 'tbiUrl': tbiUrl}, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey);
+
 
     var annotatedData = "";
     // Get the results from the iobio command
@@ -813,9 +843,9 @@ var effectCategories = [
 
     var me = this;
 
-    var clinvarUrl = genomeBuildHelper.getBuildResource(genomeBuildHelper.RESOURCE_CLINVAR_VCF_S3);
+    var clinvarUrl = me.getGenomeBuildHelper().getBuildResource(me.getGenomeBuildHelper().RESOURCE_CLINVAR_VCF_S3);
 
-    var cmd = endpoint.getClinvarCountsForGene(clinvarUrl, refName, geneObject, binLength, (binLength == null ? me._getExonRegions(transcript) : null));
+    var cmd = me.getEndpoint().getClinvarCountsForGene(clinvarUrl, refName, geneObject, binLength, (binLength == null ? me._getExonRegions(transcript) : null));
 
     var summaryData = "";
     // Get the results from the iobio command
@@ -933,14 +963,18 @@ var effectCategories = [
               callback(sampleNames);
             }
          });
+
       });
    });
+
   }
 
 
   exports._getRemoteSampleNames = function(callback) {
     var me = this;
-    var cmd = endpoint.getVcfHeader(vcfURL, tbiUrl);
+
+    var cmd = me.getEndpoint().getVcfHeader(vcfURL, tbiUrl);
+
 
     var headerData = "";
     // Use Results
@@ -1003,7 +1037,7 @@ var effectCategories = [
 
 
           // Turn vcf record into a JSON object and add it to an array
-          var vcfObject = {'pos': pos, 'id': 'id', 'ref': ref, 'alt': alt,
+          var vcfObject = {gene: geneObject, 'pos': pos, 'id': 'id', 'ref': ref, 'alt': alt,
                            'qual': qual, 'filter': filter, 'info': info, 'format': format, 'genotypes': genotypes};
           vcfObjects.push(vcfObject);
         }
@@ -1148,14 +1182,14 @@ var effectCategories = [
 
       var clinvarUrl = null;
       if (isOffline) {
-        clinvarUrl = OFFLINE_CLINVAR_VCF_BASE_URL + genomeBuildHelper.getBuildResource(genomeBuildHelper.RESOURCE_CLINVAR_VCF_OFFLINE)
+        clinvarUrl = OFFLINE_CLINVAR_VCF_BASE_URL + me.getGenomeBuildHelper().getBuildResource(me.getGenomeBuildHelper().RESOURCE_CLINVAR_VCF_OFFLINE)
       } else {
-        clinvarUrl = genomeBuildHelper.getBuildResource(genomeBuildHelper.RESOURCE_CLINVAR_VCF_S3);
+        clinvarUrl = me.getGenomeBuildHelper().getBuildResource(me.getGenomeBuildHelper().RESOURCE_CLINVAR_VCF_S3);
       }
 
       var regions = me._getClinvarVariantRegions(refName, geneObject, variants, clinvarGenes);
 
-      var cmd = endpoint.normalizeVariants(clinvarUrl, null, refName, regions);
+      var cmd = me.getEndpoint().normalizeVariants(clinvarUrl, null, refName, regions);
 
 
       var clinvarData = "";
@@ -1263,7 +1297,7 @@ var effectCategories = [
         }
       });
 
-      var clinvarBuild = genomeBuildHelper.getBuildResource(genomeBuildHelper.RESOURCE_CLINVAR_POSITION);
+      var clinvarBuild = me.getGenomeBuildHelper().getBuildResource(me.getGenomeBuildHelper().RESOURCE_CLINVAR_POSITION);
       url = url.slice(0,url.length-1) + '[' + clinvarBuild + '])';
 
       var clinvarVariants = null;
@@ -1299,8 +1333,8 @@ var effectCategories = [
                     resolve();
                   } else {
                     var sorted = sumData.result.uids.sort(function(a,b){
-                      var aStart = parseInt(sumData.result[a].variation_set[0].variation_loc.filter(function(v){return v["assembly_name"] == genomeBuildHelper.getCurrentBuildName()})[0].start);
-                      var bStart = parseInt(sumData.result[b].variation_set[0].variation_loc.filter(function(v){return v["assembly_name"] == genomeBuildHelper.getCurrentBuildName()})[0].start);
+                      var aStart = parseInt(sumData.result[a].variation_set[0].variation_loc.filter(function(v){return v["assembly_name"] == me.getGenomeBuildHelper().getCurrentBuildName()})[0].start);
+                      var bStart = parseInt(sumData.result[b].variation_set[0].variation_loc.filter(function(v){return v["assembly_name"] == me.getGenomeBuildHelper().getCurrentBuildName()})[0].start);
                       if ( aStart > bStart)
                         return 1;
                       else
@@ -1337,7 +1371,7 @@ var effectCategories = [
     var me = this;
 
     //  Figure out the reference sequence file path
-    var refFastaFile = genomeBuildHelper.getFastaPath(refName);
+    var refFastaFile = me.getGenomeBuildHelper().getFastaPath(refName);
 
 
     var writeStream = function(stream) {
@@ -1351,7 +1385,7 @@ var effectCategories = [
       stream.end();
     }
 
-    var cmd = endpoint.annotateVariants({'writeStream': writeStream}, refName, null, regions, null, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache);
+    var cmd = me.getEndpoint().annotateVariants({'writeStream': writeStream}, refName, null, regions, null, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache);
 
 
     var buffer = "";
@@ -1579,26 +1613,23 @@ var effectCategories = [
                     variant[key] = clinvarResult[key];
                   }
 
-                  if (window.genericAnnotation !== undefined) {
-                    genericAnnotation.setSimpleFields(variant);
+                  if (me.getGenericAnnotation() !== undefined) {
+                    me.getGenericAnnotation().setSimpleFields(variant);
                   }
 
                   allVariants[i].push(variant);
                 }
-
               }
 
               if (rec.pos < variantRegionStart) {
                 variantRegionStart = rec.pos;
               }
-
             }
 
             altIdx++;
 
           });
         }
-
       });
 
       // Here is the result set.  An object representing the entire region with a field called
@@ -1620,7 +1651,6 @@ var effectCategories = [
         };
         results.push(data);
       }
-
 
       return  parseMultiSample ? results :  results[0];
       //return  results;
@@ -1805,7 +1835,7 @@ exports._parseVepAnnot = function(altIdx, isMultiAllelic, annotToken, annot, gen
 
           var valueUrl = "";
           if (feature != "" && feature != null) {
-            var url = genomeBuildHelper.getBuildResource(genomeBuildHelper.RESOURCE_ENSEMBL_URL) + "Regulation/Context?db=core;fdb=funcgen;rf=" + feature;
+            var url = me.getGenomeBuildHelper().getBuildResource(me.getGenomeBuildHelper().RESOURCE_ENSEMBL_URL) + "Regulation/Context?db=core;fdb=funcgen;rf=" + feature;
             valueUrl = '<a href="' + url + '" target="_reg">' + reg.split("_").join(" ").toLowerCase() + '</a>';
           } else {
             valueUrl = reg.split("_").join(" ").toLowerCase();
@@ -2379,7 +2409,7 @@ exports._getServerCacheKey = function(vcfName, service, refName, geneObject, sam
   var me = this;
 
   var key =  "backend.gene.iobio"
-  //  + "-" + cacheHelper.launchTimestamp
+//    + "-" + cacheHelper.launchTimestamp
     + "-" + vcfName
     + "-" + service
     + "-" + refName

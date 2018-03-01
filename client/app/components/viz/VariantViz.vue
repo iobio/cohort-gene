@@ -1,4 +1,6 @@
 <style lang="sass">
+@import ../../../assets/sass/variables
+
 
 .variant
   opacity: 1
@@ -23,7 +25,6 @@
     stroke: rgb(150, 150, 150)
     fill: none
 
-
   .axis
     path, line
       fill: none
@@ -32,11 +33,53 @@
 
     font-size: 13px
 
+.ibo-variant .circle, .ibo-variant .arrow-line
+  stroke: $arrow-color
+  stroke-width: 2
+
+  fill: none
+  pointer-events: none
+
+.ibo-variant.circle.emphasize, .ibo-variant .arrow-line.emphasize
+  stroke: $arrow-color
+  fill: none
+  stroke-width: 3
+  pointer-events: none
+
+.ibo-variant .arrow, .ibo-variant .arrow.emphasize
+  stroke: $arrow-color
+  pointer-events: none
+
+.ibo-variant
+  .axis.x
+    .tick
+      line
+        // display: none
+        stroke: rgba(211, 211, 211, 0.84)
+
+
+
+.variant-viz
+  .flagged-variant
+    rect
+      fill: none
+      stroke: #1574C7
+      stroke-width: 7
+      opacity: .8
+
+    line
+      stroke: #1574C7
+      stroke-width: 5
+      opacity: .8
+
+    g
+      fill: #1574C7
+      opacity: .8
 </style>
 
 
 <template>
-    <div>
+    <div class="variant-viz">
       <span>{{title}}</span>
       <v-chip color="primary" small text-color="white" v-for="phenotype in phenotypes" :key="phenotype">
          {{phenotype}}
@@ -105,8 +148,12 @@ export default {
           return "";
         }
       },
-      clazz: null,
+      classifySymbolFunc: null,
       title: {
+        default: '',
+        type: String
+      },
+      name: {
         default: '',
         type: String
       },
@@ -123,7 +170,6 @@ export default {
     created: function() {
     },
     mounted: function() {
-      this.classifyFunc = this.clazz ? this.clazz : this.classifySymbolsByImpact;
       this.draw();
     },
     methods: {
@@ -132,7 +178,9 @@ export default {
 
         this.variantChart =  variantD3()
           .width(this.width)
-          .clazz(this.classifyFunc)
+          .clazz(function(variant) {
+            return self.classifySymbolFunc(variant, self.annotationScheme);
+          })
           .margin(this.margin)
           .showXAxis(this.showXAxis)
           .xTickFormat(this.xTickFormat)
@@ -149,6 +197,7 @@ export default {
             self.onVariantClick(variant);
           })
           .on('d3mouseover', function(variant) {
+            debugger;
             self.onVariantHover(variant);
           })
           .on('d3mouseout', function() {
@@ -181,11 +230,14 @@ export default {
       },
       onVariantClick: function(variant) {
         let self = this;
-        self.$emit("variantClick", variant);
+        var cohortKey = self.name;
+        self.$emit("variantClick", variant, cohortKey);
       },
       onVariantHover: function(variant) {
+        debugger;
         let self = this;
-        self.$emit("variantHover", variant);
+        var cohortKey = self.name;
+        self.$emit("variantHover", variant, cohortKey);
       },
       onVariantHoverEnd: function(variant) {
         let self = this;
@@ -203,48 +255,8 @@ export default {
       setVariantChart: function() {
         this.$emit('updateVariantChart', this.variantChart);
       },
-      classifySymbolsByImpact: function(d,i) {
-        var impacts = "";
-        var colorimpacts = "";
-        var effects = "";
-        var sift = "";
-        var polyphen = "";
-        var regulatory = "";
-
-        var effectList = (this.annotationScheme == null || this.annotationScheme.toLowerCase() == 'snpeff' ? d.effect : d.vepConsequence);
-        for (var key in effectList) {
-          if (this.annotationScheme.toLowerCase() == 'vep' && key.indexOf("&") > 0) {
-              var tokens = key.split("&");
-              tokens.forEach( function(token) {
-              effects += " " + token;
-
-              });
-            } else {
-              effects += " " + key;
-            }
-          }
-          var impactList =  (this.annotationScheme == null || this.annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_FILTER]);
-          for (var key in impactList) {
-            impacts += " " + key;
-          }
-          var colorImpactList =  (this.annotationScheme == null || this.annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_COLOR]);
-          for (var key in colorImpactList) {
-            colorimpacts += " " + 'impact_'+key;
-          }
-          if (colorimpacts == "") {
-            colorimpacts = "impact_none";
-          }
-          for (var key in d.sift) {
-            sift += " " + key;
-          }
-          for (var key in d.polyphen) {
-            polyphen += " " + key;
-          }
-          for (var key in d.regulatory) {
-            regulatory += " " + key;
-          }
-
-        return  'variant ' + d.type.toLowerCase()  + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' '  + sift + ' ' + polyphen + ' ' + regulatory +  ' ' + + ' ' + d.clinvar + ' ' + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts;
+      showFlaggedVariant: function(variant, container) {
+        this.variantChart.showFlaggedVariant(container, variant);
       }
     },
     watch: {

@@ -409,7 +409,7 @@ class Translator {
                       }
                    })
                    .attr("x", 0)
-                   .attr("y", isLevelBasic ? 14 : 11)
+                   .attr("y", 11)
                    .attr("dy", "0em")
                    .text(selection.datum().value)
 
@@ -429,7 +429,7 @@ class Translator {
                     }
                  })
                    .attr("x", 0)
-                   .attr("y", isLevelBasic ? 14 : 11)
+                   .attr("y", 11)
                    .attr("dy", "0em")
                    .text(selection.datum().value);
     MatrixCard.wrap(text, options.cellSize, 3, options.cellSize - 1);
@@ -576,4 +576,3 @@ class Translator {
 
 
 }
-

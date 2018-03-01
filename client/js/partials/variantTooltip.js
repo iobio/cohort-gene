@@ -34,9 +34,9 @@ class VariantTooltip {
      .style("opacity", .9)
      .style("pointer-events", "all");
 
-    if (isLevelEdu || isLevelBasic) {
-      tooltip.classed("level-edu", "true");
-    }
+    // if (isLevelEdu || isLevelBasic) {
+    //   tooltip.classed("level-edu", "true");
+    // }
 
     tooltip.classed("tooltip-wide", lock && !isLevelEdu);
 
@@ -1519,5 +1519,3 @@ class VariantTooltip {
 
   }
 }
-
-

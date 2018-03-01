@@ -1,46 +1,89 @@
 <!--
 Encapsulates Variant card
-Updated: SJG 01Feb2018
-
-TODO: refactor this to match new back end - namely get rid of SfariModel refs
+Updated: SJG 28Feb2018
 -->
 <style lang="sass">
-#variant-card
-  #gene-viz
-    .current
-     outline: none
-    .axis
-      padding-left: 0px
-      padding-right: 0px
-      margin-top: -10px
-      margin-bottom: 0px
-      padding-bottom: 0px
-      text
+
+  @import ../../../assets/sass/variables
+
+  #variant-card
+    #gene-viz, #gene-viz-zoom
+      .current
+        outline: none
+      .axis
+        padding-left: 0px
+        padding-right: 0px
+        margin-top: -10px
+        margin-bottom: 0px
+        padding-bottom: 0px
+        text
+          font-size: 11px
+          fill: rgb(120, 120, 120)
+        line, path
+          fill: none
+          stroke: lightgrey
+          shape-rendering: crispEdges
+          stroke-width: 1px
+        &.x
+          .tick
+            line
+              transform: translateY(-14px)
+            text
+              transform: translateY(6px)
+          path
+            transform: translateY(-20px)
+            display: none
+
+    #gene-viz-zoom
+      .current
+        outline: none
+
+      .cds, .exon, .utr
+        fill: rgba(159, 159, 159, 0.63)
+        stroke: rgb(159, 159, 159)
+
+
+    .clinvar-switch, .zoom-switch
+      margin-left: 25px
+
+      label
+        padding-left: 7px
+        line-height: 18px
+        font-size: 12px
+        font-weight: bold
+        padding-top: 2px
+        color: $text-color
+
+    .badge
+      padding: 0px 5px 0px 0px
+      padding: 3px 7px
+      background-color: white !important
+      color: $text-color !important
+
+      &.called
+        .badge__badge
+          background-color: $called-variant-color !important
+      &.loaded
+        .badge__badge
+          background-color: $loaded-variant-progress-color !important
+
+      .badge__badge
         font-size: 11px
-        fill: rgb(120, 120, 120)
-      line, path
-        fill: none
-        stroke: lightgrey
-        shape-rendering: crispEdges
-        stroke-width: 1px
-      &.x
-        .tick
-          line
-            transform: translateY(-14px)
-          text
-            transform: translateY(6px)
-        path
-          transform: translateY(-20px)
-          display: none
+        font-weight: bold
+        width: 24px
+        top: -3px
+</style>
+<style lang="css">
+
 </style>
 
 
 <template>
   <v-card tile id="variant-card" class="app-card">
-    <v-card-title primary-title style="margin-bottom: 5px">VARIANTS
+    <v-card-title primary-title>
+      <span style="min-width:200px;max-width:200px">VARIANTS</span>
+
       <div style="width:100%">
-
-
         <!-- TODO: <div style="text-align: center;clear: both;">
           <div class="loader vcfloader" v-bind:class="{ hide: !cohort.inProgress.loadingVariants }" style="display: inline-block;padding-bottom:10px">
             <span class="loader-label">Annotating variants</span>
@@ -64,6 +107,7 @@ TODO: refactor this to match new back end - namely get rid of SfariModel refs
           :data="cohort.loadedVariants"
           :title="cohort.trackName"
           :phenotypes="cohort.subsetPhenotypes"
+          :name="cohort.name"
           :regionStart="regionStart"
           :regionEnd="regionEnd"
           :annotationScheme="annotationScheme"
@@ -130,6 +174,7 @@ export default {
     geneVizShowXAxis: null
   },
   data() {
+    let self = this;
     return {
       margin: {
         top: 20,
@@ -143,13 +188,13 @@ export default {
         bottom: 5,
         left: 4
       },
-      variantSymbolHeight: 8,
-      variantSymbolPadding: 2,
+      variantSymbolHeight: 8, // SJG TODO: this is where can increase based on frequency
+      variantSymbolPadding: 2,  // Increased from 2 SJG
 
       geneVizMargin: {
         top: 0,
         right: 2,
-        bottom: 18,
+        bottom: self.geneVizShowXAxis ? 18: 0,
         left: 4
       },
       geneVizTrackHeight: 16,
@@ -166,21 +211,21 @@ export default {
         return val + "x";
       }
     },
-    onVariantClick: function(variant) {
+    onVariantClick: function(variant, cohortKey) {
       if (this.showVariantViz) {
         this.showVariantCircle(variant);
-        this.showVariantTooltip(variant, true);
+        this.showVariantTooltip(variant, cohortKey, true);
+        // TODO: display summary statistics
       }
-      this.$emit('variantClick', variant, this);
+      this.$emit('dataSetVariantClick', variant, this);
     },
-    onVariantHover: function(variant, showTooltip=true) {
+    onVariantHover: function(variant, cohortKey, showTooltip=true) {
       if (this.selectedVariant == null) {
         if (this.showVariantViz) {
           this.showVariantCircle(variant);
-          // SJG TODO: fix this once variantCircle fixed
-          //this.showVariantTooltip(variant, false);
+          this.showVariantTooltip(variant, cohortKey, false);
         }
-        this.$emit('variantHover', variant, this);
+        this.$emit('dataSetVariantHover', variant, this);
       }
     },
     onVariantHoverEnd: function() {
@@ -189,12 +234,17 @@ export default {
           this.hideVariantCircle();
           this.hideVariantTooltip(this);
         }
-        this.$emit('variantHoverEnd');
+        this.$emit('dataSetVariantHoverEnd');
       }
 
     },
-    showVariantTooltip: function(variant, lock) {
+    showVariantTooltip: function(variant, cohortKey, lock) {
       let self = this;
+
+      if (cohortKey == null || cohortKey == '') {
+        console.log("error in showVariantTooltip: cohort key is blank");
+        return;
+      }
 
       let tooltip = d3.select("#main-tooltip");
 
@@ -204,7 +254,7 @@ export default {
         tooltip.style("pointer-events", "none");
       }
 
-
+      // SJG TODO: screenX and Y blank
       var x = variant.screenX;
       var y = variant.screenY;
 
@@ -217,17 +267,13 @@ export default {
                                            {left:   ['middle', 'top',  'bottom']},
                                            {bottom: ['center', 'right','left'  ]} ] };
 
-                                           debugger;
       self.variantTooltip.fillAndPositionTooltip(tooltip,
         variant,
         lock,
         coord,
-        // SJG TODO: how do I know which variant track I'm on...
-        // Can I use coord to look within bounds of which track?
-        self.dataSetModel.cohorts[0].name,
-        // SJG TODO: hardcoding first data set right now - how to get this parameterized
-        self.dataSetModel.cohorts[0].getAffectedInfo(),
-        "", // SJG previously mode TODO get rid of this param
+        self.dataSetModel.cohortMap[cohortKey].name,
+        self.dataSetModel.cohortMap[cohortKey].getAffectedInfo(),
+        "",
         0);    // SJG TODO put max allele count in here
 
       tooltip.selectAll("#unpin").on('click', function() {
@@ -245,7 +291,7 @@ export default {
       this.variantTooltip.scroll(direction, "#main-tooltip");
     },
     unpin(saveClickedVariant, unpinMatrixTooltip) {
-      this.$emit("sfariVariantClickEnd", this);
+      this.$emit("dataSetVariantClickEnd", this);
 
       this.hideVariantTooltip();
       this.hideVariantCircle();
@@ -260,26 +306,27 @@ export default {
            .style("pointer-events", "none");
     },
     showVariantCircle: function(variant) {
-      if (this.showVariantViz) {
-        var container = d3.select(this.$el).select('#loaded-variant-viz > svg');
-        this.$refs.variantVizRef.forEach(function(variantViz) {
-          variantViz.showVariantCircle(variant, container, false);
+      let self = this;
+      if (self.showVariantViz) {
+        self.$refs.variantVizRef.forEach(function(variantViz) {
+          variantViz.showVariantCircle(variant, self.getVariantSVG(variant), false);
         })
       }
     },
     hideVariantCircle: function(variant) {
+      let self = this;
       // Previously was only for one variant track per card
       if (this.showVariantViz) {
-        var container = d3.select(this.$el).select('#loaded-variant-viz > svg');
         this.$refs.variantVizRef.forEach(function(variantViz) {
-          variantViz.hideVariantCircle(container);
+          variantViz.hideVariantCircle(self.getVariantSVG(variant));
         })
       }
     },
     getVariantSVG: function(variant) {
-      return variant.fbCalled && variant.fbCalled == 'Y'
-          ? d3.select(this.$el).select('#called-variant-viz > svg')
-          : d3.select(this.$el).select('#loaded-variant-viz > svg');
+      return d3.select(this.$el).select('#loaded-variant-viz > svg');
+      // return variant.fbCalled && variant.fbCalled == 'Y'
+      //     ? d3.select(this.$el).select('#called-variant-viz > svg')
+      //     : d3.select(this.$el).select('#loaded-variant-viz > svg');
     },
     hideCoverageCircle: function() {
       if (this.showDepthViz) {
