@@ -99,6 +99,27 @@ Updated: SJG 28Feb2018
           </div>
         </div> -->
 
+        <!-- SJG TODO: tried putting this in to fix circle stuff... -->
+        <!-- <variant-viz id="called-variant-viz"
+          v-if="showVariantViz"
+          ref="calledVariantVizRef"
+          :data="cohorts[0].calledVariants"
+          :regionStart="regionStart"
+          :regionEnd="regionEnd"
+          :annotationScheme="annotationScheme"
+          :width="width"
+          :margin="variantVizMargin"
+          :variantHeight="variantSymbolHeight"
+          :variantPadding="variantSymbolPadding"
+          :showBrush="false"
+          :showXAxis="true"
+          :classifySymbolFunc="classifyVariantSymbolFunc"
+          @variantClick="onVariantClick"
+          @variantHover="onVariantHover"
+          @variantHoverEnd="onVariantHoverEnd">
+        </variant-viz> -->
+
+        <!-- SJG TODO: duplicate ids problem w/ circle populating on other tracks -->
         <variant-viz id="loaded-variant-viz"
           v-if="showVariantViz"
           v-for="cohort in cohorts"
@@ -223,7 +244,7 @@ export default {
       if (this.selectedVariant == null) {
         if (this.showVariantViz) {
           this.showVariantCircle(variant);
-          this.showVariantTooltip(variant, cohortKey, false);
+          //this.showVariantTooltip(variant, cohortKey, false);
         }
         this.$emit('dataSetVariantHover', variant, this);
       }
@@ -307,8 +328,11 @@ export default {
     },
     showVariantCircle: function(variant) {
       let self = this;
+      debugger;
+      // SJG we have correct viz info coming in here
       if (self.showVariantViz) {
         self.$refs.variantVizRef.forEach(function(variantViz) {
+          // SJG TODO: gettingVariant for other tracks besides top not working
           variantViz.showVariantCircle(variant, self.getVariantSVG(variant), false);
         })
       }

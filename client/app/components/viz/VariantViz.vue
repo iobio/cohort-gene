@@ -80,10 +80,10 @@
 
 <template>
     <div class="variant-viz">
-      <span>{{title}}</span>
+      <!-- <span>{{title}}</span>
       <v-chip color="primary" small text-color="white" v-for="phenotype in phenotypes" :key="phenotype">
          {{phenotype}}
-      </v-chip>
+      </v-chip> -->
     </div>
 </template>
 
@@ -197,7 +197,6 @@ export default {
             self.onVariantClick(variant);
           })
           .on('d3mouseover', function(variant) {
-            debugger;
             self.onVariantHover(variant);
           })
           .on('d3mouseout', function() {
@@ -234,7 +233,6 @@ export default {
         self.$emit("variantClick", variant, cohortKey);
       },
       onVariantHover: function(variant) {
-        debugger;
         let self = this;
         var cohortKey = self.name;
         self.$emit("variantHover", variant, cohortKey);
@@ -244,6 +242,8 @@ export default {
         self.$emit("variantHoverEnd", variant);
       },
       showVariantCircle: function(variant, container, lock) {
+        debugger;
+        // SJG TODO: container coming in null here
         this.variantChart.showCircle()(variant,
           container,
           variant.fbCalled && variant.fbCalled == 'Y' ? false : true,
