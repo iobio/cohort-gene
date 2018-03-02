@@ -77,13 +77,13 @@
       opacity: .8
 </style>
 
-
+<!-- SJG added loaded-variant-viz class here to coordinate selection fxnality -->
 <template>
-    <div class="variant-viz">
-      <!-- <span>{{title}}</span>
+    <div class="variant-viz loaded-variant-viz">
+      <span>{{title}}</span>
       <v-chip color="primary" small text-color="white" v-for="phenotype in phenotypes" :key="phenotype">
          {{phenotype}}
-      </v-chip> -->
+      </v-chip>
     </div>
 </template>
 
@@ -242,8 +242,6 @@ export default {
         self.$emit("variantHoverEnd", variant);
       },
       showVariantCircle: function(variant, container, lock) {
-        debugger;
-        // SJG TODO: container coming in null here
         this.variantChart.showCircle()(variant,
           container,
           variant.fbCalled && variant.fbCalled == 'Y' ? false : true,

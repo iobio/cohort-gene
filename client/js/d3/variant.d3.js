@@ -54,10 +54,7 @@ function variantD3() {
 
   var showCircle = function(d, svgContainer, indicateMissingVariant, emphasize) {
     // Find the matching variant
-    debugger;
     var matchingVariant = null;
-    // SJG TODO: this should be called once per track
-    // SJG TODO: this is coming in as the 12 vars from the top track both times
     svgContainer.selectAll(".variant").each( function (variant,i) {
        if (d.start == variant.start
           && d.end == variant.end
@@ -79,9 +76,7 @@ function variantD3() {
     // Get the x for this position
     if (matchingVariant) {
       var mousex = x(matchingVariant.start);
-
-      // SJG took out +1 here and it fixed the circle height
-      var mousey = height - ((matchingVariant.level) * (variantHeight + verticalPadding));
+      var mousey = height - ((matchingVariant.level + 1) * (variantHeight + verticalPadding));
 
       var circle = svgContainer.select(".circle");
       circle.transition()
@@ -628,8 +623,7 @@ function variantD3() {
 
     // Get the x, y for the variant's position
     var mousex = d3.round(x(matchingVariant.start));
-    // SJG took out +1 from level
-    var mousey = height - ((matchingVariant.level) * (variantHeight + verticalPadding));
+    var mousey = height - ((matchingVariant.level + 1) * (variantHeight + verticalPadding));
 
     var xpos = 0;
     var ypos = mousey-2;

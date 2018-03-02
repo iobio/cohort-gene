@@ -120,11 +120,14 @@ Updated: SJG 28Feb2018
         </variant-viz> -->
 
         <!-- SJG TODO: duplicate ids problem w/ circle populating on other tracks -->
-        <variant-viz id="loaded-variant-viz"
+        <!-- SJG TODO: removed id field to avoid duplicates - replacing w/ class -->
+        <!-- <variant-viz id="loaded-variant-viz" -->
+        <variant-viz
           v-if="showVariantViz"
           v-for="cohort in cohorts"
           :key="cohort.name"
           ref="variantVizRef"
+          :id="cohort.name"
           :data="cohort.loadedVariants"
           :title="cohort.trackName"
           :phenotypes="cohort.subsetPhenotypes"
@@ -275,7 +278,6 @@ export default {
         tooltip.style("pointer-events", "none");
       }
 
-      // SJG TODO: screenX and Y blank
       var x = variant.screenX;
       var y = variant.screenY;
 
@@ -328,26 +330,23 @@ export default {
     },
     showVariantCircle: function(variant) {
       let self = this;
-      debugger;
-      // SJG we have correct viz info coming in here
       if (self.showVariantViz) {
         self.$refs.variantVizRef.forEach(function(variantViz) {
-          // SJG TODO: gettingVariant for other tracks besides top not working
-          variantViz.showVariantCircle(variant, self.getVariantSVG(variant), false);
+          variantViz.showVariantCircle(variant, self.getVariantSVG(variant, variantViz.name), false);
         })
       }
     },
     hideVariantCircle: function(variant) {
       let self = this;
-      // Previously was only for one variant track per card
       if (this.showVariantViz) {
         this.$refs.variantVizRef.forEach(function(variantViz) {
-          variantViz.hideVariantCircle(self.getVariantSVG(variant));
+          variantViz.hideVariantCircle(self.getVariantSVG(variant, variantViz.name));
         })
       }
     },
-    getVariantSVG: function(variant) {
-      return d3.select(this.$el).select('#loaded-variant-viz > svg');
+    getVariantSVG: function(variant, vizTrackName) {
+      var svg = d3.select(this.$el).select('#' + vizTrackName + ' > svg');
+      return svg;
       // return variant.fbCalled && variant.fbCalled == 'Y'
       //     ? d3.select(this.$el).select('#called-variant-viz > svg')
       //     : d3.select(this.$el).select('#loaded-variant-viz > svg');
