@@ -76,7 +76,6 @@ class Util {
       $(anchorSelector).attr("download", fileName);
       $(anchorSelector).attr("href", url);
     }
-    $(anchorSelector).animateIt('tada', 'animate-twice');
   }
 
 
@@ -452,6 +451,409 @@ class Util {
         return transitions[t];
       }
     }
+  }
+
+/*
+  *  Evaluate the highest impacts for a variant across all transcripts.
+  *  Cull the impact if it already annotated for the canonical transcript
+  *  or the impact is less severe than the one for the canonical
+  *  transcripts.  Returns an object that looks like this:
+  *  {HIGH: {frameshift:
+  *            {
+  *       transcripts: [ENST000245.1,ENSTxxxx],
+  *       display: 'ENST000241.1,ENSTxxxx'
+  *     }
+  *     stop_gain:
+  *       {
+  *       transcripts: [ENST000245.1,ENSTxxxx],
+  *       display: 'ENST000241.1,ENSTxxxx'
+  *     }
+  *     }
+  * }
+  */
+  getNonCanonicalHighestImpactsVep(variant, impactMap) {
+    let self = this;
+    var vepHighestImpacts = {};
+    for (var impactKey in variant.highestImpactVep) {
+      var nonCanonicalEffects = [];
+      var allEffects = variant.highestImpactVep[impactKey];
+
+      var lowestImpactValue = 99;
+      for (var key in variant.vepImpact) {
+        var value = impactMap[key].value;
+        if (value < lowestImpactValue) {
+          lowestImpactValue = value;
+        }
+      }
+
+      var theValue = impactMap[impactKey].value;
+      if (theValue < lowestImpactValue) {
+        for (var effectKey in allEffects) {
+          var allTranscripts = allEffects[effectKey];
+          if (Object.keys(allTranscripts).length > 0) {
+            var ncObject = {};
+            var transcriptUrls = "";
+            for(var transcriptId in allTranscripts) {
+              if (transcriptUrls.length > 0) {
+                transcriptUrls += ", ";
+              }
+              var url = '<a href="javascript:void(0)" onclick="selectTranscript(\'' + transcriptId + '\')">' + transcriptId + '</a>';
+              transcriptUrls += url;
+            }
+            ncObject[effectKey] = {transcripts: Object.keys(allTranscripts), display: Object.keys(allTranscripts).join(","), url: transcriptUrls};
+            nonCanonicalEffects.push(ncObject);
+          }
+
+        }
+
+        if (nonCanonicalEffects.length > 0) {
+          vepHighestImpacts[impactKey] = nonCanonicalEffects;
+        }
+      }
+    }
+    return vepHighestImpacts;
+  }
+
+
+  formatHgvsP(variant, value) {
+    let me = this;
+    if (value == null || value == '' || Object.keys(value).length == 0) {
+      return "";
+    } else {
+      var buf = "";
+      for(var key in value) {
+        var tokens = key.split(":p.");
+        if (buf.length > 0) {
+          buf += " ";
+        }
+        if (tokens.length == 2) {
+          var basicNotation = "p." + tokens[1];
+          buf += basicNotation;
+        } else if (tokens.length == 1 && me.endsWith(tokens[0],"(p.=)")) {
+          // If synoymous variants, show p.(=) in cell
+          if (variant.vepConsequence && Object.keys(variant.vepConsequence).length > 0) {
+            for( consequence in variant.vepConsequence) {
+              if (consequence == "synonymous_variant") {
+                buf += "p.(=)";
+              }
+            }
+          }
+        }
+      }
+      return buf;
+    }
+  }
+
+  formatHgvsC(variant, value) {
+    let me = this;
+    if (value == null || value == '' || Object.keys(value).length == 0) {
+      return "";
+    } else {
+      var buf = "";
+      for(var key in value) {
+        var tokens = key.split(":c.");
+        if (buf.length > 0) {
+          buf += " ";
+        }
+        if (tokens.length == 2) {
+          var basicNotation = "c." + tokens[1];
+          buf += basicNotation;
+        }
+      }
+      return buf;
+    }
+
+  }
+
+  getTooltipCoordinates(node, tooltip, containerWidth, topMargin) {
+    var coord = {};
+    var tooltipWidth  = d3.round(tooltip.node().offsetWidth);
+    var tooltipHeight = d3.round(tooltip.node().offsetHeight);
+
+    var matrix    = node.getScreenCTM()
+                        .translate(+node.getAttribute("cx"), +node.getAttribute("cy"));
+    var boundRect = node.getBoundingClientRect();
+    coord.x       = d3.round(boundRect.left + (boundRect.width/2));
+    coord.y       = window.pageYOffset + matrix.f + topMargin;
+    coord.width   = boundRect.width;
+    coord.height  = boundRect.height;
+
+    // Position tooltip in the middle of the node
+    coord.x = coord.x - (tooltipWidth/2);
+    // Position tooltip above the node
+    coord.y = coord.y - tooltipHeight;
+
+    // If the tooltip will be cropped to the right, adjust its position
+    // so that it is immediately to the left of the node
+    if  ((coord.x + (tooltipWidth/2) + 150) > containerWidth) {
+      coord.x -= tooltipWidth/2;
+      coord.x -= 6;
+      tooltip.classed("black-arrow-left", false);
+      tooltip.classed("black-arrow-right", true);
+    } else if (coord.x < tooltipWidth/2) {
+      // If the tooltip will be cropped to the left, adjust its position
+      // so that it is immediately to the right of the node
+      coord.x += tooltipWidth/2;
+      coord.x += 6;
+      tooltip.classed("black-arrow-left", true);
+      tooltip.classed("black-arrow-down-right", false);
+    } else {
+      // No cropping of tooltip on either side, just default to show tooltip
+      // immediately to the left of the node
+      coord.x += tooltipWidth/2;
+      coord.x += 6;
+      tooltip.classed("black-arrow-left", true);
+      tooltip.classed("black-arrow-right", false);
+    }
+    return coord;
+  }
+
+  formatDisplay(variant, translator) {
+    var info = {
+      coord: "",
+      refalt: "",
+      exon: "",
+      inheritance: "",
+      clinvarSig: "",
+      clinvarSigSummary: "",
+      clinvarUrl: "",
+      clinvarLink: "",
+      clinvarLinkKnownVariants: "",
+      phenotype: "",
+      phenotypeSimple: "",
+      zygosity: "",
+      vepImpact: "",
+      vepHighestImpact: "",
+      vepHighestImpactSimple: "",
+      vepHighestImpactInfo: "",
+      vepHighestImpactValue: "",
+      vepConsequence: "",
+      HGVSc: "",
+      HGVSp: "",
+      HGVScLoading: false,
+      HGVSpLoading: false,
+      sift: "",
+      polyphen: "",
+      regulatory: "",
+      regulatoryMotifLinks: "",
+      rsId: "",
+      dbSnpUrl: "",
+      dbSnpLink: "",
+    };
+
+
+    info.coord = variant.chrom + ":" + variant.start;
+    info.refalt = variant.ref + "->" + variant.alt;
+    if (variant.ref == '' && variant.alt == '') {
+      info.refalt = '(' + variant.len + ' bp)';
+    }
+
+
+
+    if (variant.hasOwnProperty("vepExon") && !$.isEmptyObject(variant.vepExon)) {
+      info.exon += "Exon ";
+      info.exon += Object.keys(variant.vepExon).join(",");
+    }
+
+    info.inheritance = translator.getInheritanceLabel(variant.inheritance);
+
+    for (var key in variant.clinVarClinicalSignificance) {
+      if (key != 'none' && key != 'undefined' ) {
+        if (!isLevelEdu || (key.indexOf("uncertain_significance") >= 0 || key.indexOf("pathogenic") >= 0)) {
+          if (info.clinvarSig.length > 0 ) {
+              info.clinvarSig += ", ";
+          }
+          info.clinvarSig += key.split("_").join(" ");
+        }
+      }
+    }
+
+    for (var key in variant.clinVarPhenotype) {
+      if (key != 'not_specified'  && key != 'undefined') {
+        if (info.phenotype.length > 0) {
+            info.phenotype += ", ";
+        }
+        info.phenotype += key.split("_").join(" ").split("\\x2c").join(", ");
+      }
+    }
+
+
+    if (info.clinvarSig != null && info.clinvarSig != "") {
+      if (variant.clinVarUid != null && variant.clinVarUid != '') {
+        info.clinvarUrl = 'http://www.ncbi.nlm.nih.gov/clinvar/variation/' + variant.clinVarUid;
+      } else if (variant.clinvarSubmissions != null && variant.clinvarSubmissions.length > 0) {
+        var clinsigUniq = {};
+        for (var idx = 0; idx < variant.clinvarSubmissions.length; idx++) {
+          var submission = variant.clinvarSubmissions[idx];
+          submission.clinsig.split(",").forEach(function(clinsig) {
+            clinsigUniq[clinsig] = "";
+          })
+          var accessions = submission.accession.split(",");
+          var clinsigs   = submission.clinsig.split(",");
+          for (var i = 0; i < accessions.length; i++) {
+            var accessionSingle = accessions[i];
+            var clinsigSingle   = clinsigs.length > i ? clinsigs[i] : "?";
+
+            info.clinvarUrl   = 'http://www.ncbi.nlm.nih.gov/clinvar/' + accessionSingle;
+            info.clinvarLink  +=  '<a class="tooltip-clinvar-link"' + '" href="' + info.clinvarUrl + '" style="float:left;padding-right:4px" target="_new"' + '>' + clinsigSingle.split("_").join(" ") + '</a>';
+
+            info.clinvarLinkKnownVariants += "<span style='clear:both' class='tooltip-clinsig-link" + clinsigSingle + "'>";
+            info.clinvarLinkKnownVariants += '<a class="tooltip-clinvar-link"' + '" href="' + info.clinvarUrl + '" style="padding-right:4px" target="_new"' + '>' + clinsigSingle.split("_").join(" ") + '</a>';
+
+          }
+
+        };
+        info.clinvarSigSummary = "";
+        for (var clinsig in clinsigUniq) {
+          var style = 'display:inline-block;'
+          if (info.clinvarSigSummary.length > 0) {
+            style += 'padding-left:5px';
+          }
+          info.clinvarSigSummary += "<span style='" + style +"' class='tooltip-clinsig-link" + clinsig + "'>";
+          info.clinvarSigSummary += "<span style='float:left'>" + clinsig.split("_").join(" ") + "</span>";
+          info.clinvarSigSummary += "</span>";
+        }
+      }
+    }
+
+    if (variant.zygosity && variant.zygosity.toLowerCase() == 'het') {
+      info.zygosity = "Heterozygous";
+    } else if (variant.zygosity && variant.zygosity.toLowerCase() == 'hom') {
+      info.zygosity = "Homozygous";
+    }
+
+
+    for (var key in variant.vepImpact) {
+      if (info.vepImpact.length > 0) {
+          info.vepImpact += ", ";
+      }
+      if (isLevelEdu) {
+        info.vepImpact = levelEduImpact[key];
+      } else {
+        info.vepImpact += key.toLowerCase();
+      }
+    }
+
+    // If the highest impact occurs in a non-canonical transcript, show the impact followed by
+    // the consequence and corresponding transcripts
+    var vepHighestImpacts = utility.getNonCanonicalHighestImpactsVep(variant, translator.impactMap);
+    for (var impactKey in vepHighestImpacts) {
+
+
+      var nonCanonicalEffects = vepHighestImpacts[impactKey];
+      if (info.vepHighestImpact.length > 0) {
+          info.vepHighestImpact += ", ";
+          info.vepHighestImpactSimple += ", ";
+          info.vepHighestImpactInfo += ", ";
+      }
+
+      info.vepHighestImpact       += impactKey.toLowerCase();
+      info.vepHighestImpactSimple += impactKey.toLowerCase();
+      info.vepHighestImpactInfo   += impactKey.toLowerCase();
+      info.vepHighestImpactValue   = impactKey.toUpperCase();
+
+      nonCanonicalEffects.forEach(function(nonCanonicalEffect) {
+        info.vepHighestImpact += "<span>  (";
+        for (var effectKey in nonCanonicalEffect) {
+          var transcriptString = nonCanonicalEffect[effectKey].url;
+          info.vepHighestImpact     += " " + effectKey.split("\&").join(" & ") + 'in ' + transcriptString;
+          info.vepHighestImpactInfo += " " + effectKey.split("\&").join(" & ") + " in " + nonCanonicalEffect[effectKey].display;
+
+        }
+        info.vepHighestImpact += ")</span> ";
+      })
+      info.vepHighestImpacSimple += " in non-canonical transcripts";
+    }
+
+
+    for (var key in variant.vepConsequence) {
+      if (info.vepConsequence.length > 0) {
+          info.vepConsequence += ", ";
+      }
+      if (isLevelEdu) {
+        info.vepConsequence = key.split("_").join(" ").toLowerCase();
+      } else {
+        info.vepConsequence += key.split("_").join(" ").toLowerCase();
+      }
+    }
+    if (variant.fbCalled == 'Y' || variant.extraAnnot) {
+      for (var key in variant.vepHGVSc) {
+        if (key.length > 0) {
+          if (info.HGVSc.length > 0) {
+              info.HGVSc += ", ";
+          }
+          info.HGVSc += key;
+        }
+      }
+      for (var key in variant.vepHGVSp) {
+        if (key.length > 0) {
+          if (info.HGVSp.length > 0) {
+              info.HGVSp += ", ";
+          }
+          info.HGVSp += key;
+        }
+      }
+    } else {
+      info.HGVScLoading = true;
+      info.HGVSpLoading = true;
+    }
+
+    for (var key in variant.vepSIFT) {
+      if (info.sift.length > 0) {
+          info.sift += ", ";
+      }
+      info.sift += key.split("_").join(" ");
+    }
+    for (var key in variant.vepPolyPhen) {
+      if (info.polyphen.length > 0) {
+          info.polyphen += ", ";
+      }
+      if (isLevelEdu) {
+        info.polyphen = key.split("_").join(" ");
+      } else {
+        info.polyphen += key.split("_").join(" ");
+      }
+    }
+
+    for (var key in variant.regulatory) {
+      // Bypass motif-based features
+      if (key.indexOf("mot_") == 0) {
+        continue;
+      }
+      if (info.regulatory.length > 0) {
+          info.regulatory += ", ";
+      }
+      var value = variant.regulatory[key];
+      info.regulatory += value;
+    }
+
+
+    if (variant.vepRegs) {
+      for (var i = 0; i < variant.vepRegs.length; i++) {
+        var vr = variant.vepRegs[i];
+        if (vr.motifName != null && vr.motifName != '') {
+
+          if (info.regulatoryMotifLinks.length > 0) {
+              info.regulatoryMotifLinks += ", ";
+          }
+
+          var tokens = vr.motifName.split(":");
+          var baseMotifName;
+          if (tokens.length == 2) {
+            baseMotifName = tokens[1];
+          }
+
+          var regUrl = "http://jaspar.genereg.net/cgi-bin/jaspar_db.pl?ID=" + baseMotifName + "&rm=present&collection=CORE"
+          info.regulatoryMotifLinks += '<a href="' + regUrl + '" target="_motif">' + vr.motifName + '</a>';
+        }
+      }
+    }
+
+    info.rsId = utility.getRsId(variant);
+    info.dbSnpUrl   = "http://www.ncbi.nlm.nih.gov/projects/SNP/snp_ref.cgi?rs=" + info.rsId ;
+    info.dbSnpLink +=  '<a href="' + info.dbSnpUrl + '" target="_dbsnp"' + '>' + info.rsId  + '</a>';
+
+    return info;
   }
 
 

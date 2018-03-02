@@ -247,7 +247,7 @@ export default {
       if (this.selectedVariant == null) {
         if (this.showVariantViz) {
           this.showVariantCircle(variant);
-          //this.showVariantTooltip(variant, cohortKey, false);
+          this.showVariantTooltip(variant, cohortKey, false);
         }
         this.$emit('dataSetVariantHover', variant, this);
       }
@@ -264,7 +264,6 @@ export default {
     },
     showVariantTooltip: function(variant, cohortKey, lock) {
       let self = this;
-
       if (cohortKey == null || cohortKey == '') {
         console.log("error in showVariantTooltip: cohort key is blank");
         return;
@@ -290,8 +289,12 @@ export default {
                                            {left:   ['middle', 'top',  'bottom']},
                                            {bottom: ['center', 'right','left'  ]} ] };
 
+     debugger;
+     //SJG TODO: parameters have changed here
       self.variantTooltip.fillAndPositionTooltip(tooltip,
         variant,
+        self.selectedGene,
+        self.selectedTranscript,
         lock,
         coord,
         self.dataSetModel.cohortMap[cohortKey].name,
