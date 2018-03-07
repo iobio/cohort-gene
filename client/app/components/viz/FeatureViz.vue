@@ -4,7 +4,6 @@
 </style>
 
 <template>
-  <!-- <div style="margin-top:-7px;margin-left:20px;display:inline-block;width:150px"> -->
     <v-layout class="content" column nowrap>
       <v-flex>
         <v-layout row>
@@ -15,14 +14,26 @@
       <v-flex>
         <v-layout row>
            <v-flex xs3 class="field-label">Impact:</v-flex>
-           <v-flex xs9 class="field-value">{{ impact }}</v-flex>
+           <v-flex xs9 class="field-value">
+             {{impact}}
+           </v-flex>
         </v-layout>
       </v-flex>
       <v-flex >
         <v-layout row>
            <v-flex xs3 class="field-label">Clinvar:</v-flex>
-           <!-- SJG TODO: does this need to be link here? -->
-           <v-flex xs9 class="field-value" v-html="clinVar"></v-flex>
+           <v-flex xs9 class="field-value">
+             <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
+                 <g transform="translate(1,3)"
+                 :class="clinVarColor">
+                     <use xmlns:xlink="http://www.w3.org/1999/xlink"
+                     xlink:href="#clinvar-symbol" width="11.5"
+                     height="11.5">
+                     </use>
+                 </g>
+             </svg>
+             <span>{{ clinVarText }}</span>
+           </v-flex>
         </v-layout>
       </v-flex>
       <v-flex>
@@ -38,7 +49,6 @@
         </v-layout>
       </v-flex>
     </v-layout>
-  <!-- </div> -->
 </template>
 
 
@@ -54,7 +64,11 @@ export default {
       default: "",
       type: String
     },
-    clinVar: {
+    clinVarText: {
+      default:"",
+      type: String
+    },
+    clinVarClazz: {
       default: "",
       type: String
     },
@@ -65,6 +79,13 @@ export default {
     polyPhen: {
       default: "",
       type: String
+    }
+  },
+  computed: {
+    clinVarColor: function() {
+        if (this.clinVarClazz != "")
+          return "colorby_" + this.clinVarClazz;
+        return "";
     }
   },
   created: function() {},

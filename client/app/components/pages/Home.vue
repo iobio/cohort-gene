@@ -59,15 +59,10 @@
         @knownVariantsFilterChange="onKnownVariantsFilterChange"
       ></variant-card>
 
-      <!-- SJG TODO: make this hidden at first -->
       <variant-summary-card
+        v-bind:class="{hide: this.selectedVariant == null}"
+        :variant="selectedVariantInfo"
         ref="variantSummaryCardRef"
-        :variantModel="variantModel"
-        :effect="effect"
-        :impact="impact"
-        :clinVar="clinVar"
-        :sift="sift"
-        :polyPhen="polyPhen"
       ></variant-summary-card>
 
     </v-container>
@@ -131,14 +126,7 @@ export default {
       inProgress: {},
       cardWidth: 0,
       showClinvarVariants: false,
-      activeBookmarksDrawer: null,
-
-      showVariantSummary: false,
-      effect: null,
-      impact: null,
-      clinVar: null,
-      sift: null,
-      polyPhen: null
+      activeBookmarksDrawer: null
     }
   },
 
@@ -205,7 +193,14 @@ export default {
     })
   },
   computed: {
-    // TODO: maxDepth
+    selectedVariantInfo: function() {
+      debugger;
+      if (this.selectedVariant) {
+        return utility.formatDisplay(this.selectedVariant, this.variantModel.translator)
+      } else {
+        return null;
+      }
+    }
   },
   watch: {},
   methods: {
@@ -383,6 +378,7 @@ export default {
     },
     onDataSetVariantClick: function(variant, sourceComponent, cohortKey) {
       let self = this;
+
       self.selectedVariant = variant;
       // SJG TODO: get this working
       //self.showVariantExtraAnnots(sourceComponent, variant, cohortKey);
@@ -392,9 +388,6 @@ export default {
           variantCard.showCoverageCircle(variant);
         }
       })
-      debugger;
-      //showVariantSummary = true;
-      self.$refs.variantSummaryCardRef.populateData(variant);
     },
     onDataSetVariantClickEnd: function(sourceVariantCard) {
       let self = this;
@@ -403,9 +396,6 @@ export default {
         variantCard.hideVariantCircle();
         variantCard.hideCoverageCircle();
       })
-      showVariantSummary = false;
-      // SJG TODO: do I really need to empty out data here?
-      self.$refs.variantSummaryCardRef.hideData(variant);
     },
     onDataSetVariantHover: function(variant, sourceVariantCard) {
       let self = this;

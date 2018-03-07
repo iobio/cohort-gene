@@ -68,7 +68,7 @@ class VariantModel {
 
     var subsetModel = new CohortModel(self);
     subsetModel.name = 'demo_subset';
-    subsetModel.trackName = 'Variants for:';
+    subsetModel.trackName = 'Variants for';
     // Ids for platinum are NA12877, NA12878, NA12891, NA12892
     subsetModel.subsetIds.push('NA12892');
     //subsetModel.subsetIds.push('NA12891');

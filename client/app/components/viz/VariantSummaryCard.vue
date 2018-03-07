@@ -32,6 +32,7 @@
 
   .field-value
     padding-right: 25px
+    padding-left: 5px
     word-break: break-word
 
   #inheritance
@@ -168,7 +169,8 @@
           <feature-viz id="loaded-feature-viz" class="summary-viz"
             :effect="effect"
             :impact="impact"
-            :clinVar="clinVar"
+            :clinVarText="clinVarText"
+            :clinVarClazz="clinVarClazz"
             :sift="sift"
             :polyPhen="polyPhen">
           </feature-viz>
@@ -179,8 +181,6 @@
         </v-flex>
     </v-layout>
     </v-container>
-
-      <!-- SJG TODO: put in frequency viz portion -->
   </v-card>
 </template>
 
@@ -199,26 +199,45 @@ export default {
     HistogramViz
   },
   props: {
-    effect: "",
-    impact: "",
-    clinVar: "",
-    sift: "",
-    polyPhen: ""
+    variant: null
   },
   data() { return {}},
-  methods: {
-    populateData: function(variant) {
-      debugger;
-      // SJG TODO: look at what variant object has in it - can directly assign fields?
-
-
+  methods: {},
+  filters: {},
+  computed: {
+    effect: function() {
+      if (this.variant != null)
+        return this.variant.vepConsequence;
+      return "";
     },
-    hideData: function(variant) {
-
+    impact: function() {
+      if (this.variant != null)
+      {
+        return this.variant.vepImpact;
+      }
+      return "";
+    },
+    clinVarText: function() {
+      if (this.variant != null)
+        return this.variant.clinvarSig;
+      return "";
+    },
+    clinVarClazz: function() {
+      if (this.variant != null)
+        return "";
+        // SJG TODO plug in clinvarSig into translator?
+      return "";
+    },
+    sift: function() {
+      if (this.variant != null)
+        return this.variant.sift;
+    },
+    polyPhen: function() {
+      if (this.variant != null)
+        return this.variant.polyphen;
+      return "";
     }
   },
-  filters: {},
-  computed: {},
   watch: {},
   mounted: function() {},
   created: function() {}

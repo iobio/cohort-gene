@@ -82,42 +82,7 @@ Updated: SJG 28Feb2018
   <v-card tile id="variant-card" class="app-card">
     <v-card-title primary-title>
       <span style="min-width:200px;max-width:200px">VARIANTS</span>
-
       <div style="width:100%">
-        <!-- TODO: <div style="text-align: center;clear: both;">
-          <div class="loader vcfloader" v-bind:class="{ hide: !cohort.inProgress.loadingVariants }" style="display: inline-block;padding-bottom:10px">
-            <span class="loader-label">Annotating variants</span>
-            <img src="../../../assets/images/wheel.gif">
-          </div>
-          <div class="loader fbloader" v-bind:class="{ hide: !cohort.inProgress.callingVariants }" style="display: inline-block;padding-left: 20px;adding-bottom:10px">
-            <span class="loader-label">Calling variants</span>
-            <img src="../../../assets/images/wheel.gif">
-          </div>
-          <div class="loader covloader" v-bind:class="{ hide: !cohort.inProgress.loadingCoverage }" style="display: inline-block;padding-left: 20px;padding-bottom:10px">
-            <span class="loader-label">Analyzing gene coverage</span>
-            <img src="../../../assets/images/wheel.gif">
-          </div>
-        </div> -->
-
-        <!-- SJG TODO: tried putting this in to fix circle stuff... -->
-        <!-- <variant-viz id="called-variant-viz"
-          v-if="showVariantViz"
-          ref="calledVariantVizRef"
-          :data="cohorts[0].calledVariants"
-          :regionStart="regionStart"
-          :regionEnd="regionEnd"
-          :annotationScheme="annotationScheme"
-          :width="width"
-          :margin="variantVizMargin"
-          :variantHeight="variantSymbolHeight"
-          :variantPadding="variantSymbolPadding"
-          :showBrush="false"
-          :showXAxis="true"
-          :classifySymbolFunc="classifyVariantSymbolFunc"
-          @variantClick="onVariantClick"
-          @variantHover="onVariantHover"
-          @variantHoverEnd="onVariantHoverEnd">
-        </variant-viz> -->
 
         <variant-viz
           v-if="showVariantViz"

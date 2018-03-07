@@ -1,7 +1,6 @@
 <style lang="sass">
 @import ../../../assets/sass/variables
 
-
 .variant
   opacity: 1
   stroke: #000
@@ -60,6 +59,12 @@
 
 
 .variant-viz
+  .field-label-header
+    color: #7f7f7f
+    font-style: italic
+    padding-left: 6px
+    text-align: right
+
   .flagged-variant
     rect
       fill: none
@@ -80,7 +85,7 @@
 <!-- SJG added loaded-variant-viz class here to coordinate selection fxnality -->
 <template>
     <div class="variant-viz loaded-variant-viz">
-      <span>{{title}}</span>
+      <span class="field-label-header">{{title}}</span>
       <v-chip color="primary" small text-color="white" v-for="phenotype in phenotypes" :key="phenotype">
          {{phenotype}}
       </v-chip>
