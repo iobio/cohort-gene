@@ -59,16 +59,16 @@
         @knownVariantsFilterChange="onKnownVariantsFilterChange"
       ></variant-card>
 
-      <!-- <variant-summary-card
-        v-if="showVariantSummary"
-        :showVariantSummary="false"
+      <!-- SJG TODO: make this hidden at first -->
+      <variant-summary-card
+        ref="variantSummaryCardRef"
         :variantModel="variantModel"
         :effect="effect"
         :impact="impact"
         :clinVar="clinVar"
         :sift="sift"
         :polyPhen="polyPhen"
-      ></variant-summary-card> -->
+      ></variant-summary-card>
 
     </v-container>
   </v-content>
@@ -133,7 +133,7 @@ export default {
       showClinvarVariants: false,
       activeBookmarksDrawer: null,
 
-      showVariantSummary: "false",
+      showVariantSummary: false,
       effect: null,
       impact: null,
       clinVar: null,
@@ -381,16 +381,20 @@ export default {
       this.variantModel.setLoadedVariants(this.selectedGene);
       this.coverageModel.setCoverage();
     },
-    onDataSetVariantClick: function(variant, sourceComponent) {
+    onDataSetVariantClick: function(variant, sourceComponent, cohortKey) {
       let self = this;
       self.selectedVariant = variant;
-      self.showVariantExtraAnnots(sourceComponent, variant);
+      // SJG TODO: get this working
+      //self.showVariantExtraAnnots(sourceComponent, variant, cohortKey);
       self.$refs.variantCardRef.forEach(function(variantCard) {
         if (variantCard != sourceComponent) {
           variantCard.showVariantCircle(variant);
           variantCard.showCoverageCircle(variant);
         }
       })
+      debugger;
+      //showVariantSummary = true;
+      self.$refs.variantSummaryCardRef.populateData(variant);
     },
     onDataSetVariantClickEnd: function(sourceVariantCard) {
       let self = this;
@@ -399,6 +403,9 @@ export default {
         variantCard.hideVariantCircle();
         variantCard.hideCoverageCircle();
       })
+      showVariantSummary = false;
+      // SJG TODO: do I really need to empty out data here?
+      self.$refs.variantSummaryCardRef.hideData(variant);
     },
     onDataSetVariantHover: function(variant, sourceVariantCard) {
       let self = this;
@@ -406,6 +413,7 @@ export default {
         self.$refs.variantCardRef.forEach(function(variantCard) {
           if (variantCard != sourceVariantCard) {
             variantCard.showVariantCircle(variant);
+            // SJG removed bam track
             //variantCard.showCoverageCircle(variant);
           }
         })
@@ -431,62 +439,56 @@ export default {
         })
       }
     },
-    // TODO: currently broken / referencing old properties
-    // showVariantExtraAnnots: function(sourceComponent, variant) {
-    //   let self = this;
-    //   if (!isLevelEdu && !isLevelBasic)  {
-    //
-    //     self.coreModel
-    //       // TODO: figure out what this is doing - should I be returning a cohortModel here?
-    //       .getModel(sourceComponent.relationship)
-    //       .promiseGetImpactfulVariantIds(self.selectedGene, self.selectedTranscript)
-    //       .then( function(annotatedVariants) {
-    //         // If the clicked variant is in the list of annotated variants, show the
-    //         // tooltip; otherwise, the callback will get the extra annots for this
-    //         // specific variant
-    //         self.showVariantTooltipExtraAnnots(sourceComponent, variant, annotatedVariants, function() {
-    //           // The clicked variant wasn't annotated in the batch of variants.  Get the
-    //           // extra annots for this specific variant.
-    //           self.coreModel
-    //             .getModel(sourceComponent.relationship)
-    //             .promiseGetVariantExtraAnnotations(self.selectedGene, self.selectedTranscript, self.selectedVariant)
-    //             .then( function(refreshedVariant) {
-    //               self.showVariantTooltipExtraAnnots(sourceComponent, variant, [refreshedVariant]);
-    //             })
-    //         })
-    //       });
-    //
-    //   }
-    // },
+    showVariantExtraAnnots: function(sourceComponent, variant, cohortKey) {
+      let self = this;
 
-    // TODO: incorporate tool tip stuff
-    // showVariantTooltipExtraAnnots: function(sourceComponent, variant, annotatedVariants, callbackNotFound) {
-    //   let self = this;
-    //   var targetVariants = annotatedVariants.filter(function(v) {
-    //     return variant &&
-    //            variant.start == v.start &&
-    //            variant.ref   == v.ref &&
-    //            variant.alt   == v.alt;
-    //   });
-    //   if (targetVariants.length > 0) {
-    //     var annotatedVariant = targetVariants[0];
-    //     annotatedVariant.screenX = variant.screenX;
-    //     annotatedVariant.screenY = variant.screenY;
-    //     annotatedVariant.screenXMatrix = variant.screenXMatrix;
-    //     annotatedVariant.screenYMatrix = variant.screenYMatrix;
-    //
-    //     variant.extraAnnot      = true;
-    //     variant.vepHGVSc        = annotatedVariant.vepHGVSc;
-    //     variant.vepHGVSp        = annotatedVariant.vepHGVSp;
-    //     variant.vepVariationIds = annotatedVariant.vepVariationIds;
-    //
-    //     sourceComponent.showVariantTooltip(variant, true);
-    //   } else {
-    //     if (callbackNotFound) {
-    //       callbackNotFound();
-    //     }
-    //   }
-    // },
+      self.variantModel
+        .getCohort(cohortKey)
+        .promiseGetImpactfulVariantIds(self.selectedGene, self.selectedTranscript, this.cacheHelper)
+        .then(function(annotatedVariants) {
+          // If the clicked variant is in the list of annotated variants, show the
+          // tooltip; otherwise, the callback will get the extra annots for this
+          // specific variant
+          self.showVariantTooltipExtraAnnots(sourceComponent, variant, annotatedVariants, function() {
+            // The clicked variant wasn't annotated in the batch of variants.  Get the
+            // extra annots for this specific variant.
+            self.variantModel
+              .getModel(cohortKey)
+              .promiseGetVariantExtraAnnotations(self.selectedGene, self.selectedTranscript, self.selectedVariant)
+              .then( function(refreshedVariant) {
+                self.showVariantTooltipExtraAnnots(sourceComponent, variant, [refreshedVariant]);
+              })
+          })
+        });
+    },
+
+    showVariantTooltipExtraAnnots: function(sourceComponent, variant, annotatedVariants, callbackNotFound) {
+      let self = this;
+      var targetVariants = annotatedVariants.filter(function(v) {
+        return variant &&
+               variant.start == v.start &&
+               variant.ref   == v.ref &&
+               variant.alt   == v.alt;
+      });
+      if (targetVariants.length > 0) {
+        var annotatedVariant = targetVariants[0];
+        annotatedVariant.screenX = variant.screenX;
+        annotatedVariant.screenY = variant.screenY;
+        annotatedVariant.screenXMatrix = variant.screenXMatrix;
+        annotatedVariant.screenYMatrix = variant.screenYMatrix;
+
+        variant.extraAnnot      = true;
+        variant.vepHGVSc        = annotatedVariant.vepHGVSc;
+        variant.vepHGVSp        = annotatedVariant.vepHGVSp;
+        variant.vepVariationIds = annotatedVariant.vepVariationIds;
+
+        sourceComponent.showVariantTooltip(variant, true);
+      } else {
+        if (callbackNotFound) {
+          callbackNotFound();
+        }
+      }
+    },
     onKnownVariantsVizChange: function(viz) {
       let self = this;
       self.showClinvarVariants = viz == 'variants';

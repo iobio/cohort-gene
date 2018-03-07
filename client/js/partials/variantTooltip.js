@@ -27,7 +27,6 @@ class VariantTooltip {
 
   fillAndPositionTooltip(tooltip, variant, geneObject, theTranscript, lock, coord, relationship, affectedInfo, cohortMode, maxAlleleCount, html) {
     var me = this;
-    debugger;
 
     tooltip.style("z-index", 1032);
     tooltip.transition()
@@ -80,7 +79,6 @@ class VariantTooltip {
     tooltip.style("--tooltip-center", centerPos + "px");
     tooltip.style("--tooltip-center-before", (centerPos - 3) + "px");
 
-    debugger;
     var x = coord.x;
     var y = coord.y;
     var yScroll = window.pageYOffset;

@@ -1209,6 +1209,7 @@ class CohortModel {
   }
 
   promiseGetImpactfulVariantIds(theGeneObject, theTranscript, cacheHelper) {
+    debugger;
     var me = this;
 
     return new Promise( function(resolve, reject) {

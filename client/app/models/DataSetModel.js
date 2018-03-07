@@ -18,6 +18,10 @@ class DataSetModel {
     return theCohorts.length == this.cohorts.length;
   }
 
+  getCohortModel(name) {
+    return this.cohortMap[name];
+  }
+
   /*
     getMainCohort() {
       return this.cohorts[0];

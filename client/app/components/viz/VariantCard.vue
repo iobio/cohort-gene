@@ -119,9 +119,6 @@ Updated: SJG 28Feb2018
           @variantHoverEnd="onVariantHoverEnd">
         </variant-viz> -->
 
-        <!-- SJG TODO: duplicate ids problem w/ circle populating on other tracks -->
-        <!-- SJG TODO: removed id field to avoid duplicates - replacing w/ class -->
-        <!-- <variant-viz id="loaded-variant-viz" -->
         <variant-viz
           v-if="showVariantViz"
           v-for="cohort in cohorts"
@@ -239,9 +236,8 @@ export default {
       if (this.showVariantViz) {
         this.showVariantCircle(variant);
         this.showVariantTooltip(variant, cohortKey, true);
-        // TODO: display summary statistics
       }
-      this.$emit('dataSetVariantClick', variant, this);
+      this.$emit('dataSetVariantClick', variant, this, cohortKey);
     },
     onVariantHover: function(variant, cohortKey, showTooltip=true) {
       if (this.selectedVariant == null) {
@@ -289,8 +285,6 @@ export default {
                                            {left:   ['middle', 'top',  'bottom']},
                                            {bottom: ['center', 'right','left'  ]} ] };
 
-     debugger;
-     //SJG TODO: parameters have changed here
       self.variantTooltip.fillAndPositionTooltip(tooltip,
         variant,
         self.selectedGene,
@@ -299,8 +293,8 @@ export default {
         coord,
         self.dataSetModel.cohortMap[cohortKey].name,
         self.dataSetModel.cohortMap[cohortKey].getAffectedInfo(),
-        "",
-        0);    // SJG TODO put max allele count in here
+        "",     // SJG TODO: put mode in here later if necessary
+        0);     // SJG TODO put max allele count in here
 
       tooltip.selectAll("#unpin").on('click', function() {
         self.unpin(null, true);
