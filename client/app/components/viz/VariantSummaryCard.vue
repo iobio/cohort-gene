@@ -230,10 +230,9 @@ export default {
       return "";
     },
     clinVarText: function() {
-      debugger;
-      if (this.variantInfo != null)
+      if (this.variantInfo != null && this.variantInfo.clinvarSig != null)
         return this.variantInfo.clinvarSig;
-      return "";
+      return "-";
     },
     clinVarColor: function() {
       if (this.variant != null && this.variant.clinvar != null)

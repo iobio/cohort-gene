@@ -26,13 +26,15 @@
         <v-layout row>
            <v-flex xs3 class="field-label">Clinvar:</v-flex>
            <v-flex xs9 class="field-value">
-             <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
-                 <g transform="translate(1,3)" v-bind:class="clinVarColor">
-                   <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#clinvar-symbol"
-                   width="11" height="11"></use>
-                 </g>
-             </svg>
-             <span>{{ clinVarText }}</span>
+             <span v-bind:class="{hide: clinVarText == ''}">
+               <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
+                   <g transform="translate(1,3)" v-bind:class="clinVarColor">
+                     <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#clinvar-symbol"
+                     width="11" height="11"></use>
+                   </g>
+               </svg>
+             </span>
+             <span>{{ clinVarText || '-' }}</span>
            </v-flex>
         </v-layout>
       </v-flex>
@@ -72,11 +74,11 @@ export default {
       type: String
     },
     clinVarText: {
-      default:"",
+      default:"-",
       type: String
     },
     clinVarColor: {
-      default: "",
+      default: null,
       type: String
     },
     sift: {
