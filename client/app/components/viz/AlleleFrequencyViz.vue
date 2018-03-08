@@ -180,12 +180,23 @@
 
 export default {
   name: 'allele-frequency-viz',
-  // TODO
   props: {
-    oneKGenomes: '',
-    exAc: '',
-    simonsSimplexComplex: '',
-    simonsVip: ''
+    oneKGenomes: {
+      default: "",
+      type: String
+    },
+    exAc: {
+      default: "",
+      type: String
+    },
+    simonsSimplexComplex: {
+      default: "",
+      type: String
+    },
+    simonsVip: {
+      default: "",
+      type: String
+    }
   },
   created: function() {},
   mounted: function() {},

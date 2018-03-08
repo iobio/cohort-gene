@@ -3,6 +3,7 @@
 <!-- SGJ: Imported styling from TDS -->
 <style lang="sass" >
 @import ../../../assets/sass/variables
+@import ../../../assets/sass/symbols
 .summary-viz
   padding-left: 30px
   min-height: 100px
@@ -169,14 +170,19 @@
           <feature-viz id="loaded-feature-viz" class="summary-viz"
             :effect="effect"
             :impact="impact"
+            :type="variantType"
             :clinVarText="clinVarText"
-            :clinVarClazz="clinVarClazz"
+            :clinVarColor="clinVarColor"
             :sift="sift"
             :polyPhen="polyPhen">
           </feature-viz>
         </v-flex>
         <v-flex xs6>
-          <allele-frequency-viz id="loaded-freq-viz" class="summary-viz">
+          <allele-frequency-viz id="loaded-freq-viz" class="summary-viz"
+          :oneKGenomes="oneKGenomes"
+          :exAc="exAc"
+          :simonsSimplexComplex="simonsSimplexComplex"
+          :simonsVip="simonsVip">
           </allele-frequency-viz>
         </v-flex>
     </v-layout>
@@ -199,44 +205,76 @@ export default {
     HistogramViz
   },
   props: {
-    variant: null
+    variant: null,
+    variantInfo: null
   },
   data() { return {}},
   methods: {},
   filters: {},
   computed: {
     effect: function() {
-      if (this.variant != null)
-        return this.variant.vepConsequence;
+      if (this.variantInfo != null)
+        return this.variantInfo.vepConsequence;
       return "";
     },
     impact: function() {
-      if (this.variant != null)
+      if (this.variantInfo != null)
       {
-        return this.variant.vepImpact;
+        return this.variantInfo.vepImpact;
       }
       return "";
     },
-    clinVarText: function() {
+    variantType: function() {
       if (this.variant != null)
-        return this.variant.clinvarSig;
+        return this.variant.type;
       return "";
     },
-    clinVarClazz: function() {
-      if (this.variant != null)
-        return "";
-        // SJG TODO plug in clinvarSig into translator?
+    clinVarText: function() {
+      debugger;
+      if (this.variantInfo != null)
+        return this.variantInfo.clinvarSig;
+      return "";
+    },
+    clinVarColor: function() {
+      if (this.variant != null && this.variant.clinvar != null)
+      {
+        var clazz = this.variant.clinvar;
+        // clinvarClazz = clinvarClazz.replace("_", "-");
+        // return clinvarClazz + "-color";
+        return "colorby_" + clazz;
+      }
       return "";
     },
     sift: function() {
-      if (this.variant != null)
-        return this.variant.sift;
+      if (this.variantInfo != null)
+        return this.variantInfo.sift;
     },
     polyPhen: function() {
-      if (this.variant != null)
-        return this.variant.polyphen;
+      if (this.variantInfo != null)
+        return this.variantInfo.polyphen;
       return "";
+    },
+    oneKGenomes: function() {
+      debugger;
+      if (this.variant != null && this.variant.af1000g != null)
+        return Math.round(this.variant.af1000g * 100) + "%";
+      return 0 + "%";
+    },
+    exAc: function() {
+      if (this.variant != null && this.variant.afExAC != null)
+        return Math.round(this.variant.afExAC * 100) + "%";
+      return 0 + "%";
+    },
+    simonsSimplexComplex: function() {
+      // TODO: get simons data
+      return 0 + "%";
+    },
+    simonsVip: function() {
+      // TODO: get simons data
+      return 0 + "%";
     }
+
+    // SJG TODO: parse out data that needs to go into frequency viz
   },
   watch: {},
   mounted: function() {},

@@ -61,7 +61,8 @@
 
       <variant-summary-card
         v-bind:class="{hide: this.selectedVariant == null}"
-        :variant="selectedVariantInfo"
+        :variant="selectedVariant"
+        :variantInfo="selectedVariantInfo"
         ref="variantSummaryCardRef"
       ></variant-summary-card>
 
@@ -385,7 +386,7 @@ export default {
       self.$refs.variantCardRef.forEach(function(variantCard) {
         if (variantCard != sourceComponent) {
           variantCard.showVariantCircle(variant);
-          variantCard.showCoverageCircle(variant);
+          //variantCard.showCoverageCircle(variant);
         }
       })
     },
@@ -394,7 +395,7 @@ export default {
       self.selectedVariant = null;
       self.$refs.variantCardRef.forEach(function(variantCard) {
         variantCard.hideVariantCircle();
-        variantCard.hideCoverageCircle();
+        //variantCard.hideCoverageCircle();
       })
     },
     onDataSetVariantHover: function(variant, sourceVariantCard) {
@@ -414,7 +415,7 @@ export default {
       if (self.selectedVariant == null && self.$refs.variantCardRef) {
         self.$refs.variantCardRef.forEach(function(variantCard) {
           variantCard.hideVariantCircle();
-          variantCard.hideCoverageCircle();
+          //variantCard.hideCoverageCircle();
         })
       }
     },
@@ -423,9 +424,9 @@ export default {
       self.selectedVariant = null;
       if (self.$refs.variantCardRef) {
         self.$refs.variantCardRef.forEach(function(variantCard) {
-          variantCard.hideVariantTooltip();
+          //variantCard.hideVariantTooltip();
           variantCard.hideVariantCircle();
-          variantCard.hideCoverageCircle();
+          //variantCard.hideCoverageCircle();
         })
       }
     },

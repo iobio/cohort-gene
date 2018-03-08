@@ -1,6 +1,5 @@
 <!-- Displays variant impact classification from various sources -->
 <style lang="sass">
-
 </style>
 
 <template>
@@ -15,6 +14,10 @@
         <v-layout row>
            <v-flex xs3 class="field-label">Impact:</v-flex>
            <v-flex xs9 class="field-value">
+             <!-- SJG TODO: put in variant symbol variant.clinvar = 'clinvar_lpath' or variantInfo.clinvarSig = 'likely pathogenic' -->
+             <!-- I have info to extract color and shape here (impact/type) -->
+             <!-- How will I get access to glyph in here? -->
+             <!-- Put in some sort of symbol placeholder here for d3 to work on -->
              {{impact}}
            </v-flex>
         </v-layout>
@@ -24,12 +27,9 @@
            <v-flex xs3 class="field-label">Clinvar:</v-flex>
            <v-flex xs9 class="field-value">
              <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
-                 <g transform="translate(1,3)"
-                 :class="clinVarColor">
-                     <use xmlns:xlink="http://www.w3.org/1999/xlink"
-                     xlink:href="#clinvar-symbol" width="11.5"
-                     height="11.5">
-                     </use>
+                 <g transform="translate(1,3)" v-bind:class="clinVarColor">
+                   <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#clinvar-symbol"
+                   width="11" height="11"></use>
                  </g>
              </svg>
              <span>{{ clinVarText }}</span>
@@ -55,6 +55,9 @@
 <script>
 export default {
   name: 'feature-viz',
+  data: {
+    clinVarColorData: 'rgb(173, 73, 74)'
+  },
   props: {
     effect: {
       default: "",
@@ -64,11 +67,15 @@ export default {
       default: "",
       type: String
     },
+    type: {
+      default: "",
+      type: String
+    },
     clinVarText: {
       default:"",
       type: String
     },
-    clinVarClazz: {
+    clinVarColor: {
       default: "",
       type: String
     },
@@ -81,13 +88,7 @@ export default {
       type: String
     }
   },
-  computed: {
-    clinVarColor: function() {
-        if (this.clinVarClazz != "")
-          return "colorby_" + this.clinVarClazz;
-        return "";
-    }
-  },
+  computed: {},
   created: function() {},
   mounted: function() {},
   methods: {},
