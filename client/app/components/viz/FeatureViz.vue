@@ -41,13 +41,24 @@
       <v-flex>
         <v-layout row>
            <v-flex xs3 class="field-label">Polyphen:</v-flex>
-           <v-flex xs9 class="field-value">{{ polyPhen }}</v-flex>
+           <v-flex xs9 class="field-value">
+             <span v-bind:class="{hide: polyPhenText == ''}">
+               <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
+                   <g transform="translate(1,3)" v-bind:class="polyPhenColor">
+                     <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#biohazard-symbol"
+                     width="12" height="12"></use>
+                   </g>
+               </svg>
+             </span>
+             <span>
+               {{ polyPhenText || '-' }}
+             </span></v-flex>
         </v-layout>
       </v-flex>
       <v-flex>
         <v-layout row>
            <v-flex xs3 class="field-label">SIFT:</v-flex>
-           <v-flex xs9 class="field-value">{{ sift }}</v-flex>
+           <v-flex xs9 class="field-value">{{ sift || '-' }}</v-flex>
         </v-layout>
       </v-flex>
     </v-layout>
@@ -85,7 +96,11 @@ export default {
       default: "",
       type: String
     },
-    polyPhen: {
+    polyPhenText: {
+      default: "",
+      type: String
+    },
+    polyPhenColor: {
       default: "",
       type: String
     }

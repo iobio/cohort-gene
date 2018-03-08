@@ -174,7 +174,8 @@
             :clinVarText="clinVarText"
             :clinVarColor="clinVarColor"
             :sift="sift"
-            :polyPhen="polyPhen">
+            :polyPhenText="polyPhenText"
+            :polyPhenColor="polyPhenColor">
           </feature-viz>
         </v-flex>
         <v-flex xs6>
@@ -238,8 +239,6 @@ export default {
       if (this.variant != null && this.variant.clinvar != null)
       {
         var clazz = this.variant.clinvar;
-        // clinvarClazz = clinvarClazz.replace("_", "-");
-        // return clinvarClazz + "-color";
         return "colorby_" + clazz;
       }
       return "";
@@ -248,9 +247,18 @@ export default {
       if (this.variantInfo != null)
         return this.variantInfo.sift;
     },
-    polyPhen: function() {
+    polyPhenText: function() {
       if (this.variantInfo != null)
         return this.variantInfo.polyphen;
+      return "";
+    },
+    polyPhenColor: function() {
+      if (this.variantInfo != null)
+      {
+        var phenText = this.variantInfo.polyphen;
+        phenText = phenText.replace(" ", "_");
+        return "colorby_polyphen_" + phenText;
+      }
       return "";
     },
     oneKGenomes: function() {
