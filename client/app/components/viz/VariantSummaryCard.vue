@@ -169,11 +169,13 @@
         <v-flex xs6>
           <feature-viz id="loaded-feature-viz" class="summary-viz"
             :effect="effect"
-            :impact="impact"
+            :impactText="impactText"
+            :impactColor="impactColor"
             :type="variantType"
             :clinVarText="clinVarText"
             :clinVarColor="clinVarColor"
-            :sift="sift"
+            :siftText="siftText"
+            :siftColor="siftColor"
             :polyPhenText="polyPhenText"
             :polyPhenColor="polyPhenColor">
           </feature-viz>
@@ -218,10 +220,17 @@ export default {
         return this.variantInfo.vepConsequence;
       return "";
     },
-    impact: function() {
+    impactText: function() {
       if (this.variantInfo != null)
       {
         return this.variantInfo.vepImpact;
+      }
+      return "";
+    },
+    impactColor: function() {
+      if (this.variantInfo != null && this.variant.vepImpact != null) {
+        var impactLevel = this.variantInfo.vepImpact.toUpperCase();
+        return "impact_" + impactLevel;
       }
       return "";
     },
@@ -243,9 +252,19 @@ export default {
       }
       return "";
     },
-    sift: function() {
+    siftText: function() {
       if (this.variantInfo != null)
         return this.variantInfo.sift;
+      return "";
+    },
+    siftColor: function() {
+      debugger;
+      if (this.variantInfo != null && this.variantInfo.sift != null)
+      {
+        var clazz = this.variantInfo.sift.replace(" ", "_");
+        return "colorby_sift_" + clazz;
+      }
+      return "";
     },
     polyPhenText: function() {
       if (this.variantInfo != null)

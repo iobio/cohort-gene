@@ -14,11 +14,37 @@
         <v-layout row>
            <v-flex xs3 class="field-label">Impact:</v-flex>
            <v-flex xs9 class="field-value">
-             <!-- SJG TODO: put in variant symbol variant.clinvar = 'clinvar_lpath' or variantInfo.clinvarSig = 'likely pathogenic' -->
-             <!-- I have info to extract color and shape here (impact/type) -->
-             <!-- How will I get access to glyph in here? -->
-             <!-- Put in some sort of symbol placeholder here for d3 to work on -->
-             {{impact}}
+             <span v-bind:class="{hide: impactText == ''}">
+               <svg v-bind:class="{hide: (type != 'snp' && type != 'mnp')}" class="impact-badge" height="12" width="12">
+                 <g transform="translate(1,3)" v-bind:class="impactColor">
+                   <rect width="10" height="10"></rect>
+                 </g>
+               </svg>
+               <svg v-bind:class="{hide: (type != 'del')}" class="impact-badge" height="12" width="13">
+                 <g transform="translate(5,6)" v-bind:class="impactColor">
+                   <path d="M0,-4.161791450287817L4.805622828269509,4.161791450287817 -4.805622828269509,4.161791450287817Z"
+                   v-bind:class="impactColor">
+                   </path>
+                 </g>
+               </svg>
+               <svg v-bind:class="{hide: (type != 'ins')}" class="impact-badge" height="12" width="13">
+                 <g transform="translate(5,6)">
+                   <path d="M0,3.5682482323055424A3.5682482323055424,3.5682482323055424 0 1,1 0,-3.5682482323055424A3.5682482323055424,3.5682482323055424 0 1,1 0,3.5682482323055424Z"
+                   v-bind:class="impactColor">
+                   </path>
+                 </g>
+               </svg>
+               <svg v-bind:class="{hide: (type != 'complex')}" class="impact-badge" height="13" width="13">
+                 <g transform="translate(4,6)">
+                   <path d="M0,-5.885661912765424L3.398088489694245,0 0,5.885661912765424 -3.398088489694245,0Z"
+                   v-bind:class="impactColor">
+                   </path>
+                 </g>
+               </svg>
+             </span>
+             <span>
+               {{impactText}}
+             </span>
            </v-flex>
         </v-layout>
       </v-flex>
@@ -58,7 +84,18 @@
       <v-flex>
         <v-layout row>
            <v-flex xs3 class="field-label">SIFT:</v-flex>
-           <v-flex xs9 class="field-value">{{ sift || '-' }}</v-flex>
+           <v-flex xs9 class="field-value">
+             <span v-bind:class="{hide: siftText == ''}">
+               <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
+                   <g transform="translate(1,3)" v-bind:class="siftColor">
+                     <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#danger-symbol" width="12" height="12"></use>
+                   </g>
+               </svg>
+             </span>
+             <span>
+               {{ siftText || '-' }}
+             </span>
+           </v-flex>
         </v-layout>
       </v-flex>
     </v-layout>
@@ -68,15 +105,16 @@
 <script>
 export default {
   name: 'feature-viz',
-  data: {
-    clinVarColorData: 'rgb(173, 73, 74)'
-  },
   props: {
     effect: {
       default: "",
       type: String
     },
-    impact: {
+    impactText: {
+      default: "",
+      type: String
+    },
+    impactColor: {
       default: "",
       type: String
     },
@@ -92,7 +130,11 @@ export default {
       default: null,
       type: String
     },
-    sift: {
+    siftText: {
+      default: "",
+      type: String
+    },
+    siftColor: {
       default: "",
       type: String
     },
@@ -105,7 +147,11 @@ export default {
       type: String
     }
   },
-  computed: {},
+  computed: {
+    impactSymbol: function() {
+
+    }
+  },
   created: function() {},
   mounted: function() {},
   methods: {},
