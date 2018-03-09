@@ -59,8 +59,8 @@
         @knownVariantsFilterChange="onKnownVariantsFilterChange"
       ></variant-card>
 
+      <!-- SJG TODO took this out for now v-bind:class="{hide: this.selectedVariant == null}" -->
       <variant-summary-card
-        v-bind:class="{hide: this.selectedVariant == null}"
         :variant="selectedVariant"
         :variantInfo="selectedVariantInfo"
         ref="variantSummaryCardRef"
@@ -195,7 +195,6 @@ export default {
   },
   computed: {
     selectedVariantInfo: function() {
-      debugger;
       if (this.selectedVariant) {
         return utility.formatDisplay(this.selectedVariant, this.variantModel.translator)
       } else {

@@ -9,6 +9,116 @@ Adapted from https://github.com/sarahob/d3ProgressBar/blob/master/d3progressbar.
 */
 function progressBar() {
 
+  var dispatch = d3.dispatch("d3rendered");
+  var height = 20,
+      segmentWidth = 500,
+      progressFill = 'green', // SJG TODO: make this a nice light blue
+      colorScale,
+      roundedCorners = 10,
+      backgroundFill = 'white',
+      currentStatus,
+      parentId;
+
+    function bar() {
+      var svg = d3.select('#' + parentId)
+        .append('svg')
+        .attr('height', height)
+        .attr('width', segmentWidth)
+        .attr('style', 'padding-top: 4px; padding-left: 1px')     // SJG TODO: this needs to work on screens of various sizes
+        .attr('class', 'bar-outline');                            // SJG TODO: will this work when class is in parent?
+
+      svg.append('rect')
+        .attr('class', 'bg-rect')
+        .attr('rx', roundedCorners)
+        .attr('ry', roundedCorners)
+        .attr('fill', backgroundFill)
+        .attr('height', 15)
+        .attr('width', function(){
+          return 200;
+        })
+        .attr('x', 0);
+
+        dispatch.d3rendered();
+    }
+
+    bar.height = function(_) {
+        if (!arguments.length) {
+            return height;
+        }
+        height = _;
+        return bar;
+    };
+
+    bar.segmentWidth = function(_) {
+        if (!arguments.length) {
+            return segmentWidth;
+        }
+        segmentWidth = _;
+        return bar;
+    };
+
+    bar.colorScale = function(_) {
+        if (!arguments.length) {
+            return colorScale;
+        }
+        colorScale = _;
+        return bar;
+    };
+
+    bar.roundedCorners = function(_) {
+        if (!arguments.length) {
+            return roundedCorners;
+        }
+        roundedCorners = _;
+        return bar;
+    };
+
+    bar.backgroundFill = function(_) {
+        if (!arguments.length) {
+            return backgroundFill;
+        }
+        backgroundFill = _;
+        return bar;
+    };
+
+    bar.progressFill = function(_) {
+        if (!arguments.length) {
+            return progressFill;
+        }
+        progressFill = _;
+        return bar;
+    };
+
+    bar.currentStatus = function(_) {
+        if (!arguments.length) {
+            return currentStatus;
+        }
+        currentStatus = _;
+        return bar;
+    };
+
+    bar.parentId = function(_) {
+      if (!arguments.length) {
+        return parentId;
+      }
+      parentId = _;
+      return bar;
+    }
+
+    d3.rebind(bar, dispatch, "on");
+    return bar;
+}
+
+
+
+
+
+
+
+/*
+
+function progressBar() {
+
     var height = 15,
         segmentWidth = 50,
         progressFill = 'green',
@@ -122,5 +232,14 @@ function progressBar() {
         return bar;
     };
 
+    bar.parentElId = function(_) {
+      if (!arguments.length) {
+        return parentElId;
+      }
+      parentElId = _;
+      return bar;
+    }
+
     return bar;
 }
+*/

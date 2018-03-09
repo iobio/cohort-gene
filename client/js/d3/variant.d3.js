@@ -41,17 +41,6 @@ function variantD3() {
           + (variant.end > variant.start+1 ?  ' - ' + variant.end : ""));
   }
 
-
-  function getSymbol(d,i) {
-     if (d.type.toUpperCase() == 'DEL') {
-        return 'triangle-up';
-     } else if (d.type.toUpperCase() == 'INS') {
-        return  'circle';
-     } else if (d.type.toUpperCase() == 'COMPLEX') {
-        return 'diamond';
-     }
-  }
-
   var showCircle = function(d, svgContainer, indicateMissingVariant, emphasize) {
     // Find the matching variant
     var matchingVariant = null;
@@ -123,8 +112,6 @@ function variantD3() {
     return matchingVariant;
   };
 
-
-
   var hideCircle = function(svgContainer, parentContainer) {
     svgContainer.select(".circle").transition()
                 .duration(500)
@@ -142,10 +129,17 @@ function variantD3() {
     }
   }
 
+  function getSymbol(d,i) {
+     if (d.type.toUpperCase() == 'DEL') {
+        return 'triangle-up';
+     } else if (d.type.toUpperCase() == 'INS') {
+        return  'circle';
+     } else if (d.type.toUpperCase() == 'COMPLEX') {
+        return 'diamond';
+     }
+  }
 
-
-
-
+  // Seems to be responsible for drawing
   function chart(selection, options) {
     // merge options and defaults
     options = $.extend(defaults,options);
@@ -394,7 +388,6 @@ function variantD3() {
               return Math.round(x(d.start) - (minWidth/2) + (minWidth/4));
             })
             .attr('width', function(d) {
-  //            return showTransition ? 0 : Math.max(Math.round(x(d.end) - x(d.start)), minWidth);
               return showTransition ? 0 : variantHeight;
             })
             .attr('y', function(d) {
@@ -468,7 +461,6 @@ function variantD3() {
                 })
                 .attr('width', function(d) {
                   // TODO:  Need to review!!
-  //                return Math.max(Math.round(x(d.end) - x(d.start)), minWidth);
                   return variantHeight;
                 })
                 .attr('y', function(d) {
@@ -602,6 +594,14 @@ function variantD3() {
 
   }
 
+  function tickFormatter (d) {
+    if ((d / 1000000) >= 1)
+      d = d / 1000000 + "M";
+    else if ((d / 1000) >= 1)
+      d = d / 1000 + "K";
+    return d;
+  }
+
   chart.showFlaggedVariant = function(svg, variant, key) {
 
     // Find the matching variant
@@ -654,7 +654,6 @@ function variantD3() {
 
   }
 
-
   chart.removeFlaggedVariant = function(svg, variant) {
     // Find the matching variant
     var matchingVariant = null;
@@ -670,14 +669,6 @@ function variantD3() {
     if (!matchingVariant) {
       return;
     }
-  }
-
-  function tickFormatter (d) {
-    if ((d / 1000000) >= 1)
-      d = d / 1000000 + "M";
-    else if ((d / 1000) >= 1)
-      d = d / 1000 + "K";
-    return d;
   }
 
   chart.margin = function(_) {
@@ -734,19 +725,18 @@ function variantD3() {
     return chart;
   };
 
-
   chart.variantHeight = function(_) {
     if (!arguments.length) return variantHeight;
     variantHeight = _;
     return chart;
   };
 
-
   chart.regionStart = function(_) {
     if (!arguments.length) return regionStart;
     regionStart = _;
     return chart;
   };
+
   chart.regionEnd = function(_) {
     if (!arguments.length) return regionEnd;
     regionEnd = _;
@@ -765,7 +755,7 @@ function variantD3() {
     return chart;
   }
 
-   chart.showBrush = function(_) {
+  chart.showBrush = function(_) {
     if (!arguments.length) return showBrush;
     showBrush = _;
     return chart;
@@ -788,7 +778,6 @@ function variantD3() {
     verticalPadding = _;
     return chart;
   }
-
 
   chart.showTransition = function(_) {
     if (!arguments.length) return showTransition;
@@ -820,23 +809,23 @@ function variantD3() {
     return chart;
   }
 
-
   chart.showCircle = function(_) {
     if (!arguments.length) return showCircle;
     showCircle = _;
     return chart;
   }
+
   chart.hideCircle = function(_) {
     if (!arguments.length) return hideCircle;
     hideCircle = _;
     return chart;
   }
+
   chart.highlightVariant = function(_) {
     if (!arguments.length) return highlightVariant;
     highlightVariant = _;
     return chart;
   }
-
 
 
   // This adds the "on" methods to our custom exports

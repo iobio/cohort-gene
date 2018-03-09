@@ -218,14 +218,14 @@ export default {
     effect: function() {
       if (this.variantInfo != null)
         return this.variantInfo.vepConsequence;
-      return "";
+      return "-";
     },
     impactText: function() {
       if (this.variantInfo != null)
       {
         return this.variantInfo.vepImpact;
       }
-      return "";
+      return "-";
     },
     impactColor: function() {
       if (this.variantInfo != null && this.variant.vepImpact != null) {
@@ -242,11 +242,10 @@ export default {
     clinVarText: function() {
       if (this.variantInfo != null && this.variantInfo.clinvarSig != null)
         return this.variantInfo.clinvarSig;
-      return "-";
+      return "";
     },
     clinVarColor: function() {
-      if (this.variant != null && this.variant.clinvar != null)
-      {
+      if (this.variant != null && this.variant.clinvar != null) {
         var clazz = this.variant.clinvar;
         return "colorby_" + clazz;
       }
@@ -258,9 +257,7 @@ export default {
       return "";
     },
     siftColor: function() {
-      debugger;
-      if (this.variantInfo != null && this.variantInfo.sift != null)
-      {
+      if (this.variantInfo != null && this.variantInfo.sift != null) {
         var clazz = this.variantInfo.sift.replace(" ", "_");
         return "colorby_sift_" + clazz;
       }
@@ -272,8 +269,7 @@ export default {
       return "";
     },
     polyPhenColor: function() {
-      if (this.variantInfo != null)
-      {
+      if (this.variantInfo != null) {
         var phenText = this.variantInfo.polyphen;
         phenText = phenText.replace(" ", "_");
         return "colorby_polyphen_" + phenText;
@@ -281,26 +277,23 @@ export default {
       return "";
     },
     oneKGenomes: function() {
-      debugger;
       if (this.variant != null && this.variant.af1000g != null)
         return Math.round(this.variant.af1000g * 100) + "%";
-      return 0 + "%";
+      return "-";
     },
     exAc: function() {
       if (this.variant != null && this.variant.afExAC != null)
         return Math.round(this.variant.afExAC * 100) + "%";
-      return 0 + "%";
+      return "-";
     },
     simonsSimplexComplex: function() {
       // TODO: get simons data
-      return 0 + "%";
+      return "-";
     },
     simonsVip: function() {
       // TODO: get simons data
-      return 0 + "%";
+      return "-";
     }
-
-    // SJG TODO: parse out data that needs to go into frequency viz
   },
   watch: {},
   mounted: function() {},

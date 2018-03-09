@@ -120,7 +120,7 @@ export default {
       type: String
     },
     clinVarText: {
-      default:"-",
+      default:"",
       type: String
     },
     clinVarColor: {
@@ -145,9 +145,7 @@ export default {
     }
   },
   computed: {
-    impactSymbol: function() {
-
-    }
+    impactSymbol: function() {}
   },
   created: function() {},
   mounted: function() {},

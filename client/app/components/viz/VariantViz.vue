@@ -82,7 +82,6 @@
       opacity: .8
 </style>
 
-<!-- SJG added loaded-variant-viz class here to coordinate selection fxnality -->
 <template>
     <div class="variant-viz loaded-variant-viz">
       <span class="field-label-header">{{title}}</span>
