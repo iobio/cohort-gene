@@ -182,6 +182,7 @@
         </v-flex>
         <v-flex xs6>
           <allele-frequency-viz id="loaded-freq-viz" class="summary-viz"
+          :selectedVariant="variant"
           :oneKGenomes="oneKGenomes"
           :exAc="exAc"
           :simonsSimplexComplex="simonsSimplexComplex"

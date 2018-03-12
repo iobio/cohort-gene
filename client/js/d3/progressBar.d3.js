@@ -1,34 +1,30 @@
 /**
-* D3 progress bar build using rects, one for the background and the other which transitions width to convey progress.
-* It is a configurable component, users can define the height, width of each status segment, colorScale, backgroundFill, roundedCorners(rx,ry), and
-* the currentStatus which is the inital status the bar begins on
-* The fill of the bar can either be one solid color or a colorScale based on statuses
-* The bar's input is an array of statuses
-
+SJG Mar2018
 Adapted from https://github.com/sarahob/d3ProgressBar/blob/master/d3progressbar.js
 */
 function progressBar() {
 
   var dispatch = d3.dispatch("d3rendered");
   var height = 20,
-      segmentWidth = 500,
-      progressFill = 'green', // SJG TODO: make this a nice light blue
-      colorScale,
+      svgSegmentWidth = 500,
+      segmentWidth = 200,
       roundedCorners = 10,
       backgroundFill = 'white',
       currentStatus,
-      parentId;
+      parentId,
+      states;
 
     function bar() {
       var svg = d3.select('#' + parentId)
         .append('svg')
         .attr('height', height)
-        .attr('width', segmentWidth)
-        .attr('style', 'padding-top: 4px; padding-left: 1px')     // SJG TODO: this needs to work on screens of various sizes
-        .attr('class', 'bar-outline');                            // SJG TODO: will this work when class is in parent?
+        .attr('width', svgSegmentWidth)
+        .attr('style', 'padding-top: 4px; padding-left: 1px')
+        .attr('x', 0);
 
+      // Background bubble
       svg.append('rect')
-        .attr('class', 'bg-rect')
+        .attr('class', 'bar-outline')
         .attr('rx', roundedCorners)
         .attr('ry', roundedCorners)
         .attr('fill', backgroundFill)
@@ -38,7 +34,57 @@ function progressBar() {
         })
         .attr('x', 0);
 
-        dispatch.d3rendered();
+      // Progress bubble
+      // svg.append('rect')
+      //   .attr('class', 'progress-rect')
+      //   .attr('width', 0)
+      //   .attr('height', 15)
+      //   .attr('rx', roundedCorners)
+      //   .attr('ry' roundedCorners)
+      //   .attr('fill', '85bdea');
+
+      dispatch.d3rendered();
+    }
+
+    bar.moveProgressBar = function(frequency, flexId) {
+
+      // Remove any existing progress bars
+      var svg = d3.select('#' + parentId).select('svg')
+
+      var freqNum = parseInt(frequency);
+      if (freqNum != NaN && freqNum > 0)
+      {
+        var svg = d3.select('#' + parentId).select('svg');
+
+        var bar = svg.append('rect')
+            .attr('class', 'progress-rect')
+            .attr('width', 0)
+            .attr('height', 15)
+            .attr('rx', roundedCorners)
+            .attr('ry', roundedCorners)
+            .attr('fill', '#85bdea');
+
+        // debugger;
+        bar.transition()
+            .duration(700)
+            .attr('width', function() {
+                return freqNum * 2;
+            });
+      }
+      // Otherwise remove colored bar
+      else {
+        var svg = d3.select('#' + parentId).select('svg');
+        var existingRect = svg.select('.progress-rect');
+        if (existingRect) {
+          // Fade color out
+          existingRect.transition()
+          .duration(700)
+          .attr('width', 0);
+
+          // Remove component so we can redraw it
+          existingRect.remove();
+        }
+      }
     }
 
     bar.height = function(_) {
@@ -49,19 +95,19 @@ function progressBar() {
         return bar;
     };
 
+    bar.svgSegmentWidth = function(_) {
+        if (!arguments.length) {
+            return svgSegmentWidth;
+        }
+        svgSegmentWidth = _;
+        return bar;
+    };
+
     bar.segmentWidth = function(_) {
         if (!arguments.length) {
             return segmentWidth;
         }
         segmentWidth = _;
-        return bar;
-    };
-
-    bar.colorScale = function(_) {
-        if (!arguments.length) {
-            return colorScale;
-        }
-        colorScale = _;
         return bar;
     };
 
@@ -78,14 +124,6 @@ function progressBar() {
             return backgroundFill;
         }
         backgroundFill = _;
-        return bar;
-    };
-
-    bar.progressFill = function(_) {
-        if (!arguments.length) {
-            return progressFill;
-        }
-        progressFill = _;
         return bar;
     };
 
@@ -103,143 +141,16 @@ function progressBar() {
       }
       parentId = _;
       return bar;
-    }
+    };
+
+    bar.states = function(_) {
+      if (!arguments.length) {
+        return states;
+      }
+      states = _;
+      return bar;
+    };
 
     d3.rebind(bar, dispatch, "on");
     return bar;
 }
-
-
-
-
-
-
-
-/*
-
-function progressBar() {
-
-    var height = 15,
-        segmentWidth = 50,
-        progressFill = 'green',
-        colorScale,
-        roundedCorners = 10,
-        backgroundFill = 'gray',
-        currentStatus;
-
-    function bar(selection) {
-
-        selection.each(function(data) {
-
-            svg.append('rect')
-                .attr('class', 'bg-rect')
-                .attr('rx', roundedCorners)
-                .attr('ry', roundedCorners)
-                .attr('fill',  backgroundFill)
-                .attr('height', height)
-                .attr('width', function() {
-                    return segmentWidth * states.length;
-                })
-                .attr('x', 0);
-
-            var progress = svg.append('rect')
-                .attr('class', 'progress-rect')
-                .attr('fill', function() {
-                    return colorScale !== undefined ? colorScale(currentStatus) : progressFill;
-                })
-                .attr('height', height)
-                .attr('width', 0)
-                .attr('rx', roundedCorners)
-                .attr('ry', roundedCorners)
-                .attr('x', 0);
-
-            progress.transition()
-                .duration(1000)
-                .attr('width', function() {
-                    var index = states.indexOf(currentState);
-                    return (index + 1) * segmentWidth;
-                });
-
-        });
-
-    }
-
-    bar.moveProgressBar = function(state) {
-        d3.select('rect.progress-rect').transition()
-            .duration(1000)
-            .attr('fill', function() {
-                return colorScale !== undefined ? colorScale(state) : progressFill;
-            })
-            .attr('width', function() {
-                var index = states.indexOf(state);
-                return (index + 1) * segmentWidth;
-            });
-    }
-
-    bar.height = function(_) {
-        if (!arguments.length) {
-            return height;
-        }
-        height = _;
-        return bar;
-    };
-
-    bar.segmentWidth = function(_) {
-        if (!arguments.length) {
-            return segmentWidth;
-        }
-        segmentWidth = _;
-        return bar;
-    };
-
-    bar.colorScale = function(_) {
-        if (!arguments.length) {
-            return colorScale;
-        }
-        colorScale = _;
-        return bar;
-    };
-
-    bar.roundedCorners = function(_) {
-        if (!arguments.length) {
-            return roundedCorners;
-        }
-        roundedCorners = _;
-        return bar;
-    };
-
-    bar.backgroundFill = function(_) {
-        if (!arguments.length) {
-            return backgroundFill;
-        }
-        backgroundFill = _;
-        return bar;
-    };
-
-    bar.progressFill = function(_) {
-        if (!arguments.length) {
-            return progressFill;
-        }
-        progressFill = _;
-        return bar;
-    };
-
-    bar.currentStatus = function(_) {
-        if (!arguments.length) {
-            return currentStatus;
-        }
-        currentStatus = _;
-        return bar;
-    };
-
-    bar.parentElId = function(_) {
-      if (!arguments.length) {
-        return parentElId;
-      }
-      parentElId = _;
-      return bar;
-    }
-
-    return bar;
-}
-*/

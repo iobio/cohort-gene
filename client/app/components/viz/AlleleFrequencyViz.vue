@@ -58,6 +58,7 @@ export default {
     }
   },
   props: {
+    selectedVariant: {},
     oneKGenomes: {
       default: "",
       type: String
@@ -107,63 +108,19 @@ export default {
         });
       self.simonsVipBar();
     },
-    drawExAcBar: function() {
-      var self = this;
-      var segmentWidth = 200;
+    fillProgressBars() {
+      let self = this;
 
-      // Draw bar base
-      var svg = d3.select('#exAcProgress')
-    		.append('svg')
-    		.attr('height', 20)
-    		.attr('width', 500)
-        .attr('style', 'padding-top: 4px; padding-left: 1px')     // SJG TODO: this needs to work on screens of various sizes
-        .attr('class', 'bar-outline');
-
-    	svg.append('rect')
-    		.attr('class', 'bg-rect')
-    		.attr('rx', 10)
-    		.attr('ry', 10)
-    		.attr('fill', 'white')
-    		.attr('height', 15)
-    		.attr('width', function(){
-    			return segmentWidth;
-    		})
-    		.attr('x', 0);
-    },
-    fillExAcBar() {
-      var self = this;
-      debugger;
-
-      var states = [33, 66, 100];
-      var frequency = self.exAc;
-      var colorScale = d3.scale.ordinal()
-        .domain(states)
-        .range(['green', 'yellow', 'red']);
-
-      var svg = d3.select('exAcProgress');
-
-      var progress = svg.append('rect')
-        .attr('class', 'progress-rect')
-        .attr('fill', function(){
-          return colorScale(frequency * segmentWidth);
-        })
-        .attr('height', 15)
-        .attr('width', 0)
-        .attr('rx', 10)
-        .attr('ry', 10)
-        .attr('x', 0);
-
-      progress.transition()
-        .duration(1000)
-        .attr('width', function(){
-          return (frequency * segmentWidth);
-        });
+      // SJG TODO: get exAc working with numbers and look at - after
+      //self.oneKBar.moveProgressBar(self.oneKGenomes, 'oneKProgress');
+      self.exAcBar.moveProgressBar(self.exAc, 'exAcProgress');
+      //self.simonsSimplexBar.moveProgressBar(self.simonsSimplex, 'simonsSimplexProgress');
+      //self.simonsVipBar.moveProgressBar(self.simonsVip, 'simonsVipProgress');
     }
   },
   watch: {
-    // SJG TODO: take this out of watch and call it from home
-    exAc: function() {
-      this.fillExAcBar();
+    selectedVariant: function() {
+      this.fillProgressBars();
     }
   }
 }
