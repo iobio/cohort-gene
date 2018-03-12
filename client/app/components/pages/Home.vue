@@ -31,7 +31,6 @@
       <!-- TODO: do I need data-sources-loader -->
 
       <!-- TODO: would like to get away from passing giant variantModel here-->
-
       <variant-card
         ref="variantCardRef"
         v-for="dataSet in dataSets"
@@ -59,7 +58,6 @@
         @knownVariantsFilterChange="onKnownVariantsFilterChange"
       ></variant-card>
 
-      <!-- SJG TODO took this out for now v-bind:class="{hide: this.selectedVariant == null}" -->
       <variant-summary-card
         :variant="selectedVariant"
         :variantInfo="selectedVariantInfo"
@@ -363,7 +361,7 @@ export default {
       this.filterModel.regionEnd = this.geneRegionEnd;
       this.variantModel.setLoadedVariants(this.selectedGene);
 
-      this.coverageModel.setCoverage(this.geneRegionStart, this.geneRegionEnd);
+      //this.coverageModel.setCoverage(this.geneRegionStart, this.geneRegionEnd);
     },
     onGeneRegionZoomReset: function() {
       this.geneRegionStart = this.selectedGene.start;
@@ -374,7 +372,7 @@ export default {
       this.filterModel.regionStart = null;
       this.filterModel.regionEnd = null;
       this.variantModel.setLoadedVariants(this.selectedGene);
-      this.coverageModel.setCoverage();
+      //this.coverageModel.setCoverage();
     },
     onDataSetVariantClick: function(variant, sourceComponent, cohortKey) {
       let self = this;

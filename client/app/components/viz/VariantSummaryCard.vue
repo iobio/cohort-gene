@@ -1,6 +1,6 @@
 <!-- Variant Summary card -->
 
-<!-- SGJ: Imported styling from TDS -->
+<!-- SJG: Imported styling from TDS -->
 <style lang="sass" >
 @import ../../../assets/sass/variables
 @import ../../../assets/sass/symbols
@@ -278,8 +278,8 @@ export default {
       return "";
     },
     oneKGenomes: function() {
-      if (this.variant != null && this.variant.af1000g != null)
-        return Math.round(this.variant.af1000g * 100) + "%";
+      if (this.variant != null && this.variant.af1000G != null)
+        return Math.round(this.variant.af1000G * 100) + "%";
       return "-";
     },
     exAc: function() {

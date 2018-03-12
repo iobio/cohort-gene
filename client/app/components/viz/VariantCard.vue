@@ -123,9 +123,9 @@ Updated: SJG 28Feb2018
           :showXAxis="geneVizShowXAxis"
           :showBrush="false"
           :featureClass="getExonClass"
-          @feature-selected="showExonTooltip"
           >
         </gene-viz>
+        <!--SJG TODO: took this out of gene-viz card above @feature-selected="showExonTooltip" -->
 
       </div>
     </v-card-title>
