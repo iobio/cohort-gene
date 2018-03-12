@@ -10,6 +10,7 @@ function progressBar() {
       segmentWidth = 200,
       roundedCorners = 10,
       backgroundFill = 'white',
+      blueFill = '#85bdea',
       currentStatus,
       parentId,
       states;
@@ -35,56 +36,37 @@ function progressBar() {
         .attr('x', 0);
 
       // Progress bubble
-      // svg.append('rect')
-      //   .attr('class', 'progress-rect')
-      //   .attr('width', 0)
-      //   .attr('height', 15)
-      //   .attr('rx', roundedCorners)
-      //   .attr('ry' roundedCorners)
-      //   .attr('fill', '85bdea');
+      svg.append('rect')
+        .attr('class', 'progress-rect')
+        .attr('width', 0)
+        .attr('height', 15)
+        .attr('rx', roundedCorners)
+        .attr('ry', roundedCorners)
+        .attr('fill', blueFill);
 
       dispatch.d3rendered();
     }
 
     bar.moveProgressBar = function(frequency, flexId) {
+      var bar = d3.select('#' + parentId).select('svg').select('.progress-rect');
 
-      // Remove any existing progress bars
-      var svg = d3.select('#' + parentId).select('svg')
-
+      // Fill bar if we have a frequency coming in
       var freqNum = parseInt(frequency);
-      if (freqNum != NaN && freqNum > 0)
-      {
-        var svg = d3.select('#' + parentId).select('svg');
-
-        var bar = svg.append('rect')
-            .attr('class', 'progress-rect')
-            .attr('width', 0)
-            .attr('height', 15)
-            .attr('rx', roundedCorners)
-            .attr('ry', roundedCorners)
-            .attr('fill', '#85bdea');
-
-        // debugger;
+      if (freqNum != NaN && freqNum > 0 && bar) {
         bar.transition()
             .duration(700)
+            .attr('fill', blueFill)
             .attr('width', function() {
                 return freqNum * 2;
             });
       }
-      // Otherwise remove colored bar
-      else {
-        var svg = d3.select('#' + parentId).select('svg');
-        var existingRect = svg.select('.progress-rect');
-        if (existingRect) {
-          // Fade color out
-          existingRect.transition()
+      // Otherwise make bar disappear
+      else if (bar) {
+        bar.transition()
           .duration(700)
+          .attr('fill', backgroundFill) // SJG had to set to white to get rid of remaining border
           .attr('width', 0);
-
-          // Remove component so we can redraw it
-          existingRect.remove();
         }
-      }
     }
 
     bar.height = function(_) {

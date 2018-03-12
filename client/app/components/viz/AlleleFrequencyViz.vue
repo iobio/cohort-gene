@@ -111,11 +111,10 @@ export default {
     fillProgressBars() {
       let self = this;
 
-      // SJG TODO: get exAc working with numbers and look at - after
-      //self.oneKBar.moveProgressBar(self.oneKGenomes, 'oneKProgress');
+      self.oneKBar.moveProgressBar(self.oneKGenomes, 'oneKProgress');
       self.exAcBar.moveProgressBar(self.exAc, 'exAcProgress');
-      //self.simonsSimplexBar.moveProgressBar(self.simonsSimplex, 'simonsSimplexProgress');
-      //self.simonsVipBar.moveProgressBar(self.simonsVip, 'simonsVipProgress');
+      self.simonsSimplexBar.moveProgressBar(self.simonsSimplex, 'simonsSimplexProgress');
+      self.simonsVipBar.moveProgressBar(self.simonsVip, 'simonsVipProgress');
     }
   },
   watch: {
