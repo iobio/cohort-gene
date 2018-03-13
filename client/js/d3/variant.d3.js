@@ -41,6 +41,17 @@ function variantD3() {
           + (variant.end > variant.start+1 ?  ' - ' + variant.end : ""));
   }
 
+
+  function getSymbol(d,i) {
+     if (d.type.toUpperCase() == 'DEL') {
+        return 'triangle-up';
+     } else if (d.type.toUpperCase() == 'INS') {
+        return  'circle';
+     } else if (d.type.toUpperCase() == 'COMPLEX') {
+        return 'diamond';
+     }
+  }
+
   var showCircle = function(d, svgContainer, indicateMissingVariant, emphasize) {
     // Find the matching variant
     var matchingVariant = null;
@@ -128,18 +139,6 @@ function variantD3() {
 
     }
   }
-
-  function getSymbol(d,i) {
-     if (d.type.toUpperCase() == 'DEL') {
-        return 'triangle-up';
-     } else if (d.type.toUpperCase() == 'INS') {
-        return  'circle';
-     } else if (d.type.toUpperCase() == 'COMPLEX') {
-        return 'diamond';
-     }
-  }
-
-  // Seems to be responsible for drawing
   function chart(selection, options) {
     // merge options and defaults
     options = $.extend(defaults,options);

@@ -1763,6 +1763,7 @@ class CohortModel {
     var me = this;
     var subsetSamples = [];
 
+    // SJG TODO: why can't I just return array of sampleIds here?
     me.subsetIds.forEach(function (id) {
       subsetSamples.push( {vcfSampleName: id, sampleName: me.getSampleName()} );
     })

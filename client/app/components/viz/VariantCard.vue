@@ -3,9 +3,7 @@ Encapsulates Variant card
 Updated: SJG 28Feb2018
 -->
 <style lang="sass">
-
   @import ../../../assets/sass/variables
-
   #variant-card
     #gene-viz, #gene-viz-zoom
       .current
@@ -33,19 +31,14 @@ Updated: SJG 28Feb2018
           path
             transform: translateY(-20px)
             display: none
-
     #gene-viz-zoom
       .current
         outline: none
-
       .cds, .exon, .utr
         fill: rgba(159, 159, 159, 0.63)
         stroke: rgb(159, 159, 159)
-
-
     .clinvar-switch, .zoom-switch
       margin-left: 25px
-
       label
         padding-left: 7px
         line-height: 18px
@@ -53,20 +46,17 @@ Updated: SJG 28Feb2018
         font-weight: bold
         padding-top: 2px
         color: $text-color
-
     .badge
       padding: 0px 5px 0px 0px
       padding: 3px 7px
       background-color: white !important
       color: $text-color !important
-
       &.called
         .badge__badge
           background-color: $called-variant-color !important
       &.loaded
         .badge__badge
           background-color: $loaded-variant-progress-color !important
-
       .badge__badge
         font-size: 11px
         font-weight: bold
@@ -74,16 +64,12 @@ Updated: SJG 28Feb2018
         top: -3px
 </style>
 <style lang="css">
-
 </style>
-
-
 <template>
   <v-card tile id="variant-card" class="app-card">
     <v-card-title primary-title>
       <span style="min-width:200px;max-width:200px">VARIANTS</span>
       <div style="width:100%">
-
         <variant-viz
           v-if="showVariantViz"
           v-for="cohort in cohorts"
@@ -109,7 +95,6 @@ Updated: SJG 28Feb2018
           @variantHoverEnd="onVariantHoverEnd">
           >
         </variant-viz>
-
         <gene-viz id="gene-viz"
           v-bind:class="{ hide: !showGeneViz }"
           :data="[selectedTranscript]"
@@ -126,17 +111,13 @@ Updated: SJG 28Feb2018
           >
         </gene-viz>
         <!--SJG TODO: took this out of gene-viz card above @feature-selected="showExonTooltip" -->
-
       </div>
     </v-card-title>
   </v-card>
 </template>
-
 <script>
-
 import VariantViz from './VariantViz.vue'
 import GeneViz from './GeneViz.vue'
-
 export default {
   name: 'variant-card',
   components: {
@@ -176,7 +157,6 @@ export default {
       },
       variantSymbolHeight: 8, // SJG TODO: this is where can increase based on frequency
       variantSymbolPadding: 2,  // Increased from 2 SJG
-
       geneVizMargin: {
         top: 0,
         right: 2,
@@ -198,9 +178,10 @@ export default {
       }
     },
     onVariantClick: function(variant, cohortKey) {
+      this.hideVariantTooltip();
+
       if (this.showVariantViz) {
         this.showVariantCircle(variant);
-        this.showVariantTooltip(variant, cohortKey, true);
       }
       this.$emit('dataSetVariantClick', variant, this, cohortKey);
     },
@@ -214,14 +195,11 @@ export default {
       }
     },
     onVariantHoverEnd: function() {
-      if (this.selectedVariant == null) {
-        if (this.showVariantViz) {
-          this.hideVariantCircle();
-          this.hideVariantTooltip(this);
-        }
-        this.$emit('dataSetVariantHoverEnd');
+      if (this.showVariantViz) {
+        this.hideVariantCircle();
+        this.hideVariantTooltip(this);
       }
-
+      this.$emit('dataSetVariantHoverEnd');
     },
     showVariantTooltip: function(variant, cohortKey, lock) {
       let self = this;
@@ -229,18 +207,14 @@ export default {
         console.log("error in showVariantTooltip: cohort key is blank");
         return;
       }
-
       let tooltip = d3.select("#main-tooltip");
-
       if (lock) {
         tooltip.style("pointer-events", "all");
       } else {
         tooltip.style("pointer-events", "none");
       }
-
       var x = variant.screenX;
       var y = variant.screenY;
-
       var coord = {'x':                  x,
                    'y':                  y,
                    'height':             33,
@@ -249,7 +223,6 @@ export default {
                                            {right:  ['middle', 'top',  'bottom']},
                                            {left:   ['middle', 'top',  'bottom']},
                                            {bottom: ['center', 'right','left'  ]} ] };
-
       self.variantTooltip.fillAndPositionTooltip(tooltip,
         variant,
         self.selectedGene,
@@ -260,7 +233,6 @@ export default {
         self.dataSetModel.cohortMap[cohortKey].getAffectedInfo(),
         "",     // SJG TODO: put mode in here later if necessary
         0);     // SJG TODO put max allele count in here
-
       tooltip.selectAll("#unpin").on('click', function() {
         self.unpin(null, true);
       });
@@ -270,14 +242,12 @@ export default {
       tooltip.selectAll("#tooltip-scroll-down").on('click', function() {
         self.tooltipScroll("down");
       });
-
     },
     tooltipScroll(direction) {
       this.variantTooltip.scroll(direction, "#main-tooltip");
     },
     unpin(saveClickedVariant, unpinMatrixTooltip) {
       this.$emit("dataSetVariantClickEnd", this);
-
       this.hideVariantTooltip();
       this.hideVariantCircle();
       this.hideCoverageCircle();
@@ -309,9 +279,6 @@ export default {
     getVariantSVG: function(variant, vizTrackName) {
       var svg = d3.select(this.$el).select('#' + vizTrackName + ' > svg');
       return svg;
-      // return variant.fbCalled && variant.fbCalled == 'Y'
-      //     ? d3.select(this.$el).select('#called-variant-viz > svg')
-      //     : d3.select(this.$el).select('#loaded-variant-viz > svg');
     },
     hideCoverageCircle: function() {
       if (this.showDepthViz) {
@@ -320,7 +287,6 @@ export default {
     },
     showCoverageCircle: function(variant) {
       let self = this;
-
       if (self.showDepthViz && self.sampleModel.coverage != null) {
         let theDepth = null;
         if (variant.bamDepth != null && variant.bamDepth != '') {
@@ -329,7 +295,6 @@ export default {
           var matchingVariants = self.sampleModel.loadedVariants.features.filter(function(v) {
             return v.start == variant.start && v.alt == variant.alt && v.ref == variant.ref;
           })
-
           if (matchingVariants.length > 0) {
             theDepth = matchingVariants[0].bamDepth;
             // If samtools mpileup didn't return coverage for this position, use the variant's depth
@@ -339,13 +304,11 @@ export default {
             }
           }
         }
-
         if (theDepth) {
           self.$refs.depthVizRef.showCurrentPoint({pos: variant.start, depth: theDepth});
         }
       }
     },
-    // TODO: took out fxns related to showDepthViz
     onKnownVariantsVizChange: function(viz) {
       this.$emit("knownVariantsVizChange", viz);
     },
@@ -358,94 +321,85 @@ export default {
       } else {
         return exon.feature_type.toLowerCase();
       }
-    },
-    showExonTooltip: function(featureObject, feature, lock) {
-      let self = this;
-      let tooltip = d3.select("#exon-tooltip");
-
-      if (featureObject == null) {
-        self.hideExonTooltip();
-        return;
-      }
-
-      if (self.selectedExon) {
-        return;
-      }
-
-      if (lock) {
-        self.selectedExon = feature;
-        tooltip.style("pointer-events", "all");
-        tooltip.classed("locked", true);
-      } else {
-        tooltip.style("pointer-events", "none");
-        tooltip.classed("locked", false);
-      }
-
-      var coverageRow = function(fieldName, coverageVal, covFields) {
-        var row = '<div>';
-        row += '<span style="padding-left:10px;width:60px;display:inline-block">' + fieldName   + '</span>';
-        row += '<span style="width:40px;display:inline-block">' + d3.round(coverageVal) + '</span>';
-        row += '<span class="' + (covFields[fieldName] ? 'danger' : '') + '">' + (covFields[fieldName] ? covFields[fieldName]: '') + '</span>';
-        row += "</div>";
-        return row;
-      }
-
-      var html = '<div>'
-               + '<span id="exon-tooltip-title"' + (lock ? 'style="margin-top:8px">' : '>') + (feature.hasOwnProperty("exon_number") ? "Exon " + feature.exon_number : "") + '</span>'
-               + (lock ? '<a href="javascript:void(0)" id="exon-tooltip-close">X</a>' : '')
-               + '</div>';
-      html     += '<div style="clear:both">' + feature.feature_type + ' ' + utility.addCommas(feature.start) + ' - '       + utility.addCommas(feature.end) + '</div>';
-
-      if (feature.geneCoverage && feature.geneCoverage[self.sampleModel.getRelationship()]) {
-          var covFields = self.sampleModel.cohort.filterModel.whichLowCoverage(feature.geneCoverage[self.sampleModel.getRelationship()]);
-          html += "<div style='margin-top:4px'>" + "Coverage:"
-               +  coverageRow('min',    feature.geneCoverage[self.sampleModel.getRelationship()].min, covFields)
-               +  coverageRow('median', feature.geneCoverage[self.sampleModel.getRelationship()].median, covFields)
-               +  coverageRow('mean',   feature.geneCoverage[self.sampleModel.getRelationship()].mean, covFields)
-               +  coverageRow('max',    feature.geneCoverage[self.sampleModel.getRelationship()].max, covFields)
-               +  coverageRow('sd',     feature.geneCoverage[self.sampleModel.getRelationship()].sd, covFields)
-
-      }
-      if (lock) {
-        html += '<div style="text-align:right;margin-top:8px">'
-        + '<a href="javascript:void(0)" id="exon-tooltip-thresholds" class="danger" style="float:left"  >Set cutoffs</a>'
-        + '</div>'
-      }
-      tooltip.html(html);
-      if (lock) {
-        //tooltip.select("#exon-tooltip-thresholds").on("click", function() {
-          //$('#filter-track #coverage-thresholds').addClass('attention');
-        //})
-        tooltip.select("#exon-tooltip-close").on("click", function() {
-          self.selectedExon = null;
-          self.hideExonTooltip(true);
-        })
-      }
-
-      var coord = utility.getTooltipCoordinates(featureObject.node(),
-        tooltip, self.$el.offsetWidth, $('nav.toolbar').outerHeight());
-      tooltip.style("left", coord.x + "px")
-             .style("text-align", 'left')
-             .style("top", (coord.y-60) + "px");
-
-      tooltip.style("z-index", 1032);
-      tooltip.transition()
-             .duration(200)
-             .style("opacity", .9);
-    },
-    hideExonTooltip: function(force) {
-      let self = this;
-      let tooltip = d3.select("#exon-tooltip");
-      if (force || !self.selectedExon) {
-        tooltip.classed("locked", false);
-        tooltip.classed("black-arrow-left", false);
-        tooltip.classed("black-arrow-right", false);
-        tooltip.style("pointer-events", "none");
-        tooltip.transition()
-           .duration(500)
-           .style("opacity", 0);
-      }
     }
+    // showExonTooltip: function(featureObject, feature, lock) {
+    //   let self = this;
+    //   let tooltip = d3.select("#exon-tooltip");
+    //   if (featureObject == null) {
+    //     self.hideExonTooltip();
+    //     return;
+    //   }
+    //   if (self.selectedExon) {
+    //     return;
+    //   }
+    //   if (lock) {
+    //     self.selectedExon = feature;
+    //     tooltip.style("pointer-events", "all");
+    //     tooltip.classed("locked", true);
+    //   } else {
+    //     tooltip.style("pointer-events", "none");
+    //     tooltip.classed("locked", false);
+    //   }
+    //   var coverageRow = function(fieldName, coverageVal, covFields) {
+    //     var row = '<div>';
+    //     row += '<span style="padding-left:10px;width:60px;display:inline-block">' + fieldName   + '</span>';
+    //     row += '<span style="width:40px;display:inline-block">' + d3.round(coverageVal) + '</span>';
+    //     row += '<span class="' + (covFields[fieldName] ? 'danger' : '') + '">' + (covFields[fieldName] ? covFields[fieldName]: '') + '</span>';
+    //     row += "</div>";
+    //     return row;
+    //   }
+    //   var html = '<div>'
+    //            + '<span id="exon-tooltip-title"' + (lock ? 'style="margin-top:8px">' : '>') + (feature.hasOwnProperty("exon_number") ? "Exon " + feature.exon_number : "") + '</span>'
+    //            + (lock ? '<a href="javascript:void(0)" id="exon-tooltip-close">X</a>' : '')
+    //            + '</div>';
+    //   html     += '<div style="clear:both">' + feature.feature_type + ' ' + utility.addCommas(feature.start) + ' - '       + utility.addCommas(feature.end) + '</div>';
+    //   if (feature.geneCoverage && feature.geneCoverage[self.sampleModel.getRelationship()]) {
+    //       var covFields = self.sampleModel.cohort.filterModel.whichLowCoverage(feature.geneCoverage[self.sampleModel.getRelationship()]);
+    //       html += "<div style='margin-top:4px'>" + "Coverage:"
+    //            +  coverageRow('min',    feature.geneCoverage[self.sampleModel.getRelationship()].min, covFields)
+    //            +  coverageRow('median', feature.geneCoverage[self.sampleModel.getRelationship()].median, covFields)
+    //            +  coverageRow('mean',   feature.geneCoverage[self.sampleModel.getRelationship()].mean, covFields)
+    //            +  coverageRow('max',    feature.geneCoverage[self.sampleModel.getRelationship()].max, covFields)
+    //            +  coverageRow('sd',     feature.geneCoverage[self.sampleModel.getRelationship()].sd, covFields)
+    //   }
+    //   if (lock) {
+    //     html += '<div style="text-align:right;margin-top:8px">'
+    //     + '<a href="javascript:void(0)" id="exon-tooltip-thresholds" class="danger" style="float:left"  >Set cutoffs</a>'
+    //     + '</div>'
+    //   }
+    //   tooltip.html(html);
+    //   if (lock) {
+    //     //tooltip.select("#exon-tooltip-thresholds").on("click", function() {
+    //       //$('#filter-track #coverage-thresholds').addClass('attention');
+    //     //})
+    //     tooltip.select("#exon-tooltip-close").on("click", function() {
+    //       self.selectedExon = null;
+    //       self.hideExonTooltip(true);
+    //     })
+    //   }
+    //   var coord = utility.getTooltipCoordinates(featureObject.node(),
+    //     tooltip, self.$el.offsetWidth, $('nav.toolbar').outerHeight());
+    //   tooltip.style("left", coord.x + "px")
+    //          .style("text-align", 'left')
+    //          .style("top", (coord.y-60) + "px");
+    //   tooltip.style("z-index", 1032);
+    //   tooltip.transition()
+    //          .duration(200)
+    //          .style("opacity", .9);
+    // },
+    // hideExonTooltip: function(force) {
+    //   let self = this;
+    //   let tooltip = d3.select("#exon-tooltip");
+    //   if (force || !self.selectedExon) {
+    //     tooltip.classed("locked", false);
+    //     tooltip.classed("black-arrow-left", false);
+    //     tooltip.classed("black-arrow-right", false);
+    //     tooltip.style("pointer-events", "none");
+    //     tooltip.transition()
+    //        .duration(500)
+    //        .style("opacity", 0);
+    //   }
+    // }
   },
   filters: {
   },
@@ -461,11 +415,9 @@ export default {
   },
   mounted: function() {
     this.name = this.dataSetModel.name;
-
   },
   created: function() {
     this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
   }
 }
-
 </script>

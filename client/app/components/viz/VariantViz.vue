@@ -53,10 +53,8 @@
   .axis.x
     .tick
       line
-        // display: none
+        display: none
         stroke: rgba(211, 211, 211, 0.84)
-
-
 
 .variant-viz
   .field-label-header

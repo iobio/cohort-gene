@@ -376,56 +376,51 @@ export default {
     },
     onDataSetVariantClick: function(variant, sourceComponent, cohortKey) {
       let self = this;
-
-      self.selectedVariant = variant;
-      // SJG TODO: get this working
-      //self.showVariantExtraAnnots(sourceComponent, variant, cohortKey);
-      self.$refs.variantCardRef.forEach(function(variantCard) {
-        if (variantCard != sourceComponent) {
-          variantCard.showVariantCircle(variant);
-          //variantCard.showCoverageCircle(variant);
-        }
-      })
+      if (variant) {
+        self.selectedVariant = variant;
+        // self.$refs.variantCardRef.forEach(function(variantCard) {
+        //   if (variantCard != sourceComponent) {
+        //     variantCard.showVariantCircle(variant);
+        //   }
+        // })
+      }
+      else {
+        self.deselectVariant();
+      }
     },
     onDataSetVariantClickEnd: function(sourceVariantCard) {
       let self = this;
+      var lastVariant = self.selectedVariant;
       self.selectedVariant = null;
-      self.$refs.variantCardRef.forEach(function(variantCard) {
-        variantCard.hideVariantCircle();
-        //variantCard.hideCoverageCircle();
-      })
+      // self.$refs.variantCardRef.forEach(function(variantCard) {
+      //   variantCard.hideVariantCircle(lastVariant);
+      // })
     },
     onDataSetVariantHover: function(variant, sourceVariantCard) {
       let self = this;
-      if (self.selectedVariant == null) {
-        self.$refs.variantCardRef.forEach(function(variantCard) {
-          if (variantCard != sourceVariantCard) {
-            variantCard.showVariantCircle(variant);
-            // SJG removed bam track
-            //variantCard.showCoverageCircle(variant);
-          }
-        })
-      }
+      self.$refs.variantCardRef.forEach(function(variantCard) {
+        if (variantCard != sourceVariantCard) {
+          variantCard.showVariantCircle(variant);
+        }
+      })
     },
     onDataSetVariantHoverEnd: function(sourceVariantCard) {
       let self = this;
-      if (self.selectedVariant == null && self.$refs.variantCardRef) {
+      if (self.$refs.variantCardRef) {
         self.$refs.variantCardRef.forEach(function(variantCard) {
           variantCard.hideVariantCircle();
-          //variantCard.hideCoverageCircle();
         })
       }
     },
     deselectVariant: function() {
       let self = this;
       self.selectedVariant = null;
-      if (self.$refs.variantCardRef) {
-        self.$refs.variantCardRef.forEach(function(variantCard) {
-          //variantCard.hideVariantTooltip();
-          variantCard.hideVariantCircle();
-          //variantCard.hideCoverageCircle();
-        })
-      }
+      // if (self.$refs.variantCardRef) {
+      //   self.$refs.variantCardRef.forEach(function(variantCard) {
+      //     variantCard.hideVariantTooltip();
+      //     variantCard.hideVariantCircle();
+      //   })
+      // }
     },
     showVariantExtraAnnots: function(sourceComponent, variant, cohortKey) {
       let self = this;

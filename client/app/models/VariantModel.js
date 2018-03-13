@@ -63,6 +63,12 @@ class VariantModel {
     var allSampleModel = new CohortModel(self);
     allSampleModel.name = 'demo_all';
     allSampleModel.trackName = 'All Variants';
+    // SJG TODO: take this out when possible
+    allSampleModel.subsetIds.push('NA12877');
+    allSampleModel.subsetIds.push('NA12878');
+    allSampleModel.subsetIds.push('NA12891');
+    allSampleModel.subsetIds.push('NA12892');
+
     demoDataSet.cohorts.push(allSampleModel);
     demoDataSet.cohortMap[allSampleModel.name] = allSampleModel;
 
@@ -286,6 +292,7 @@ class VariantModel {
             cohort.calledVariants = calledVariants;
 
             // SJG TODO: will have to change logic here from demo_all - was prev 'proband'
+            // SJG TODO: what is this doing?
             if (cohort.getName() == 'demo_all') {
               var allVariants = $.extend({}, cohort.loadedVariants);
               allVariants.features = cohort.loadedVariants.features.concat(cohort.calledVariants.features);
