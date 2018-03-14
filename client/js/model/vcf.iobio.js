@@ -98,9 +98,9 @@ var effectCategories = [
 ['regulatory_region_variant'  ,'regulatory'],
 ['upstream_gene_variant'  ,'other'],
 ['3_prime_UTR_variant'  ,'utr'],
-['3_prime_UTR_truncation +','utr'],
+['3_prime_UTR_truncation +','utr'],
 ['5_prime_UTR_variant'  ,'utr'],
-['5_prime_UTR_truncation +','utr']
+['5_prime_UTR_truncation +','utr']
 ];
 
   exports.isFile = function() {
@@ -741,6 +741,7 @@ var effectCategories = [
 
     var annotatedData = "";
     // Get the results from the iobio command
+    // SJG TODO: do these come in on a per sample basis?
     cmd.on('data', function(data) {
          if (data == undefined) {
             return;
@@ -784,7 +785,6 @@ var effectCategories = [
 
       // Parse the vcf object into a variant object that is visualized by the client.
       var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF);
-
 
       callback(annotatedRecs, results);
     });
@@ -1412,6 +1412,8 @@ var effectCategories = [
 
       var me = this;
       var selectedTranscriptID = utility.stripTranscriptPrefix(selectedTranscript.transcript_id);
+      // SJG TODO: put this as combined variable
+      var keepVariantsCombined = true;
 
       // Use the sample index to grab the right genotype column from the vcf record
       // If it isn't provided, assume that the first genotype column is the one
@@ -1438,6 +1440,7 @@ var effectCategories = [
         })
       }
       var allVariants = null;
+      // SJG TODO: this is where things are split up for multi-sample vcf file
       if (parseMultiSample) {
         allVariants = gtSampleIndices.map(function(element) {
           return [];
@@ -1455,6 +1458,7 @@ var effectCategories = [
 
       // Interate through the vcf records.  For each record, if multiple
       // alternates are provided, iterate through each alternate
+      // SJG each vcfRec is per variant
       vcfRecs.forEach(function(rec) {
         if (rec.pos && rec.id) {
           var alts = [];
@@ -1557,7 +1561,7 @@ var effectCategories = [
                     'genotypeRefReverseCount' : genotype.refReverseCount,
                     'eduGenotype' :             genotype.eduGenotype,
                     'eduGenotypeReversed':      genotype.eduGenotypeReversed,
-                    'zygosity':                 genotype.zygosity ? genotype.zygosity : 'gt_unknown',
+                    'zygosity':                 me._getZygosity(genotype, gtResult, keepVariantsCombined), // SJG if this is a cohort call, need to take highest zygosity
                     'phased':                   genotype.phased,
 
                     // fields to init to 'empty'
@@ -1635,8 +1639,9 @@ var effectCategories = [
       // Here is the result set.  An object representing the entire region with a field called
       // 'features' that contains an array of variants for this region of interest.
       var results = [];
-      for (var i = 0; i < allVariants.length; i++) {
-        var data = {
+
+      if (keepVariantsCombined) {
+        results = {
           'name':              'vcf track',
           'ref':                refName,
           'gene':               geneObject.gene_name,
@@ -1646,15 +1651,67 @@ var effectCategories = [
           'transcript':         selectedTranscript,
           'variantRegionStart': variantRegionStart,
           'loadState':          {},
-          'features':           allVariants[i],
+          'features':           allVariants,
           'genericAnnotators':  me.infoFields ? Object.keys(me.infoFields) : []
         };
-        results.push(data);
+        debugger;
+        return results;
       }
 
-      return  parseMultiSample ? results :  results[0];
+      else {
+        for (var i = 0; i < allVariants.length; i++) {
+          var data = {
+            'name':              'vcf track',
+            'ref':                refName,
+            'gene':               geneObject.gene_name,
+            'start':              +geneObject.start,
+            'end':                +geneObject.end,
+            'strand':             geneObject.strand,
+            'transcript':         selectedTranscript,
+            'variantRegionStart': variantRegionStart,
+            'loadState':          {},
+            'features':           allVariants[i],
+            'genericAnnotators':  me.infoFields ? Object.keys(me.infoFields) : []
+          };
+          results.push(data);
+        }
+        return  parseMultiSample ? results :  results[0];
+      }
       //return  results;
   };
+
+  /* Takes in genotype calls for all samples from a vcf and returns the zygosity, as follows:
+      If keepVariantsCombined is false, returns the single called Gt or unknown, as appropriate.
+      If keepVariantsCombined is true, returns the first non-ref zygosity encountered in the list,
+      where a non-ref zygosity is either HOM or HET, if one exists. Otherwise returns HOMREF or unknown,
+      as appropriate. */
+  exports._getZygosity = function(singleGt, combinedGtResult, keepVariantsCombined) {
+    var resultZyg = "gt_unknown";
+
+    if (!keepVariantsCombined && singleGt) {
+      resultZyg = singleGt.zygosity ? singleGt.zygosity : "gt_unknown";
+    }
+    else if (keepVariantsCombined && combinedGtResult) {
+      var gtArr = combinedGtResult.genotypes;
+      if (gtArr && gtArr.length > 0) {
+        var i;
+        for (i = 0; i < gtArr.length; i++) {
+          if (gtArr[i].zygosity == "HOM") {
+            resultZyg = "HOM";
+            break;
+          }
+          else if (gtArr[i].zygosity == "HET") {
+            resultZyg = "HET";
+            break;
+          }
+          else if (gtArr[i].zygosity == "HOMREF") {
+            resultZyg = "HOMREF";
+          }
+        }
+      }
+    }
+    return resultZyg;
+  }
 
 exports._parseAnnot = function(rec, altIdx, isMultiAllelic, geneObject, selectedTranscript, selectedTranscriptID, vepAF) {
   var me = this;
@@ -1744,10 +1801,8 @@ exports._parseAnnot = function(rec, altIdx, isMultiAllelic, geneObject, selected
 }
 /* To parse the VEP annot, split the CSQ string into its parts.
    Each part represents the annotations for a given transcript.
-
   Here is the field mapping for each transcript
   which is separated by a comma
-
    Allele|Consequence|IMPACT|SYMBOL|Gene|Feature_type|Feature|BIOTYPE|EXON|INTRON|HGVSc|HGVSp
    |cDNA_position|CDS_position|Protein_position|Amino_acids|Codons|Existing_variation
    |DISTANCE|STRAND|FLAGS|SYMBOL_SOURCE|HGNC_ID|GENE_PHENO|SIFT|PolyPhen|HGVS_OFFSET
@@ -1756,8 +1811,6 @@ exports._parseAnnot = function(rec, altIdx, isMultiAllelic, geneObject, selected
    |gnomAD_AF|gnomAD_AFR_AF|gnomAD_AMR_AF|gnomAD_ASJ_AF|gnomAD_EAS_AF|gnomAD_FIN_AF|gnomAD_NFE_AF|gnomAD_OTH_AF|gnomAD_SAS_AF
    |MAX_AF|MAX_AF_POPS
    |CLIN_SIG|SOMATIC|PHENO|MOTIF_NAME|MOTIF_POS|HIGH_INF_POS|MOTIF_SCORE_CHANGE
-
-
 */
 exports._parseVepAnnot = function(altIdx, isMultiAllelic, annotToken, annot, geneObject, selectedTranscript, selectedTranscriptID, vepAF) {
   var me = this;
@@ -2115,6 +2168,7 @@ exports.parseClinvarInfo = function(info, clinvarMap) {
  * Parse the genotype field from in the vcf rec
  *
  */
+ // SJG this is where genotypes determined
  exports._parseGenotypes = function(rec, alt, altIdx, sampleIndices, sampleNames) {
     var me = this;
 
@@ -2358,6 +2412,7 @@ exports.parseClinvarInfo = function(info, clinvarMap) {
               } else {
                 gt.zygosity = "HET";
               }
+              // SJG this is where zygosity set to HOMREF
             } else if (tokens[0] == "0" && tokens[1] == "0" ) {
               gt.keep = false;
               gt.zygosity = "HOMREF"

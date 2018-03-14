@@ -63,8 +63,8 @@ class VariantModel {
     var allSampleModel = new CohortModel(self);
     allSampleModel.name = 'demo_all';
     allSampleModel.trackName = 'All Variants';
-    // SJG TODO: take this out when possible
-    allSampleModel.subsetIds.push('NA12877');
+    // SJG TODO: would ideally like to not have to add all ids
+    //allSampleModel.subsetIds.push('NA12877');   // Not looking at this sample for now since not in gene.iobio
     allSampleModel.subsetIds.push('NA12878');
     allSampleModel.subsetIds.push('NA12891');
     allSampleModel.subsetIds.push('NA12892');
@@ -76,9 +76,11 @@ class VariantModel {
     subsetModel.name = 'demo_subset';
     subsetModel.trackName = 'Variants for';
     // Ids for platinum are NA12877, NA12878, NA12891, NA12892
-    subsetModel.subsetIds.push('NA12892');
-    //subsetModel.subsetIds.push('NA12891');
-    subsetModel.subsetPhenotypes.push('NA12892');
+    subsetModel.subsetIds.push('NA12878');
+    subsetModel.subsetIds.push('NA12891');
+    subsetModel.subsetPhenotypes.push('NA12878');
+    subsetModel.subsetPhenotypes.push('NA12891');
+
     //subsetModel.subsetPhenotypes.push('NA12891');
     demoDataSet.cohorts.push(subsetModel);
     demoDataSet.cohortMap[subsetModel.name] = subsetModel;
@@ -248,7 +250,7 @@ class VariantModel {
 
     var filterAndPileupVariants = function(model, start, end, target='loaded') {
       var filteredVariants = $.extend({}, model.vcfData);
-      filteredVariants.features = model.vcfData.features.filter( function(feature) {
+      filteredVariants.features = model.vcfData.features.filter(function(feature) {
 
         var isTarget = false;
         if (target == 'loaded' && (!feature.fbCalled || feature.fbCalled != 'Y')) {
@@ -278,6 +280,7 @@ class VariantModel {
       return filteredVariants;
     }
 
+    debugger; // Look at cohorts
     self.dataSets.forEach(function(dataSet) {
       dataSet.cohorts.forEach(function(cohort) {
         if (name == null || name == cohort.name) {
@@ -285,14 +288,13 @@ class VariantModel {
             var start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
             var end   = self.filterModel.regionEnd   ? self.filterModel.regionEnd   : gene.end;
 
+            debugger;
             var loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
             cohort.loadedVariants = loadedVariants;
 
             var calledVariants = filterAndPileupVariants(cohort, start, end, 'called');
             cohort.calledVariants = calledVariants;
 
-            // SJG TODO: will have to change logic here from demo_all - was prev 'proband'
-            // SJG TODO: what is this doing?
             if (cohort.getName() == 'demo_all') {
               var allVariants = $.extend({}, cohort.loadedVariants);
               allVariants.features = cohort.loadedVariants.features.concat(cohort.calledVariants.features);
@@ -308,7 +310,6 @@ class VariantModel {
     })
   }
 
-  // SJG1
   promiseAnnotateVariants(theGene, theTranscript, isBackground, options={}) {
     let self = this;
 
@@ -392,6 +393,7 @@ class VariantModel {
       var uniqueVariants = {};
       var unionVcfData = {features: []}
       for (var cohort in resultMap) {
+        // SJG TODO: will this work for various numbers of data sets/ cohorts
         var vcfData = resultMap[cohort];
         if (!vcfData.loadState['clinvar'] && cohort != 'known-variants') {
          vcfData.features.forEach(function(feature) {

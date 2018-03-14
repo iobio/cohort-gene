@@ -507,8 +507,8 @@ export default {
     initFromUrl: function() {
       let self = this;
 
-      self.geneModel.addGeneName('AIRE');
-      self.onGeneSelected('AIRE');
+      self.geneModel.addGeneName('RAI1');
+      self.onGeneSelected('RAI1');
       self.variantModel.promiseInitDemo()
         .then(function() {
           self.dataSets = self.variantModel.dataSets;

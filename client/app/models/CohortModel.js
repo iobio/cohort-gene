@@ -1209,7 +1209,6 @@ class CohortModel {
   }
 
   promiseGetImpactfulVariantIds(theGeneObject, theTranscript, cacheHelper) {
-    debugger;
     var me = this;
 
     return new Promise( function(resolve, reject) {
@@ -1432,7 +1431,7 @@ class CohortModel {
         var p = model._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript, cacheHelper)
          .then(function(vcfData) {
           if (vcfData != null && vcfData != '') {
-            resultMap[model.relationship] = vcfData;
+            resultMap[model.name] = vcfData;
 
             if (!isBackground) {
               model.vcfData = vcfData;
@@ -1448,19 +1447,18 @@ class CohortModel {
         if (Object.keys(resultMap).length == cohortModels.length) {
           resolve(resultMap);
         } else {
-
           // We don't have the variants for the gene in cache,
           // so call the iobio services to retreive the variants for the gene region
           // and annotate them._get
           me._promiseVcfRefName(theGene.chr)
-          .then( function() {
+          .then(function() {
             return me.vcf.promiseGetVariants(
                me.getVcfRefName(theGene.chr),
                theGene,
                theTranscript,
                null,   // regions
-               isMultiSample, // is multi-sample
-               me._getSubsetSamples(),    // TODO: changed from _getSamplesToRetrieve()
+               false, // SJG TODO: changing this to false returns all the variants in a single track
+               me._getSubsetSamples(),
                me.getName() == 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
                me.getTranslator().clinvarMap,
                me.getGeneModel().geneSource == 'refseq' ? true : false,
@@ -1469,50 +1467,78 @@ class CohortModel {
                global_vepAF    // vep af
               );
           })
-          .then( function(data) {
+          .then(function(data) {
             var annotatedRecs = data[0];
-            var results = data[1];
+            var results = data[1];  // One entry per sample in results
 
-            if (!isMultiSample) {
-              results = [results];
+            // SJG TODO: put this into a passes parameter
+            // var keepVariantsCombined = true;
+            // if (keepVariantsCombined) {
+            //
+            // }
+            if (results) {
+            // SJG TODO: this is really hackey...
+            var data;
+            if (results.length > 0) {
+              data = results[0];
             }
-            if (results && results.length > 0) {
-              var data = results[0];
+            else {
+              var strippedArr = [];
+              results.features[0].forEach(function(feature) {
+                strippedArr.push(feature);
+              })
+              results.features = strippedArr;
+              data = results;
+            }
+            var theGeneObject = me.getGeneModel().geneObjects[data.gene];
+            if (theGeneObject) {
+              var resultMap = {};
+              var i = 0;
+              var model = cohortModels[i];           // Should only be one cohort model coming in
+              var theVcfData = data;
+              if (theVcfData == null) {
+               if (callback) {
+                 callback();
+               }
+               return;
+              }
+              theVcfData.gene = theGeneObject;
+              resultMap[model.name] = theVcfData;
 
-              var theGeneObject = me.getGeneModel().geneObjects[data.gene];
-              if (theGeneObject) {
-                var resultMap = {};
-                var idx = 0;
+              if (!isBackground) {
+               model.vcfData = theVcfData;
+              }
+              resolve(resultMap);
 
-                var postProcessNextVariantCard = function(idx, callback) {
-                  // SJG TODO: this may not be correct logic anymore
-                  if (idx == cohortModels.length) {
-                    if (callback) {
-                      callback();
-                    }
-                    return;
-                  } else {
-                    var model          = cohortModels[idx];
-                    var theVcfData  = results[idx];
-                    if (theVcfData == null) {
-                      if (callback) {
-                        callback();
-                      }
-                      return;
-                    }
-                    theVcfData.gene = theGeneObject;
-                    resultMap[model.name] = theVcfData;
-
-                    if (!isBackground) {
-                      model.vcfData = theVcfData;
-                    }
-                    idx++;
-                    postProcessNextVariantCard(idx, callback);
-                  }
-                }
-                postProcessNextVariantCard(idx, function() {
-                  resolve(resultMap);
-                });
+            // var postProcessNextVariantCard = function(idx, callback) {
+            //   // SJG TODO: this may not be correct logic anymore
+            //   if (idx == cohortModels.length) {
+            //     if (callback) {
+            //       callback();
+            //     }
+            //     return;
+            //   } else {
+            //     var model          = cohortModels[idx];
+            //     var theVcfData  = results[idx];
+            //     if (theVcfData == null) {
+            //       if (callback) {
+            //         callback();
+            //       }
+            //       return;
+            //     }
+            //     theVcfData.gene = theGeneObject;
+            //     resultMap[model.name] = theVcfData;
+            //
+            //     if (!isBackground) {
+            //       model.vcfData = theVcfData;
+            //     }
+            //     idx++;
+            //     postProcessNextVariantCard(idx, callback);
+            //   }
+            // }
+            // postProcessNextVariantCard(idx, function() {
+            //   resolve(resultMap);
+            // });
               } else {
                 var error = "ERROR - cannot locate gene object to match with vcf data " + data.ref + " " + data.start + "-" + data.end;
                 console.log(error);
@@ -1533,6 +1559,17 @@ class CohortModel {
         reject(error);
       });
     });
+  }
+
+  // SJG TODO: get rid of this
+  _combineUniqueFeatures(results) {
+    var combinedFeatures = [];
+    if (results != null && results.length > 0) {
+      results.forEach(function(sample) {
+        combinedFeatures = combinedFeatures.concat(sample.features);
+      })
+    }
+    return combinedFeatures;
   }
 
   _promiseDetermineVariantBookmarks(theVcfData, theGeneObject, theTranscript) {
@@ -1765,7 +1802,7 @@ class CohortModel {
 
     // SJG TODO: why can't I just return array of sampleIds here?
     me.subsetIds.forEach(function (id) {
-      subsetSamples.push( {vcfSampleName: id, sampleName: me.getSampleName()} );
+      subsetSamples.push( {vcfSampleName: id, sampleName: id} );
     })
 
     return subsetSamples;

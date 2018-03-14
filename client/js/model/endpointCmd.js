@@ -41,7 +41,6 @@ EndpointCmd.prototype.getVcfDepth = function(vcfUrl, tbiUrl) {
 
 EndpointCmd.prototype.annotateVariants = function(vcfSource, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey) {
   var me = this;
-
   // Figure out the file location of the reference seq files
   var regionParm = "";
   if (regions && regions.length > 0) {
@@ -80,6 +79,7 @@ EndpointCmd.prototype.annotateVariants = function(vcfSource, refName, regions, v
     return null;
   }
 
+  // SJG TODO: would be good to know what vt subset actually does...
   if (vcfSampleNames && vcfSampleNames.length > 0) {
     var sampleNameFile = new Blob([vcfSampleNames.split(",").join("\n")])
     cmd = cmd.pipe(me.IOBIO.vt, ["subset", "-s", sampleNameFile, '-'], {ssl: me.useSSL})
