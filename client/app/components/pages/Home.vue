@@ -31,39 +31,42 @@
       <!-- TODO: do I need data-sources-loader -->
 
       <!-- TODO: would like to get away from passing giant variantModel here-->
-      <variant-card
-        ref="variantCardRef"
-        v-for="dataSet in dataSets"
-        :key="dataSet.name"
-        v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !variantModel  || variantModel.inProgress.loadingDataSources }"
-        :dataSetModel="dataSet"
-        :annotationScheme="variantModel.annotationScheme"
-        :variantModel="variantModel"
-        :classifyVariantSymbolFunc="variantModel.classifyByImpact"
-        :variantTooltip="variantTooltip"
-        :selectedGene="selectedGene"
-        :selectedTranscript="selectedTranscript"
-        :selectedVariant="selectedVariant"
-        :regionStart="geneRegionStart"
-        :regionEnd="geneRegionEnd"
-        :width="cardWidth"
-        :showGeneViz="true"
-        :showVariantViz="true"
-        :geneVizShowXAxis="true"
-        @dataSetVariantClick="onDataSetVariantClick"
-        @dataSetVariantClickEnd="onDataSetVariantClickEnd"
-        @dataSetVariantHover="onDataSetVariantHover"
-        @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
-        @knownVariantsVizChange="onKnownVariantsVizChange"
-        @knownVariantsFilterChange="onKnownVariantsFilterChange"
-      ></variant-card>
+      <v-layout>
+        <v-flex xs12>
+          <variant-card
+            ref="variantCardRef"
+            v-for="dataSet in dataSets"
+            :key="dataSet.name"
+            v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !variantModel  || variantModel.inProgress.loadingDataSources }"
+            :dataSetModel="dataSet"
+            :annotationScheme="variantModel.annotationScheme"
+            :variantModel="variantModel"
+            :classifyVariantSymbolFunc="variantModel.classifyByImpact"
+            :variantTooltip="variantTooltip"
+            :selectedGene="selectedGene"
+            :selectedTranscript="selectedTranscript"
+            :selectedVariant="selectedVariant"
+            :regionStart="geneRegionStart"
+            :regionEnd="geneRegionEnd"
+            :width="cardWidth"
+            :showGeneViz="true"
+            :showVariantViz="true"
+            :geneVizShowXAxis="true"
+            @dataSetVariantClick="onDataSetVariantClick"
+            @dataSetVariantClickEnd="onDataSetVariantClickEnd"
+            @dataSetVariantHover="onDataSetVariantHover"
+            @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
+            @knownVariantsVizChange="onKnownVariantsVizChange"
+            @knownVariantsFilterChange="onKnownVariantsFilterChange"
+          ></variant-card>
 
-      <variant-summary-card
-        :variant="selectedVariant"
-        :variantInfo="selectedVariantInfo"
-        ref="variantSummaryCardRef"
-      ></variant-summary-card>
-
+          <variant-summary-card
+            :variant="selectedVariant"
+            :variantInfo="selectedVariantInfo"
+            ref="variantSummaryCardRef"
+          ></variant-summary-card>
+        </v-flex>
+      </v-layout>
     </v-container>
   </v-content>
 </div>
@@ -507,8 +510,8 @@ export default {
     initFromUrl: function() {
       let self = this;
 
-      self.geneModel.addGeneName('RAI1');
-      self.onGeneSelected('RAI1');
+      self.geneModel.addGeneName('AIRE');
+      self.onGeneSelected('AIRE');
       self.variantModel.promiseInitDemo()
         .then(function() {
           self.dataSets = self.variantModel.dataSets;

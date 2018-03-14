@@ -24,6 +24,8 @@ class VariantModel {
     this.affectedInfo = null;
     this.maxDepth = 0;
 
+    this.keepVariantsCombined = true; // Must be true for cohorts to be displayed on a single track
+
     this.inProgress = { 'loadingDataSources': false };
     this.genesInProgress = [];
 
@@ -63,8 +65,9 @@ class VariantModel {
     var allSampleModel = new CohortModel(self);
     allSampleModel.name = 'demo_all';
     allSampleModel.trackName = 'All Variants';
-    // SJG TODO: would ideally like to not have to add all ids
-    //allSampleModel.subsetIds.push('NA12877');   // Not looking at this sample for now since not in gene.iobio
+
+    // SJG TODO: MUST ADD all sample names for some reason - look into this post April
+    allSampleModel.subsetIds.push('NA12877');   // Not looking at this sample for now since not in gene.iobio
     allSampleModel.subsetIds.push('NA12878');
     allSampleModel.subsetIds.push('NA12891');
     allSampleModel.subsetIds.push('NA12892');
@@ -77,11 +80,8 @@ class VariantModel {
     subsetModel.trackName = 'Variants for';
     // Ids for platinum are NA12877, NA12878, NA12891, NA12892
     subsetModel.subsetIds.push('NA12878');
-    subsetModel.subsetIds.push('NA12891');
     subsetModel.subsetPhenotypes.push('NA12878');
-    subsetModel.subsetPhenotypes.push('NA12891');
 
-    //subsetModel.subsetPhenotypes.push('NA12891');
     demoDataSet.cohorts.push(subsetModel);
     demoDataSet.cohortMap[subsetModel.name] = subsetModel;
 
@@ -324,7 +324,7 @@ class VariantModel {
               cohortModel.inProgress.loadingVariants = true;
               var p = cohortModel.promiseAnnotateVariants(theGene,
                   theTranscript, [cohortModel],
-                  true, isBackground, self.cacheHelper)
+                  false, isBackground, self.cacheHelper, self.keepVariantsCombined)  // SJG TODO: made this instance var and pass here - can adjust if necessary
                 .then(function(resultMap) {
                   cohortModel.inProgress.loadingVariants = false;
                   theResultMap = resultMap;

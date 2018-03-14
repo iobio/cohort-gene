@@ -79,7 +79,6 @@ EndpointCmd.prototype.annotateVariants = function(vcfSource, refName, regions, v
     return null;
   }
 
-  // SJG TODO: would be good to know what vt subset actually does...
   if (vcfSampleNames && vcfSampleNames.length > 0) {
     var sampleNameFile = new Blob([vcfSampleNames.split(",").join("\n")])
     cmd = cmd.pipe(me.IOBIO.vt, ["subset", "-s", sampleNameFile, '-'], {ssl: me.useSSL})

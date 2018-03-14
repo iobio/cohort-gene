@@ -610,8 +610,9 @@ var effectCategories = [
   }
 
 
-  exports.promiseGetVariants = function(refName, geneObject, selectedTranscript, regions, isMultiSample, samplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache) {
+  exports.promiseGetVariants = function(refName, geneObject, selectedTranscript, regions, isMultiSample, samplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, keepVariantsCombined = false) {
     var me = this;
+    debugger; // Check params coming in correctly
 
 
     return new Promise( function(resolve, reject) {
@@ -641,7 +642,7 @@ var effectCategories = [
             } else {
               reject();
             }
-          });
+          }, null, keepVariantsCombined);
       } else {
         //me._getLocalStats(refName, geneObject.start, geneObject.end, sampleName);
 
@@ -723,8 +724,7 @@ var effectCategories = [
 
 
   }
-
-  exports._getRemoteVariantsImpl = function(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback) {
+  exports._getRemoteVariantsImpl = function(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false) {
 
     var me = this;
 
@@ -741,7 +741,6 @@ var effectCategories = [
 
     var annotatedData = "";
     // Get the results from the iobio command
-    // SJG TODO: do these come in on a per sample basis?
     cmd.on('data', function(data) {
          if (data == undefined) {
             return;
@@ -784,7 +783,7 @@ var effectCategories = [
       });
 
       // Parse the vcf object into a variant object that is visualized by the client.
-      var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF);
+      var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined);
 
       callback(annotatedRecs, results);
     });
@@ -1407,13 +1406,10 @@ var effectCategories = [
 
   }
 
-
-  exports._parseVcfRecords = function(vcfRecs, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, parseMultiSample, sampleNames, sampleIndex, vepAF) {
+  exports._parseVcfRecords = function(vcfRecs, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, parseMultiSample, sampleNames, sampleIndex, vepAF, keepVariantsCombined = false) {
 
       var me = this;
       var selectedTranscriptID = utility.stripTranscriptPrefix(selectedTranscript.transcript_id);
-      // SJG TODO: put this as combined variable
-      var keepVariantsCombined = true;
 
       // Use the sample index to grab the right genotype column from the vcf record
       // If it isn't provided, assume that the first genotype column is the one
@@ -1440,7 +1436,6 @@ var effectCategories = [
         })
       }
       var allVariants = null;
-      // SJG TODO: this is where things are split up for multi-sample vcf file
       if (parseMultiSample) {
         allVariants = gtSampleIndices.map(function(element) {
           return [];
@@ -1458,7 +1453,6 @@ var effectCategories = [
 
       // Interate through the vcf records.  For each record, if multiple
       // alternates are provided, iterate through each alternate
-      // SJG each vcfRec is per variant
       vcfRecs.forEach(function(rec) {
         if (rec.pos && rec.id) {
           var alts = [];
@@ -1561,7 +1555,7 @@ var effectCategories = [
                     'genotypeRefReverseCount' : genotype.refReverseCount,
                     'eduGenotype' :             genotype.eduGenotype,
                     'eduGenotypeReversed':      genotype.eduGenotypeReversed,
-                    'zygosity':                 me._getZygosity(genotype, gtResult, keepVariantsCombined), // SJG if this is a cohort call, need to take highest zygosity
+                    'zygosity':                 me._getZygosity(genotype, gtResult, keepVariantsCombined),
                     'phased':                   genotype.phased,
 
                     // fields to init to 'empty'
@@ -2168,7 +2162,6 @@ exports.parseClinvarInfo = function(info, clinvarMap) {
  * Parse the genotype field from in the vcf rec
  *
  */
- // SJG this is where genotypes determined
  exports._parseGenotypes = function(rec, alt, altIdx, sampleIndices, sampleNames) {
     var me = this;
 
@@ -2412,7 +2405,6 @@ exports.parseClinvarInfo = function(info, clinvarMap) {
               } else {
                 gt.zygosity = "HET";
               }
-              // SJG this is where zygosity set to HOMREF
             } else if (tokens[0] == "0" && tokens[1] == "0" ) {
               gt.keep = false;
               gt.zygosity = "HOMREF"

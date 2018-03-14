@@ -44,6 +44,19 @@ function progressBar() {
         .attr('ry', roundedCorners)
         .attr('fill', blueFill);
 
+      // Ghost fill this to get rid of initial funky outline
+      // SJG TODO: try to get rid of this in the future...
+      var bar = d3.select('#' + parentId).select('svg').select('.progress-rect')
+      bar.transition()
+          .duration(700)
+          .attr('fill', blueFill)
+          .attr('width', 10);
+      bar.transition()
+        .duration(700)
+        .attr('fill', backgroundFill)
+        .attr('width', 0);
+
+
       dispatch.d3rendered();
     }
 
@@ -57,16 +70,17 @@ function progressBar() {
             .duration(700)
             .attr('fill', blueFill)
             .attr('width', function() {
-                return freqNum * 2;
+                var scaledWidth = freqNum * 2;
+                return scaledWidth > 13 ? scaledWidth : 13; // Keep width at a minimum so bubble fits into outline
             });
       }
       // Otherwise make bar disappear
       else if (bar) {
         bar.transition()
           .duration(700)
-          .attr('fill', backgroundFill) // SJG had to set to white to get rid of remaining border
+          .attr('fill', backgroundFill) // Set to white to get rid of remaining border
           .attr('width', 0);
-        }
+      }
     }
 
     bar.height = function(_) {
