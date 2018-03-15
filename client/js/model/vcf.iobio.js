@@ -612,11 +612,8 @@ var effectCategories = [
 
   exports.promiseGetVariants = function(refName, geneObject, selectedTranscript, regions, isMultiSample, samplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, keepVariantsCombined = false) {
     var me = this;
-    debugger; // Check params coming in correctly
-
 
     return new Promise( function(resolve, reject) {
-
 
       // This comma separated string of samples to perform vcf subset on
       var vcfSampleNames = samplesToRetrieve.filter(function(sample) {
@@ -1648,7 +1645,6 @@ var effectCategories = [
           'features':           allVariants,
           'genericAnnotators':  me.infoFields ? Object.keys(me.infoFields) : []
         };
-        debugger;
         return results;
       }
 

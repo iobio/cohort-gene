@@ -280,7 +280,6 @@ class VariantModel {
       return filteredVariants;
     }
 
-    debugger; // Look at cohorts
     self.dataSets.forEach(function(dataSet) {
       dataSet.cohorts.forEach(function(cohort) {
         if (name == null || name == cohort.name) {
@@ -288,7 +287,6 @@ class VariantModel {
             var start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
             var end   = self.filterModel.regionEnd   ? self.filterModel.regionEnd   : gene.end;
 
-            debugger;
             var loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
             cohort.loadedVariants = loadedVariants;
 

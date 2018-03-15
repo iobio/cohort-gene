@@ -5,7 +5,6 @@
 @import ../../../assets/sass/variables
 @import ../../../assets/sass/symbols
 .summary-viz
-  padding-left: 30px
   min-height: 100px
   max-height: 200px
   padding-top: 0px
@@ -30,6 +29,12 @@
     font-style: italic
     padding-left: 6px
     text-align: right
+
+  .subtitle-label
+    color: #7f7f7f
+    font-style: italic
+    padding-left: 6px
+    text-align: center
 
   .field-value
     padding-right: 25px
@@ -190,6 +195,21 @@
           </allele-frequency-viz>
         </v-flex>
     </v-layout>
+    <hr/>
+    <v-layout row wrap>
+      <v-flex xs12>
+        <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
+        :selectedVariant="variant"
+        :zygHom="zygHom"
+        :zygHet="zygHet"
+        :zygHomRef="zygHomRef"
+        :zygNoCall="zygNoCall"
+        :statusAffected="statusAffected"
+        :statusUnaffected="statusUnaffected"
+        :sampleDepths="sampleDepthNumbers">
+        </bar-feature-viz>
+      </v-flex>
+    </v-layout>
     </v-container>
   </v-card>
 </template>
@@ -199,14 +219,14 @@
 // Import viz components
 import FeatureViz from "./FeatureViz.vue"
 import AlleleFrequencyViz from "./AlleleFrequencyViz.vue"
-import HistogramViz from "./HistogramViz.vue"
+import BarFeatureViz from "./BarFeatureViz.vue"
 
 export default {
   name: 'variant-summary-card',
   components: {
     FeatureViz,
     AlleleFrequencyViz,
-    HistogramViz
+    BarFeatureViz
   },
   props: {
     variant: null,
