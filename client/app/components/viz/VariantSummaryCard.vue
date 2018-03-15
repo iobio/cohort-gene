@@ -169,47 +169,43 @@
     <v-card-title primary-title style="margin-bottom: 8px; width: 100%">
       <span style="display:inline-block">VARIANT SUMMARY</span>
     </v-card-title>
-    <v-container>
+    <v-container fluid grid-list-md>
       <v-layout row wrap>
-        <v-flex xs6>
-          <feature-viz id="loaded-feature-viz" class="summary-viz"
-            :effect="effect"
-            :impactText="impactText"
-            :impactColor="impactColor"
-            :type="variantType"
-            :clinVarText="clinVarText"
-            :clinVarColor="clinVarColor"
-            :siftText="siftText"
-            :siftColor="siftColor"
-            :polyPhenText="polyPhenText"
-            :polyPhenColor="polyPhenColor">
-          </feature-viz>
-        </v-flex>
-        <v-flex xs6>
-          <allele-frequency-viz id="loaded-freq-viz" class="summary-viz"
-          :selectedVariant="variant"
-          :oneKGenomes="oneKGenomes"
-          :exAc="exAc"
-          :simonsSimplexComplex="simonsSimplexComplex"
-          :simonsVip="simonsVip">
-          </allele-frequency-viz>
-        </v-flex>
-    </v-layout>
-    <hr/>
-    <v-layout row wrap>
-      <v-flex xs12>
-        <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
+        <feature-viz id="loaded-feature-viz" class="summary-viz"
+          :effect="effect"
+          :impactText="impactText"
+          :impactColor="impactColor"
+          :type="variantType"
+          :clinVarText="clinVarText"
+          :clinVarColor="clinVarColor"
+          :siftText="siftText"
+          :siftColor="siftColor"
+          :polyPhenText="polyPhenText"
+          :polyPhenColor="polyPhenColor">
+        </feature-viz>
+        <allele-frequency-viz id="loaded-freq-viz" class="summary-viz"
         :selectedVariant="variant"
-        :zygHom="zygHom"
-        :zygHet="zygHet"
-        :zygHomRef="zygHomRef"
-        :zygNoCall="zygNoCall"
-        :statusAffected="statusAffected"
-        :statusUnaffected="statusUnaffected"
-        :sampleDepths="sampleDepthNumbers">
-        </bar-feature-viz>
-      </v-flex>
-    </v-layout>
+        :oneKGenomes="oneKGenomes"
+        :exAc="exAc"
+        :simonsSimplexComplex="simonsSimplexComplex"
+        :simonsVip="simonsVip">
+        </allele-frequency-viz>
+      </v-layout>
+      <v-layout row wrap>
+        <hr/>
+        <v-flex xs12 sm12 md12>
+          <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
+          :selectedVariant="variant"
+          :zygHom="zygHom"
+          :zygHet="zygHet"
+          :zygHomRef="zygHomRef"
+          :zygNoCall="zygNoCall"
+          :statusAffected="statusAffected"
+          :statusUnaffected="statusUnaffected"
+          :sampleDepths="sampleDepthNumbers">
+          </bar-feature-viz>
+        </v-flex>
+      </v-layout>
     </v-container>
   </v-card>
 </template>

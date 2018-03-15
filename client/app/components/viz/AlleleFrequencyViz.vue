@@ -9,40 +9,32 @@
 </style>
 
 <template>
-  <v-layout class="content" column nowrap>
-    <v-flex>
-      <v-layout row>
-        <v-flex xs4 class="field-label-header">Allele Frequencies</v-flex>
-        <v-flex xs8></v-flex>
-      </v-layout>
-    </v-flex>
-    <v-flex>
-      <v-layout row>
-         <v-flex xs4 class="field-label">1000 Genomes:</v-flex>
-         <v-flex xs2 class="field-value">{{ oneKGenomes }}</v-flex>
-         <v-flex xs6 id="oneKProgress" class="field-value"></v-flex>
-      </v-layout>
-    </v-flex>
-    <v-flex>
-      <v-layout row>
-         <v-flex xs4 class="field-label">ExAC:</v-flex>
-         <v-flex xs2 class="field-value">{{ exAc }}</v-flex>
-         <v-flex xs6 id="exAcProgress" class="field-value"></v-flex>
-      </v-layout>
-    </v-flex>
-    <v-flex>
-      <v-layout row>
-         <v-flex xs4 class="field-label">Simons VIP:</v-flex>
-         <v-flex xs2 class="field-value">{{ simonsVip }}</v-flex>
-         <v-flex xs6 id="simonsVipProgress" class="field-value"></v-flex>
-      </v-layout>
-      <v-layout row>
-         <v-flex xs4 class="field-label">Simons Simplex Complex:</v-flex>
-         <v-flex xs2 class="field-value">{{ simonsSimplexComplex }}</v-flex>
-         <v-flex xs6 id="simonsSimplexProgress" class="field-value"></v-flex>
-      </v-layout>
-    </v-flex>
-  </v-layout>
+  <v-flex xs12 sm12 md6 lg4>
+    <v-layout row>
+      <v-flex xs4 class="field-label-header">Allele Frequencies</v-flex>
+      <v-flex xs8></v-flex>
+    </v-layout>
+    <v-layout row>
+       <v-flex xs4 class="field-label">1000 Genomes:</v-flex>
+       <v-flex xs2 class="field-value">{{ oneKGenomes }}</v-flex>
+       <v-flex xs6 id="oneKProgress" class="field-value"></v-flex>
+    </v-layout>
+    <v-layout row>
+       <v-flex xs4 class="field-label">ExAC:</v-flex>
+       <v-flex xs2 class="field-value">{{ exAc }}</v-flex>
+       <v-flex xs6 id="exAcProgress" class="field-value"></v-flex>
+    </v-layout>
+    <v-layout row>
+       <v-flex xs4 class="field-label">Simons VIP:</v-flex>
+       <v-flex xs2 class="field-value">{{ simonsVip }}</v-flex>
+       <v-flex xs6 id="simonsVipProgress" class="field-value"></v-flex>
+    </v-layout>
+    <v-layout row>
+       <v-flex xs4 class="field-label">Simons Simplex Complex:</v-flex>
+       <v-flex xs2 class="field-value">{{ simonsSimplexComplex }}</v-flex>
+       <v-flex xs6 id="simonsSimplexProgress" class="field-value"></v-flex>
+    </v-layout>
+  </v-flex>
 </template>
 
 <script>
@@ -88,33 +80,29 @@ export default {
         .parentId('oneKProgress')
         .on('d3rendered', function() {
         });
-      self.oneKBar();
 
       self.exAcBar = progressBar()
         .parentId('exAcProgress')
         .on('d3rendered', function() {
         });
-      self.exAcBar();
 
       self.simonsSimplexBar = progressBar()
         .parentId('simonsSimplexProgress')
         .on('d3rendered', function() {
         });
-      self.simonsSimplexBar();
 
       self.simonsVipBar = progressBar()
         .parentId('simonsVipProgress')
         .on('d3rendered', function() {
         });
-      self.simonsVipBar();
     },
     fillProgressBars() {
       let self = this;
 
-      self.oneKBar.moveProgressBar(self.oneKGenomes, 'oneKProgress');
-      self.exAcBar.moveProgressBar(self.exAc, 'exAcProgress');
-      self.simonsSimplexBar.moveProgressBar(self.simonsSimplex, 'simonsSimplexProgress');
-      self.simonsVipBar.moveProgressBar(self.simonsVip, 'simonsVipProgress');
+      self.oneKBar.moveProgressBar()(self.oneKGenomes, 'oneKProgress');
+      self.exAcBar.moveProgressBar()(self.exAc, 'exAcProgress');
+      self.simonsSimplexBar.moveProgressBar()(self.simonsSimplex, 'simonsSimplexProgress');
+      self.simonsVipBar.moveProgressBar()(self.simonsVip, 'simonsVipProgress');
     }
   },
   watch: {

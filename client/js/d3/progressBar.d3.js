@@ -15,6 +15,29 @@ function progressBar() {
       parentId,
       states;
 
+  var moveProgressBar = function(frequency, flexId) {
+    var progBar = d3.select('#' + parentId).select('svg').select('.progress-rect');
+
+    // Fill bar if we have a frequency coming in
+    var freqNum = parseInt(frequency);
+    if (freqNum != NaN && freqNum > 0 && bar) {
+      progBar.transition()
+          .duration(700)
+          .attr('fill', blueFill)
+          .attr('width', function() {
+              var scaledWidth = freqNum * 2;
+              return scaledWidth > 13 ? scaledWidth : 13; // Keep width at a minimum so bubble fits into outline
+          });
+    }
+    // Otherwise make bar disappear
+    else if (progBar) {
+      progBar.transition()
+        .duration(700)
+        .attr('fill', backgroundFill) // Set to white to get rid of remaining border
+        .attr('width', 0);
+    }
+  };
+
     function bar() {
       var svg = d3.select('#' + parentId)
         .append('svg')
@@ -45,7 +68,6 @@ function progressBar() {
         .attr('fill', blueFill);
 
       // Ghost fill this to get rid of initial funky outline
-      // SJG TODO: try to get rid of this in the future...
       var bar = d3.select('#' + parentId).select('svg').select('.progress-rect')
       bar.transition()
           .duration(700)
@@ -58,29 +80,6 @@ function progressBar() {
 
 
       dispatch.d3rendered();
-    }
-
-    bar.moveProgressBar = function(frequency, flexId) {
-      var bar = d3.select('#' + parentId).select('svg').select('.progress-rect');
-
-      // Fill bar if we have a frequency coming in
-      var freqNum = parseInt(frequency);
-      if (freqNum != NaN && freqNum > 0 && bar) {
-        bar.transition()
-            .duration(700)
-            .attr('fill', blueFill)
-            .attr('width', function() {
-                var scaledWidth = freqNum * 2;
-                return scaledWidth > 13 ? scaledWidth : 13; // Keep width at a minimum so bubble fits into outline
-            });
-      }
-      // Otherwise make bar disappear
-      else if (bar) {
-        bar.transition()
-          .duration(700)
-          .attr('fill', backgroundFill) // Set to white to get rid of remaining border
-          .attr('width', 0);
-      }
     }
 
     bar.height = function(_) {
@@ -146,6 +145,14 @@ function progressBar() {
       states = _;
       return bar;
     };
+
+    bar.moveProgressBar = function(_) {
+      if (!arguments.length) {
+        return moveProgressBar;
+      }
+      states = _;
+      return bar;
+    }
 
     d3.rebind(bar, dispatch, "on");
     return bar;
