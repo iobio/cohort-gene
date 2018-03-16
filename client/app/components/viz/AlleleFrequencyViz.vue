@@ -80,29 +80,33 @@ export default {
         .parentId('oneKProgress')
         .on('d3rendered', function() {
         });
+      self.oneKBar();
 
       self.exAcBar = progressBar()
         .parentId('exAcProgress')
         .on('d3rendered', function() {
         });
+      self.exAcBar();
 
       self.simonsSimplexBar = progressBar()
         .parentId('simonsSimplexProgress')
         .on('d3rendered', function() {
         });
+      self.simonsSimplexBar();
 
       self.simonsVipBar = progressBar()
         .parentId('simonsVipProgress')
         .on('d3rendered', function() {
         });
+      self.simonsVipBar();
     },
     fillProgressBars() {
       let self = this;
 
-      self.oneKBar.moveProgressBar()(self.oneKGenomes, 'oneKProgress');
-      self.exAcBar.moveProgressBar()(self.exAc, 'exAcProgress');
-      self.simonsSimplexBar.moveProgressBar()(self.simonsSimplex, 'simonsSimplexProgress');
-      self.simonsVipBar.moveProgressBar()(self.simonsVip, 'simonsVipProgress');
+      self.oneKBar.moveProgressBar()(self.oneKGenomes);
+      self.exAcBar.moveProgressBar()(self.exAc);
+      self.simonsSimplexBar.moveProgressBar()(self.simonsSimplex);
+      self.simonsVipBar.moveProgressBar()(self.simonsVip);
     }
   },
   watch: {

@@ -1,108 +1,93 @@
 <!-- Displays sample zygosity, affected status, and sample depth histograms -->
 
 <style>
+  .bar--positive {
+    fill: steelblue;
+  }
+
+  .bar--negative {
+    fill: darkorange;
+  }
+
+  .axis text {
+    font: 10px sans-serif;
+  }
+
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
 </style>
 
 <template>
-  <v-layout class="content" column nowrap>
-    <v-flex>
-      <v-layout row>
-        <v-flex xs4 class="subtitle-label">Sample Zygosities</v-flex>
-        <v-flex xs4 class="subtitle-label">Affected Status</v-flex>
-        <v-flex xs4 class="subtitle-label">Sample Depths</v-flex>
-      </v-layout>
-      <v-layout row>
-        <v-flex xs4 id="zygosityBar"></v-flex>
-        <v-flex xs4 id="affectedBar"></v-flex>
-        <v-flex xs4 id="depthBar"></v-flex>
-      </v-layout>
-    </v-flex>
-  </v-layout>
+  <v-flex xs12 sm12 md12 lg6>
+    <v-layout row>
+      <v-flex xs4 class="subtitle-label">Sample Zygosities</v-flex>
+      <v-flex xs4 class="subtitle-label">Affected Status</v-flex>
+      <v-flex xs4 class="subtitle-label">Sample Depths</v-flex>
+    </v-layout>
+    <v-layout row>
+      <v-flex xs4 id="zygBar"></v-flex>
+      <v-flex xs4 id="statusBar"></v-flex>
+      <v-flex xs4 id="depthBar"></v-flex>
+    </v-layout>
+  </v-flex>
 </template>
 
 <script>
 export default {
-  name: 'allele-frequency-viz',
+  name: 'bar-feature-viz',
   data() {
     return {
-      oneKBar: {},
-      exAcBar: {},
-      simonsSimplexBar: {},
-      simonsVipBar: {}
+      zygChart: {},
+      statusChart: {},
+      depthChart: {}
     }
   },
   props: {
     selectedVariant: {},
-    zygHom: {
-      default: 0,
-      type: Number
-    },
-    zygHet: {
-      default: 0,
-      type: Number
-    },
-    zygHomRef: {
-      default: 0,
-      type: Number
-    },
-    zygNoCall: {
-      default: 0,
-      type: Number
-    },
-    statusAffected: {
-      default: 0,
-      type: Number
-    },
-    statusUnaffected: {
-      default: 0,
-      type: Number
-    },
-    sampleDepths: {}
+    zygMap: {},
+    statusMap: {},
+    depthMap: {}
   },
   created: function() {},
   mounted: function() {
-    this.drawBars();
+    this.drawCharts();
   },
   methods: {
-    drawBars() {
+    drawCharts() {
       let self = this;
 
-      self.oneKBar = progressBar()
-        .parentId('oneKProgress')
+      self.zygChart = barChart()
+        .parentId('zygBar')
         .on('d3rendered', function() {
         });
-      self.oneKBar();
+      self.zygChart();
 
-      self.exAcBar = progressBar()
-        .parentId('exAcProgress')
+      self.statusChart = barChart()
+        .parentId('statusBar')
         .on('d3rendered', function() {
         });
-      self.exAcBar();
+      self.statusChart();
 
-      self.simonsSimplexBar = progressBar()
-        .parentId('simonsSimplexProgress')
+      self.depthChart = barChart()
+        .parentId('depthBar')
         .on('d3rendered', function() {
         });
-      self.simonsSimplexBar();
-
-      self.simonsVipBar = progressBar()
-        .parentId('simonsVipProgress')
-        .on('d3rendered', function() {
-        });
-      self.simonsVipBar();
+      self.depthChart();
     },
-    fillProgressBars() {
+    fillCharts() {
       let self = this;
-
-      self.oneKBar.moveProgressBar(self.oneKGenomes, 'oneKProgress');
-      self.exAcBar.moveProgressBar(self.exAc, 'exAcProgress');
-      self.simonsSimplexBar.moveProgressBar(self.simonsSimplex, 'simonsSimplexProgress');
-      self.simonsVipBar.moveProgressBar(self.simonsVip, 'simonsVipProgress');
+      self.zygChart.fillChart()(self.zygMap);
+      self.statusChart.fillChart()(self.statusMap);
+      self.depthChart.fillChart()(self.depthMap);
     }
   },
   watch: {
     selectedVariant: function() {
-      this.fillProgressBars();
+      this.fillCharts();
     }
   }
 }

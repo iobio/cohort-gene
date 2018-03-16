@@ -15,8 +15,9 @@ function progressBar() {
       parentId,
       states;
 
-  var moveProgressBar = function(frequency, flexId) {
-    var progBar = d3.select('#' + parentId).select('svg').select('.progress-rect');
+  var moveProgressBar = function(frequency) {
+    var svg = d3.select('#' + parentId).select('svg');
+    var progBar = svg.select('.progress-rect');
 
     // Fill bar if we have a frequency coming in
     var freqNum = parseInt(frequency);
@@ -25,16 +26,18 @@ function progressBar() {
           .duration(700)
           .attr('fill', blueFill)
           .attr('width', function() {
-              var scaledWidth = freqNum * 2;
-              return scaledWidth > 13 ? scaledWidth : 13; // Keep width at a minimum so bubble fits into outline
+              var parentWidth = parseInt(svg.style('width'));
+              var scaledWidth = freqNum;
+              return scaledWidth > 5 ? (scaledWidth + "%") : "5%"; // Keep width at a minimum so bubble fits into outline
           });
     }
     // Otherwise make bar disappear
     else if (progBar) {
+      debugger;
       progBar.transition()
         .duration(700)
         .attr('fill', backgroundFill) // Set to white to get rid of remaining border
-        .attr('width', 0);
+        .attr('width', "0%");
     }
   };
 
@@ -42,8 +45,8 @@ function progressBar() {
       var svg = d3.select('#' + parentId)
         .append('svg')
         .attr('height', height)
-        .attr('width', svgSegmentWidth)
-        .attr('style', 'padding-top: 4px; padding-left: 1px')
+        .attr('width', '100%')
+        .attr('style', 'padding-top: 4px; padding-left: 1px; padding-right: 1px')
         .attr('x', 0);
 
       // Background bubble
@@ -54,7 +57,7 @@ function progressBar() {
         .attr('fill', backgroundFill)
         .attr('height', 15)
         .attr('width', function(){
-          return 200;
+          return '100%';
         })
         .attr('x', 0);
 
@@ -72,11 +75,11 @@ function progressBar() {
       bar.transition()
           .duration(700)
           .attr('fill', blueFill)
-          .attr('width', 10);
+          .attr('width', "1%");
       bar.transition()
         .duration(700)
         .attr('fill', backgroundFill)
-        .attr('width', 0);
+        .attr('width', "0%");
 
 
       dispatch.d3rendered();

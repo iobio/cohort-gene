@@ -1,44 +1,165 @@
-var svg = d3.select("svg"),
-    margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = +svg.attr("width") - margin.left - margin.right,
-    height = +svg.attr("height") - margin.top - margin.bottom;
+/**
+SJG Mar2018
+Adapted from https://bl.ocks.org/mbostock/2368837
 
-var x = d3.scaleBand().rangeRound([0, width]).padding(0.1),
-    y = d3.scaleLinear().rangeRound([height, 0]);
+Scales to two columns if numBars not provided
+*/
 
-var g = svg.append("g")
+function barChart() {
+
+  var dispatch = d3.dispatch("d3rendered");
+
+  // Instance variables
+  var chartHeight = 120,
+      svgSegmentWidth = 500,
+      chartWidth = 185,
+      roundedCorners = 10,
+      numBars = 6,  // SJG TODO: might make this change depending on how columns look
+      backgroundFill = 'white',
+      blueFill = '#85bdea',
+      parentId;
+
+  // Draw outlines
+  function chart() {
+
+    var margin = {top: 5, right: 5, bottom: 5, left: 5};
+    width = chartWidth + (numBars*5) - margin.left - margin.right,
+    height = chartHeight - margin.top - margin.bottom;
+
+    var x = d3.scale.linear()
+        .range([0, width]);
+
+    var y = d3.scale.ordinal()
+        .rangeRoundBands([0, height], 0.1);
+
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .orient("bottom");
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .orient("left")
+        .tickSize(1)
+        .tickPadding(6);
+
+    var svg = d3.select('#' + parentId)
+                .append('svg')
+                .attr('height', height)
+                .attr('width', width);
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+    svg.append("g")
+        .attr("class", "y axis")
+        .attr("transform", "translate(" + x(0) + ",0)")
+        .call(yAxis);
+
+    dispatch.d3rendered();
+  }
+
+  // Fill chart method
+  var fillChart = function(dataMap) {
+    // SJG TODO: scale x-axis to number of entries in map - should be 2, 3, or 6
+
+    var progBar = d3.select('#' + parentId).select('svg').select('.progress-rect');
+
+    // x.domain(d3.extent(data, function(d) { return d.value; })).nice();
+    // y.domain(data.map(function(d) { return d.key; });
+
+    svg.selectAll(".bar")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", function(d) { return "bar bar--" + (d.value < 0 ? "negative" : "positive"); })
+        .attr("x", function(d) { return x(Math.min(0, d.value)); })
+        .attr("y", function(d) { return y(d.name); })
+        .attr("width", function(d) { return Math.abs(x(d.value) - x(0)); })
+        .attr("height", y.rangeBand());
+  }
+
+  // Getters & setters
+  chart.fillChart = function(_) {
+      if (!arguments.length) {
+          return fillChart;
+      }
+      fillChart = _;
+      return chart;
+  };
+
+  chart.parentId = function(_) {
+    if (!arguments.length) {
+      return parentId;
+    }
+    parentId = _;
+    return chart;
+  };
+
+  chart.numBars = function(_) {
+    if (!arguments.length) {
+      return numBars;
+    }
+    numBars = _;
+    return chart;
+  };
+
+  d3.rebind(chart, dispatch, "on");
+  return chart;
+}
+/*
+var margin = {top: 20, right: 30, bottom: 40, left: 30},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var x = d3.scale.linear()
+    .range([0, width]);
+
+var y = d3.scale.ordinal()
+    .rangeRoundBands([0, height], 0.1);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .tickSize(0)
+    .tickPadding(6);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-d3.tsv("data.tsv", function(d) {
-  d.frequency = +d.frequency;
-  return d;
-}, function(error, data) {
-  if (error) throw error;
+d3.tsv("data.tsv", type, function(error, data) {
+  x.domain(d3.extent(data, function(d) { return d.value; })).nice();
+  y.domain(data.map(function(d) { return d.name; }));
 
-  x.domain(data.map(function(d) { return d.letter; }));
-  y.domain([0, d3.max(data, function(d) { return d.frequency; })]);
-
-  g.append("g")
-      .attr("class", "axis axis--x")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
-
-  g.append("g")
-      .attr("class", "axis axis--y")
-      .call(d3.axisLeft(y).ticks(10, "%"))
-    .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", "0.71em")
-      .attr("text-anchor", "end")
-      .text("Frequency");
-
-  g.selectAll(".bar")
-    .data(data)
+  svg.selectAll(".bar")
+      .data(data)
     .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", function(d) { return x(d.letter); })
-      .attr("y", function(d) { return y(d.frequency); })
-      .attr("width", x.bandwidth())
-      .attr("height", function(d) { return height - y(d.frequency); });
+      .attr("class", function(d) { return "bar bar--" + (d.value < 0 ? "negative" : "positive"); })
+      .attr("x", function(d) { return x(Math.min(0, d.value)); })
+      .attr("y", function(d) { return y(d.name); })
+      .attr("width", function(d) { return Math.abs(x(d.value) - x(0)); })
+      .attr("height", y.rangeBand());
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .attr("transform", "translate(" + x(0) + ",0)")
+      .call(yAxis);
 });
+
+function type(d) {
+  d.value = +d.value;
+  return d;
+}
+*/

@@ -1522,6 +1522,7 @@ var effectCategories = [
 
                 // Keep the variant if we are just parsing a single sample (parseMultiSample=false)
                 // or we are parsing multiple samples and this sample's genotype is het or hom
+                //debugger;   // SJG look at genotypeMap format
                 if (!parseMultiSample || genotype.keep) {
                   var variant = {
                     'start':                    +rec.pos,

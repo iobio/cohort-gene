@@ -34,7 +34,7 @@
     color: #7f7f7f
     font-style: italic
     padding-left: 6px
-    text-align: center
+    text-align: left
 
   .field-value
     padding-right: 25px
@@ -190,21 +190,12 @@
         :simonsSimplexComplex="simonsSimplexComplex"
         :simonsVip="simonsVip">
         </allele-frequency-viz>
-      </v-layout>
-      <v-layout row wrap>
-        <hr/>
-        <v-flex xs12 sm12 md12>
-          <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
-          :selectedVariant="variant"
-          :zygHom="zygHom"
-          :zygHet="zygHet"
-          :zygHomRef="zygHomRef"
-          :zygNoCall="zygNoCall"
-          :statusAffected="statusAffected"
-          :statusUnaffected="statusUnaffected"
-          :sampleDepths="sampleDepthNumbers">
-          </bar-feature-viz>
-        </v-flex>
+        <!-- <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
+        :selectedVariant="variant"
+        :zygMap="zygMap"
+        :statusMap="statusMap"
+        :depthMap="depthMap">
+        </bar-feature-viz> -->
       </v-layout>
     </v-container>
   </v-card>
@@ -310,6 +301,44 @@ export default {
     simonsVip: function() {
       // TODO: get simons data
       return "-";
+    },
+    zygMap: function() {
+      var map = {};
+      if (this.variant != null && this.variant.genotypes != null) {
+        map['HOM'] = 0;
+        map['HET'] = 0;
+        map['HOMREF'] = 0;
+        map['NOCALL'] = 0;
+        this.variant.genotypes.forEach(function(gt) {
+          if(gt.zygosity == 'HOM') map['HOM']++;
+          else if (gt.zygosity == 'HET') map['HET']++;
+          else if (gt.zygosity == 'HOMREF') map['HOMREF']++;
+          else map['NOCALL']++;
+        })
+      }
+      return map;
+    },
+    statusMap: function() {
+      var map = {};
+      var numSamplesAffected, numSamplesUnaffected = 0;
+      // SJG TODO: I think this is just the number of samples 0/1 or 1/1 out of number of entries in this.variant.genotypes
+      if (this.variant != null && this.variant.genotypes != null) {
+        this.variant.genotypes.forEach(function(gt) {
+          if (gt.zygosity == 'HOM' || gt.zygosity == 'HET')
+            numSamplesAffected++;
+          else if (gt.zygosity == 'HOMREF') {
+            numSamplesUnffected++;
+          }
+        })
+        map['AFF'] = numSamplesAffected;
+        map['UNAFF'] = numSamplesUnffected;
+      }
+      return map;
+    },
+    depthMap: function() {
+      var map = {};
+      // SJG TODO: not sure how to get these numbers - maybe leave this graph out for the demo?
+      return map;
     }
   },
   watch: {},

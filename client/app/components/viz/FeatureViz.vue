@@ -3,7 +3,7 @@
 </style>
 
 <template>
-  <v-flex xs12 sm12 md6 lg4>
+  <v-flex xs12 sm12 md6 lg2>
     <v-layout row>
        <v-flex xs3 class="field-label">Effect:</v-flex>
        <v-flex xs9 class="field-value">{{ effect }}</v-flex>
