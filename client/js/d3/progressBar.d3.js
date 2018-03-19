@@ -10,7 +10,7 @@ function progressBar() {
       segmentWidth = 200,
       roundedCorners = 10,
       backgroundFill = 'white',
-      blueFill = '#85bdea', // Fill color
+      blueFill = '#6c94b7', // Fill color
       currentStatus,
       parentId,
       states;

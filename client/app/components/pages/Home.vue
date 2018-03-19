@@ -61,6 +61,7 @@
           ></variant-card>
 
           <variant-summary-card
+            :selectedGene="selectedGene.gene_name"
             :variant="selectedVariant"
             :variantInfo="selectedVariantInfo"
             ref="variantSummaryCardRef"
@@ -378,6 +379,7 @@ export default {
       //this.coverageModel.setCoverage();
     },
     onDataSetVariantClick: function(variant, sourceComponent, cohortKey) {
+      debugger;
       let self = this;
       if (variant) {
         self.selectedVariant = variant;

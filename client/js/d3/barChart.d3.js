@@ -12,17 +12,16 @@ function barChart() {
   var dispatch = d3.dispatch("d3rendered");
 
   // Instance variables
-  var height = 160,
+      var parentId,
+      barColor = '#6c94b7';
+
+  // Private variables (can be made public if necessary except for _x and _y)
+  var _x, _y,
+      height = 160,
       dataHeight = height - 40,
       width = 220,
       roundedCorners = 2,
-      yValueMax = 5,
-      parentId,
-      blueFill = '#85bdea'; // Bar color
-
-
-  // Private variables
-  var _x, _y;
+      yValueMax = 5;
 
   /* Takes in array of maps with {label:, value:} entries and draws bars based on provided values.
      Providing an empty data array will zero out all bars.
@@ -40,6 +39,7 @@ function barChart() {
           .style('fill', 'white')
           .attr('height', 0);
     }
+    // SJG TODO: need to adjust y-axis labels
     else {
       newDataMap.forEach(function(dataBar) {
         var barId = "#bar_" + dataBar.label.replace(' ', '_');
@@ -50,7 +50,7 @@ function barChart() {
         if (column) {
           column.transition()
                 .duration(700)
-                .style('fill', blueFill)
+                .style('fill', barColor)
                 .attr("y", function(d) { return _y(barHeight); })
                 .attr('height', function(d) { return dataHeight - _y(barHeight); });
         }
@@ -138,11 +138,11 @@ function barChart() {
     return chart;
   };
 
-  chart.dataMap = function(_) {
+  chart.barColor = function(_) {
     if (!arguments.length) {
-      return dataMap;
+      return barColor;
     }
-    dataMap = _;
+    barColor = _;
     return chart;
   };
 

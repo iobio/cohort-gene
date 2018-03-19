@@ -168,6 +168,10 @@
   <v-card>
     <v-card-title primary-title style="margin-bottom: 8px; width: 100%">
       <span style="display:inline-block">VARIANT SUMMARY</span>
+      <v-chip color="cohortBlue" small text-color="white"
+        v-bind:class="{hide: selectedVariantLocation == ''}">
+         {{selectedVariantLocation}}
+      </v-chip>
     </v-card-title>
     <v-container fluid grid-list-md>
       <v-layout row wrap>
@@ -217,7 +221,8 @@ export default {
   },
   props: {
     variant: null,
-    variantInfo: null
+    variantInfo: null,
+    selectedGene: ''
   },
   data() { return {}},
   methods: {},
@@ -305,7 +310,6 @@ export default {
     zygMap: function() {
       var map = [];
       var homRefCount = 0, hetCount = 0, homAltCount = 0, noCallCount = 0;
-      debugger;
       if (this.variant != null && this.variant.genotypes != null) {
         var gtObj = this.variant.genotypes;
         for (var gt in gtObj) {  // SJG TODO: not sure if this type of iteration supported by all browsers
@@ -347,6 +351,13 @@ export default {
       var map = [];
       // SJG TODO: not sure how to get these numbers - maybe leave this graph out for the demo?
       return map;
+    },
+    selectedVariantLocation: function() {
+      if (this.variant != null) {
+        var geneName = this.selectedGene ? this.selectedGene : '';
+        return geneName + ' chr' + this.variant.chrom + ' ' + this.variant.start.toLocaleString() + ' - ' + this.variant.end.toLocaleString();
+      }
+      return '';
     }
   },
   watch: {},

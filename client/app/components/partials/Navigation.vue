@@ -1,7 +1,7 @@
 
 <style lang="sass">
 nav.toolbar
-  background-color: rgb(93, 128, 157) !important
+  background-color: #516e87 !important
   font-weight: 300 !important
 
   i.material-icons
@@ -22,7 +22,8 @@ nav.toolbar
       <v-toolbar-side-icon @click.stop="leftDrawer = !leftDrawer">
       </v-toolbar-side-icon>
 
-      <v-toolbar-title v-text="title"></v-toolbar-title>
+      <v-toolbar-title style="margin-right: 0px" v-text="title"></v-toolbar-title>
+      <v-toolbar-title style="color: #95b0c6 !important; margin-left: 0px !important" v-text="titleSuffix"></v-toolbar-title>
 
       <v-toolbar-items style="margin-left:20px" class="hidden-sm-and-down">
 
@@ -132,7 +133,8 @@ export default {
   },
   data () {
     return {
-      title: 'cohort-gene.iobio',
+      title: 'cohort-gene',
+      titleSuffix: '.iobio',
 
       selectedGene: {},
       clipped: false,

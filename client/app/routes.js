@@ -19,7 +19,7 @@ import 'vuetify/dist/vuetify.css'
 import '../assets/css/siteVuetify.css'
 Vue.use(Vuetify, {
   theme: {
-    fillBlue: '#85bdea'
+    cohortBlue: '#95b0c6'
   }
 })
 
