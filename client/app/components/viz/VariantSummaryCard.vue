@@ -171,7 +171,7 @@
     </v-card-title>
     <v-container fluid grid-list-md>
       <v-layout row wrap>
-        <feature-viz id="loaded-feature-viz" class="summary-viz"
+        <feature-viz id="loaded-feature-viz" class="summary-viz" style="padding-top: 20px"
           :effect="effect"
           :impactText="impactText"
           :impactColor="impactColor"
@@ -183,7 +183,7 @@
           :polyPhenText="polyPhenText"
           :polyPhenColor="polyPhenColor">
         </feature-viz>
-        <allele-frequency-viz id="loaded-freq-viz" class="summary-viz"
+        <allele-frequency-viz id="loaded-freq-viz" class="summary-viz" style="padding-top: 20px"
         :selectedVariant="variant"
         :oneKGenomes="oneKGenomes"
         :exAc="exAc"
@@ -303,40 +303,48 @@ export default {
       return "-";
     },
     zygMap: function() {
-      var map = {};
+      var map = [];
+      var homRefCount = 0, hetCount = 0, homAltCount = 0, noCallCount = 0;
+      debugger;
       if (this.variant != null && this.variant.genotypes != null) {
-        map['HOM'] = 0;
-        map['HET'] = 0;
-        map['HOMREF'] = 0;
-        map['NOCALL'] = 0;
-        this.variant.genotypes.forEach(function(gt) {
-          if(gt.zygosity == 'HOM') map['HOM']++;
-          else if (gt.zygosity == 'HET') map['HET']++;
-          else if (gt.zygosity == 'HOMREF') map['HOMREF']++;
-          else map['NOCALL']++;
-        })
+        var gtObj = this.variant.genotypes;
+        for (var gt in gtObj) {  // SJG TODO: not sure if this type of iteration supported by all browsers
+          if (gtObj.hasOwnProperty(gt)) {
+            if (gtObj[gt].zygosity == 'HOM') homAltCount++;
+            else if (gtObj[gt].zygosity == 'HET') hetCount++;
+            else if (gtObj[gt].zygosity == 'HOMREF') homRefCount++;
+            else noCallCount++;
+          }
+        }
       }
+      map.push({label: "hom ref", value: homRefCount})
+      map.push({label: "het", value: hetCount})
+      map.push({label: "hom alt", value: homAltCount})
+      map.push({label: "no call", value: noCallCount})
       return map;
     },
     statusMap: function() {
-      var map = {};
-      var numSamplesAffected, numSamplesUnaffected = 0;
-      // SJG TODO: I think this is just the number of samples 0/1 or 1/1 out of number of entries in this.variant.genotypes
+      var map = [];
+      var affectedCount = 0, unaffectedCount = 0;
+
       if (this.variant != null && this.variant.genotypes != null) {
-        this.variant.genotypes.forEach(function(gt) {
-          if (gt.zygosity == 'HOM' || gt.zygosity == 'HET')
-            numSamplesAffected++;
-          else if (gt.zygosity == 'HOMREF') {
-            numSamplesUnffected++;
+        var gtObj = this.variant.genotypes;
+        for (var gt in gtObj) {
+          if (gtObj.hasOwnProperty(gt)) {
+            if (gtObj[gt].zygosity == 'HOM' || gtObj[gt].zygosity == 'HET')
+              affectedCount++;
+            else if (gtObj[gt].zygosity == 'HOMREF') {
+              unaffectedCount++;
+            }
           }
-        })
-        map['AFF'] = numSamplesAffected;
-        map['UNAFF'] = numSamplesUnffected;
+        }
       }
+      map.push({label: "unaff", value: unaffectedCount});
+      map.push({label: "aff", value: affectedCount});
       return map;
     },
     depthMap: function() {
-      var map = {};
+      var map = [];
       // SJG TODO: not sure how to get these numbers - maybe leave this graph out for the demo?
       return map;
     }

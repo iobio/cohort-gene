@@ -1,8 +1,11 @@
 /**
 SJG Mar2018
-Adapted from https://bl.ocks.org/mbostock/2368837
+Adapted from http://bl.ocks.org/d3noob/8952219'
 
-Scales to two columns if numBars not provided
+This is a bar chart that initially displays just the graph outline, then populates when fillChart is called,
+to allow a dynamic rendering of chart fill.
+
+NOTE: initial dataMap and newDataMap must contain an IDENTICAL number of entries IN THE SAME EXACT ORDER
 */
 function barChart() {
 
@@ -10,48 +13,78 @@ function barChart() {
 
   // Instance variables
   var height = 160,
+      dataHeight = height - 40,
       width = 220,
-      roundedCorners = 10,
-      numBars = 6,  // SJG TODO: might make this change depending on how columns look
-      backgroundFill = 'white',
-      blueFill = '#85bdea',
-      parentId;
+      roundedCorners = 2,
+      yValueMax = 5,
+      parentId,
+      blueFill = '#85bdea'; // Bar color
 
-  // Draw outlines
-  function chart() {
 
-    var offsetHeight = height - 40;
+  // Private variables
+  var _x, _y;
 
+  /* Takes in array of maps with {label:, value:} entries and draws bars based on provided values.
+     Providing an empty data array will zero out all bars.
+     NOTE: newDataMap MUST have an identical number of entries as the original dataMap, in the exact same order
+   */
+
+  var fillChart = function(newDataMap) {
+    var svg = d3.select('#' + parentId).select('svg');
+
+    // Reset all columns to 0 if nothing in map
+    if (newDataMap == null || newDataMap.length == 0) {
+      svg.selectAll("rect")
+          .transition()
+          .duration(700)
+          .style('fill', 'white')
+          .attr('height', 0);
+    }
+    else {
+      newDataMap.forEach(function(dataBar) {
+        var barId = "#bar_" + dataBar.label.replace(' ', '_');
+        var barHeight = dataBar.value ? dataBar.value : 0;
+        var yHeight = dataHeight - _y(barHeight);
+        var column = svg.select(barId);
+
+        if (column) {
+          column.transition()
+                .duration(700)
+                .style('fill', blueFill)
+                .attr("y", function(d) { return _y(barHeight); })
+                .attr('height', function(d) { return dataHeight - _y(barHeight); });
+        }
+      })
+    }
+  };
+
+  /* Draws outline of chart and axes */
+  function chart(dataMap) {
     var svg = d3.select('#' + parentId).append('svg')
                 .attr('height', height)
                 .attr('width', "100%")
-                .attr('style', "padding-left: 15%; padding-top: 2%");  // SJG this needs to change dynamically
+                .attr('style', "padding-left: 15%; padding-top: 2%");  // SJG TODO this needs to change dynamically?
 
-    // List of maps
-    var data = [];
-    data.push({label: 'hom ref', value: 2});
-    data.push({label: 'het', value: 4});
-    data.push({label: 'hom alt', value: 3});
-    data.push({label: 'no call', value: 1});
-
-    var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
-    var y = d3.scale.linear().range([offsetHeight, 0]);
+    // Define axes data
+    _x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+    _y = d3.scale.linear().range([dataHeight, 0]);
 
     var xAxis = d3.svg.axis()
-        .scale(x)
+        .scale(_x)
         .orient("bottom, center");
 
     var yAxis = d3.svg.axis()
-        .scale(y)
+        .scale(_y)
         .orient("left")
-        .ticks(data.length);
+        .ticks(yValueMax);    // One tick per number - can be scaled up/down as needed by multiplying/dividing
 
-    x.domain(data.map(function(d) { return d.label; }));
-    y.domain([0, d3.max(data, function(d) { return d.value; })]);
+    _x.domain(dataMap.map(function(d) { return d.label; }));
+    _y.domain([0, yValueMax]);
 
+    // Draw axes and labels
     svg.append("g")
         .attr("class", "x axis")
-        .attr("transform", "translate(0," + offsetHeight + ")")  // Controls where line drawn relative to y-axis/display labels on x-axis
+        .attr("transform", "translate(0," + dataHeight + ")")
         .call(xAxis)
         .selectAll("text")
         .style("text-anchor", "end")
@@ -60,7 +93,6 @@ function barChart() {
 
     svg.append("g")
         .attr("class", "y axis")
-        .attr("transform", "translate(" + x(0) + ",0)")
         .call(yAxis)
         .append("text")
         .attr("transform", "rotate(-90)")
@@ -70,37 +102,26 @@ function barChart() {
         .style("text-anchor", "end")
         .text("# Samples");
 
-    svg.selectAll("bar")
-        .data(data)
-        .enter().append("rect")
-        .style("fill", "steelblue")
-        .attr("x", function(d) { return x(d.label); })
-        .attr("width", x.rangeBand())
-        .attr("y", function(d) { return y(d.value); })
-        .attr("height", function(d) { return offsetHeight - y(d.value); });
+    // Draw bars
+    if (dataMap.length > 0) {
+      svg.selectAll("bar")
+          .data(dataMap)
+          .enter()
+          .append("rect")
+          .attr('id', function(d) {return 'bar_' + d.label.replace(' ', '_'); })  // Label each rect so we can find it later
+          .attr('rx', roundedCorners)
+          .attr('ry', roundedCorners)
+          .style("fill", "white")
+          .attr("x", function(d) { return _x(d.label); })
+          .attr("width", _x.rangeBand())
+          .attr("y", function(d) { return _y(d.value); })
+          .attr("height", function(d) { return dataHeight - _y(d.value); });
+    }
 
     dispatch.d3rendered();
   }
 
-  // Fill chart method
-  var fillChart = function(dataMap) {
-    // SJG TODO: scale x-axis to number of entries in map - should be 2, 3, or 6
-
-    var progBar = d3.select('#' + parentId).select('svg').select('.progress-rect');
-    // x.domain(d3.extent(data, function(d) { return d.value; })).nice();
-    // y.domain(data.map(function(d) { return d.key; });
-
-    // svg.selectAll(".bar")
-    //     .data(data)
-    //     .enter().append("rect")
-    //     .attr("class", function(d) { return "bar bar--" + (d.value < 0 ? "negative" : "positive"); })
-    //     .attr("x", function(d) { return x(Math.min(0, d.value)); })
-    //     .attr("y", function(d) { return y(d.name); })
-    //     .attr("width", function(d) { return Math.abs(x(d.value) - x(0)); })
-    //     .attr("height", y.rangeBand());
-  }
-
-  // Getters & setters
+  /* Getters and setters */
   chart.fillChart = function(_) {
       if (!arguments.length) {
           return fillChart;
@@ -117,11 +138,11 @@ function barChart() {
     return chart;
   };
 
-  chart.numBars = function(_) {
+  chart.dataMap = function(_) {
     if (!arguments.length) {
-      return numBars;
+      return dataMap;
     }
-    numBars = _;
+    dataMap = _;
     return chart;
   };
 

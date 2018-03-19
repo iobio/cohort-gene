@@ -64,19 +64,19 @@ export default {
         .parentId('zygBar')
         .on('d3rendered', function() {
         });
-      self.zygChart();
+      self.zygChart(self.zygMap);
 
       self.statusChart = barChart()
         .parentId('statusBar')
         .on('d3rendered', function() {
         });
-      self.statusChart();
+      self.statusChart(self.statusMap);
 
       self.depthChart = barChart()
         .parentId('depthBar')
         .on('d3rendered', function() {
         });
-      self.depthChart();
+      self.depthChart(self.depthMap);
     },
     fillCharts() {
       let self = this;
