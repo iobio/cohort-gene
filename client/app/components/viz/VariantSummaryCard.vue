@@ -34,7 +34,7 @@
     color: #7f7f7f
     font-style: italic
     padding-left: 6px
-    text-align: left
+    text-align: center
 
   .field-value
     padding-right: 25px
@@ -190,12 +190,12 @@
         :simonsSimplexComplex="simonsSimplexComplex"
         :simonsVip="simonsVip">
         </allele-frequency-viz>
-        <!-- <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
+        <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
         :selectedVariant="variant"
         :zygMap="zygMap"
         :statusMap="statusMap"
         :depthMap="depthMap">
-        </bar-feature-viz> -->
+        </bar-feature-viz>
       </v-layout>
     </v-container>
   </v-card>

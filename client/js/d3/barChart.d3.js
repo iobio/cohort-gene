@@ -4,15 +4,13 @@ Adapted from https://bl.ocks.org/mbostock/2368837
 
 Scales to two columns if numBars not provided
 */
-
 function barChart() {
 
   var dispatch = d3.dispatch("d3rendered");
 
   // Instance variables
-  var chartHeight = 120,
-      svgSegmentWidth = 500,
-      chartWidth = 185,
+  var height = 160,
+      width = 220,
       roundedCorners = 10,
       numBars = 6,  // SJG TODO: might make this change depending on how columns look
       backgroundFill = 'white',
@@ -22,40 +20,64 @@ function barChart() {
   // Draw outlines
   function chart() {
 
-    var margin = {top: 5, right: 5, bottom: 5, left: 5};
-    width = chartWidth + (numBars*5) - margin.left - margin.right,
-    height = chartHeight - margin.top - margin.bottom;
+    var offsetHeight = height - 40;
 
-    var x = d3.scale.linear()
-        .range([0, width]);
+    var svg = d3.select('#' + parentId).append('svg')
+                .attr('height', height)
+                .attr('width', "100%")
+                .attr('style', "padding-left: 15%; padding-top: 2%");  // SJG this needs to change dynamically
 
-    var y = d3.scale.ordinal()
-        .rangeRoundBands([0, height], 0.1);
+    // List of maps
+    var data = [];
+    data.push({label: 'hom ref', value: 2});
+    data.push({label: 'het', value: 4});
+    data.push({label: 'hom alt', value: 3});
+    data.push({label: 'no call', value: 1});
+
+    var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+    var y = d3.scale.linear().range([offsetHeight, 0]);
 
     var xAxis = d3.svg.axis()
         .scale(x)
-        .orient("bottom");
+        .orient("bottom, center");
 
     var yAxis = d3.svg.axis()
         .scale(y)
         .orient("left")
-        .tickSize(1)
-        .tickPadding(6);
+        .ticks(data.length);
 
-    var svg = d3.select('#' + parentId)
-                .append('svg')
-                .attr('height', height)
-                .attr('width', width);
+    x.domain(data.map(function(d) { return d.label; }));
+    y.domain([0, d3.max(data, function(d) { return d.value; })]);
 
     svg.append("g")
         .attr("class", "x axis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(xAxis);
+        .attr("transform", "translate(0," + offsetHeight + ")")  // Controls where line drawn relative to y-axis/display labels on x-axis
+        .call(xAxis)
+        .selectAll("text")
+        .style("text-anchor", "end")
+        .attr("dx", "-.3em")
+        .attr("transform", "rotate(-35)");
 
     svg.append("g")
         .attr("class", "y axis")
         .attr("transform", "translate(" + x(0) + ",0)")
-        .call(yAxis);
+        .call(yAxis)
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6) // Distance label is from y-axis
+        .attr("dx", "-3em")
+        .attr("dy", "-3em")
+        .style("text-anchor", "end")
+        .text("# Samples");
+
+    svg.selectAll("bar")
+        .data(data)
+        .enter().append("rect")
+        .style("fill", "steelblue")
+        .attr("x", function(d) { return x(d.label); })
+        .attr("width", x.rangeBand())
+        .attr("y", function(d) { return y(d.value); })
+        .attr("height", function(d) { return offsetHeight - y(d.value); });
 
     dispatch.d3rendered();
   }
@@ -65,18 +87,17 @@ function barChart() {
     // SJG TODO: scale x-axis to number of entries in map - should be 2, 3, or 6
 
     var progBar = d3.select('#' + parentId).select('svg').select('.progress-rect');
-
     // x.domain(d3.extent(data, function(d) { return d.value; })).nice();
     // y.domain(data.map(function(d) { return d.key; });
 
-    svg.selectAll(".bar")
-        .data(data)
-        .enter().append("rect")
-        .attr("class", function(d) { return "bar bar--" + (d.value < 0 ? "negative" : "positive"); })
-        .attr("x", function(d) { return x(Math.min(0, d.value)); })
-        .attr("y", function(d) { return y(d.name); })
-        .attr("width", function(d) { return Math.abs(x(d.value) - x(0)); })
-        .attr("height", y.rangeBand());
+    // svg.selectAll(".bar")
+    //     .data(data)
+    //     .enter().append("rect")
+    //     .attr("class", function(d) { return "bar bar--" + (d.value < 0 ? "negative" : "positive"); })
+    //     .attr("x", function(d) { return x(Math.min(0, d.value)); })
+    //     .attr("y", function(d) { return y(d.name); })
+    //     .attr("width", function(d) { return Math.abs(x(d.value) - x(0)); })
+    //     .attr("height", y.rangeBand());
   }
 
   // Getters & setters
@@ -107,59 +128,3 @@ function barChart() {
   d3.rebind(chart, dispatch, "on");
   return chart;
 }
-/*
-var margin = {top: 20, right: 30, bottom: 40, left: 30},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
-
-var x = d3.scale.linear()
-    .range([0, width]);
-
-var y = d3.scale.ordinal()
-    .rangeRoundBands([0, height], 0.1);
-
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom");
-
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
-    .tickSize(0)
-    .tickPadding(6);
-
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-d3.tsv("data.tsv", type, function(error, data) {
-  x.domain(d3.extent(data, function(d) { return d.value; })).nice();
-  y.domain(data.map(function(d) { return d.name; }));
-
-  svg.selectAll(".bar")
-      .data(data)
-    .enter().append("rect")
-      .attr("class", function(d) { return "bar bar--" + (d.value < 0 ? "negative" : "positive"); })
-      .attr("x", function(d) { return x(Math.min(0, d.value)); })
-      .attr("y", function(d) { return y(d.name); })
-      .attr("width", function(d) { return Math.abs(x(d.value) - x(0)); })
-      .attr("height", y.rangeBand());
-
-  svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis);
-
-  svg.append("g")
-      .attr("class", "y axis")
-      .attr("transform", "translate(" + x(0) + ",0)")
-      .call(yAxis);
-});
-
-function type(d) {
-  d.value = +d.value;
-  return d;
-}
-*/

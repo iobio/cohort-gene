@@ -26,14 +26,12 @@ function progressBar() {
           .duration(700)
           .attr('fill', blueFill)
           .attr('width', function() {
-              var parentWidth = parseInt(svg.style('width'));
-              var scaledWidth = freqNum;
+              var scaledWidth = freqNum * 0.8;  // Progress bar is 90% width of parent svg
               return scaledWidth > 5 ? (scaledWidth + "%") : "5%"; // Keep width at a minimum so bubble fits into outline
           });
     }
     // Otherwise make bar disappear
     else if (progBar) {
-      debugger;
       progBar.transition()
         .duration(700)
         .attr('fill', backgroundFill) // Set to white to get rid of remaining border
@@ -57,7 +55,7 @@ function progressBar() {
         .attr('fill', backgroundFill)
         .attr('height', 15)
         .attr('width', function(){
-          return '100%';
+          return '80%';
         })
         .attr('x', 0);
 
@@ -80,7 +78,6 @@ function progressBar() {
         .duration(700)
         .attr('fill', backgroundFill)
         .attr('width', "0%");
-
 
       dispatch.d3rendered();
     }

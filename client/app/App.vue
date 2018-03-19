@@ -40,8 +40,6 @@ button
 
 <script>
 
-
-
 export default {
   name: 'app',
   data() {

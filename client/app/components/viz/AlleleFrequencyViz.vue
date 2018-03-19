@@ -16,23 +16,23 @@
     </v-layout>
     <v-layout row>
        <v-flex xs4 class="field-label">1000 Genomes:</v-flex>
-       <v-flex xs2 class="field-value">{{ oneKGenomes }}</v-flex>
-       <v-flex xs6 id="oneKProgress" class="field-value"></v-flex>
+       <v-flex xs2 md1 class="field-value">{{ oneKGenomes }}</v-flex>
+       <v-flex xs6 md7 id="oneKProgress" class="field-value"></v-flex>
     </v-layout>
     <v-layout row>
        <v-flex xs4 class="field-label">ExAC:</v-flex>
-       <v-flex xs2 class="field-value">{{ exAc }}</v-flex>
-       <v-flex xs6 id="exAcProgress" class="field-value"></v-flex>
+       <v-flex xs2 md1 class="field-value">{{ exAc }}</v-flex>
+       <v-flex xs6 md7 id="exAcProgress" class="field-value"></v-flex>
     </v-layout>
     <v-layout row>
        <v-flex xs4 class="field-label">Simons VIP:</v-flex>
-       <v-flex xs2 class="field-value">{{ simonsVip }}</v-flex>
-       <v-flex xs6 id="simonsVipProgress" class="field-value"></v-flex>
+       <v-flex xs2 md1 class="field-value">{{ simonsVip }}</v-flex>
+       <v-flex xs6 md7 id="simonsVipProgress" class="field-value"></v-flex>
     </v-layout>
     <v-layout row>
        <v-flex xs4 class="field-label">Simons Simplex Complex:</v-flex>
-       <v-flex xs2 class="field-value">{{ simonsSimplexComplex }}</v-flex>
-       <v-flex xs6 id="simonsSimplexProgress" class="field-value"></v-flex>
+       <v-flex xs2 md1 class="field-value">{{ simonsSimplexComplex }}</v-flex>
+       <v-flex xs6 md7 id="simonsSimplexProgress" class="field-value"></v-flex>
     </v-layout>
   </v-flex>
 </template>
