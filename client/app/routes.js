@@ -17,7 +17,11 @@ Vue.use(Typeahead)
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.css'
 import '../assets/css/siteVuetify.css'
-Vue.use(Vuetify)
+Vue.use(Vuetify, {
+  theme: {
+    fillBlue: '#85bdea'
+  }
+})
 
 global.bus = new Vue();
 
