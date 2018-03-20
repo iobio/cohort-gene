@@ -167,11 +167,10 @@
 
 <template>
   <v-card>
-    <v-card-title primary-title style="margin-bottom: 8px; width: 100%">
+    <v-card-title primary-title style="margin-bottom: 8px; width: 100%; height: 30px">
       <span style="display:inline-block; padding-right: 10px; font-size: 16px">VARIANT SUMMARY</span>
-      <v-chip small outline close color="cohortDarkBlue"
-        v-model="isVariantClicked"
-        @input="deselectVariant()">
+      <v-chip v-bind:class="{hide: variant == null}" small outline close color="cohortDarkBlue"
+        @input="summaryCardVariantDeselect()">
          <span style="padding-right: 12px; font-size: 14px; text-align:center;" v-bind:class="{hide: geneName == ''}">{{geneName}}</span>
          <span style="padding-top: 1px; font-size: 12px; padding-right: 6px">{{selectedVariantLocation}}</span>
       </v-chip>
@@ -232,14 +231,13 @@ export default {
   },
   data() { return {}},
   methods: {
-    deselectVariant: function() {
+    summaryCardVariantDeselect: function() {
       var self = this;
-      debugger;
+
       self.$refs.summaryFeatureViz.clear();
       self.$refs.summaryFrequencyViz.clear();
       self.$refs.summaryBarFeatureViz.clear();
-
-      self.$emit("deselectVariant");
+      self.$emit("summaryCardVariantDeselect");
     }
   },
   filters: {},
@@ -379,10 +377,6 @@ export default {
         return 'chr' + this.variant.chrom + ' ' + this.variant.start.toLocaleString() + ' - ' + this.variant.end.toLocaleString();
       }
       return '';
-    },
-    isVariantClicked: function() {
-      if (this.variant != null) return true;
-      else return false;
     }
   },
   watch: {},

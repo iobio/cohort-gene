@@ -64,6 +64,7 @@
             :selectedGene="selectedGene.gene_name"
             :variant="selectedVariant"
             :variantInfo="selectedVariantInfo"
+            @summaryCardVariantDeselect="deselectVariant"
             ref="variantSummaryCardRef"
           ></variant-summary-card>
         </v-flex>
@@ -405,7 +406,6 @@ export default {
     // SJG NOTE: matches TDS latest
     onDataSetVariantHover: function(variant, sourceComponent) {
       let self = this;
-      debugger;
       self.$refs.variantCardRef.forEach(function(variantCard) {
         if (variantCard != sourceComponent) {
           variantCard.showVariantCircle(variant);
@@ -423,6 +423,7 @@ export default {
     },
     // SJG NOTE: matches TDS latest
     deselectVariant: function() {
+      debugger; // SJG make sure this is being hit
       let self = this;
       self.selectedVariant = null;
       if (self.$refs.variantCardRef) {
