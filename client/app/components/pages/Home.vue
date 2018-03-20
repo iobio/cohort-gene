@@ -378,37 +378,40 @@ export default {
       this.variantModel.setLoadedVariants(this.selectedGene);
       //this.coverageModel.setCoverage();
     },
+    // SJG NOTE: matched this to TDS latest
     onDataSetVariantClick: function(variant, sourceComponent, cohortKey) {
-      debugger;
       let self = this;
       if (variant) {
         self.selectedVariant = variant;
-        // self.$refs.variantCardRef.forEach(function(variantCard) {
-        //   if (variantCard != sourceComponent) {
-        //     variantCard.showVariantCircle(variant);
-        //   }
-        // })
+        self.$refs.variantCardRef.forEach(function(variantCard) {
+          if (sourceComponent == null || variantCard != sourceComponent) {
+            variantCard.showVariantCircle(variant);
+          }
+        })
       }
       else {
-        self.deselectVariant();
+          self.deselectVariant();
       }
     },
-    onDataSetVariantClickEnd: function(sourceVariantCard) {
+    // SJG NOTE: matches TDS latest
+    onDataSetVariantClickEnd: function(sourceComponent) {
       let self = this;
-      var lastVariant = self.selectedVariant;
+      //var lastVariant = self.selectedVariant;
       self.selectedVariant = null;
-      // self.$refs.variantCardRef.forEach(function(variantCard) {
-      //   variantCard.hideVariantCircle(lastVariant);
-      // })
+      self.$refs.variantCardRef.forEach(function(variantCard) {
+        variantCard.hideVariantCircle();
+      })
     },
-    onDataSetVariantHover: function(variant, sourceVariantCard) {
+    // SJG NOTE: matches TDS latest
+    onDataSetVariantHover: function(variant, sourceComponent) {
       let self = this;
       self.$refs.variantCardRef.forEach(function(variantCard) {
-        if (variantCard != sourceVariantCard) {
+        if (variantCard != sourceComponent) {
           variantCard.showVariantCircle(variant);
         }
       })
     },
+    // SJG NOTE: matches TDS latest
     onDataSetVariantHoverEnd: function(sourceVariantCard) {
       let self = this;
       if (self.$refs.variantCardRef) {
@@ -417,15 +420,16 @@ export default {
         })
       }
     },
+    // SJG NOTE: matches TDS latest
     deselectVariant: function() {
       let self = this;
       self.selectedVariant = null;
-      // if (self.$refs.variantCardRef) {
-      //   self.$refs.variantCardRef.forEach(function(variantCard) {
-      //     variantCard.hideVariantTooltip();
-      //     variantCard.hideVariantCircle();
-      //   })
-      // }
+      if (self.$refs.variantCardRef) {
+        self.$refs.variantCardRef.forEach(function(variantCard) {
+          variantCard.hideVariantTooltip();
+          variantCard.hideVariantCircle();
+        })
+      }
     },
     showVariantExtraAnnots: function(sourceComponent, variant, cohortKey) {
       let self = this;

@@ -1,6 +1,6 @@
 <!--
 Encapsulates Variant card
-Updated: SJG 15Mar2018
+Updated: SJG Mar2018
 -->
 <style lang="sass">
   @import ../../../assets/sass/variables
