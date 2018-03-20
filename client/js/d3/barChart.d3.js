@@ -13,7 +13,8 @@ function barChart() {
 
   // Instance variables
       var parentId,
-      barColor = '#6c94b7';
+      barColor = '#6c94b7',
+      comingSoonFlag = false;
 
   // Private variables (can be made public if necessary except for _x and _y)
   var _x, _y,
@@ -102,6 +103,21 @@ function barChart() {
         .style("text-anchor", "end")
         .text("# Samples");
 
+    if (comingSoonFlag) {
+      svg.append("g")
+          .attr("class", "y axis")
+          .append("text")
+          .attr("transform", "rotate(-35)")
+          .attr("y", 5) // Distance label is from y-axis
+          .attr("dx", "7em")
+          .attr("dy", "6em")
+          .style('font-size', '18px')
+          .style("text-anchor", "end")
+          .style("fill", barColor)
+          .text("COMING SOON");
+    }
+
+
     // Draw bars
     if (dataMap.length > 0) {
       svg.selectAll("bar")
@@ -143,6 +159,14 @@ function barChart() {
       return barColor;
     }
     barColor = _;
+    return chart;
+  };
+
+  chart.comingSoonFlag = function(_) {
+    if (!arguments.length) {
+      return comingSoonFlag;
+    }
+    comingSoonFlag = _;
     return chart;
   };
 

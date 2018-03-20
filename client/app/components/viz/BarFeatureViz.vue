@@ -74,6 +74,7 @@ export default {
 
       self.depthChart = barChart()
         .parentId('depthBar')
+        .comingSoonFlag(true)
         .on('d3rendered', function() {
         });
       self.depthChart(self.depthMap);
