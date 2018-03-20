@@ -83,7 +83,7 @@
 <template>
     <div class="variant-viz loaded-variant-viz">
       <span class="field-label-header">{{title}}</span>
-      <v-chip color="cohortBlue" small text-color="white" v-for="phenotype in phenotypes" :key="phenotype">
+      <v-chip color="cohortNavy" small outline style="font-size: 12px" v-for="phenotype in phenotypes" :key="phenotype">
          {{phenotype}}
       </v-chip>
     </div>

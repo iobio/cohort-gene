@@ -68,7 +68,7 @@ Updated: SJG 15Mar2018
 <template>
   <v-card tile id="variant-card" class="app-card">
     <v-card-title primary-title>
-      <span style="min-width:200px;max-width:200px">VARIANTS</span>
+      <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 10px">VARIANTS</span>
       <div style="width:100%">
         <variant-viz
           v-if="showVariantViz"

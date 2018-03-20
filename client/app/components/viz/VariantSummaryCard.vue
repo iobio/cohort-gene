@@ -4,6 +4,7 @@
 <style lang="sass" >
 @import ../../../assets/sass/variables
 @import ../../../assets/sass/symbols
+
 .summary-viz
   min-height: 100px
   max-height: 200px
@@ -167,10 +168,11 @@
 <template>
   <v-card>
     <v-card-title primary-title style="margin-bottom: 8px; width: 100%">
-      <span style="display:inline-block">VARIANT SUMMARY</span>
-      <v-chip color="cohortBlue" small text-color="white"
+      <span style="display:inline-block; padding-right: 10px; font-size: 16px">VARIANT SUMMARY</span>
+      <v-chip small color="cohortDarkBlue" outline
         v-bind:class="{hide: selectedVariantLocation == ''}">
-         {{selectedVariantLocation}}
+         <span style="padding-right: 12px; font-size: 14px; text-align:center;" v-bind:class="{hide: geneName == ''}">{{geneName}}</span>
+         <span style="padding-top: 1px; font-size: 12px">{{selectedVariantLocation}}</span>
       </v-chip>
     </v-card-title>
     <v-container fluid grid-list-md>
@@ -352,10 +354,15 @@ export default {
       // SJG TODO: not sure how to get these numbers - maybe leave this graph out for the demo?
       return map;
     },
+    geneName: function() {
+      if (this.variant != null && this.selectedGene != null) {
+        return this.selectedGene;
+      }
+      return '';
+    },
     selectedVariantLocation: function() {
       if (this.variant != null) {
-        var geneName = this.selectedGene ? this.selectedGene : '';
-        return geneName + ' chr' + this.variant.chrom + ' ' + this.variant.start.toLocaleString() + ' - ' + this.variant.end.toLocaleString();
+        return 'chr' + this.variant.chrom + ' ' + this.variant.start.toLocaleString() + ' - ' + this.variant.end.toLocaleString();
       }
       return '';
     }
