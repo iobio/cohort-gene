@@ -20,7 +20,7 @@ function barChart() {
   var _x, _y,
       height = 160,
       dataHeight = height - 40,
-      width = 220,
+      width = 175,
       roundedCorners = 2,
       yValueMax = 5;
 
