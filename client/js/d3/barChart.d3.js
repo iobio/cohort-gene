@@ -37,15 +37,14 @@ function barChart() {
       svg.selectAll("rect")
           .transition()
           .duration(700)
-          .style('fill', 'white')
-          .attr('height', 0);
+          .attr('y', dataHeight)
+          .attr('height', function(d) { return dataHeight - _y(0); });
     }
     // SJG TODO: need to adjust y-axis labels
     else {
       newDataMap.forEach(function(dataBar) {
         var barId = "#bar_" + dataBar.label.replace(' ', '_');
         var barHeight = dataBar.value ? dataBar.value : 0;
-        var yHeight = dataHeight - _y(barHeight);
         var column = svg.select(barId);
 
         if (column) {

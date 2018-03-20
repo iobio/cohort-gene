@@ -189,7 +189,7 @@ export default {
       if (this.selectedVariant == null) {
         if (this.showVariantViz) {
           this.showVariantCircle(variant);
-          this.showVariantTooltip(variant, cohortKey, false);
+          //this.showVariantTooltip(variant, cohortKey, false);
         }
         this.$emit('dataSetVariantHover', variant, this);
       }
@@ -248,7 +248,7 @@ export default {
     },
     unpin(saveClickedVariant, unpinMatrixTooltip) {
       this.$emit("dataSetVariantClickEnd", this);
-      this.hideVariantTooltip();
+      //this.hideVariantTooltip();
       this.hideVariantCircle();
       this.hideCoverageCircle();
     },

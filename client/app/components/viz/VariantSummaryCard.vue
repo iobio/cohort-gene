@@ -169,15 +169,17 @@
   <v-card>
     <v-card-title primary-title style="margin-bottom: 8px; width: 100%">
       <span style="display:inline-block; padding-right: 10px; font-size: 16px">VARIANT SUMMARY</span>
-      <v-chip small color="cohortDarkBlue" outline
-        v-bind:class="{hide: selectedVariantLocation == ''}">
+      <v-chip small outline close color="cohortDarkBlue"
+        v-model="isVariantClicked"
+        @input="deselectVariant()">
          <span style="padding-right: 12px; font-size: 14px; text-align:center;" v-bind:class="{hide: geneName == ''}">{{geneName}}</span>
-         <span style="padding-top: 1px; font-size: 12px">{{selectedVariantLocation}}</span>
+         <span style="padding-top: 1px; font-size: 12px; padding-right: 6px">{{selectedVariantLocation}}</span>
       </v-chip>
     </v-card-title>
     <v-container fluid grid-list-md>
       <v-layout row wrap>
         <feature-viz id="loaded-feature-viz" class="summary-viz" style="padding-top: 20px"
+          ref="summaryFeatureViz"
           :effect="effect"
           :impactText="impactText"
           :impactColor="impactColor"
@@ -190,6 +192,7 @@
           :polyPhenColor="polyPhenColor">
         </feature-viz>
         <allele-frequency-viz id="loaded-freq-viz" class="summary-viz" style="padding-top: 20px"
+        ref="summaryFrequencyViz"
         :selectedVariant="variant"
         :oneKGenomes="oneKGenomes"
         :exAc="exAc"
@@ -197,6 +200,7 @@
         :simonsVip="simonsVip">
         </allele-frequency-viz>
         <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
+        ref="summaryBarFeatureViz"
         :selectedVariant="variant"
         :zygMap="zygMap"
         :statusMap="statusMap"
@@ -227,7 +231,17 @@ export default {
     selectedGene: ''
   },
   data() { return {}},
-  methods: {},
+  methods: {
+    deselectVariant: function() {
+      var self = this;
+      debugger;
+      self.$refs.summaryFeatureViz.clear();
+      self.$refs.summaryFrequencyViz.clear();
+      self.$refs.summaryBarFeatureViz.clear();
+
+      self.$emit("deselectVariant");
+    }
+  },
   filters: {},
   computed: {
     effect: function() {
@@ -365,6 +379,10 @@ export default {
         return 'chr' + this.variant.chrom + ' ' + this.variant.start.toLocaleString() + ' - ' + this.variant.end.toLocaleString();
       }
       return '';
+    },
+    isVariantClicked: function() {
+      if (this.variant != null) return true;
+      else return false;
     }
   },
   watch: {},

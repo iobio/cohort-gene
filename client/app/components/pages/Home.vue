@@ -405,6 +405,7 @@ export default {
     // SJG NOTE: matches TDS latest
     onDataSetVariantHover: function(variant, sourceComponent) {
       let self = this;
+      debugger;
       self.$refs.variantCardRef.forEach(function(variantCard) {
         if (variantCard != sourceComponent) {
           variantCard.showVariantCircle(variant);
@@ -426,7 +427,7 @@ export default {
       self.selectedVariant = null;
       if (self.$refs.variantCardRef) {
         self.$refs.variantCardRef.forEach(function(variantCard) {
-          variantCard.hideVariantTooltip();
+          //variantCard.hideVariantTooltip();
           variantCard.hideVariantCircle();
         })
       }

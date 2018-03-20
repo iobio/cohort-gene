@@ -107,6 +107,19 @@ export default {
       self.exAcBar.moveProgressBar()(self.exAc);
       self.simonsSimplexBar.moveProgressBar()(self.simonsSimplex);
       self.simonsVipBar.moveProgressBar()(self.simonsVip);
+    },
+    clear() {
+      let self = this;
+
+      self.oneKGenomes = "-";
+      self.exAc = "-";
+      self.simonsSimplexComplex = "-";
+      self.simonsVip = "-";
+
+      self.oneKBar.moveProgressBar()(0);
+      self.exAcBar.moveProgressBar()(0);
+      self.simonsSimplexBar.moveProgressBar()(0);
+      self.simonsVipBar.moveProgressBar()(0);
     }
   },
   watch: {

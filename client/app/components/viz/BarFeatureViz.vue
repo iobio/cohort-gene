@@ -84,6 +84,12 @@ export default {
       self.zygChart.fillChart()(self.zygMap);
       self.statusChart.fillChart()(self.statusMap);
       self.depthChart.fillChart()(self.depthMap);
+    },
+    clear() {
+      let self = this;
+      self.zygChart.fillChart()();
+      self.statusChart.fillChart()();
+      self.depthChart.fillChart()();
     }
   },
   watch: {
