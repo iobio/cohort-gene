@@ -124,11 +124,12 @@ function variantD3() {
   };
 
   var hideCircle = function(svgContainer, parentContainer) {
+    // SJG TODO: can we multithread/promise these d3 transitions
     svgContainer.select(".circle").transition()
-                .duration(500)
+                .duration(100)
                 .style("opacity", 0);
     svgContainer.select("g.arrow").selectAll('.arrow').transition()
-                .duration(500)
+                .duration(100)
                 .style("opacity", 0);
     if (parentContainer) {
       parentContainer.select('.tooltip').transition()

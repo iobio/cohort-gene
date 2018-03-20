@@ -33,20 +33,20 @@
     font-size: 13px
 
 .ibo-variant .circle, .ibo-variant .arrow-line
-  stroke: $arrow-color
+  stroke: #6c94b7
   stroke-width: 2
 
   fill: none
   pointer-events: none
 
 .ibo-variant.circle.emphasize, .ibo-variant .arrow-line.emphasize
-  stroke: $arrow-color
+  stroke: #6c94b7
   fill: none
   stroke-width: 3
   pointer-events: none
 
 .ibo-variant .arrow, .ibo-variant .arrow.emphasize
-  stroke: $arrow-color
+  stroke: #6c94b7
   pointer-events: none
 
 .ibo-variant
@@ -237,11 +237,11 @@ export default {
       onVariantHover: function(variant) {
         let self = this;
         var cohortKey = self.name;
-        self.$emit("variantHover", variant, cohortKey);
+        //self.$emit("variantHover", variant, cohortKey);
       },
       onVariantHoverEnd: function(variant) {
         let self = this;
-        self.$emit("variantHoverEnd", variant);
+        //self.$emit("variantHoverEnd", variant);
       },
       showVariantCircle: function(variant, container, lock) {
         this.variantChart.showCircle()(variant,

@@ -178,9 +178,10 @@ export default {
       }
     },
     onVariantClick: function(variant, cohortKey) {
-      this.hideVariantTooltip();
+      //this.hideVariantTooltip();
 
       if (this.showVariantViz) {
+        this.hideVariantCircle();
         this.showVariantCircle(variant);
       }
       this.$emit('dataSetVariantClick', variant, this, cohortKey);
@@ -246,12 +247,12 @@ export default {
     tooltipScroll(direction) {
       this.variantTooltip.scroll(direction, "#main-tooltip");
     },
-    unpin(saveClickedVariant, unpinMatrixTooltip) {
-      this.$emit("dataSetVariantClickEnd", this);
-      //this.hideVariantTooltip();
-      this.hideVariantCircle();
-      this.hideCoverageCircle();
-    },
+    // unpin(saveClickedVariant, unpinMatrixTooltip) {
+    //   this.$emit("dataSetVariantClickEnd", this);
+    //   //this.hideVariantTooltip();
+    //   this.hideVariantCircle();
+    //   this.hideCoverageCircle();
+    // },
     hideVariantTooltip: function() {
       let tooltip = d3.select("#main-tooltip");
       tooltip.transition()
@@ -264,7 +265,7 @@ export default {
       let self = this;
       if (self.showVariantViz) {
         self.$refs.variantVizRef.forEach(function(variantViz) {
-          variantViz.showVariantCircle(variant, self.getVariantSVG(variant, variantViz.name), false);
+          variantViz.showVariantCircle(variant, self.getVariantSVG(variant, variantViz.name), true);
         })
       }
     },
