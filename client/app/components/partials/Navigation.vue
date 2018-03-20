@@ -41,19 +41,19 @@ nav.toolbar
         </genes-menu> -->
 
 
-
+<!--
         <v-btn flat  @click="onVariants">
          <v-icon>bookmark</v-icon>
          Variants
-        </v-btn>
+        </v-btn> -->
 
 
-        <files-menu
+        <!-- <files-menu
          :variantModel="variantModel"
          @on-files-loaded="onFilesLoaded"
          @load-demo-data="onLoadDemoData"
         >
-        </files-menu>
+        </files-menu> -->
 
 
       </v-toolbar-items>

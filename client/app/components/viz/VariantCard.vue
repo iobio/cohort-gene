@@ -76,6 +76,7 @@ Updated: SJG Mar2018
           :key="cohort.name"
           ref="variantVizRef"
           :id="cohort.name"
+          :model="cohort"
           :data="cohort.loadedVariants"
           :title="cohort.trackName"
           :phenotypes="cohort.subsetPhenotypes"

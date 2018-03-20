@@ -81,12 +81,28 @@
 </style>
 
 <template>
+  <div>
     <div class="variant-viz loaded-variant-viz">
       <span class="field-label-header">{{title}}</span>
       <v-chip color="cohortNavy" small outline style="font-size: 12px" v-for="phenotype in phenotypes" :key="phenotype">
          {{phenotype}}
       </v-chip>
     </div>
+    <div style="text-align: center;clear: both;">
+      <div class="loader vcfloader" v-bind:class="{ hide: !model.inProgress.loadingVariants }" style="display: inline-block;padding-bottom:10px">
+        <span class="loader-label">Annotating variants</span>
+        <img src="../../../assets/images/wheel.gif">
+      </div>
+      <div class="loader fbloader" v-bind:class="{ hide: !model.inProgress.callingVariants }" style="display: inline-block;padding-left: 20px;adding-bottom:10px">
+        <span class="loader-label">Calling variants</span>
+        <img src="../../../assets/images/wheel.gif">
+      </div>
+      <div class="loader covloader" v-bind:class="{ hide: !model.inProgress.loadingCoverage }" style="display: inline-block;padding-left: 20px;padding-bottom:10px">
+        <span class="loader-label">Analyzing gene coverage</span>
+        <img src="../../../assets/images/wheel.gif">
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -96,6 +112,7 @@ export default {
     name: 'variant-viz',
     props: {
       data: {},
+      model: {},
       annotationScheme: {
         default: 'vep',
         type: String

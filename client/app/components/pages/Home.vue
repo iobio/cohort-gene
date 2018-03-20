@@ -379,7 +379,6 @@ export default {
       this.variantModel.setLoadedVariants(this.selectedGene);
       //this.coverageModel.setCoverage();
     },
-    // SJG NOTE: matched this to TDS latest
     onDataSetVariantClick: function(variant, sourceComponent, cohortKey) {
       let self = this;
       if (variant) {
@@ -394,7 +393,6 @@ export default {
           self.deselectVariant();
       }
     },
-    // SJG NOTE: matches TDS latest
     onDataSetVariantClickEnd: function(sourceComponent) {
       let self = this;
       //var lastVariant = self.selectedVariant;
@@ -403,7 +401,6 @@ export default {
         variantCard.hideVariantCircle();
       })
     },
-    // SJG NOTE: matches TDS latest
     onDataSetVariantHover: function(variant, sourceComponent) {
       let self = this;
       self.$refs.variantCardRef.forEach(function(variantCard) {
@@ -412,7 +409,6 @@ export default {
         }
       })
     },
-    // SJG NOTE: matches TDS latest
     onDataSetVariantHoverEnd: function(sourceVariantCard) {
       let self = this;
       if (self.$refs.variantCardRef) {
@@ -421,9 +417,7 @@ export default {
         })
       }
     },
-    // SJG NOTE: matches TDS latest
     deselectVariant: function() {
-      debugger; // SJG make sure this is being hit
       let self = this;
       self.selectedVariant = null;
       if (self.$refs.variantCardRef) {

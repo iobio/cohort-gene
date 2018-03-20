@@ -1299,8 +1299,10 @@ class CohortModel {
       var promises = [];
       var bookmarkPromises = [];
       cohortModels.forEach(function(model) {
+        // SJG TODO: set loading = true here
         var p = model._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript, cacheHelper)
          .then(function(vcfData) {
+           // SJG TODO: set loading = false here
           if (vcfData != null && vcfData != '') {
             resultMap[model.name] = vcfData;
 

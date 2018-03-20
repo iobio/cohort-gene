@@ -234,7 +234,6 @@ export default {
     summaryCardVariantDeselect: function() {
       var self = this;
 
-      self.$refs.summaryFeatureViz.clear();
       self.$refs.summaryFrequencyViz.clear();
       self.$refs.summaryBarFeatureViz.clear();
       self.$emit("summaryCardVariantDeselect");

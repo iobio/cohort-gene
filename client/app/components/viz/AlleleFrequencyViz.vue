@@ -111,11 +111,6 @@ export default {
     clear() {
       let self = this;
 
-      self.oneKGenomes = "-";
-      self.exAc = "-";
-      self.simonsSimplexComplex = "-";
-      self.simonsVip = "-";
-
       self.oneKBar.moveProgressBar()(0);
       self.exAcBar.moveProgressBar()(0);
       self.simonsSimplexBar.moveProgressBar()(0);

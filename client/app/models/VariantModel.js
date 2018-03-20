@@ -64,13 +64,14 @@ class VariantModel {
 
     var allSampleModel = new CohortModel(self);
     allSampleModel.name = 'demo_all';
-    allSampleModel.trackName = 'All Variants';
+    allSampleModel.trackName = 'Variants for';
 
     // SJG TODO: MUST ADD all sample names for some reason - look into this post April
     allSampleModel.subsetIds.push('NA12877');   // Not looking at this sample for now since not in gene.iobio
     allSampleModel.subsetIds.push('NA12878');
     allSampleModel.subsetIds.push('NA12891');
     allSampleModel.subsetIds.push('NA12892');
+    allSampleModel.subsetPhenotypes.push('All Probands');
 
     demoDataSet.cohorts.push(allSampleModel);
     demoDataSet.cohortMap[allSampleModel.name] = allSampleModel;
@@ -80,7 +81,9 @@ class VariantModel {
     subsetModel.trackName = 'Variants for';
     // Ids for platinum are NA12877, NA12878, NA12891, NA12892
     subsetModel.subsetIds.push('NA12878');
-    subsetModel.subsetPhenotypes.push('NA12878');
+    subsetModel.subsetIds.push('NA12877');
+    subsetModel.subsetPhenotypes.push('Paternal Age > 50');
+    subsetModel.subsetPhenotypes.push('IQ < 80');
 
     demoDataSet.cohorts.push(subsetModel);
     demoDataSet.cohortMap[subsetModel.name] = subsetModel;

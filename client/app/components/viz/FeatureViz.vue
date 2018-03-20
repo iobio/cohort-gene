@@ -139,23 +139,7 @@ export default {
   },
   created: function() {},
   mounted: function() {},
-  methods: {
-    clear: function() {
-      let self = this;
-
-      self.effect = "-";
-      self.impactText = "-";
-      self.type = "";
-      self.clinVarText = "";
-      self.siftText = "";
-      self.polyPhenText = "";
-
-      self.impactColor = "";
-      self.clinVarColor = "";
-      self.siftColor = "";
-      self.polyPhenColor = "";
-    }
-  },
+  methods: {},
   watch: {}
 }
 
