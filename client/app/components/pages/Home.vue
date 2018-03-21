@@ -98,7 +98,10 @@ export default {
     //FeatureMatrixCard, TODO
     //GenesCard, TODO
   },
-  props: {},
+  props: {
+    paramProjectId:         null,
+    paramSampleFilters:     null
+  },
   data() {
     return {
       greeting: 'cohort-gene.iobio.vue',

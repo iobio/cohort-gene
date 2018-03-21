@@ -11,6 +11,10 @@ var PROD_IOBIO                = "nv-blue.iobio.io/";
 
 var CURRENT_IOBIO             = PROD_IOBIO;
 
+// SJGHUB NOTE: put api address here
+var HUB_ENV                   = "development";
+var hub_api                   = { development: "http://localhost:3000/apiv1", production: "https://staging.frameshift.io/apiv1" };
+
 var iobio_services            = isOffline              ? serverInstance : CURRENT_IOBIO;
 var iobio_http_services       = (useSSL ? "https://" : "http://") + (isOffline ? serverInstance : CURRENT_IOBIO);
 

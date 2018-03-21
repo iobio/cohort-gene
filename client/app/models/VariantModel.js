@@ -15,7 +15,7 @@ class VariantModel {
     this.cacheHelper = cacheHelper;
     this.genomeBuildHelper = genomeBuildHelper;
     //this.freebayesSettings = freebayesSettings;
-    this.filterModel = null;        // TODO: can I take this out of here?
+    this.filterModel = null;        
     this.featureMatrixModel = null;
 
     this.annotationScheme = 'vep';
