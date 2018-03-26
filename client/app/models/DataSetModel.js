@@ -6,6 +6,8 @@ class DataSetModel {
     // Route information
     this.vcfUrl = null;
     this.vcfFile = null;
+    this.tbiUrl = null;
+    this.tbiFile = null;
 
     this.cohorts = [];    // List of cohort models
     this.cohortMap = {};  // Maps cohort models to names

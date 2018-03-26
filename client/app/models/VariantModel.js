@@ -139,9 +139,10 @@ class VariantModel {
 
     // Retrieve url and sample ids from hub
     var hubPromises = [];
-    var p = self.promiseGetUrlFromHub(self.projectId)
-        .then(function(url) {
-          hubDataSet.vcfUrl = url;
+    var p = self.promiseGetUrlsFromHub(self.projectId)
+        .then(function(dataSet) {
+          hubDataSet.vcfUrl = data.vcfUrl;
+          hubDataSet.tbiUrl = data.tbiUrl;
         })
     hubPromises.push(p);
 
@@ -192,7 +193,7 @@ class VariantModel {
     return new Promise(function(resolve, reject) {
       let promises = [];
       dataSet.cohorts.forEach(function(cohort) {
-        promises.push(self.promiseAddSamples(cohort, dataSet.vcfUrl));
+        promises.push(self.promiseAddSamples(cohort, dataSet.vcfUrl, dataSet.tbiUrl));
       })
 
       Promise.all(promises)
@@ -208,26 +209,37 @@ class VariantModel {
     });
   }
 
-  promiseGetUrlFromHub(projectId) {
+  promiseGetUrlsFromHub(projectId) {
     let self = this;
 
     return new Promise(function(resolve, reject) {
-      var url = '';
-      var vcf = null;
+      var vcfUrl = '',
+          tbiUrl = '';
+      var vcf = null,
+          tbi = null;
       self.hubEndpoint.getFilesForProject(projectId).done(data => {
         vcf = data.data.filter(f => f.type == 'vcf')[0];
+        tbi = data.data.filter(f => f.type == 'tbi')[0];
         self.hubEndpoint.getSignedUrlForFile(vcf).done(urlData => {
-          url = urlData.url;
-          if (url != null && url.length > 0) {
-            resolve(url);
+          vcfUrl = urlData.url;
+          if (vcfUrl == null || vcfUrl.length == 0) {
+            reject("Empty vcf url returned from hub.");
           }
-          else {
-            reject("Empty url returned from hub.");
-          }
+          self.hubEndpoint.getSignedUrlForFile(tbi).done(urlData => {
+            tbiUrl = urlData.url;
+            if (tbiUrl == null || tbiUrl.length == 0) {
+              reject("Empty tbi url returned from hub.");
+            }
+            else {
+              resolve({'vcfUrl' : vcfUrl, 'tbiUrl' : tbiUrl});
+            }
+          })
         })
       })
     });
   }
+
+
 
   promiseGetSampleIdsFromHub(projectId, phenoFilters) {
     let self = this;
@@ -254,7 +266,7 @@ class VariantModel {
     return filterObj;
   }
 
-  promiseAddSamples(cohortModel, vcfUrl) {
+  promiseAddSamples(cohortModel, vcfUrl, tbiUrl) {
     let self = this;
 
     return new Promise(function(resolve,reject) {
@@ -264,8 +276,7 @@ class VariantModel {
       var vcfPromise = null;
       if (cohortModel.vcf) {
         vcfPromise = new Promise(function(vcfResolve, vcfReject) {
-          // SJG TODO: put in tbi here
-          cm.onVcfUrlEntered(vcfUrl, null, function() {
+          cm.onVcfUrlEntered(vcfUrl, tbiUrl, function() {
             vcfResolve();
           })
         },
