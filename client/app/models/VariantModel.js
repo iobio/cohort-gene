@@ -219,8 +219,6 @@ class VariantModel {
         self.hubEndpoint.getSignedUrlForFile(vcf).done(urlData => {
           url = urlData.url;
           if (url != null && url.length > 0) {
-            // SJG TODO: make sure this is correct and changes tbi problem
-            var strippedUrl = url.substring(1, url.length - 2);
             resolve(url);
           }
           else {
