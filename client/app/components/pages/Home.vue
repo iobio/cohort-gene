@@ -523,6 +523,9 @@ export default {
 
       // If we have a project id, we're launching from hub
       if (self.paramProjectId) {
+        self.geneModel.addGeneName('AIRE');
+        self.onGeneSelected('AIRE');
+
         localStorage.setItem('hub-iobio-tkn', self.parmTokenType + ' ' + self.paramToken);
         self.variantModel.phenoFilters = self.getHubPhenoFilters();
         self.variantModel.projectId = self.paramProjectId;
