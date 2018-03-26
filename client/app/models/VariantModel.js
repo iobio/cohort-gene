@@ -134,7 +134,7 @@ class VariantModel {
     var topLevelCohort = new CohortModel(self);
     topLevelCohort.name = 'Hub Data Top';
     topLevelCohort.trackName = 'Variants for';
-    topLevelCohort.subsetPhenotypes = ['Probands'];
+    topLevelCohort.subsetPhenotypes = ['All Probands'];
     var probandFilter = self.getProbandPhenoFilter();
 
     // Retrieve url and sample ids from hub
@@ -161,7 +161,30 @@ class VariantModel {
         var subsetCohort = new CohortModel(self);
         subsetCohort.name = 'Hub Data Subset';
         subsetCohort.trackName = 'Variants for';
-        subsetCohort.subsetPhenotypes = Object.keys(self.phenoFilters);
+
+        // Pull out filtering terms and format correctly
+        if (Object.keys(self.phenoFilters).length > 0) {
+          Object.keys(self.phenoFilters).forEach(function(filter) {
+            if (self.phenoFilters[filter] != null && self.phenoFilters[filter].data != null) {
+              let filterName = filter.replace('.', ' ').replace('_', ' ').replace('abc', 'ABC');
+              var formattedFilterName = filterName.substring(0, filterName.indexOf(' '));
+              var restOfFilter = filterName.substring(filterName.indexOf(' '), filterName.length);
+              var i = 0;
+              while (restOfFilter.length > 0 && i < 5) {
+                let nextBit = restOfFilter.substring(0, restOfFilter.indexOf(' '));
+                nextBit = nextBit.charAt(0).toUpperCase();
+                formattedFilterName = formattedFilterName + ' ' + nextBit;
+                restOfFilter = restOfFilter.substring(restOfFilter.indexOf(' '), restOfFilter.length);
+                i++;
+              }
+              let start = self.phenoFilters[filter].data[0];
+              let startString = start.length > 0 ? (start + ' < ') : '';
+              let end = self.phenoFilters[filter].data[1];
+              let endString = end.length > 0 ? (' < ' + end) : '';
+              subsetCohort.subsetPhenotypes.push(startString + formattedFilterName + endString);
+            }
+          })
+        }
 
         // Get sample ids for subset track
         p = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
