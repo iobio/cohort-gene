@@ -168,14 +168,14 @@ class VariantModel {
             if (self.phenoFilters[filter] != null && self.phenoFilters[filter].data != null) {
               let filterName = filter.replace('.', ' ').replace('_', ' ').replace('abc', 'ABC');
               var formattedFilterName = filterName.substring(0, filterName.indexOf(' '));
-              var restOfFilter = filterName.substring(filterName.indexOf(' ')+1, filterName.length);
-              var i = 0;
-              while (restOfFilter.length > 0 && i < 5) {
-                let nextBit = restOfFilter.substring(0, restOfFilter.indexOf(' '));
-                nextBit = nextBit.charAt(0).toUpperCase();
+              var restOfFilter = filterName.substring((filterName.indexOf(' ') + 1), filterName.length);
+              while (restOfFilter.length > 0) {
+                let endBound = restOfFilter.indexOf(' ') == -1 ? restOfFilter.length : restOfFilter.indexOf(' ');
+                let nextBit = restOfFilter.substring(0, endBound);
+                nextBit = nextBit.charAt(0).toUpperCase() + nextBit.slice(1);
                 formattedFilterName = formattedFilterName + ' ' + nextBit;
-                restOfFilter = restOfFilter.substring(restOfFilter.indexOf(' ')+1, restOfFilter.length);
-                i++;
+                let startBound = restOfFilter.indexOf(' ') == -1 ? restOfFilter.length : restOfFilter.indexOf(' ') + 1;
+                restOfFilter = restOfFilter.substring(startBound, restOfFilter.length);
               }
               let start = self.phenoFilters[filter].data[0];
               let startString = start.length > 0 ? (start + ' < ') : '';
