@@ -141,7 +141,6 @@ class VariantModel {
     var hubPromises = [];
     var p = self.promiseGetUrlFromHub(self.projectId)
         .then(function(url) {
-          var testString = "Steph"; // SJG TODO: see what this looks like on console, may have double "" going into iobio services
           hubDataSet.vcfUrl = url;
         })
     hubPromises.push(p);
@@ -220,6 +219,8 @@ class VariantModel {
         self.hubEndpoint.getSignedUrlForFile(vcf).done(urlData => {
           url = urlData.url;
           if (url != null && url.length > 0) {
+            // SJG TODO: make sure this is correct and changes tbi problem
+            var strippedUrl = url.substring(1, url.length - 2);
             resolve(url);
           }
           else {
