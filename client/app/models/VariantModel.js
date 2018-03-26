@@ -141,6 +141,7 @@ class VariantModel {
     var hubPromises = [];
     var p = self.promiseGetUrlFromHub(self.projectId)
         .then(function(url) {
+          var testString = "Steph"; // SJG TODO: see what this looks like on console, may have double "" going into iobio services
           hubDataSet.vcfUrl = url;
         })
     hubPromises.push(p);
@@ -264,6 +265,7 @@ class VariantModel {
       var vcfPromise = null;
       if (cohortModel.vcf) {
         vcfPromise = new Promise(function(vcfResolve, vcfReject) {
+          // SJG TODO: put in tbi here
           cm.onVcfUrlEntered(vcfUrl, null, function() {
             vcfResolve();
           })
