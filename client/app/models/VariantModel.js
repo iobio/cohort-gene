@@ -168,13 +168,13 @@ class VariantModel {
             if (self.phenoFilters[filter] != null && self.phenoFilters[filter].data != null) {
               let filterName = filter.replace('.', ' ').replace('_', ' ').replace('abc', 'ABC');
               var formattedFilterName = filterName.substring(0, filterName.indexOf(' '));
-              var restOfFilter = filterName.substring(filterName.indexOf(' '), filterName.length);
+              var restOfFilter = filterName.substring(filterName.indexOf(' ')+1, filterName.length);
               var i = 0;
               while (restOfFilter.length > 0 && i < 5) {
                 let nextBit = restOfFilter.substring(0, restOfFilter.indexOf(' '));
                 nextBit = nextBit.charAt(0).toUpperCase();
                 formattedFilterName = formattedFilterName + ' ' + nextBit;
-                restOfFilter = restOfFilter.substring(restOfFilter.indexOf(' '), restOfFilter.length);
+                restOfFilter = restOfFilter.substring(restOfFilter.indexOf(' ')+1, restOfFilter.length);
                 i++;
               }
               let start = self.phenoFilters[filter].data[0];
