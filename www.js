@@ -12,8 +12,7 @@ var http = require('http');
  * Get port from environment and store in Express.
  */
 
-//var port = normalizePort(process.env.PORT || 3000);
-var port = normalizePort(3003); // SJG changed to integrate with hub locally
+var port = normalizePort(process.env.PORT || 4028);
 app.set('port', port);
   /**
    * Create HTTP server.

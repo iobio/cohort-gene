@@ -217,7 +217,7 @@ class VariantModel {
       self.hubEndpoint.getFilesForProject(projectId).done(data => {
         vcf = data.data.filter(f => f.type == 'vcf')[0];
         self.hubEndpoint.getSignedUrlForFile(vcf).done(urlData => {
-          url = urlData.url;  // SJG TODO: this is just returning amazons3 base url
+          url = urlData.url;
           if (url && url.length > 0) {
             resolve(url);
           }
