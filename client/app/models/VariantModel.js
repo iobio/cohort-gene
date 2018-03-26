@@ -141,8 +141,8 @@ class VariantModel {
     var hubPromises = [];
     var p = self.promiseGetUrlsFromHub(self.projectId)
         .then(function(dataSet) {
-          hubDataSet.vcfUrl = data.vcfUrl;
-          hubDataSet.tbiUrl = data.tbiUrl;
+          hubDataSet.vcfUrl = dataSet.vcfUrl;
+          hubDataSet.tbiUrl = dataSet.tbiUrl;
         })
     hubPromises.push(p);
 
