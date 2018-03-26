@@ -2,12 +2,13 @@
 
 class VariantModel {
   constructor(endpoint, genericAnnotation, translator, geneModel,
-    cacheHelper, genomeBuildHelper) {
+    cacheHelper, genomeBuildHelper, hubEndpoint) {
 
     this.dataSets = [];
     this.dataSetMap = {};    // Maps a dataset name to the dataset object
 
     this.endpoint = endpoint;
+    this.hubEndpoint = hubEndpoint;
     this.genericAnnotation = genericAnnotation;
     this.translator = translator;
     this.geneModel = geneModel;
@@ -15,7 +16,7 @@ class VariantModel {
     this.cacheHelper = cacheHelper;
     this.genomeBuildHelper = genomeBuildHelper;
     //this.freebayesSettings = freebayesSettings;
-    this.filterModel = null;        
+    this.filterModel = null;
     this.featureMatrixModel = null;
 
     this.annotationScheme = 'vep';
@@ -24,12 +25,14 @@ class VariantModel {
     this.affectedInfo = null;
     this.maxDepth = 0;
 
+    this.projectId = '';
+    this.phenoFilters = {};
     this.keepVariantsCombined = true; // Must be true for cohorts to be displayed on a single track
 
     this.inProgress = { 'loadingDataSources': false };
     this.genesInProgress = [];
 
-    this.demoVcf = "https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz";
+    this.userVcf = "https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz";
     this.demoGenes = ['RAI1', 'MYLK2', 'PDHA1', 'PDGFB', 'AIRE'];
   }
 
@@ -56,7 +59,7 @@ class VariantModel {
 
     var demoDataSet = new DataSetModel();
     demoDataSet.name = 'Platinum Exome';
-    demoDataSet.vcfUrl = self.demoVcf;
+    demoDataSet.vcfUrl = self.userVcf;
 
     // Set status
     self.isLoaded = false;
@@ -110,8 +113,145 @@ class VariantModel {
     });
   }
 
-  promiseInit() {
+  promiseInitFromHub() {
+    let self = this;
 
+    // Make sure proper parameters have come in
+    if (!self.projectId) {
+      console.log("Unable to initialize application from hub, no project id provided");
+      return;
+    }
+
+    // Set status
+    self.isLoaded = false;
+    self.inProgress.loadingDataSources = true;
+
+    // Setup data set model
+    var hubDataSet = new DataSetModel();
+    hubDataSet.name = 'Hub_Data';
+
+    // Setup top cohort
+    var topLevelCohort = new CohortModel(self);
+    topLevelCohort.name = 'Hub Data Top';
+    topLevelCohort.trackName = 'Variants for';
+    topLevelCohort.subsetPhenotypes = ['Probands'];
+    var probandFilter = self.getProbandPhenoFilter();
+
+    // Retrieve url and sample ids from hub
+    var hubPromises = [];
+    var p = self.promiseGetUrlFromHub(self.projectId)
+        .then(function(url) {
+          hubDataSet.vcfUrl = url;
+        })
+    hubPromises.push(p);
+
+    // Get sample ids for proband track
+    p = self.promiseGetSampleIdsFromHub(self.projectId, probandFilter)
+        .then(function(ids) {
+          topLevelCohort.subsetIds = ids;
+          hubDataSet.cohorts.push(topLevelCohort);
+          hubDataSet.cohortMap[topLevelCohort.name] = topLevelCohort;
+        })
+    hubPromises.push(p);
+
+    // Make another track if we have phenotype filters
+    if (self.phenoFilters != null) {
+        // Setup subset cohort
+        var subsetCohort = new CohortModel(self);
+        subsetCohort.name = 'Hub Data Subset';
+        subsetCohort.trackName = 'Variants for';
+        subsetCohort.subsetPhenotypes = Object.keys(self.phenoFilters);
+
+        // Get sample ids for subset track
+        p = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
+                .then(function(ids) {
+                  subsetCohort.subsetIds = ids;
+                  hubDataSet.cohorts.push(subsetCohort);
+                  hubDataSet.cohortMap[subsetCohort.name] = subsetCohort;
+                })
+        hubPromises.push(p);
+    }
+
+    return new Promise(function(resolve, reject) {
+      // Add cohorts to data set
+      Promise.all(hubPromises)
+        .then(function() {
+          self.dataSets.push(hubDataSet);
+          self.dataSetMap[hubDataSet.name] = hubDataSet;
+          self.promiseInit(hubDataSet)
+            .then(function() {
+              resolve();
+            })
+        })
+    });
+  }
+
+  promiseInit(dataSet) {
+    let self = this;
+
+    return new Promise(function(resolve, reject) {
+      let promises = [];
+      dataSet.cohorts.forEach(function(cohort) {
+        promises.push(self.promiseAddSamples(cohort, dataSet.vcfUrl));
+      })
+
+      Promise.all(promises)
+        .then(function() {
+          self.inProgress.loadingDataSources = false;
+          self.isLoaded = true;
+          resolve();
+        })
+        .catch(function(error) {
+          console.log("There was a problem in variantModel.promiseInit: " + error);
+          reject(error);
+        })
+    });
+  }
+
+  promiseGetUrlFromHub(projectId) {
+    let self = this;
+
+    return new Promise(function(resolve, reject) {
+      var url = '';
+      var vcf = null;
+      self.hubEndpoint.getFilesForProject(projectId).done(data => {
+        vcf = data.data.filter(f => f.type == 'vcf')[0];
+        self.hubEndpoint.getSignedUrlForFile(vcf).done(urlData => {
+          url = urlData.url;  // SJG TODO: this is just returning amazons3 base url
+          if (url && url.length > 0) {
+            resolve(url);
+          }
+          else {
+            reject("Empty url returned from hub.");
+          }
+        })
+      })
+    });
+  }
+
+  promiseGetSampleIdsFromHub(projectId, phenoFilters) {
+    let self = this;
+
+    return new Promise(function(resolve, reject) {
+      self.hubEndpoint.getSamplesForProject(projectId, phenoFilters)
+          .done(data => {
+            resolve(data);
+          })
+    })
+  }
+
+  /* Returns object with abc.total_score data between 1-200. Goal of this is to return only probands from Simons combined vcf */
+  getProbandPhenoFilter() {
+    let scoreObj = {
+      'chartType' : "histogram",
+      'data' : ["0", "200"]
+    };
+
+    let filterObj = {
+      'abc.total_score' : scoreObj
+    };
+
+    return filterObj;
   }
 
   promiseAddSamples(cohortModel, vcfUrl) {

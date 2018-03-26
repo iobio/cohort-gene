@@ -31,19 +31,20 @@ Vue.use(VueRouter);
 
 const routes = [
   {
+    name: 'home',
     path: '/',
     component: Home,
     props: (route) => ({
-        paramProjectId:             route.query.projectId,
-        paramSampleFilters:         route.query.sampleFilters
+        paramProjectId:             route.query.project_uuid,
+        parmTokenType:              route.query.token_type,
+        paramToken:                 route.query.access_token
     })
   }
 ]
 
 const router = new VueRouter({
-  routes
+  'routes': routes
 })
-
 
 window.vm = new Vue({
   el: '#app',
@@ -51,4 +52,4 @@ window.vm = new Vue({
   },
   render: h => h(App),
   router
-})
+});

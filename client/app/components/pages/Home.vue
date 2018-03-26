@@ -100,7 +100,9 @@ export default {
   },
   props: {
     paramProjectId:         null,
-    paramSampleFilters:     null
+    paramPhenoFilters:      null,
+    parmTokenType:          null,
+    paramToken:             null
   },
   data() {
     return {
@@ -171,12 +173,16 @@ export default {
         self.genomeBuildHelper,
         utility.getHumanRefNames);
 
+      let mode = 'development'; // TODO: will have to implement logic for this
+      let hubEndpoint = new HubEndpoint(mode);
+
       self.variantModel = new VariantModel(endpoint,
         genericAnnotation,
         translator,
         self.geneModel,
         self.cacheHelper,
-        self.genomeBuildHelper);
+        self.genomeBuildHelper,
+        hubEndpoint);
 
       self.inProgress = self.variantModel.inProgress;
 
@@ -515,18 +521,49 @@ export default {
     initFromUrl: function() {
       let self = this;
 
-      self.geneModel.addGeneName('AIRE');
-      self.onGeneSelected('AIRE');
-      self.variantModel.promiseInitDemo()
-        .then(function() {
-          self.dataSets = self.variantModel.dataSets;
-          if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
-            self.promiseLoadData();
-          }
-          else {
-            console.log("failed to load data because selected gene length is 0");
-          }
-        })
+      // If we have a project id, we're launching from hub
+      if (self.paramProjectId) {
+        localStorage.setItem('hub-iobio-tkn', self.parmTokenType + ' ' + self.paramToken);
+        self.variantModel.phenoFilters = self.getHubPhenoFilters();
+        self.variantModel.projectId = self.paramProjectId;
+        self.variantModel.promiseInitFromHub()
+            .then(function() {
+              self.dataSets = self.variantModel.dataSets;
+              if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
+                self.promiseLoadData();
+              }
+              else {
+                console.log("failed to load data because selected gene length is 0");
+              }
+            })
+      }
+      // Otherwise launching stand alone
+      else {
+        self.variantModel.userVcf = getUserVcf(); // SJG TODO: pull this from file upload menu
+        self.geneModel.addGeneName('AIRE');
+        self.onGeneSelected('AIRE');
+        self.variantModel.promiseInitDemo()
+            .then(function() {
+              self.dataSets = self.variantModel.dataSets;
+              if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
+                self.promiseLoadData();
+              }
+              else {
+                console.log("failed to load data because selected gene length is 0");
+              }
+            })
+
+        // SJG TODO: get file selection working
+        //self.variantModel.promiseInit();
+      }
+    },
+    /* Returns array of phenotype objects {phenotypeName: phenotypeData} */
+    getHubPhenoFilters: function() {
+      let self = this;
+
+      let params = Qs.parse(self.$route.query);
+      let { filter } = params;
+      return filter;
     }
     // onBookmarkVariant(variant) {
     //   this.$refs.navRef.onBookmarks();

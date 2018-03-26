@@ -27,14 +27,10 @@ button
 </style>
 
 <template>
-
   <div id="app">
-
     <v-app light>
       <router-view></router-view>
     </v-app>
-
-
   </div>
 </template>
 
