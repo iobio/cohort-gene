@@ -522,7 +522,6 @@ export default {
       let self = this;
 
       // If we have a project id, we're launching from hub
-      self.paramProjectId = "4";
       if (self.paramProjectId) {
         localStorage.setItem('hub-iobio-tkn', self.parmTokenType + ' ' + self.paramToken);
         self.variantModel.phenoFilters = self.getHubPhenoFilters();

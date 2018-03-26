@@ -218,7 +218,7 @@ class VariantModel {
         vcf = data.data.filter(f => f.type == 'vcf')[0];
         self.hubEndpoint.getSignedUrlForFile(vcf).done(urlData => {
           url = urlData.url;
-          if (url && url.length > 0) {
+          if (url != null && url.length > 0) {
             resolve(url);
           }
           else {
