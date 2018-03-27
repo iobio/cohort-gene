@@ -80,7 +80,7 @@ class VariantModel {
     allSampleModel.subsetIds.push('NA12878');
     allSampleModel.subsetIds.push('NA12891');
     allSampleModel.subsetIds.push('NA12892');
-    allSampleModel.subsetPhenotypes.push('All Probands');
+    allSampleModel.subsetPhenotypes.push('Probands');
 
     demoDataSet.cohorts.push(allSampleModel);
     demoDataSet.cohortMap[allSampleModel.name] = allSampleModel;
@@ -137,11 +137,10 @@ class VariantModel {
     hubDataSet.name = 'Hub_Data';
 
     // Setup top cohort
-    // SJG TODO: comment this back in
-    // var topLevelCohort = new CohortModel(self);
-    // topLevelCohort.name = 'Hub Data Top';
-    // topLevelCohort.trackName = 'Variants for';
-    // topLevelCohort.subsetPhenotypes = ['All Probands'];
+    var topLevelCohort = new CohortModel(self);
+    topLevelCohort.name = 'Hub Data Top';
+    topLevelCohort.trackName = 'Variants for';
+    topLevelCohort.subsetPhenotypes = ['Probands'];
 
     // Retrieve url and sample ids from hub
     return new Promise(function(resolve, reject) {
@@ -151,17 +150,17 @@ class VariantModel {
           hubDataSet.tbiUrl = dataSet.tbiUrl;
 
           // Setup proband track
-          // SJG TODO: get this working
-          //var probandFilter = self.getProbandPhenoFilter();
-          var probandFilter = {};
-          self.promiseGetSampleIdsFromHub(self.projectId, probandFilter)
+          var probandFilter = self.getProbandPhenoFilter();
+          var filterObj = {'affection_status' : probandFilter};
+          self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
               .then(function(ids) {
-                // SJG TODO comment back in
-                //topLevelCohort.subsetIds = ids;
-                //hubDataSet.cohorts.push(topLevelCohort);
-                //hubDataSet.cohortMap[topLevelCohort.name] = topLevelCohort;
-
+                debugger; // How many ids here
+                topLevelCohort.subsetIds = ids;
+                hubDataSet.cohorts.push(topLevelCohort);
+                hubDataSet.cohortMap[topLevelCohort.name] = topLevelCohort;
                 if (self.phenoFilters != null) {
+                    // Make sure we're only pulling back probands
+                    self.phenoFilters['affection_status'] = self.getProbandPhenoFilter();
                     var subsetCohort = new CohortModel(self);
                     subsetCohort.name = 'Hub Data Subset';
                     subsetCohort.trackName = 'Variants for';
@@ -180,6 +179,7 @@ class VariantModel {
                     var hubPromises = [];
                     var p = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                             .then(function(ids) {
+                              debugger; //how many ids here
                               subsetCohort.subsetIds = ids;
                               hubDataSet.cohorts.push(subsetCohort);
                               hubDataSet.cohortMap[subsetCohort.name] = subsetCohort;
@@ -273,34 +273,42 @@ class VariantModel {
     })
   }
 
+  /* Only handles affected pie chart filter, and ABC histogram filters */
   formatPhenotypeFilterDisplay(filter, boundsArr) {
-    let filterName = filter.replace('.', ' ').replace('_', ' ').replace('abc', 'ABC');
-    var formattedFilterName = filterName.substring(0, filterName.indexOf(' '));
-    var restOfFilter = filterName.substring((filterName.indexOf(' ') + 1), filterName.length);
-    while (restOfFilter.length > 0) {
-      let endBound = restOfFilter.indexOf(' ') == -1 ? restOfFilter.length : restOfFilter.indexOf(' ');
-      let nextBit = restOfFilter.substring(0, endBound);
-      nextBit = nextBit.charAt(0).toUpperCase() + nextBit.slice(1);
-      formattedFilterName = formattedFilterName + ' ' + nextBit;
-      let startBound = restOfFilter.indexOf(' ') == -1 ? restOfFilter.length : restOfFilter.indexOf(' ') + 1;
-      restOfFilter = restOfFilter.substring(startBound, restOfFilter.length);
+    var self = this;
+
+    // Affected/Unaffected filter
+    if (filter == 'affection_status') {
+      if (boundsArr[0] == 'Affected') return 'Probands';
+      else if (boundsArr[0] == 'Unaffected') return 'Unaffected Samples';
     }
-    let start = boundsArr[0];
+    else if (filter == 'abc.total_score') {
+      return self.formatFilterBounds('ABC Total Score', boundsArr);
+    }
+    else if (filter == 'abc.subscale_iv_hyperactivity') {
+      return self.formatFilterBounds('ABC Hyperactivity', boundsArr);
+    }
+    else if (filter == 'median_read_coverage') {
+      return self.formatFilterBounds('Median Read Coverage', boundsArr);
+    }
+    else {
+      return self.formatFilterBounds(filter, boundsArr);
+    }
+  }
+
+  formatFilterBounds(filterName, boundsArr) {
+    let start = boundsArr[0] != null ? boundsArr[0] : '';
     let startString = start.length > 0 ? (start + ' < ') : '';
-    let end = boundsArr[1];
+    let end = boundsArr[1] != null ? boundsArr[1] : '';
     let endString = end.length > 0 ? (' < ' + end) : '';
-    return startString + formattedFilterName + endString;
+    return startString + filterName + endString;
   }
 
   /* Returns object with abc.total_score data between 1-200. Goal of this is to return only probands from Simons combined vcf */
   getProbandPhenoFilter() {
-    let scoreObj = {
-      'chartType' : "histogram",
-      'data' : ["0", "200"]
-    };
-
     let filterObj = {
-      'abc.total_score' : scoreObj
+      'chartType' : "pie",
+      'data' : ["Affected"]
     };
 
     return filterObj;

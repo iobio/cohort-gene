@@ -615,11 +615,7 @@ var effectCategories = [
 
     return new Promise( function(resolve, reject) {
 
-      // This comma separated string of samples to perform vcf subset on
-      debugger; // SJG what do samplesToRetrieve look like coming in here? what do they look like coming in for demo?
-      // These look like Objects of vcfSampleName : {} sampleName : {} - the id of each object is 13267.p1 format
       var vcfSampleNames = samplesToRetrieve.filter(function(sample) {
-        // SJG TODO: does this need to be return sample.vcfSampleName.id?
         return (sample.vcfSampleName != "" && sample.vcfSampleName != null);
       })
       .map(function(sample) {
@@ -635,7 +631,6 @@ var effectCategories = [
 
 
       if (sourceType == SOURCE_TYPE_URL) {
-        // SJG TODO vcfSampleNames coming in incorrectly here - as 'Object object'
         me._getRemoteVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
           function(annotatedData, results) {
             if (annotatedData && results) {
@@ -749,7 +744,6 @@ var effectCategories = [
 
     // We have all of the annotated vcf recs.  Now parse them into vcf objects
     cmd.on('end', function(data) {
-      debugger;
       var annotatedRecs = annotatedData.split("\n");
       var vcfObjects = [];
       var contigHdrRecFound = false;
