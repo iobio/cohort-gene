@@ -247,6 +247,7 @@ export default {
         }
       },
       onVariantClick: function(variant) {
+        debugger;
         let self = this;
         var cohortKey = self.name;
         self.$emit("variantClick", variant, cohortKey);

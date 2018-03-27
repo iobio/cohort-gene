@@ -279,6 +279,7 @@ export default {
       }
     },
     getVariantSVG: function(variant, vizTrackName) {
+      debugger;
       var svg = d3.select(this.$el).select('#' + vizTrackName + ' > svg');
       return svg;
     },

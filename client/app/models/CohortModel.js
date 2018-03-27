@@ -18,7 +18,7 @@ class CohortModel {
     this.sampleName = '';
     this.trackName = '';
     this.isGeneratedSampleName = false;
-    this.name = '';
+    this.name = '';                 // This is used to identify track, must not contain spaces
     this.vcfRefNamesMap = {};
     this.lastVcfAlertify = null;
     this.lastBamAlertify = null;

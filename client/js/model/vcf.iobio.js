@@ -629,7 +629,6 @@ var effectCategories = [
       })
       .join(",");
 
-      debugger; // what do vcfSamplenames look like here
       if (sourceType == SOURCE_TYPE_URL) {
         me._getRemoteVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
           function(annotatedData, results) {
@@ -1519,7 +1518,6 @@ var effectCategories = [
 
                 // Keep the variant if we are just parsing a single sample (parseMultiSample=false)
                 // or we are parsing multiple samples and this sample's genotype is het or hom
-                //debugger;   // SJG look at genotypeMap format
                 if (!parseMultiSample || genotype.keep) {
                   var variant = {
                     'start':                    +rec.pos,

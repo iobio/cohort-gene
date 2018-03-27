@@ -138,7 +138,7 @@ class VariantModel {
 
     // Setup top cohort
     var topLevelCohort = new CohortModel(self);
-    topLevelCohort.name = 'Hub Data Top';
+    topLevelCohort.name = 'HubProbands';
     topLevelCohort.trackName = 'Variants for';
     topLevelCohort.subsetPhenotypes = ['Probands'];
 
@@ -150,12 +150,10 @@ class VariantModel {
           hubDataSet.tbiUrl = dataSet.tbiUrl;
 
           // Setup proband track
-          debugger;
           var probandFilter = self.getProbandPhenoFilter();
           var filterObj = {'abc.total_score' : probandFilter};
           self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
               .then(function(ids) {
-                debugger; // How many ids here
                 topLevelCohort.subsetIds = ids;
                 hubDataSet.cohorts.push(topLevelCohort);
                 hubDataSet.cohortMap[topLevelCohort.name] = topLevelCohort;
@@ -163,7 +161,7 @@ class VariantModel {
                     // Make sure we're only pulling back probands
                     self.phenoFilters['abc.total_score'] = self.getProbandPhenoFilter();
                     var subsetCohort = new CohortModel(self);
-                    subsetCohort.name = 'Hub Data Subset';
+                    subsetCohort.name = 'HubSubsetProbands';
                     subsetCohort.trackName = 'Variants for';
 
                     // Pull out filtering terms and format correctly
@@ -180,7 +178,6 @@ class VariantModel {
                     var hubPromises = [];
                     var p = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                             .then(function(ids) {
-                              debugger; //how many ids here
                               subsetCohort.subsetIds = ids;
                               hubDataSet.cohorts.push(subsetCohort);
                               hubDataSet.cohortMap[subsetCohort.name] = subsetCohort;
@@ -278,8 +275,8 @@ class VariantModel {
 
     // Affected/Unaffected filter
     if (filter == 'affection_status') {
-      if (boundsArr[0] == 'Affected') return 'Probands';
-      else if (boundsArr[0] == 'Unaffected') return 'Unaffected';
+      if (boundsArr[0] == 'Affected') { return 'Probands'; }
+      else if (boundsArr[0] == 'Unaffected') { return 'Unaffected'; }
     }
     else if (filter == 'abc.total_score') {
       if (boundsArr[0] == "1" && boundsArr[1] == "150") return 'Probands';
@@ -309,7 +306,6 @@ class VariantModel {
       'chartType' : "histogram",
       'data' : ["1", "150"]
     };
-
     return filterObj;
   }
 
