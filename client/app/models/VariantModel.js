@@ -151,7 +151,7 @@ class VariantModel {
 
           // Setup proband track
           var probandFilter = self.getProbandPhenoFilter();
-          var filterObj = {'abc.total_score' : probandFilter};
+          var filterObj = {'Probands' : probandFilter};
           self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
               .then(function(ids) {
                 topLevelCohort.subsetIds = ids;
@@ -159,11 +159,10 @@ class VariantModel {
                 hubDataSet.cohortMap[topLevelCohort.name] = topLevelCohort;
                 if (self.phenoFilters != null) {
                     // Make sure we're only pulling back probands
-                    self.phenoFilters['abc.total_score'] = self.getProbandPhenoFilter();
                     var subsetCohort = new CohortModel(self);
                     subsetCohort.name = 'HubSubsetProbands';
                     subsetCohort.trackName = 'Variants for';
-
+                    subsetCohort.subsetPhenotypes.push('Probands');
                     // Pull out filtering terms and format correctly
                     if (Object.keys(self.phenoFilters).length > 0) {
                       Object.keys(self.phenoFilters).forEach(function(filter) {
@@ -173,6 +172,9 @@ class VariantModel {
                         }
                       })
                     }
+
+                    // Add proband functional filter after pulling out names so we preserve listing 'Probands' chip first
+                    self.phenoFilters['Probands'] = self.getProbandPhenoFilter();
 
                     // Get sample ids for subset track
                     var hubPromises = [];
@@ -274,13 +276,13 @@ class VariantModel {
     var self = this;
 
     // Affected/Unaffected filter
-    if (filter == 'affection_status') {
-      if (boundsArr[0] == 'Affected') { return 'Probands'; }
+    if (filter == 'Probands') return 'Probands';
+    else if (filter == 'affection_status') {
+      if (boundsArr[0] == 'Affected') { return 'Affected'; }
       else if (boundsArr[0] == 'Unaffected') { return 'Unaffected'; }
     }
     else if (filter == 'abc.total_score') {
-      if (boundsArr[0] == "1" && boundsArr[1] == "150") return 'Probands';
-      else return self.formatFilterBounds('ABC Total Score', boundsArr);
+      return self.formatFilterBounds('ABC Total Score', boundsArr);
     }
     else if (filter == 'abc.subscale_iv_hyperactivity') {
       return self.formatFilterBounds('ABC Hyperactivity', boundsArr);
