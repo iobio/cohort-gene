@@ -279,10 +279,11 @@ class VariantModel {
     // Affected/Unaffected filter
     if (filter == 'affection_status') {
       if (boundsArr[0] == 'Affected') return 'Probands';
-      else if (boundsArr[0] == 'Unaffected') return 'Unaffected Samples';
+      else if (boundsArr[0] == 'Unaffected') return 'Unaffected';
     }
     else if (filter == 'abc.total_score') {
-      return self.formatFilterBounds('ABC Total Score', boundsArr);
+      if (boundsArr[0] == "1" && boundsArr[1] == "150") return 'Probands';
+      else return self.formatFilterBounds('ABC Total Score', boundsArr);
     }
     else if (filter == 'abc.subscale_iv_hyperactivity') {
       return self.formatFilterBounds('ABC Hyperactivity', boundsArr);
