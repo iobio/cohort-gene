@@ -50,9 +50,12 @@ HubEndpoint.prototype.getSamplesForProject = function(project_uuid, sampleFilter
       'Authorization': authToken
     }
   }).then(function(response) {
+    // Put in map
+    // foreach line in response.data, fill first id w/ matching
     return response.data;
   });
 }
+
 
 HubEndpoint.prototype.getSignedUrlForFile = function(file) {
   let self = this;

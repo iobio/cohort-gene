@@ -88,6 +88,8 @@ import VariantModel     from '../../models/VariantModel.js'
 
 import allGenesData from '../../../data/genes.json'
 
+import simonsIdMap from '../../../data/idmap.json'
+
 export default {
   name: 'home',
   components: {
@@ -120,6 +122,7 @@ export default {
       genesInProgress: {},
 
       allGenes: allGenesData,
+      simonsIdMap: simonsIdMap,
       dataSets: [],
 
       // Models
@@ -184,6 +187,7 @@ export default {
         self.genomeBuildHelper,
         hubEndpoint);
 
+      self.variantModel.setIdMap(self.simonsIdMap);
       self.inProgress = self.variantModel.inProgress;
 
       //self.featureMatrixModel = new FeatureMatrixModel(self.cohortModel);

@@ -1,6 +1,6 @@
 var express = require('express');
 var app = express();
-var port = process.env.PORT || 3003;  // SJG changed to coordinate with local hub (was 3001)
+var port = process.env.PORT || 4028;  // SJG changed to coordinate with nv-dev-new deployment
 var path = require('path');
 
 app.use(express.static(path.join(__dirname, '..', 'client')));

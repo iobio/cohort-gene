@@ -34,6 +34,7 @@ class VariantModel {
 
     this.userVcf = "https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz";
     this.demoGenes = ['RAI1', 'MYLK2', 'PDHA1', 'PDGFB', 'AIRE'];
+    this.simonsIdMap = {};
   }
 
   getMainCohort() {
@@ -52,6 +53,11 @@ class VariantModel {
       })
     })
     return theCohorts;
+  }
+
+  setIdMap(idMap) {
+    let self = this;
+    this.simonsIdMap = idMap;
   }
 
   promiseInitDemo() {
@@ -131,10 +137,11 @@ class VariantModel {
     hubDataSet.name = 'Hub_Data';
 
     // Setup top cohort
-    var topLevelCohort = new CohortModel(self);
-    topLevelCohort.name = 'Hub Data Top';
-    topLevelCohort.trackName = 'Variants for';
-    topLevelCohort.subsetPhenotypes = ['All Probands'];
+    // SJG TODO: comment this back in
+    // var topLevelCohort = new CohortModel(self);
+    // topLevelCohort.name = 'Hub Data Top';
+    // topLevelCohort.trackName = 'Variants for';
+    // topLevelCohort.subsetPhenotypes = ['All Probands'];
 
     // Retrieve url and sample ids from hub
     return new Promise(function(resolve, reject) {
@@ -149,9 +156,10 @@ class VariantModel {
           var probandFilter = {};
           self.promiseGetSampleIdsFromHub(self.projectId, probandFilter)
               .then(function(ids) {
-                topLevelCohort.subsetIds = ids;
-                hubDataSet.cohorts.push(topLevelCohort);
-                hubDataSet.cohortMap[topLevelCohort.name] = topLevelCohort;
+                // SJG TODO comment back in
+                //topLevelCohort.subsetIds = ids;
+                //hubDataSet.cohorts.push(topLevelCohort);
+                //hubDataSet.cohortMap[topLevelCohort.name] = topLevelCohort;
 
                 if (self.phenoFilters != null) {
                     var subsetCohort = new CohortModel(self);

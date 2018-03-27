@@ -62,6 +62,10 @@ class CohortModel {
     return this.getVariantModel().translator;
   }
 
+  getSimonsIdMap() {
+    return this.getVariantModel().simonsIdMap;
+  }
+
   getSampleIdentifier(theSampleName) {
     var id = this.name + "&&" + theSampleName;
   }
@@ -1323,6 +1327,8 @@ class CohortModel {
           // and annotate them._get
           me._promiseVcfRefName(theGene.chr)
           .then(function() {
+            var samples = me._getSubsetSamples();
+
             return me.vcf.promiseGetVariants(
                me.getVcfRefName(theGene.chr),
                theGene,
@@ -1637,9 +1643,17 @@ class CohortModel {
     var me = this;
     var subsetSamples = [];
 
-    // SJG TODO: why can't I just return array of sampleIds here?
-    me.subsetIds.forEach(function (id) {
-      subsetSamples.push( {vcfSampleName: id, sampleName: id} );
+    var idMap = me.getSimonsIdMap();
+
+    me.subsetIds.forEach(function (sample) {
+      if (idMap != null) {
+        var vcfId = idMap[sample.id];
+        subsetSamples.push( {vcfSampleName: vcfId, sampleName: vcfId} );
+      }
+      else {
+        subsetSamples.push( {vcfSampleName: sample, sampleName: sample} );
+      }
+
     })
 
     return subsetSamples;
@@ -2259,7 +2273,7 @@ class CohortModel {
       var passAffectedStatus = true;
       if (me.getName() == 'mainCohort' && affectedFilters.length > 0) {
         affectedFilters.forEach(function(info) {
-          var genotype = d.genotypes[info.variantCard.getSampleName()];
+          var genotype = data.genotypes[info.variantCard.getSampleName()];
           var zygosity = genotype && genotype.zygosity ? genotype.zygosity : "gt_unknown";
 
           if (info.status == 'affected') {
@@ -2516,13 +2530,15 @@ class CohortModel {
       if (me.vcfData == null) {
         me._promiseVcfRefName().then( function() {
 
+          var sampleNames = me._getSamplesToRetrieve();
+
           me.vcf.promiseGetVariants(
              me.getVcfRefName(window.gene.chr),
              window.gene,
              window.selectedTranscript,
              null,     // regions
              false,    // is multi-sample
-             me._getSamplesToRetrieve(),
+             sampleNames,
              me.getAnnotationScheme().toLowerCase(),
              me.getTranslator().clinvarMap,
              me.getGeneModel().geneSource == 'refseq' ? true : false)
