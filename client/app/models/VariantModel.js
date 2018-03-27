@@ -150,8 +150,9 @@ class VariantModel {
           hubDataSet.tbiUrl = dataSet.tbiUrl;
 
           // Setup proband track
+          debugger;
           var probandFilter = self.getProbandPhenoFilter();
-          var filterObj = {'affection_status' : probandFilter};
+          var filterObj = {'abc.total_score' : probandFilter};
           self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
               .then(function(ids) {
                 debugger; // How many ids here
@@ -160,7 +161,7 @@ class VariantModel {
                 hubDataSet.cohortMap[topLevelCohort.name] = topLevelCohort;
                 if (self.phenoFilters != null) {
                     // Make sure we're only pulling back probands
-                    self.phenoFilters['affection_status'] = self.getProbandPhenoFilter();
+                    self.phenoFilters['abc.total_score'] = self.getProbandPhenoFilter();
                     var subsetCohort = new CohortModel(self);
                     subsetCohort.name = 'Hub Data Subset';
                     subsetCohort.trackName = 'Variants for';
@@ -260,8 +261,6 @@ class VariantModel {
     });
   }
 
-
-
   promiseGetSampleIdsFromHub(projectId, phenoFilters) {
     let self = this;
 
@@ -304,11 +303,10 @@ class VariantModel {
     return startString + filterName + endString;
   }
 
-  /* Returns object with abc.total_score data between 1-200. Goal of this is to return only probands from Simons combined vcf */
   getProbandPhenoFilter() {
     let filterObj = {
-      'chartType' : "pie",
-      'data' : ["Affected"]
+      'chartType' : "histogram",
+      'data' : ["1", "150"]
     };
 
     return filterObj;
