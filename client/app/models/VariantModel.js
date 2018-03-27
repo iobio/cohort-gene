@@ -135,78 +135,68 @@ class VariantModel {
     topLevelCohort.name = 'Hub Data Top';
     topLevelCohort.trackName = 'Variants for';
     topLevelCohort.subsetPhenotypes = ['All Probands'];
-    var probandFilter = self.getProbandPhenoFilter();
 
     // Retrieve url and sample ids from hub
-    var hubPromises = [];
-    var p = self.promiseGetUrlsFromHub(self.projectId)
+    return new Promise(function(resolve, reject) {
+      self.promiseGetUrlsFromHub(self.projectId)
         .then(function(dataSet) {
           hubDataSet.vcfUrl = dataSet.vcfUrl;
           hubDataSet.tbiUrl = dataSet.tbiUrl;
-        })
-    hubPromises.push(p);
 
-    // Get sample ids for proband track
-    p = self.promiseGetSampleIdsFromHub(self.projectId, probandFilter)
-        .then(function(ids) {
-          topLevelCohort.subsetIds = ids;
-          hubDataSet.cohorts.push(topLevelCohort);
-          hubDataSet.cohortMap[topLevelCohort.name] = topLevelCohort;
-        })
-    hubPromises.push(p);
+          // Setup proband track
+          // SJG TODO: get this working
+          //var probandFilter = self.getProbandPhenoFilter();
+          var probandFilter = {};
+          self.promiseGetSampleIdsFromHub(self.projectId, probandFilter)
+              .then(function(ids) {
+                topLevelCohort.subsetIds = ids;
+                hubDataSet.cohorts.push(topLevelCohort);
+                hubDataSet.cohortMap[topLevelCohort.name] = topLevelCohort;
 
-    // Make another track if we have phenotype filters
-    if (self.phenoFilters != null) {
-        // Setup subset cohort
-        var subsetCohort = new CohortModel(self);
-        subsetCohort.name = 'Hub Data Subset';
-        subsetCohort.trackName = 'Variants for';
+                if (self.phenoFilters != null) {
+                    var subsetCohort = new CohortModel(self);
+                    subsetCohort.name = 'Hub Data Subset';
+                    subsetCohort.trackName = 'Variants for';
 
-        // Pull out filtering terms and format correctly
-        if (Object.keys(self.phenoFilters).length > 0) {
-          Object.keys(self.phenoFilters).forEach(function(filter) {
-            if (self.phenoFilters[filter] != null && self.phenoFilters[filter].data != null) {
-              let filterName = filter.replace('.', ' ').replace('_', ' ').replace('abc', 'ABC');
-              var formattedFilterName = filterName.substring(0, filterName.indexOf(' '));
-              var restOfFilter = filterName.substring((filterName.indexOf(' ') + 1), filterName.length);
-              while (restOfFilter.length > 0) {
-                let endBound = restOfFilter.indexOf(' ') == -1 ? restOfFilter.length : restOfFilter.indexOf(' ');
-                let nextBit = restOfFilter.substring(0, endBound);
-                nextBit = nextBit.charAt(0).toUpperCase() + nextBit.slice(1);
-                formattedFilterName = formattedFilterName + ' ' + nextBit;
-                let startBound = restOfFilter.indexOf(' ') == -1 ? restOfFilter.length : restOfFilter.indexOf(' ') + 1;
-                restOfFilter = restOfFilter.substring(startBound, restOfFilter.length);
-              }
-              let start = self.phenoFilters[filter].data[0];
-              let startString = start.length > 0 ? (start + ' < ') : '';
-              let end = self.phenoFilters[filter].data[1];
-              let endString = end.length > 0 ? (' < ' + end) : '';
-              subsetCohort.subsetPhenotypes.push(startString + formattedFilterName + endString);
-            }
-          })
-        }
+                    // Pull out filtering terms and format correctly
+                    if (Object.keys(self.phenoFilters).length > 0) {
+                      Object.keys(self.phenoFilters).forEach(function(filter) {
+                        if (self.phenoFilters[filter] != null && self.phenoFilters[filter].data != null) {
+                          subsetCohort.subsetPhenotypes.push(
+                            self.formatPhenotypeFilterDisplay(filter, self.phenoFilters[filter].data));
+                        }
+                      })
+                    }
 
-        // Get sample ids for subset track
-        p = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
-                .then(function(ids) {
-                  subsetCohort.subsetIds = ids;
-                  hubDataSet.cohorts.push(subsetCohort);
-                  hubDataSet.cohortMap[subsetCohort.name] = subsetCohort;
+                    // Get sample ids for subset track
+                    var hubPromises = [];
+                    var p = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
+                            .then(function(ids) {
+                              subsetCohort.subsetIds = ids;
+                              hubDataSet.cohorts.push(subsetCohort);
+                              hubDataSet.cohortMap[subsetCohort.name] = subsetCohort;
+                            })
+                    hubPromises.push(p);
+
+                    // Add cohorts to data set
+                    Promise.all(hubPromises)
+                      .then(function() {
+                        self.dataSets.push(hubDataSet);
+                        self.dataSetMap[hubDataSet.name] = hubDataSet;
+                        self.promiseInit(hubDataSet)
+                          .then(function() {
+                            resolve();
+                          })
+                      })
+                  }
+                  else {
+                    self.promiseInit(hubDataSet)
+                      .then(function() {
+                        resolve();
+                      })
+                  }
                 })
-        hubPromises.push(p);
-    }
-
-    return new Promise(function(resolve, reject) {
-      // Add cohorts to data set
-      Promise.all(hubPromises)
-        .then(function() {
-          self.dataSets.push(hubDataSet);
-          self.dataSetMap[hubDataSet.name] = hubDataSet;
-          self.promiseInit(hubDataSet)
-            .then(function() {
-              resolve();
-            })
-        })
+              })
     });
   }
 
@@ -273,6 +263,25 @@ class VariantModel {
             resolve(data);
           })
     })
+  }
+
+  formatPhenotypeFilterDisplay(filter, boundsArr) {
+    let filterName = filter.replace('.', ' ').replace('_', ' ').replace('abc', 'ABC');
+    var formattedFilterName = filterName.substring(0, filterName.indexOf(' '));
+    var restOfFilter = filterName.substring((filterName.indexOf(' ') + 1), filterName.length);
+    while (restOfFilter.length > 0) {
+      let endBound = restOfFilter.indexOf(' ') == -1 ? restOfFilter.length : restOfFilter.indexOf(' ');
+      let nextBit = restOfFilter.substring(0, endBound);
+      nextBit = nextBit.charAt(0).toUpperCase() + nextBit.slice(1);
+      formattedFilterName = formattedFilterName + ' ' + nextBit;
+      let startBound = restOfFilter.indexOf(' ') == -1 ? restOfFilter.length : restOfFilter.indexOf(' ') + 1;
+      restOfFilter = restOfFilter.substring(startBound, restOfFilter.length);
+    }
+    let start = boundsArr[0];
+    let startString = start.length > 0 ? (start + ' < ') : '';
+    let end = boundsArr[1];
+    let endString = end.length > 0 ? (' < ' + end) : '';
+    return startString + formattedFilterName + endString;
   }
 
   /* Returns object with abc.total_score data between 1-200. Goal of this is to return only probands from Simons combined vcf */
