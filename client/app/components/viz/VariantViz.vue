@@ -90,15 +90,15 @@
     </div>
     <div style="text-align: center;clear: both;">
       <div class="loader vcfloader" v-bind:class="{ hide: !model.inProgress.loadingVariants }" style="display: inline-block;padding-bottom:10px">
-        <span class="loader-label">Annotating variants</span>
+        <span class="loader-label">Annotating Variants</span>
         <img src="../../../assets/images/wheel.gif">
       </div>
-      <div class="loader fbloader" v-bind:class="{ hide: !model.inProgress.callingVariants }" style="display: inline-block;padding-left: 20px;adding-bottom:10px">
-        <span class="loader-label">Calling variants</span>
+      <div class="loader fbloader" v-bind:class="{ hide: !model.inProgress.fetchingHubData }" style="display: inline-block;padding-left: 20px;adding-bottom:10px">
+        <span class="loader-label">Fetching Data from Hub</span>
         <img src="../../../assets/images/wheel.gif">
       </div>
-      <div class="loader covloader" v-bind:class="{ hide: !model.inProgress.loadingCoverage }" style="display: inline-block;padding-left: 20px;padding-bottom:10px">
-        <span class="loader-label">Analyzing gene coverage</span>
+      <div class="loader covloader" v-bind:class="{ hide: !model.inProgress.drawingVariants }" style="display: inline-block;padding-left: 20px;padding-bottom:10px">
+        <span class="loader-label">Drawing Variants</span>
         <img src="../../../assets/images/wheel.gif">
       </div>
     </div>
@@ -247,7 +247,6 @@ export default {
         }
       },
       onVariantClick: function(variant) {
-        debugger;
         let self = this;
         var cohortKey = self.name;
         self.$emit("variantClick", variant, cohortKey);
@@ -271,7 +270,7 @@ export default {
         this.variantChart.hideCircle()(container);
       },
       setVariantChart: function() {
-        this.$emit('updateVariantChart', this.variantChart);
+        this.$emit('updateVariantChart', this.model);
       },
       showFlaggedVariant: function(variant, container) {
         this.variantChart.showFlaggedVariant(container, variant);

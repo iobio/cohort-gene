@@ -32,9 +32,9 @@ class CohortModel {
     this.subsetPhenotypes = [];
 
     this.inProgress = {
+      'fetchingHubData': false,
       'loadingVariants': false,
-      'callingVariants': false,
-      'loadingCoverage': false
+      'drawingVariants': false
     };
 
     this._variantModel = theVariantModel;

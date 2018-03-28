@@ -9,7 +9,8 @@ function HubEndpoint(env) {
 HubEndpoint.prototype.getFilesForProject = function(project_uuid) {
   let self = this;
   var key = localStorage.getItem('hub-iobio-tkn');
-  return $.ajax({
+
+  var call =  $.ajax({
     url: self.api[self.env] + '/projects/' + project_uuid + '/files',
     type: 'GET',
     contentType: 'application/json*',
@@ -17,6 +18,7 @@ HubEndpoint.prototype.getFilesForProject = function(project_uuid) {
       'Authorization': localStorage.getItem('hub-iobio-tkn')
     }
   });
+  return call;
 }
 
 HubEndpoint.prototype.getProject = function(project_uuid) {

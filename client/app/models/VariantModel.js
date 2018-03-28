@@ -138,6 +138,7 @@ class VariantModel {
 
     // Setup top cohort
     var topLevelCohort = new CohortModel(self);
+    topLevelCohort.inProgress.fetchingHubData = true;
     topLevelCohort.name = 'HubProbands';
     topLevelCohort.trackName = 'Variants for';
     topLevelCohort.subsetPhenotypes = ['Probands'];
@@ -151,7 +152,7 @@ class VariantModel {
 
           // Setup proband track
           var probandFilter = self.getProbandPhenoFilter();
-          var filterObj = {'Probands' : probandFilter};
+          var filterObj = {'abc.total_score' : probandFilter};
           self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
               .then(function(ids) {
                 topLevelCohort.subsetIds = ids;
@@ -160,12 +161,19 @@ class VariantModel {
                 if (self.phenoFilters != null) {
                     // Make sure we're only pulling back probands
                     var subsetCohort = new CohortModel(self);
+                    subsetCohort.inProgress.fetchingHubData = true;
                     subsetCohort.name = 'HubSubsetProbands';
                     subsetCohort.trackName = 'Variants for';
                     subsetCohort.subsetPhenotypes.push('Probands');
+
+                    // Keep track of if we have abc.total_score filter coming in - otherwise use category to filter probands
+                    var hasAbcTotalScoreFilter = false;
+
                     // Pull out filtering terms and format correctly
                     if (Object.keys(self.phenoFilters).length > 0) {
                       Object.keys(self.phenoFilters).forEach(function(filter) {
+                        // Flip our flag if we already have abc total score filter
+                        if (filter == 'abc.total_score') hasAbcTotalScoreFilter = true;
                         if (self.phenoFilters[filter] != null && self.phenoFilters[filter].data != null) {
                           subsetCohort.subsetPhenotypes.push(
                             self.formatPhenotypeFilterDisplay(filter, self.phenoFilters[filter].data));
@@ -173,8 +181,11 @@ class VariantModel {
                       })
                     }
 
-                    // Add proband functional filter after pulling out names so we preserve listing 'Probands' chip first
-                    self.phenoFilters['Probands'] = self.getProbandPhenoFilter();
+                    // Add proband functional filter if we don't have abc total score already after
+                    // pulling out names so we preserve displaying 'Probands' chip first
+                    if (!hasAbcTotalScoreFilter) {
+                      self.phenoFilters['Probands'] = probandFilter;
+                    }
 
                     // Get sample ids for subset track
                     var hubPromises = [];
@@ -193,6 +204,13 @@ class VariantModel {
                         self.dataSetMap[hubDataSet.name] = hubDataSet;
                         self.promiseInit(hubDataSet)
                           .then(function() {
+                            self.dataSets.forEach(function(dataSet) {
+                              if (dataSet.cohorts != null && dataSet.cohorts.length > 0) {
+                                dataSet.cohorts.forEach(function(cohort) {
+                                  cohort.inProgress.fetchingHubData = false;
+                                })
+                              }
+                            })
                             resolve();
                           })
                       })
@@ -200,6 +218,13 @@ class VariantModel {
                   else {
                     self.promiseInit(hubDataSet)
                       .then(function() {
+                        self.dataSets.forEach(function(dataSet) {
+                          if (dataSet.cohorts != null && dataSet.cohorts.length > 0) {
+                            dataSet.cohorts.forEach(function(cohort) {
+                              cohort.inProgress.fetchingHubData = false;
+                            })
+                          }
+                        })
                         resolve();
                       })
                   }
@@ -276,8 +301,7 @@ class VariantModel {
     var self = this;
 
     // Affected/Unaffected filter
-    if (filter == 'Probands') return 'Probands';
-    else if (filter == 'affection_status') {
+    if (filter == 'affection_status') {
       if (boundsArr[0] == 'Affected') { return 'Affected'; }
       else if (boundsArr[0] == 'Unaffected') { return 'Unaffected'; }
     }
@@ -421,6 +445,15 @@ class VariantModel {
         return self.promiseAnnotateInheritance(theGene, theTranscript, resultMap, {isBackground: false, cacheData: true})
       })
       .then(function(data) {
+        if (self.dataSets.length > 0) {
+          self.dataSets.forEach(function(dataSet) {
+            if (dataSet.cohorts.length > 0) {
+              dataSet.cohorts.forEach(function(cohort) {
+                cohort.inProgress.drawingVariants = true;
+              })
+            }
+          })
+        }
         resolve(data);
       })
       .catch(function(error) {

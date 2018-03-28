@@ -37,7 +37,7 @@
             ref="variantCardRef"
             v-for="dataSet in dataSets"
             :key="dataSet.name"
-            v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !variantModel  || variantModel.inProgress.loadingDataSources }"
+            v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !variantModel }"
             :dataSetModel="dataSet"
             :annotationScheme="variantModel.annotationScheme"
             :variantModel="variantModel"
@@ -176,7 +176,7 @@ export default {
         self.genomeBuildHelper,
         utility.getHumanRefNames);
 
-      let mode = 'development'; // SJG TODO: change to production prior to 10Apr/ implement logic
+      let mode = 'production'; // SJG TODO: change to production prior to 10Apr/ implement logic
       let hubEndpoint = new HubEndpoint(mode);
 
       self.variantModel = new VariantModel(endpoint,

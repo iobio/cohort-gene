@@ -93,7 +93,7 @@ Updated: SJG Mar2018
           :classifySymbolFunc="classifyVariantSymbolFunc"
           @variantClick="onVariantClick"
           @variantHover="onVariantHover"
-          @variantHoverEnd="onVariantHoverEnd">
+          @variantHoverEnd="onVariantHoverEnd"
           >
         </variant-viz>
         <gene-viz id="gene-viz"
