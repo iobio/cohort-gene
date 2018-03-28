@@ -8,7 +8,7 @@ class CohortModel {
     this.vcfData = null;            // Lookup for features, not samples
     this.fbData = null;
     this.bamData = null;
-    this.vcfUrlEntered = false;
+    this.vcfUrlEntered = false
     this.vcfFileOpened = false;
     this.getVcfRefName = null;
     this.bamUrlEntered = false;
@@ -1294,6 +1294,8 @@ class CohortModel {
   }
 
   promiseAnnotateVariants(theGene, theTranscript, cohortModels, isMultiSample, isBackground, cacheHelper, keepVariantsCombined) {
+    console.log("called promiseAnnotateVariants in CohortModel");
+    // SJG NOTE we do make it here
     var me = this;
     return new Promise( function(resolve, reject) {
 
@@ -1305,6 +1307,7 @@ class CohortModel {
       cohortModels.forEach(function(model) {
         var p = model._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript, cacheHelper)
          .then(function(vcfData) {
+           console.log('Got vcf data back from cache in CohortModel');
           if (vcfData != null && vcfData != '') {
             resultMap[model.name] = vcfData;
 
@@ -1329,6 +1332,7 @@ class CohortModel {
           .then(function() {
             var samples = me._getSubsetSamples();
 
+            debugger;
             return me.vcf.promiseGetVariants(
                me.getVcfRefName(theGene.chr),
                theGene,
@@ -1347,6 +1351,7 @@ class CohortModel {
               );
           })
           .then(function(data) {
+            console.log('Got variants data back from vcf.iobio.js in CohortModel');
             var annotatedRecs = data[0];
             var results = data[1];  // One entry per sample in results
 

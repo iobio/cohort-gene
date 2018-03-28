@@ -147,6 +147,7 @@ class VariantModel {
     return new Promise(function(resolve, reject) {
       self.promiseGetUrlsFromHub(self.projectId)
         .then(function(dataSet) {
+          console.log("Got urls from hub");
           hubDataSet.vcfUrl = dataSet.vcfUrl;
           hubDataSet.tbiUrl = dataSet.tbiUrl;
 
@@ -155,7 +156,11 @@ class VariantModel {
           var filterObj = {'abc.total_score' : probandFilter};
           self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
               .then(function(ids) {
-                topLevelCohort.subsetIds = ids;
+                console.log("Got ids from hub for proband track");
+                // SJG TODO: only take 50 and make sure data is making app crash
+                var endArr = ids.length < 50 ? ids.length : 50;
+                topLevelCohort.subsetIds = ids.slice(0, endArr);
+                //topLevelCohort.subsetIds = ids;
                 hubDataSet.cohorts.push(topLevelCohort);
                 hubDataSet.cohortMap[topLevelCohort.name] = topLevelCohort;
                 if (self.phenoFilters != null) {
@@ -186,12 +191,16 @@ class VariantModel {
                     if (!hasAbcTotalScoreFilter) {
                       self.phenoFilters['Probands'] = probandFilter;
                     }
-
+``
                     // Get sample ids for subset track
                     var hubPromises = [];
                     var p = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                             .then(function(ids) {
-                              subsetCohort.subsetIds = ids;
+                              console.log("Got ids from hub for subset track");
+                              debugger; // When no filters applied, should still get something back
+                              var endArr = ids.length < 50 ? ids.length : 50;
+                              subsetCohort.subsetIds = ids.slice(0, endArr);
+                              //subsetCohort.subsetIds = ids;
                               hubDataSet.cohorts.push(subsetCohort);
                               hubDataSet.cohortMap[subsetCohort.name] = subsetCohort;
                             })
@@ -244,6 +253,7 @@ class VariantModel {
 
       Promise.all(promises)
         .then(function() {
+          console.log("Done with promiseAddSamples");
           self.inProgress.loadingDataSources = false;
           self.isLoaded = true;
           resolve();
@@ -385,6 +395,7 @@ class VariantModel {
   }
 
   promiseLoadData(theGene, theTranscript, options) {
+    console.log("Called promiseLoadData in VariantModel");
     let self = this;
     let promises = [];
 
@@ -399,6 +410,7 @@ class VariantModel {
         var dataSetResultMap = null;
         let p1 = self.promiseLoadVariants(theGene, theTranscript, options)
         .then(function(data) {
+          console.log('done with promseLoadVariants in VariantModel');
           dataSetResultMap = data.resultMap;
           self.setLoadedVariants(data.gene);
         })
@@ -406,6 +418,7 @@ class VariantModel {
 
         Promise.all(promises)
         .then(function() {
+          console.log("Done with promiseLoadData in VariantModel")
           resolve(dataSetResultMap);
             // TODO: what sample needs to go in here?
             // self.promiseSummarizeDanger(theGene, theTranscript, , null)
@@ -437,6 +450,7 @@ class VariantModel {
 
   promiseLoadVariants(theGene, theTranscript, options) {
     let self = this;
+    console.log('called promseLoadVariants in VariantModel');
 
     return new Promise(function(resolve, reject) {
       self.promiseAnnotateVariants(theGene, theTranscript, false, options)
@@ -552,6 +566,7 @@ class VariantModel {
           if (Object.keys(dataSet.cohorts).length > 0) {
             dataSet.cohorts.forEach(function(cohortModel) {
               cohortModel.inProgress.loadingVariants = true;
+              console.log('done with promseLoadVariants in VariantModel');
               var p = cohortModel.promiseAnnotateVariants(theGene,
                   theTranscript, [cohortModel],
                   false, isBackground, self.cacheHelper, self.keepVariantsCombined)  // SJG TODO: made this instance var and pass here - can adjust if necessary

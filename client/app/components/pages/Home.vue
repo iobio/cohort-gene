@@ -176,7 +176,7 @@ export default {
         self.genomeBuildHelper,
         utility.getHumanRefNames);
 
-      let mode = 'production'; // SJG TODO: change to production prior to 10Apr/ implement logic
+      let mode = 'production'; 
       let hubEndpoint = new HubEndpoint(mode);
 
       self.variantModel = new VariantModel(endpoint,
@@ -258,6 +258,7 @@ export default {
       })
     },
     promiseLoadData: function() {
+      console.log("promiseLoadData called");
       let self = this;
 
       return new Promise(function(resolve, reject) {
@@ -270,6 +271,7 @@ export default {
             self.filterModel,
             options)
           .then(function(resultMap) {
+            console.log("Done with promiseLoadData");
             // self.filterModel.populateEffectFilters(resultMap);
             // self.filterModel.populateRecFilters(resultMap);
 
