@@ -39,6 +39,16 @@ const routes = [
         parmTokenType:              route.query.token_type,
         paramToken:                 route.query.access_token
     })
+  },
+  {
+    name: 'hub_home',
+    path: '/#',
+    component: Home,
+    props: (route) => ({
+        paramProjectId:             route.query.project_uuid,
+        parmTokenType:              route.query.token_type,
+        paramToken:                 route.query.access_token
+    })
   }
 ]
 
