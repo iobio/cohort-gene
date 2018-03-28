@@ -449,7 +449,6 @@ class VariantModel {
           self.dataSets.forEach(function(dataSet) {
             if (dataSet.cohorts.length > 0) {
               dataSet.cohorts.forEach(function(cohort) {
-                cohort.inProgress.drawingVariants = true;
               })
             }
           })
