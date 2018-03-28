@@ -175,6 +175,16 @@ class VariantModel {
                   self.phenoFilters = {};
                 }
 
+                // Remove affected/unaffected filter if applied - currently breaks Hub retrieval
+                if (self.phenoFilters['affection_status'] != null) {
+                  var filteredPhenoFilters = {};
+                  Object.keys(self.phenoFilters).forEach(function(filter) {
+                    if (filter != 'affection_status')
+                      filteredPhenoFilters[filter] = self.phenoFilters[filter];
+                  })
+                  self.phenoFilters = filteredPhenoFilters;
+                }
+
                 // Setup subset track
                 var subsetCohort = new CohortModel(self);
                 subsetCohort.inProgress.fetchingHubData = true;
@@ -204,12 +214,9 @@ class VariantModel {
 
                 // Retrieve subset sample IDs from Hub
                 var hubPromises = [];
-                debugger;
                 var p = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                         .then(function(ids) {
-                          debugger;
-                          console.log("Obtained subset IDs from Hub");
-
+                          
                           // Only take first 50 samples (temporary)
                           var endArr = ids.length < 50 ? ids.length : 50;
                           subsetCohort.subsetIds = ids.slice(0, endArr);
