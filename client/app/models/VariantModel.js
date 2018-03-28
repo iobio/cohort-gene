@@ -119,6 +119,8 @@ class VariantModel {
     });
   }
 
+  /* Pulls urls and sample IDs from Hub and sets up dataset and cohort models.
+     Assumes a project ID has been mapped and assigned to this model. */
   promiseInitFromHub() {
     let self = this;
 
@@ -132,18 +134,18 @@ class VariantModel {
     self.isLoaded = false;
     self.inProgress.loadingDataSources = true;
 
-    // Setup data set model
+    // Setup dataset
     var hubDataSet = new DataSetModel();
     hubDataSet.name = 'Hub_Data';
 
-    // Setup top cohort
+    // Setup proband track
     var topLevelCohort = new CohortModel(self);
     topLevelCohort.inProgress.fetchingHubData = true;
     topLevelCohort.name = 'HubProbands';
     topLevelCohort.trackName = 'Variants for';
     topLevelCohort.subsetPhenotypes = ['Probands'];
 
-    // Retrieve url and sample ids from hub
+    // Retrieve urls from hub
     return new Promise(function(resolve, reject) {
       self.promiseGetUrlsFromHub(self.projectId)
         .then(function(dataSet) {
@@ -151,82 +153,82 @@ class VariantModel {
           hubDataSet.vcfUrl = dataSet.vcfUrl;
           hubDataSet.tbiUrl = dataSet.tbiUrl;
 
-          // Setup proband track
+          // Format filter to send to Hub to get all proband IDs
           var probandFilter = self.getProbandPhenoFilter();
           var filterObj = {'abc.total_score' : probandFilter};
+
+          // Retrieve proband sample IDs from Hub
           self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
               .then(function(ids) {
-                console.log("Got ids from hub for proband track");
-                // SJG TODO: only take 50 and make sure data is making app crash
+                console.log("Obtained proband IDs from Hub");
+
+                // Only take first 50 samples (temporary)
                 var endArr = ids.length < 50 ? ids.length : 50;
                 topLevelCohort.subsetIds = ids.slice(0, endArr);
-                //topLevelCohort.subsetIds = ids;
+
+                // Add cohort to dataset
                 hubDataSet.cohorts.push(topLevelCohort);
                 hubDataSet.cohortMap[topLevelCohort.name] = topLevelCohort;
-                if (self.phenoFilters != null) {
-                    // Make sure we're only pulling back probands
-                    var subsetCohort = new CohortModel(self);
-                    subsetCohort.inProgress.fetchingHubData = true;
-                    subsetCohort.name = 'HubSubsetProbands';
-                    subsetCohort.trackName = 'Variants for';
-                    subsetCohort.subsetPhenotypes.push('Probands');
 
-                    // Keep track of if we have abc.total_score filter coming in - otherwise use category to filter probands
-                    var hasAbcTotalScoreFilter = false;
+                // Initialize this if we don't have any filters coming from Hub
+                if (self.phenoFilters == null) {
+                  self.phenoFilters = {};
+                }
 
-                    // Pull out filtering terms and format correctly
-                    if (Object.keys(self.phenoFilters).length > 0) {
-                      Object.keys(self.phenoFilters).forEach(function(filter) {
-                        // Flip our flag if we already have abc total score filter
-                        if (filter == 'abc.total_score') hasAbcTotalScoreFilter = true;
-                        if (self.phenoFilters[filter] != null && self.phenoFilters[filter].data != null) {
-                          subsetCohort.subsetPhenotypes.push(
-                            self.formatPhenotypeFilterDisplay(filter, self.phenoFilters[filter].data));
-                        }
-                      })
+                // Setup subset track
+                var subsetCohort = new CohortModel(self);
+                subsetCohort.inProgress.fetchingHubData = true;
+                subsetCohort.name = 'HubSubsetProbands';
+                subsetCohort.trackName = 'Variants for';
+                subsetCohort.subsetPhenotypes.push('Probands');
+
+                // Flag to add proband filter
+                var hasAbcTotalScore = false;
+
+                // Pull out filter terms passed from Hub and format for display
+                if (Object.keys(self.phenoFilters).length > 0) {
+                  Object.keys(self.phenoFilters).forEach(function(filter) {
+                    if (self.phenoFilters[filter] != null && self.phenoFilters[filter].data != null) {
+                      if (filter == 'abc.total_score') hasAbcTotalScore = true;
+                      subsetCohort.subsetPhenotypes.push(
+                        self.formatPhenotypeFilterDisplay(filter, self.phenoFilters[filter].data));
                     }
+                  })
+                }
 
-                    // Add proband functional filter if we don't have abc total score already after
-                    // pulling out names so we preserve displaying 'Probands' chip first
-                    if (!hasAbcTotalScoreFilter) {
-                      self.phenoFilters['Probands'] = probandFilter;
-                    }
-``
-                    // Get sample ids for subset track
-                    var hubPromises = [];
-                    var p = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
-                            .then(function(ids) {
-                              console.log("Got ids from hub for subset track");
-                              debugger; // When no filters applied, should still get something back
-                              var endArr = ids.length < 50 ? ids.length : 50;
-                              subsetCohort.subsetIds = ids.slice(0, endArr);
-                              //subsetCohort.subsetIds = ids;
-                              hubDataSet.cohorts.push(subsetCohort);
-                              hubDataSet.cohortMap[subsetCohort.name] = subsetCohort;
-                            })
-                    hubPromises.push(p);
+                // If we aren't filtering on abc total score already, add a proband filter
+                // Add this after setting up subsetPhenotype array to preserve 'Probands' chip displaying first
+                if (!hasAbcTotalScore) {
+                  self.phenoFilters['abc.total_score'] = probandFilter;
+                }
 
-                    // Add cohorts to data set
-                    Promise.all(hubPromises)
-                      .then(function() {
-                        self.dataSets.push(hubDataSet);
-                        self.dataSetMap[hubDataSet.name] = hubDataSet;
-                        self.promiseInit(hubDataSet)
-                          .then(function() {
-                            self.dataSets.forEach(function(dataSet) {
-                              if (dataSet.cohorts != null && dataSet.cohorts.length > 0) {
-                                dataSet.cohorts.forEach(function(cohort) {
-                                  cohort.inProgress.fetchingHubData = false;
-                                })
-                              }
-                            })
-                            resolve();
-                          })
-                      })
-                  }
-                  else {
+                // Retrieve subset sample IDs from Hub
+                var hubPromises = [];
+                debugger;
+                var p = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
+                        .then(function(ids) {
+                          debugger;
+                          console.log("Obtained subset IDs from Hub");
+
+                          // Only take first 50 samples (temporary)
+                          var endArr = ids.length < 50 ? ids.length : 50;
+                          subsetCohort.subsetIds = ids.slice(0, endArr);
+
+                          hubDataSet.cohorts.push(subsetCohort);
+                          hubDataSet.cohortMap[subsetCohort.name] = subsetCohort;
+                        })
+                hubPromises.push(p);
+
+                Promise.all(hubPromises)
+                  .then(function() {
+                    // Reference datasets in this
+                    self.dataSets.push(hubDataSet);
+                    self.dataSetMap[hubDataSet.name] = hubDataSet;
+
+                    // Initialize dataset
                     self.promiseInit(hubDataSet)
                       .then(function() {
+                        // Toggle progress flags
                         self.dataSets.forEach(function(dataSet) {
                           if (dataSet.cohorts != null && dataSet.cohorts.length > 0) {
                             dataSet.cohorts.forEach(function(cohort) {
@@ -236,7 +238,7 @@ class VariantModel {
                         })
                         resolve();
                       })
-                  }
+                  })
                 })
               })
     });
