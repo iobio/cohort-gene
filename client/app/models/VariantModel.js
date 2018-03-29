@@ -493,6 +493,7 @@ class VariantModel {
         cohort.loadedVariants = {loadState: {}, features: [], maxLevel: 1, featureWidth: 0};
         cohort.calledVariants = {loadState: {}, features: [], maxLevel: 1, featureWidth: 0};
         cohort.coverage = [[]];
+        cohort.noMatchingSamples = false;
       })
     });
   }
@@ -589,7 +590,8 @@ class VariantModel {
                 annotatePromises.push(p)
               }
               else {
-                cohortModel.noVariantsToDisplay = true;
+                cohortModel.inProgress.loadingVariants = false;
+                cohortModel.noMatchingSamples = true;
               }
             })
           }

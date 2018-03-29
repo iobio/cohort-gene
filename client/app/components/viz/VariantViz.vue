@@ -102,8 +102,10 @@
         <img src="../../../assets/images/wheel.gif">
       </div>
     </div>
-    <div class="loader" v-bind:class="{ hide: !model.noVariantsToDisplay }" style="display: inline-block;padding-left: 20px;padding-bottom:10px">
-      <span class="loader-label">No variants found</span>
+    <div v-bind:class="{ hide: !model.noMatchingSamples }" style="text-align: center; padding-bottom: 20px; padding-top: 20px">
+      <v-chip color="red" small outline style="font-size: 12px">
+         No Samples Meet Criteria
+      </v-chip>
     </div>
   </div>
 </template>

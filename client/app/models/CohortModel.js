@@ -30,6 +30,7 @@ class CohortModel {
     // Optional subset IDs
     this.subsetIds = [];
     this.subsetPhenotypes = [];
+    this.noMatchingSamples = false;
 
     this.inProgress = {
       'fetchingHubData': false,
@@ -72,12 +73,6 @@ class CohortModel {
 
   setSampleName(sampleName) {
     this.sampleName = sampleName;
-  }
-
-  // SJG TODO: can't find this used anywhere... may be artifact
-  setGeneratedSampleName(sampleName) {
-    this.sampleName = sampleName;
-    this.isGeneratedSampleName = true;
   }
 
   promiseSetLoadState(theVcfData, taskName, cacheHelper) {
