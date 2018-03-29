@@ -468,15 +468,6 @@ class VariantModel {
         return self.promiseAnnotateInheritance(theGene, theTranscript, resultMap, {isBackground: false, cacheData: true})
       })
       .then(function(data) {
-        // if (self.dataSets.length > 0) {
-        //   self.dataSets.forEach(function(dataSet) {
-        //     if (dataSet.cohorts.length > 0) {
-        //       dataSet.cohorts.forEach(function(cohort) {
-        //         cohort.inProgress.drawingVariants = true;
-        //       })
-        //     }
-        //   })
-        // }
         resolve(data);
       })
       .catch(function(error) {
@@ -571,7 +562,8 @@ class VariantModel {
 
     return new Promise(function(resolve, reject) {
       var annotatePromises = [];
-      var theResultMap = {};
+      //var theResultMap = {};
+      var resultMapList = [];
 
       // Annotate variants for cohort models that have specified IDs
         self.dataSets.forEach(function(dataSet) {
@@ -583,11 +575,13 @@ class VariantModel {
               if (cohortModel.subsetIds.length > 0) {
                 var p = cohortModel.promiseAnnotateVariants(theGene,
                     theTranscript, [cohortModel],
-                    false, isBackground, self.cacheHelper, self.keepVariantsCombined)  // SJG TODO: made this instance var and pass here - can adjust if necessary
+                    false, isBackground, self.cacheHelper, self.keepVariantsCombined)
                   .then(function(resultMap) {
                     cohortModel.inProgress.loadingVariants = false;
                     cohortModel.inProgress.drawingVariants = true;
-                    theResultMap = resultMap;
+                    //theResultMap = resultMap;
+
+                    resultMapList.push(resultMap);
                     })
                 annotatePromises.push(p)
               }
@@ -599,22 +593,28 @@ class VariantModel {
           }
         })
 
-        if (options.getKnownVariants) {
-          self.getModel('known-variants').inProgress.loadingVariants = true;
-          p = self.sampleMap['known-variants'].model.promiseAnnotateVariants(theGene, theTranscript, false, isBackground)
-          .then(function(resultMap) {
-            self.getModel('known-variants').inProgress.loadingVariants = false;
-            for (var rel in resultMap) {
-              theResultMap[rel] = resultMap[rel];
-            }
-          })
-          annotatePromises.push(p);
-        }
+        // SJG not currently going in here
+        // if (options.getKnownVariants) {
+        //   self.getModel('known-variants').inProgress.loadingVariants = true;
+        //   p = self.sampleMap['known-variants'].model.promiseAnnotateVariants(theGene, theTranscript, false, isBackground)
+        //       .then(function(resultMap) {
+        //         self.getModel('known-variants').inProgress.loadingVariants = false;
+        //         for (var rel in resultMap) {
+        //           theResultMap[rel] = resultMap[rel];
+        //         }
+        //       })
+        //   annotatePromises.push(p);
+        // }
 
         Promise.all(annotatePromises)
           .then(function() {
-            debugger; //what does theResultMap look like
-            self.promiseAnnotateWithClinvar(theResultMap, theGene, theTranscript, isBackground)
+            // Filter proband variants to only those also found in subset
+            debugger; //what is name here
+            // if (Object.keys(theResultMap)[0] == "HubProbands")
+            //   theResultMap = self.filterProbandVariants(resultMapList);
+
+            // SJG TODO: seems like we're only annotating subset variants w/ clinvar
+            self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
             .then(function(data) {
               resolve(data);
             })
@@ -659,11 +659,15 @@ class VariantModel {
       var uniqueVariants = {};
       var unionVcfData = {features: []}
       for (var cohort in resultMap) {
-        var vcfData = resultMap[cohort];
-        if (!vcfData.loadState['clinvar'] && cohort != 'known-variants') {
-         vcfData.features.forEach(function(feature) {
-            uniqueVariants[formatClinvarKey(feature)] = true;
-         })
+        for (var key in resultMap[cohort]) {
+          if (Object.prototype.hasOwnProperty.call(resultMap[cohort], key)) {
+            var vcfData = resultMap[cohort][key];
+            if (!vcfData.loadState['clinvar'] && cohort != 'known-variants') {
+             vcfData.features.forEach(function(feature) {
+                uniqueVariants[formatClinvarKey(feature)] = true;
+             })
+            }
+          }
         }
       }
       if (Object.keys(uniqueVariants).length == 0) {
@@ -701,15 +705,20 @@ class VariantModel {
             // Use the clinvar variant lookup to initialize variants with clinvar annotations
             // TODO: this only has demo_all in it here
             for (var cohort in resultMap) {
-              var vcfData = resultMap[cohort];
-              if (!vcfData.loadState['clinvar']) {
-                var p = refreshVariantsWithClinvarLookup(vcfData, clinvarLookup);
-                if (!isBackground) {
-                  // SJG2 - this is where vcfData gets set
-                  self.getCohort(cohort).vcfData = vcfData;
+              for (var key in resultMap[cohort]) {
+                if (Object.prototype.hasOwnProperty.call(resultMap[cohort], key)) {
+                  var vcfData = resultMap[cohort][key];
+                  if (!vcfData.loadState['clinvar']) {
+                    var p = refreshVariantsWithClinvarLookup(vcfData, clinvarLookup);
+                    if (!isBackground) {
+                      // SJG2 - this is where vcfData gets set
+                      debugger;
+                      self.getCohort(key).vcfData = vcfData;
+                    }
+                    //var p = getVariantCard(rel).model._promiseCacheData(vcfData, CacheHelper.VCF_DATA, vcfData.gene.gene_name, vcfData.transcript);
+                    refreshPromises.push(p);
+                  }
                 }
-                //var p = getVariantCard(rel).model._promiseCacheData(vcfData, CacheHelper.VCF_DATA, vcfData.gene.gene_name, vcfData.transcript);
-                refreshPromises.push(p);
               }
             }
 

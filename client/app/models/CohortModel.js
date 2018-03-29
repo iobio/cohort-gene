@@ -1290,7 +1290,6 @@ class CohortModel {
 
   promiseAnnotateVariants(theGene, theTranscript, cohortModels, isMultiSample, isBackground, cacheHelper, keepVariantsCombined) {
     console.log("called promiseAnnotateVariants in CohortModel");
-    // SJG NOTE we do make it here
     var me = this;
     return new Promise( function(resolve, reject) {
 
@@ -1327,13 +1326,12 @@ class CohortModel {
           .then(function() {
             var samples = me._getSubsetSamples();
 
-            debugger;
             return me.vcf.promiseGetVariants(
                me.getVcfRefName(theGene.chr),
                theGene,
                theTranscript,
                null,   // regions
-               isMultiSample, // SJG TODO: changing this to false returns all the variants in a single track
+               isMultiSample,
                me._getSubsetSamples(),
                me.getName() == 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
                me.getTranslator().clinvarMap,
@@ -1366,8 +1364,7 @@ class CohortModel {
               var theGeneObject = me.getGeneModel().geneObjects[data.gene];
               if (theGeneObject) {
                 var resultMap = {};
-                var i = 0;
-                var model = cohortModels[i];           // Should only be one cohort model coming in
+                var model = cohortModels[0];
                 var theVcfData = data;
                 if (theVcfData == null) {
                  if (callback) {
@@ -1404,7 +1401,6 @@ class CohortModel {
     });
   }
 
-  // SJG TODO: get rid of this
   _combineUniqueFeatures(results) {
     var combinedFeatures = [];
     if (results != null && results.length > 0) {
