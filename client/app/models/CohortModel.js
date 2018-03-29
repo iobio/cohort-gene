@@ -8,7 +8,7 @@ class CohortModel {
     this.vcfData = null;            // Lookup for features, not samples
     this.fbData = null;
     this.bamData = null;
-    this.vcfUrlEntered = false
+    this.vcfUrlEntered = false;
     this.vcfFileOpened = false;
     this.getVcfRefName = null;
     this.bamUrlEntered = false;

@@ -216,7 +216,7 @@ class VariantModel {
                 var hubPromises = [];
                 var p = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                         .then(function(ids) {
-                          
+
                           // Only take first 50 samples (temporary)
                           var endArr = ids.length < 50 ? ids.length : 50;
                           subsetCohort.subsetIds = ids.slice(0, endArr);
@@ -468,14 +468,15 @@ class VariantModel {
         return self.promiseAnnotateInheritance(theGene, theTranscript, resultMap, {isBackground: false, cacheData: true})
       })
       .then(function(data) {
-        if (self.dataSets.length > 0) {
-          self.dataSets.forEach(function(dataSet) {
-            if (dataSet.cohorts.length > 0) {
-              dataSet.cohorts.forEach(function(cohort) {
-              })
-            }
-          })
-        }
+        // if (self.dataSets.length > 0) {
+        //   self.dataSets.forEach(function(dataSet) {
+        //     if (dataSet.cohorts.length > 0) {
+        //       dataSet.cohorts.forEach(function(cohort) {
+        //         cohort.inProgress.drawingVariants = true;
+        //       })
+        //     }
+        //   })
+        // }
         resolve(data);
       })
       .catch(function(error) {
@@ -570,20 +571,26 @@ class VariantModel {
       var annotatePromises = [];
       var theResultMap = {};
 
-      // Annotate variants for every cohort model
+      // Annotate variants for cohort models that have specified IDs
         self.dataSets.forEach(function(dataSet) {
           if (Object.keys(dataSet.cohorts).length > 0) {
             dataSet.cohorts.forEach(function(cohortModel) {
               cohortModel.inProgress.loadingVariants = true;
-              console.log('done with promseLoadVariants in VariantModel');
-              var p = cohortModel.promiseAnnotateVariants(theGene,
-                  theTranscript, [cohortModel],
-                  false, isBackground, self.cacheHelper, self.keepVariantsCombined)  // SJG TODO: made this instance var and pass here - can adjust if necessary
-                .then(function(resultMap) {
-                  cohortModel.inProgress.loadingVariants = false;
-                  theResultMap = resultMap;
-                  })
-              annotatePromises.push(p)
+
+              // Only get variants if we have specific samples to look at
+              if (cohortModel.subsetIds.length > 0) {
+                var p = cohortModel.promiseAnnotateVariants(theGene,
+                    theTranscript, [cohortModel],
+                    false, isBackground, self.cacheHelper, self.keepVariantsCombined)  // SJG TODO: made this instance var and pass here - can adjust if necessary
+                  .then(function(resultMap) {
+                    cohortModel.inProgress.loadingVariants = false;
+                    theResultMap = resultMap;
+                    })
+                annotatePromises.push(p)
+              }
+              else {
+                cohortModel.noVariantsToDisplay = true;
+              }
             })
           }
         })
@@ -602,6 +609,7 @@ class VariantModel {
 
         Promise.all(annotatePromises)
           .then(function() {
+            debugger; //what does theResultMap look like
             self.promiseAnnotateWithClinvar(theResultMap, theGene, theTranscript, isBackground)
             .then(function(data) {
               resolve(data);
@@ -647,7 +655,6 @@ class VariantModel {
       var uniqueVariants = {};
       var unionVcfData = {features: []}
       for (var cohort in resultMap) {
-        // SJG TODO: will this work for various numbers of data sets/ cohorts
         var vcfData = resultMap[cohort];
         if (!vcfData.loadState['clinvar'] && cohort != 'known-variants') {
          vcfData.features.forEach(function(feature) {

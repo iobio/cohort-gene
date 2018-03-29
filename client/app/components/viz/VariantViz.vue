@@ -102,6 +102,9 @@
         <img src="../../../assets/images/wheel.gif">
       </div>
     </div>
+    <div class="loader" v-bind:class="{ hide: !model.noVariantsToDisplay }" style="display: inline-block;padding-left: 20px;padding-bottom:10px">
+      <span class="loader-label">No variants found</span>
+    </div>
   </div>
 </template>
 
