@@ -1306,7 +1306,7 @@ class CohortModel {
             resultMap[model.name] = vcfData;
 
             if (!isBackground) {
-              model.vcfData = vcfData;
+              model.vcfData = vcfData;      // SJG THIS IS WHERE WE'RE CRASHING
               model.fbData = me.reconstituteFbData(vcfData);
             }
           }
@@ -1348,10 +1348,10 @@ class CohortModel {
             var annotatedRecs = data[0];
             var results = data[1];  // One entry per sample in results
 
+            var formattedResults;
             if (results) {
-              var data;
-              if (!keepVariantsCombined > 0) {
-                data = results[0];
+              if (!keepVariantsCombined) {
+                formattedResults = results[0];
               }
               else {
                 var strippedArr = [];
@@ -1359,13 +1359,13 @@ class CohortModel {
                   strippedArr.push(feature);
                 })
                 results.features = strippedArr;
-                data = results;
+                formattedResults = results;
               }
-              var theGeneObject = me.getGeneModel().geneObjects[data.gene];
+              var theGeneObject = me.getGeneModel().geneObjects[formattedResults.gene];
               if (theGeneObject) {
                 var resultMap = {};
                 var model = cohortModels[0];
-                var theVcfData = data;
+                var theVcfData = formattedResults;
                 if (theVcfData == null) {
                  if (callback) {
                    callback();
@@ -1376,8 +1376,9 @@ class CohortModel {
                 resultMap[model.name] = theVcfData;
 
                 if (!isBackground) {
-                 model.vcfData = theVcfData;
+                 model.vcfData = theVcfData;    // SJG NOTE THIS IS CAUSING STACK OVERFLOW
                 }
+                console.log("Completed promiseAnnotateVariants in CohortModel");
                 resolve(resultMap);
               } else {
                 var error = "ERROR - cannot locate gene object to match with vcf data " + data.ref + " " + data.start + "-" + data.end;

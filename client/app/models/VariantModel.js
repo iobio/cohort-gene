@@ -163,8 +163,9 @@ class VariantModel {
                 console.log("Obtained proband IDs from Hub");
 
                 // Only take first 50 samples (temporary)
-                var endArr = ids.length < 50 ? ids.length : 50;
+                var endArr = ids.length < 200 ? ids.length : 200;
                 topLevelCohort.subsetIds = ids.slice(0, endArr);
+                //topLevelCohort.subsetIds = ids;
 
                 // Add cohort to dataset
                 hubDataSet.cohorts.push(topLevelCohort);
@@ -218,8 +219,9 @@ class VariantModel {
                         .then(function(ids) {
 
                           // Only take first 50 samples (temporary)
-                          var endArr = ids.length < 50 ? ids.length : 50;
+                          var endArr = ids.length < 200 ? ids.length : 200;
                           subsetCohort.subsetIds = ids.slice(0, endArr);
+                          //subsetCohort.subsetIds = ids;
 
                           hubDataSet.cohorts.push(subsetCohort);
                           hubDataSet.cohortMap[subsetCohort.name] = subsetCohort;
@@ -609,12 +611,10 @@ class VariantModel {
         Promise.all(annotatePromises)
           .then(function() {
             // Filter proband variants to only those also found in subset
-            debugger; //what is name here
-            // if (Object.keys(theResultMap)[0] == "HubProbands")
-            //   theResultMap = self.filterProbandVariants(resultMapList);
+            var filteredMapList = self.filterProbandVariantsBySubset(resultMapList);
 
-            // SJG TODO: seems like we're only annotating subset variants w/ clinvar
-            self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
+            console.log("got filtered variants and about to annotate with clinvar...");
+            self.promiseAnnotateWithClinvar(filteredMapList, theGene, theTranscript, isBackground)
             .then(function(data) {
               resolve(data);
             })
@@ -623,6 +623,68 @@ class VariantModel {
             console.log("There was a problem in VariantModel promiseAnnotateVariants: " + error);
           })
     });
+  }
+
+  // Returns array of objects CohortName : {}
+  filterProbandVariantsBySubset(resultMapList) {
+    console.log("filtering proband variants...");
+    // If we only have a proband track coming in, don't need to filter
+    if (resultMapList.length < 2) {
+      return resultMapList;
+    }
+    // SJG TODO: this is an overcomplicated loop that can be simplified w/ a subset flag on cohort model
+    // Iterate through maps and separate subset features from proband ones
+    var probandMapInfo = {};
+    var subsetMapsInfo = [];
+    var subsetMapFeatures = {};
+    for (var i in resultMapList) {
+      let mapObj = resultMapList[i];
+      for (var key in mapObj) {
+        if (Object.prototype.hasOwnProperty.call(mapObj, key)) {
+          if (key == "HubProbands") { // SJG TODO: trade name for flags
+            probandMapInfo = mapObj[key];
+          }
+          else {
+            subsetMapsInfo[key] = mapObj[key];
+            let subsetFeatures = mapObj[key].features;
+            var debugCount = 0;
+            for(var feat in subsetFeatures) {
+              let currFeat = subsetFeatures[feat];
+              let id = currFeat.start + currFeat.end + currFeat.strand + currFeat.type
+                      + currFeat.ref + currFeat.alt;
+              subsetMapFeatures[id] = ''; // Don't need key, just need hash table of ids
+              debugCount++;
+            }
+            console.log('subset feature count: ' + debugCount);
+          }
+        }
+      }
+    }
+
+    // Filter proband features to those found in the subset cohort
+    var filteredProFeatures = [];
+    for (var proFeat in probandMapInfo.features) {
+      let currProFeat = probandMapInfo.features[proFeat];
+      let id = currProFeat.start + currProFeat.end + currProFeat.strand + currProFeat.type
+              + currProFeat.ref + currProFeat.alt;
+      if (subsetMapFeatures[id] != null) {
+        filteredProFeatures.push(currProFeat);
+      }
+    }
+    probandMapInfo.features = filteredProFeatures;
+
+    // Reconstruct map object to return
+    var updatedMapList = [];
+    var wrapperMap = {};
+    wrapperMap["HubProbands"] = probandMapInfo;
+    updatedMapList.push(wrapperMap);
+    for (var map in subsetMapsInfo) {
+      let wrapperObj = {};
+      wrapperObj[map] = subsetMapsInfo[map];
+      updatedMapList.push(wrapperObj);
+    }
+    console.log("done filtering proband variants: ");
+    return updatedMapList;
   }
 
   promiseAnnotateWithClinvar(resultMap, geneObject, transcript, isBackground) {
@@ -659,6 +721,7 @@ class VariantModel {
       var uniqueVariants = {};
       var unionVcfData = {features: []}
       for (var cohort in resultMap) {
+        // SJG TODO: this is an overly complicated loop that can be simplified
         for (var key in resultMap[cohort]) {
           if (Object.prototype.hasOwnProperty.call(resultMap[cohort], key)) {
             var vcfData = resultMap[cohort][key];
@@ -703,7 +766,6 @@ class VariantModel {
             var refreshPromises = [];
 
             // Use the clinvar variant lookup to initialize variants with clinvar annotations
-            // TODO: this only has demo_all in it here
             for (var cohort in resultMap) {
               for (var key in resultMap[cohort]) {
                 if (Object.prototype.hasOwnProperty.call(resultMap[cohort], key)) {
@@ -711,8 +773,6 @@ class VariantModel {
                   if (!vcfData.loadState['clinvar']) {
                     var p = refreshVariantsWithClinvarLookup(vcfData, clinvarLookup);
                     if (!isBackground) {
-                      // SJG2 - this is where vcfData gets set
-                      debugger;
                       self.getCohort(key).vcfData = vcfData;
                     }
                     //var p = getVariantCard(rel).model._promiseCacheData(vcfData, CacheHelper.VCF_DATA, vcfData.gene.gene_name, vcfData.transcript);

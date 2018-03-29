@@ -776,6 +776,7 @@ var effectCategories = [
       });
 
       // Parse the vcf object into a variant object that is visualized by the client.
+      debugger; // what do results look like here
       var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined);
 
       callback(annotatedRecs, results);
