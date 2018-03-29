@@ -98,7 +98,7 @@
         <img src="../../../assets/images/wheel.gif">
       </div>
       <div class="loader covloader" v-bind:class="{ hide: !model.inProgress.drawingVariants }" style="display: inline-block;padding-left: 20px;padding-bottom:10px">
-        <span class="loader-label">Drawing Variants</span>
+        <span class="loader-label">Rendering Variants</span>
         <img src="../../../assets/images/wheel.gif">
       </div>
     </div>
@@ -231,6 +231,8 @@ export default {
       },
       update: function() {
         var self = this;
+        self.model.inProgress.drawingVariants = false;
+
         if (self.data) {
           // Set the vertical layer count so that the height of the chart can be recalculated
           if (self.data.maxLevel == null) {

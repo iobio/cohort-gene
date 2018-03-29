@@ -550,6 +550,7 @@ class VariantModel {
             var calledVariants = filterAndPileupVariants(cohort, start, end, 'called');
             cohort.calledVariants = calledVariants;
 
+            // SJG TODO: have to get away from hard coded names
             if (cohort.getName() == 'demo_all') {
               var allVariants = $.extend({}, cohort.loadedVariants);
               allVariants.features = cohort.loadedVariants.features.concat(cohort.calledVariants.features);
@@ -585,6 +586,7 @@ class VariantModel {
                     false, isBackground, self.cacheHelper, self.keepVariantsCombined)  // SJG TODO: made this instance var and pass here - can adjust if necessary
                   .then(function(resultMap) {
                     cohortModel.inProgress.loadingVariants = false;
+                    cohortModel.inProgress.drawingVariants = true;
                     theResultMap = resultMap;
                     })
                 annotatePromises.push(p)
