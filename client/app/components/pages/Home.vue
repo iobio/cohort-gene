@@ -20,6 +20,8 @@
     v-if="variantModel"
     ref="navRef"
     :knownGenes="variantModel.geneModel.allKnownGenes"
+    :selectedGeneName="selectedGene.gene_name"
+    :selectedChr="selectedGene.chr"
     @input="onGeneSelected"
     @load-demo-data="onLoadDemoData"
     @clear-cache="clearCache"
@@ -216,6 +218,13 @@ export default {
         return null;
       }
     }
+    // selectedGeneInfo: function() {
+    //   if (this.selectedGene) {
+    //     return this.selectedGene.gene_name + " " + this.selectedGene.chr;
+    //   } else {
+    //     return "X";
+    //   }
+    // }
   },
   watch: {},
   methods: {

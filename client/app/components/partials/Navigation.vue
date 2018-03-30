@@ -34,6 +34,11 @@ nav.toolbar
           <typeahead v-model="selectedGene" force-select match-start  target="#search-gene-name" :data="knownGenes" item-key="gene_name"/>
         </v-form>
 
+        <div v-bind:class="{ hide: !selectedGeneName }" style="text-align: center; padding-top: 10px; padding-left: 8px">
+          <v-chip color="white" outline style="font-size: 14px">
+             {{ selectedGeneDisplay }}
+          </v-chip>
+        </div>
 
         <!-- TODO<genes-menu
          :gene-model="variantModel.geneModel"
@@ -128,8 +133,15 @@ export default {
     LegendPanel
   },
   props: {
-    knownGenes: null
+    knownGenes: null,
+    selectedGeneName: "",
+    selectedChr: ""
     //flaggedVariants: null,
+  },
+  computed: {
+    selectedGeneDisplay: function() {
+      return this.selectedGeneName + " " + this.selectedChr;
+    }
   },
   data () {
     return {

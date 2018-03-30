@@ -25,7 +25,7 @@
        <v-flex xs6 md7 id="exAcProgress" class="field-value"></v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs4 class="field-label">Samples with Variant:</v-flex>
+       <v-flex xs4 class="field-label">Cohort Enrichment:</v-flex>
        <v-flex xs2 md1 class="field-value">{{ affectedSamplePercentageDisplay }}</v-flex>
        <v-flex xs6 md7 id="sampleProgress" class="field-value"></v-flex>
     </v-layout>
