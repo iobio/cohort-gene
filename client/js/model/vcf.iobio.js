@@ -42,7 +42,6 @@ vcfiobio = function module() {
   var genericAnnotation = null;
   var genomeBuildHelper = null;
 
-
   var VEP_FIELDS_AF_1000G  = "AF|AFR_AF|AMR_AF|EAS_AF|EUR_AF|SAS_AF".split("|");
   var VEP_FIELDS_AF_ESP    = "AA_AF|EA_AF".split("|");
   var VEP_FIELDS_AF_GNOMAD = "gnomAD_AF|gnomAD_AFR_AF|gnomAD_AMR_AF|gnomAD_ASJ_AF|gnomAD_EAS_AF|gnomAD_FIN_AF|gnomAD_NFE_AF|gnomAD_OTH_AF|gnomAD_SAS_AF".split("|");
@@ -630,6 +629,7 @@ var effectCategories = [
       .join(",");
 
       if (sourceType == SOURCE_TYPE_URL) {
+        // SJG TODO: how am I going to access subset variants and pass here
         me._getRemoteVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
           function(annotatedData, results) {
             if (annotatedData && results) {
@@ -776,10 +776,10 @@ var effectCategories = [
       });
 
       // Parse the vcf object into a variant object that is visualized by the client.
-      debugger; // what do results look like here
       var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined);
+      var filteredResults = me._filterVcfRecordsByVep(results);
 
-      callback(annotatedRecs, results);
+      callback(annotatedRecs, filteredResults);
     });
 
     cmd.on('error', function(error) {
@@ -790,8 +790,23 @@ var effectCategories = [
 
   }
 
+  /* Filters out any MODIFIER or LOW impact variants from given results object */
+  exports._filterVcfRecordsByVep = function(results) {
+    debugger;
+    var filteredFeatures = [];
+    if (results.features == null || results.features.length == 0 || results.features[0].length == 0) return results;
 
-
+    var featureArr = results.features[0];
+    for (var i in featureArr) {
+      let currFeature = featureArr[i];
+      let currFeatImpact = currFeature.vepImpact;
+      if (currFeatImpact["MODIFIER"] == null && currFeatImpact["LOW"] == null) {
+        filteredFeatures.push(currFeature);
+      }
+    }
+    results.features[0] = filteredFeatures;
+    return results;
+  }
 
 
   exports.promiseGetKnownVariants = function(refName, geneObject, transcript, binLength) {

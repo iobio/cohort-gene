@@ -1288,6 +1288,7 @@ class CohortModel {
     });
   }
 
+  // Called once per cohort - need to make this call subset first
   promiseAnnotateVariants(theGene, theTranscript, cohortModels, isMultiSample, isBackground, cacheHelper, keepVariantsCombined) {
     console.log("called promiseAnnotateVariants in CohortModel");
     var me = this;
@@ -1298,6 +1299,7 @@ class CohortModel {
       var resultMap = {};
       var promises = [];
       var bookmarkPromises = [];
+      // There is only one cohort model in cohortModels here, syntax from TD
       cohortModels.forEach(function(model) {
         var p = model._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript, cacheHelper)
          .then(function(vcfData) {
@@ -1306,7 +1308,7 @@ class CohortModel {
             resultMap[model.name] = vcfData;
 
             if (!isBackground) {
-              model.vcfData = vcfData;      // SJG THIS IS WHERE WE'RE CRASHING
+              model.vcfData = vcfData;
               model.fbData = me.reconstituteFbData(vcfData);
             }
           }
@@ -1324,8 +1326,6 @@ class CohortModel {
           // and annotate them._get
           me._promiseVcfRefName(theGene.chr)
           .then(function() {
-            var samples = me._getSubsetSamples();
-
             return me.vcf.promiseGetVariants(
                me.getVcfRefName(theGene.chr),
                theGene,
@@ -1376,7 +1376,7 @@ class CohortModel {
                 resultMap[model.name] = theVcfData;
 
                 if (!isBackground) {
-                 model.vcfData = theVcfData;    // SJG NOTE THIS IS CAUSING STACK OVERFLOW
+                 model.vcfData = theVcfData;      // SJG NOTE THIS IS WHERE CRASHING - might be copying object here
                 }
                 console.log("Completed promiseAnnotateVariants in CohortModel");
                 resolve(resultMap);

@@ -19,7 +19,7 @@
   <navigation
     v-if="variantModel"
     ref="navRef"
-    :variantModel="variantModel"
+    :knownGenes="variantModel.geneModel.allKnownGenes"
     @input="onGeneSelected"
     @load-demo-data="onLoadDemoData"
     @clear-cache="clearCache"
@@ -40,7 +40,6 @@
             v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !variantModel }"
             :dataSetModel="dataSet"
             :annotationScheme="variantModel.annotationScheme"
-            :variantModel="variantModel"
             :classifyVariantSymbolFunc="variantModel.classifyByImpact"
             :variantTooltip="variantTooltip"
             :selectedGene="selectedGene"
@@ -176,7 +175,7 @@ export default {
         self.genomeBuildHelper,
         utility.getHumanRefNames);
 
-      let mode = 'development';
+      let mode = 'production';
       let hubEndpoint = new HubEndpoint(mode);
 
       self.variantModel = new VariantModel(endpoint,

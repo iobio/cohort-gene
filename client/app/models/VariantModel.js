@@ -163,9 +163,9 @@ class VariantModel {
                 console.log("Obtained proband IDs from Hub");
 
                 // Only take first 50 samples (temporary)
-                var endArr = ids.length < 200 ? ids.length : 200;
-                topLevelCohort.subsetIds = ids.slice(0, endArr);
-                //topLevelCohort.subsetIds = ids;
+                // var endArr = ids.length < 250 ? ids.length : 250;
+                // topLevelCohort.subsetIds = ids.slice(0, endArr);
+                topLevelCohort.subsetIds = ids;
 
                 // Add cohort to dataset
                 hubDataSet.cohorts.push(topLevelCohort);
@@ -219,9 +219,9 @@ class VariantModel {
                         .then(function(ids) {
 
                           // Only take first 50 samples (temporary)
-                          var endArr = ids.length < 200 ? ids.length : 200;
-                          subsetCohort.subsetIds = ids.slice(0, endArr);
-                          //subsetCohort.subsetIds = ids;
+                          // var endArr = ids.length < 250 ? ids.length : 250;
+                          // subsetCohort.subsetIds = ids.slice(0, endArr);
+                          subsetCohort.subsetIds = ids;
 
                           hubDataSet.cohorts.push(subsetCohort);
                           hubDataSet.cohortMap[subsetCohort.name] = subsetCohort;
@@ -611,10 +611,11 @@ class VariantModel {
         Promise.all(annotatePromises)
           .then(function() {
             // Filter proband variants to only those also found in subset
-            var filteredMapList = self.filterProbandVariantsBySubset(resultMapList);
+            // SJG NOTE putting this in vcf.iobio for now
+            //var filteredMapList = self.filterProbandVariantsBySubset(resultMapList);
 
             console.log("got filtered variants and about to annotate with clinvar...");
-            self.promiseAnnotateWithClinvar(filteredMapList, theGene, theTranscript, isBackground)
+            self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
             .then(function(data) {
               resolve(data);
             })
