@@ -107,6 +107,11 @@
          No Samples Meet Criteria
       </v-chip>
     </div>
+    <div v-bind:class="{ hide: this.noVariantsFound}" style="text-align: center; padding-bottom: 20px; padding-top: 20px">
+      <v-chip color="red" small outline style="font-size: 12px">
+         No Variants Found
+      </v-chip>
+    </div>
   </div>
 </template>
 
@@ -184,6 +189,18 @@ export default {
       phenotypes: {
         type: Array,
         default: () => []
+      }
+    },
+    computed: {
+      noVariantsFound: function() {
+        if (this.data == null) return true;
+        if (this.data.features == null) return true;
+        if (this.data.features.length == 0) {
+          var loading = this.model.inProgress.loadingVariants || this.model.inProgress.drawingVariants || this.model.inProgress.fetchingHubData;
+          if (loading) return true;
+          return false;
+        }
+        return true;
       }
     },
     data() {

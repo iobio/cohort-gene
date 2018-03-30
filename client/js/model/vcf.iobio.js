@@ -793,7 +793,6 @@ var effectCategories = [
 
   /* Filters out any MODIFIER or LOW impact variants from given results object */
   exports._filterVcfRecordsByVep = function(results) {
-    debugger;
     var filteredFeatures = [];
     if (results.features == null || results.features.length == 0 || results.features[0].length == 0) return results;
 

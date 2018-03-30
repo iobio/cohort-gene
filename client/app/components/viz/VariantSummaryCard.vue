@@ -195,7 +195,9 @@
         :selectedVariant="variant"
         :oneKGenomes="oneKGenomes"
         :exAc="exAc"
-        :enrichment="enrichmentVal">
+        :enrichmentPercentage="enrichmentPercentage"
+        :affectedSampleCount="affectedSampleCount"
+        :totalSampleCount="totalSampleCount">
         </allele-frequency-viz>
         <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
         ref="summaryBarFeatureViz"
@@ -228,7 +230,10 @@ export default {
     variantInfo: null,
     selectedGene: ''
   },
-  data() { return {}},
+  data() { return {
+    affectedSampleCount: 0,
+    totalSampleCount: 0
+  }},
   methods: {
     summaryCardVariantDeselect: function() {
       var self = this;
@@ -311,9 +316,8 @@ export default {
         return Math.round(this.variant.afExAC * 100) + "%";
       return "-";
     },
-    enrichmentVal: function() {
-      
-      // TODO: implement enrichment within proband
+    enrichmentPercentage: function() {
+      // SJG TODO: implement
       return "-";
     },
     zygMap: function() {
@@ -334,6 +338,9 @@ export default {
       map.push({label: "het", value: hetCount})
       map.push({label: "hom alt", value: homAltCount})
       map.push({label: "no call", value: noCallCount})
+
+      this.affectedSampleCount = hetCount + homAltCount;
+      this.totalSampleCount = homRefCount + hetCount + homAltCount + noCallCount;
       return map;
     },
     statusMap: function() {

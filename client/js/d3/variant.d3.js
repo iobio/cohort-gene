@@ -53,7 +53,6 @@ function variantD3() {
   }
 
   var showCircle = function(d, svgContainer, indicateMissingVariant, emphasize) {
-    debugger; // SJG svgContainer coming in null here
     // Find the matching variant
     var matchingVariant = null;
     svgContainer.selectAll(".variant").each( function (variant,i) {

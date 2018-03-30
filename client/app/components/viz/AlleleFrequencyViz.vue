@@ -14,26 +14,26 @@
       <v-flex xs4 class="field-label-header">Allele Frequencies</v-flex>
       <v-flex xs8></v-flex>
     </v-layout>
-    <v-layout row style="padding-top: 7px">
+    <v-layout row>
        <v-flex xs4 class="field-label">1000 Genomes:</v-flex>
        <v-flex xs2 md1 class="field-value">{{ oneKGenomes }}</v-flex>
        <v-flex xs6 md7 id="oneKProgress" class="field-value"></v-flex>
     </v-layout>
-    <v-layout row style="padding-top: 7px">
+    <v-layout row>
        <v-flex xs4 class="field-label">ExAC:</v-flex>
        <v-flex xs2 md1 class="field-value">{{ exAc }}</v-flex>
        <v-flex xs6 md7 id="exAcProgress" class="field-value"></v-flex>
     </v-layout>
-    <v-layout row style="padding-top: 7px">
+    <v-layout row>
+       <v-flex xs4 class="field-label">Samples with Variant:</v-flex>
+       <v-flex xs2 md1 class="field-value">{{ affectedSamplePercentageDisplay }}</v-flex>
+       <v-flex xs6 md7 id="sampleProgress" class="field-value"></v-flex>
+    </v-layout>
+    <v-layout row>
        <v-flex xs4 class="field-label">Subset Enrichment:</v-flex>
-       <v-flex xs2 md1 class="field-value">{{ enrichment }}</v-flex>
+       <v-flex xs2 md1 class="field-value">{{ enrichmentPercentage }}</v-flex>
        <v-flex xs6 md7 id="enrichmentProgress" class="field-value"></v-flex>
     </v-layout>
-    <!-- <v-layout row>
-       <v-flex xs4 class="field-label">Simons Simplex Complex:</v-flex>
-       <v-flex xs2 md1 class="field-value"></v-flex>
-       <v-flex xs6 md7 id="simonsSimplexProgress" class="field-value"></v-flex>
-    </v-layout> -->
   </v-flex>
 </template>
 
@@ -45,7 +45,8 @@ export default {
     return {
       oneKBar: {},
       exAcBar: {},
-      enrichmentBar: {}
+      enrichmentBar: {},
+      sampleBar: {}
     }
   },
   props: {
@@ -58,7 +59,15 @@ export default {
       default: "",
       type: String
     },
-    enrichment: {
+    affectedSampleCount: {
+      default: 0,
+      type: Number
+    },
+    totalSampleCount: {
+      default: 0,
+      type: Number
+    },
+    enrichmentPercentage: {
       default: "",
       type: String
     }
@@ -66,6 +75,25 @@ export default {
   created: function() {},
   mounted: function() {
     this.drawProgressBars();
+  },
+  computed: {
+    affectedSamplePercentageDisplay: function() {
+      if (this.totalSampleCount == 0) return "-";
+
+      var freq = Math.round((this.affectedSampleCount / this.totalSampleCount) * 100);
+      if (freq == 0 && this.affectedSampleCount > 0) {
+        return "< 1%";
+      }
+      return freq + "%";
+    },
+    affectedSamplePercentage: function() {
+      if (this.totalSampleCount == 0) return "0";
+      var freq = (Math.round((this.affectedSampleCount / this.totalSampleCount) * 100));
+      if (freq == 0 && this.affectedSampleCount > 0) {
+        return "1%";
+      }
+      return (Math.round((this.affectedSampleCount / this.totalSampleCount) * 100)) + "";
+    }
   },
   methods: {
     drawProgressBars() {
@@ -88,13 +116,20 @@ export default {
         .on('d3rendered', function() {
         });
       self.enrichmentBar();
+
+      self.sampleBar = progressBar()
+        .parentId('sampleProgress')
+        .on('d3rendered', function() {
+        });
+      self.sampleBar();
     },
     fillProgressBars() {
       let self = this;
 
       self.oneKBar.moveProgressBar()(self.oneKGenomes);
       self.exAcBar.moveProgressBar()(self.exAc);
-      self.enrichmentBar.moveProgressBar()(self.enrichment);
+      self.sampleBar.moveProgressBar()(self.affectedSamplePercentage);
+      self.enrichmentBar.moveProgressBar()(self.enrichmentPercentage);
     },
     clear() {
       let self = this;
@@ -102,6 +137,7 @@ export default {
       self.oneKBar.moveProgressBar()(0);
       self.exAcBar.moveProgressBar()(0);
       self.enrichmentBar.moveProgressBar()(0);
+      self.sampleBar.moveProgressBar()(0);
     }
   },
   watch: {
