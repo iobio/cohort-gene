@@ -14,26 +14,26 @@
       <v-flex xs4 class="field-label-header">Allele Frequencies</v-flex>
       <v-flex xs8></v-flex>
     </v-layout>
-    <v-layout row>
+    <v-layout row style="padding-top: 7px">
        <v-flex xs4 class="field-label">1000 Genomes:</v-flex>
        <v-flex xs2 md1 class="field-value">{{ oneKGenomes }}</v-flex>
        <v-flex xs6 md7 id="oneKProgress" class="field-value"></v-flex>
     </v-layout>
-    <v-layout row>
+    <v-layout row style="padding-top: 7px">
        <v-flex xs4 class="field-label">ExAC:</v-flex>
        <v-flex xs2 md1 class="field-value">{{ exAc }}</v-flex>
        <v-flex xs6 md7 id="exAcProgress" class="field-value"></v-flex>
     </v-layout>
-    <v-layout row>
-       <v-flex xs4 class="field-label">Simons VIP:</v-flex>
-       <v-flex xs2 md1 class="field-value">{{ simonsVip }}</v-flex>
-       <v-flex xs6 md7 id="simonsVipProgress" class="field-value"></v-flex>
+    <v-layout row style="padding-top: 7px">
+       <v-flex xs4 class="field-label">Subset Enrichment:</v-flex>
+       <v-flex xs2 md1 class="field-value">{{ enrichment }}</v-flex>
+       <v-flex xs6 md7 id="enrichmentProgress" class="field-value"></v-flex>
     </v-layout>
-    <v-layout row>
+    <!-- <v-layout row>
        <v-flex xs4 class="field-label">Simons Simplex Complex:</v-flex>
-       <v-flex xs2 md1 class="field-value">{{ simonsSimplexComplex }}</v-flex>
+       <v-flex xs2 md1 class="field-value"></v-flex>
        <v-flex xs6 md7 id="simonsSimplexProgress" class="field-value"></v-flex>
-    </v-layout>
+    </v-layout> -->
   </v-flex>
 </template>
 
@@ -45,8 +45,7 @@ export default {
     return {
       oneKBar: {},
       exAcBar: {},
-      simonsSimplexBar: {},
-      simonsVipBar: {}
+      enrichmentBar: {}
     }
   },
   props: {
@@ -59,11 +58,7 @@ export default {
       default: "",
       type: String
     },
-    simonsSimplexComplex: {
-      default: "",
-      type: String
-    },
-    simonsVip: {
+    enrichment: {
       default: "",
       type: String
     }
@@ -88,33 +83,25 @@ export default {
         });
       self.exAcBar();
 
-      self.simonsSimplexBar = progressBar()
-        .parentId('simonsSimplexProgress')
+      self.enrichmentBar = progressBar()
+        .parentId('enrichmentProgress')
         .on('d3rendered', function() {
         });
-      self.simonsSimplexBar();
-
-      self.simonsVipBar = progressBar()
-        .parentId('simonsVipProgress')
-        .on('d3rendered', function() {
-        });
-      self.simonsVipBar();
+      self.enrichmentBar();
     },
     fillProgressBars() {
       let self = this;
 
       self.oneKBar.moveProgressBar()(self.oneKGenomes);
       self.exAcBar.moveProgressBar()(self.exAc);
-      self.simonsSimplexBar.moveProgressBar()(self.simonsSimplex);
-      self.simonsVipBar.moveProgressBar()(self.simonsVip);
+      self.enrichmentBar.moveProgressBar()(self.enrichment);
     },
     clear() {
       let self = this;
 
       self.oneKBar.moveProgressBar()(0);
       self.exAcBar.moveProgressBar()(0);
-      self.simonsSimplexBar.moveProgressBar()(0);
-      self.simonsVipBar.moveProgressBar()(0);
+      self.enrichmentBar.moveProgressBar()(0);
     }
   },
   watch: {

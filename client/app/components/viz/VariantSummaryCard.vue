@@ -195,8 +195,7 @@
         :selectedVariant="variant"
         :oneKGenomes="oneKGenomes"
         :exAc="exAc"
-        :simonsSimplexComplex="simonsSimplexComplex"
-        :simonsVip="simonsVip">
+        :enrichment="enrichmentVal">
         </allele-frequency-viz>
         <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
         ref="summaryBarFeatureViz"
@@ -312,12 +311,9 @@ export default {
         return Math.round(this.variant.afExAC * 100) + "%";
       return "-";
     },
-    simonsSimplexComplex: function() {
-      // TODO: get simons data
-      return "-";
-    },
-    simonsVip: function() {
-      // TODO: get simons data
+    enrichmentVal: function() {
+      
+      // TODO: implement enrichment within proband
       return "-";
     },
     zygMap: function() {

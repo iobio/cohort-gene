@@ -24,7 +24,6 @@ class VariantModel {
     this.maxAlleleCount = null;
     this.affectedInfo = null;
     this.maxDepth = 0;
-
     this.projectId = '';
     this.phenoFilters = {};
     this.keepVariantsCombined = true; // Must be true for cohorts to be displayed on a single track
@@ -143,7 +142,6 @@ class VariantModel {
     topLevelCohort.inProgress.fetchingHubData = true;
     topLevelCohort.name = 'HubProbands';
     topLevelCohort.trackName = 'Variants for';
-    debugger;
     topLevelCohort.subsetPhenotypes = [];
     topLevelCohort.subsetPhenotypes.push('Probands');
 
@@ -339,8 +337,11 @@ class VariantModel {
     else if (filter == 'median_read_coverage') {
       return self.formatFilterBounds('Median Read Coverage', boundsArr);
     }
+    // In general, get rid of _ and . and capitalize things
     else {
-      return self.formatFilterBounds(filter, boundsArr);
+      var formattedFilter = filter.replace('.', ' ').replace('_', ' ');
+      formattedFilter = _.startCase(formattedFilter);
+      return self.formatFilterBounds(formattedFilter, boundsArr);
     }
   }
 
