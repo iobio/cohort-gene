@@ -777,6 +777,7 @@ var effectCategories = [
 
       // Parse the vcf object into a variant object that is visualized by the client.
       var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined);
+      // TODO: make this optional to keep gene/cohort synonymous
       var filteredResults = me._filterVcfRecordsByVep(results);
 
       callback(annotatedRecs, filteredResults);

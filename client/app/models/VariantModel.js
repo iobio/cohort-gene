@@ -143,7 +143,9 @@ class VariantModel {
     topLevelCohort.inProgress.fetchingHubData = true;
     topLevelCohort.name = 'HubProbands';
     topLevelCohort.trackName = 'Variants for';
-    topLevelCohort.subsetPhenotypes = ['Probands'];
+    debugger;
+    topLevelCohort.subsetPhenotypes = [];
+    topLevelCohort.subsetPhenotypes.push('Probands');
 
     // Retrieve urls from hub
     return new Promise(function(resolve, reject) {
@@ -166,6 +168,7 @@ class VariantModel {
                 // var endArr = ids.length < 250 ? ids.length : 250;
                 // topLevelCohort.subsetIds = ids.slice(0, endArr);
                 topLevelCohort.subsetIds = ids;
+                topLevelCohort.subsetPhenotypes.push('n = ' + ids.length);
 
                 // Add cohort to dataset
                 hubDataSet.cohorts.push(topLevelCohort);
@@ -222,6 +225,7 @@ class VariantModel {
                           // var endArr = ids.length < 250 ? ids.length : 250;
                           // subsetCohort.subsetIds = ids.slice(0, endArr);
                           subsetCohort.subsetIds = ids;
+                          subsetCohort.subsetPhenotypes.splice(1, 0, ('n = ' + ids.length));
 
                           hubDataSet.cohorts.push(subsetCohort);
                           hubDataSet.cohortMap[subsetCohort.name] = subsetCohort;
