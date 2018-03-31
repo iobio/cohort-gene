@@ -12,7 +12,14 @@ nav.toolbar
     font-size: 28px
     margin-right: 20px
     padding-bottom: 5px
-
+</style>
+<style>
+::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: white !important;
+    opacity: 1; /* Firefox */
+    font-family: Quicksand;
+    font-size: 14px;
+}
 </style>
 
 <template>
@@ -28,38 +35,22 @@ nav.toolbar
       <v-toolbar-items style="margin-left:20px" class="hidden-sm-and-down">
 
         <v-icon>search</v-icon>
-        <v-form >
-          <v-text-field id="search-gene-name" label="Gene">
-          </v-text-field>
-          <typeahead v-model="selectedGene" force-select match-start  target="#search-gene-name" :data="knownGenes" item-key="gene_name"/>
+        <v-form>
+          <!-- <v-text-field id="search-gene-name" label="Gene" value="AIRE" clearable>
+          </v-text-field> -->
+          <div style="padding-top: 15px">
+            <input id="search-gene-name" class="form-control" type="text" placeholder="Enter gene..."
+              style="color: white; background-color: #516e87;">
+              <br/>
+            <typeahead v-model="selectedGene" force-select match-start target="#search-gene-name" :data="knownGenes" item-key="gene_name"/>
+          </div>
         </v-form>
 
-        <div v-bind:class="{ hide: !selectedGeneName }" style="text-align: center; padding-top: 10px; padding-left: 8px">
-          <v-chip color="white" outline style="font-size: 14px">
+        <div v-bind:class="{ hide: !selectedGeneName }" style="text-align: center; padding-top: 11px; padding-left: 8px">
+          <v-chip color="cohortDarkBlue" text-color="white" style="font-size: 14px; font-family: Quicksand; font-weight: bold;">
              {{ selectedGeneDisplay }}
           </v-chip>
         </div>
-
-        <!-- TODO<genes-menu
-         :gene-model="variantModel.geneModel"
-         @apply-genes="onApplyGenes">
-        </genes-menu> -->
-
-
-<!--
-        <v-btn flat  @click="onVariants">
-         <v-icon>bookmark</v-icon>
-         Variants
-        </v-btn> -->
-
-
-        <!-- <files-menu
-         :variantModel="variantModel"
-         @on-files-loaded="onFilesLoaded"
-         @load-demo-data="onLoadDemoData"
-        >
-        </files-menu> -->
-
 
       </v-toolbar-items>
 
@@ -120,8 +111,9 @@ import { Typeahead }       from 'uiv'
 import GenesMenu           from '../partials/GenesMenu.vue'
 import FilesMenu           from '../partials/FilesMenu.vue'
 import LegendPanel         from '../partials/LegendPanel.vue'
-// import FlaggedVariantsCard from '../viz/FlaggedVariantsCard.vue'
+//import FlaggedVariantsCard from '../viz/FlaggedVariantsCard.vue'
 
+//import allGenesData from '../../../data/genes.json'
 
 export default {
   name: 'navigation',
@@ -141,6 +133,10 @@ export default {
   computed: {
     selectedGeneDisplay: function() {
       return this.selectedGeneName + " " + this.selectedChr;
+    },
+    selectedGeneWrapper: function() {
+      if (this.selectedGene) return true;
+      else return false;
     }
   },
   data () {
@@ -155,12 +151,11 @@ export default {
 
       leftDrawerContents: "",
       showLegendMenu: false
-
     }
   },
   watch: {
-    selectedGene: function(a, b) {
-      if (this.selectedGene) {
+    selectedGeneWrapper: function() {
+      if (this.selectedGeneWrapper) {
         this.$emit("input", this.selectedGene.gene_name);
       }
     }
@@ -201,7 +196,6 @@ export default {
   },
   mounted: function() {
      $("#search-gene-name").attr('autocomplete', 'off');
-
   }
 }
 

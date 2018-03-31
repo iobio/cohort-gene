@@ -177,7 +177,7 @@ export default {
         self.genomeBuildHelper,
         utility.getHumanRefNames);
 
-      let mode = 'development';
+      let mode = 'production';
       let hubEndpoint = new HubEndpoint(mode);
 
       self.variantModel = new VariantModel(endpoint,
