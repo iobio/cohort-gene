@@ -50,7 +50,9 @@ export default {
     selectedVariant: {},
     zygMap: {},
     statusMap: {},
-    depthMap: {}
+    depthMap: {},
+    affectedSampleCount: {},  // Number of samples in cohort that have variant (hom alt or het)
+    totalSampleCount: {}      // Number of samples in cohort within which variant was clicked on
   },
   created: function() {},
   mounted: function() {
@@ -81,6 +83,8 @@ export default {
     },
     fillCharts() {
       let self = this;
+      // SJG TODO: get this working
+      //self.zygChart.redrawYAxis()(self.totalSampleCount);
       self.zygChart.fillChart()(self.zygMap);
       self.statusChart.fillChart()(self.statusMap);
       self.depthChart.fillChart()(self.depthMap);

@@ -800,7 +800,7 @@ var effectCategories = [
     for (var i in featureArr) {
       let currFeature = featureArr[i];
       let currFeatImpact = currFeature.vepImpact;
-      if (currFeatImpact["MODIFIER"] == null && currFeatImpact["LOW"] == null) {
+      if (currFeatImpact["MODERATE"] != null || currFeatImpact["HIGH"] != null) {
         filteredFeatures.push(currFeature);
       }
     }

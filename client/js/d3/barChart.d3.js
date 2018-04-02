@@ -22,7 +22,9 @@ function barChart() {
       dataHeight = height - 40,
       width = 175,
       roundedCorners = 2,
-      yValueMax = 5;
+      yValueMax = 100,
+      yValueTicks = 5;
+
 
   /* Takes in array of maps with {label:, value:} entries and draws bars based on provided values.
      Providing an empty data array will zero out all bars.
@@ -40,7 +42,6 @@ function barChart() {
           .attr('y', dataHeight)
           .attr('height', function(d) { return dataHeight - _y(0); });
     }
-    // SJG TODO: need to adjust y-axis labels
     else {
       newDataMap.forEach(function(dataBar) {
         var barId = "#bar_" + dataBar.label.replace(' ', '_');
@@ -58,12 +59,32 @@ function barChart() {
     }
   };
 
+  var redrawYAxis = function(newYValueMax, newYValueTicks = 5) {
+    debugger;
+    _y = d3.scale.linear().range([dataHeight, 0]);
+
+    var yAxis = d3.svg.axis()
+        .scale(_y)
+        .orient("left")
+        .ticks(newYValueTicks);
+
+    _y.domain([0, newYValueMax]);
+
+    var currAxis = d3.select('#' + parentId).select('svg').select('y axis');
+    currAxis.transition()
+            .duration(700)
+            .style("opacity", 1);
+
+            //SJG TODO: stopped here - not working
+
+    }
+
   /* Draws outline of chart and axes */
   function chart(dataMap) {
     var svg = d3.select('#' + parentId).append('svg')
                 .attr('height', height)
                 .attr('width', "100%")
-                .attr('style', "padding-left: 15%; padding-top: 2%");  // SJG TODO this needs to change dynamically?
+                .attr('style', "padding-left: 15%; padding-top: 2%");
 
     // Define axes data
     _x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
@@ -76,7 +97,7 @@ function barChart() {
     var yAxis = d3.svg.axis()
         .scale(_y)
         .orient("left")
-        .ticks(yValueMax);    // One tick per number - can be scaled up/down as needed by multiplying/dividing
+        .ticks(yValueTicks);    // One tick per number - can be scaled up/down as needed by multiplying/dividing
 
     _x.domain(dataMap.map(function(d) { return d.label; }));
     _y.domain([0, yValueMax]);
@@ -144,6 +165,14 @@ function barChart() {
       fillChart = _;
       return chart;
   };
+
+  chart.redrawYAxis = function(_) {
+    if (!arguments.length) {
+      return redrawYAxis;
+    }
+    redrawYAxis = _;
+    return chart;
+  }
 
   chart.parentId = function(_) {
     if (!arguments.length) {

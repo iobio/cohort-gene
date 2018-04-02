@@ -196,6 +196,16 @@ export default {
   },
   mounted: function() {
      $("#search-gene-name").attr('autocomplete', 'off');
+
+     // Prevent enter from submitting form
+     document.querySelector('#search-gene-name')
+             .addEventListener('keypress', function (e) {
+                var key = e.which || e.keyCode;
+                if (key === 13) { // 13 is enter
+                    // code for enter
+                    e.preventDefault();
+                }
+            });
   }
 }
 

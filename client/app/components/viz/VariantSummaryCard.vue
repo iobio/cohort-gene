@@ -204,7 +204,9 @@
         :selectedVariant="variant"
         :zygMap="zygMap"
         :statusMap="statusMap"
-        :depthMap="depthMap">
+        :depthMap="depthMap"
+        :affectedSampleCount="affectedSampleCount"
+        :totalSampleCount="totalSampleCount">
         </bar-feature-viz>
       </v-layout>
     </v-container>
