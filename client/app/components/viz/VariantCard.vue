@@ -68,10 +68,17 @@ Updated: SJG Mar2018
 <template>
   <v-card tile id="variant-card" class="app-card">
     <v-card-title primary-title>
-      <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 10px">VARIANTS</span>
-      <v-container fluid align-content-end>
-        <v-switch :label="`Enrichment Mode: ${enrichmentModeDisplay(enrichmentMode)}`" v-model="enrichmentMode"></v-switch>
-      </v-container>
+      <v-layout row style="padding-left: 15px; padding-right: 15px">
+        <v-flex xs6>
+          <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 10px">VARIANTS</span>
+        </v-flex>
+        <v-flex xs6>
+          <v-container fluid style="padding-left: 70%;" id="enrichmentModeSwitch">
+            <v-switch :label="`Enrichment Mode: ${enrichmentModeDisplay(enrichmentMode)}`" v-model="enrichmentMode"></v-switch>
+          </v-container>
+          <!-- SJG TODO: put in color indicator bar -->
+        </v-flex>
+      </v-layout>
       <div style="width:100%">
         <variant-viz
           v-if="showVariantViz"

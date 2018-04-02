@@ -220,7 +220,6 @@ export default {
         this.variantChart =  variantD3()
           .width(this.width)
           .clazz(function(variant) {
-            debugger; // SJG what does this look like
             var clazz = self.classifySymbolFunc(variant, self.annotationScheme);
             return clazz;
             //return self.classifySymbolFunc(variant, self.annotationScheme);

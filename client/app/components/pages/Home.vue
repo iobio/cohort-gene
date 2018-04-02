@@ -29,17 +29,19 @@
     @on-files-loaded="onFilesLoaded"
   ></navigation>
   <v-content>
-    <v-container fluid>
+    <v-container fluid style="padding-top: 3px">
       <!-- TODO: do I need data-sources-loader -->
 
       <!-- TODO: would like to get away from passing giant variantModel here-->
+      <!-- v-bind:class="{ hide: Object.keys(selectedGene).length == 0 }" -->
+
+       <!-- || !variantModel -->
       <v-layout>
         <v-flex xs12>
           <variant-card
             ref="variantCardRef"
             v-for="dataSet in dataSets"
             :key="dataSet.name"
-            v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !variantModel }"
             :dataSetModel="dataSet"
             :annotationScheme="variantModel.annotationScheme"
             :classifyVariantSymbolFunc="variantModel.classifyByImpact"
