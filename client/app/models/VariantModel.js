@@ -800,7 +800,6 @@ class VariantModel {
     })
   }
 
-  // TODO: LEFT OFF HERE REFACTORING THIS
   promiseAnnotateInheritance(geneObject, theTranscript, resultMap, options={isBackground: false, cacheData: true}) {
     let self = this;
 
@@ -896,6 +895,29 @@ class VariantModel {
     var sift = "";
     var polyphen = "";
     var regulatory = "";
+    var enrichment = "";
+    var enrichColor = "";
+
+    let sampleCountWithVariant = d.samplesWithVarCount;
+    let sampleCountTotal = d.totalSamples;
+    let cohortFreq = sampleCountTotal > 0 ? sampleCountWithVariant / sampleCountTotal : 0;
+    if (cohortFreq > 0 && cohortFreq <= 0.25)
+    {
+      enrichment = 'enrichment_LOW';
+      enrichColor = 'eLOW';
+    }
+    else if (cohortFreq > 0.25 && cohortFreq <= 0.50) {
+      enrichment = 'enrichment_MEDIUM';
+      enrichColor = 'eMED';
+    }
+    else if (cohortFreq > 0.50 && cohortFreq <= 0.75) {
+      enrichment = 'enrichment_HIGH';
+      enrichColor = 'eHIGH';
+    }
+    else {
+      enrichment = 'enrichment_VERY_HIGH';
+      enrichColor = 'eVERYHIGH';
+    }
 
     var effectList = (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.effect : d.vepConsequence);
     for (var key in effectList) {
@@ -930,7 +952,7 @@ class VariantModel {
       regulatory += " " + key;
     }
 
-    return  'variant ' + d.type.toLowerCase()  + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' '  + sift + ' ' + polyphen + ' ' + regulatory +  ' ' + + ' ' + d.clinvar + ' ' + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts;
+    return  'variant ' + d.type.toLowerCase()  + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' '  + sift + ' ' + polyphen + ' ' + regulatory +  ' ' + + ' ' + d.clinvar + ' ' + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts + ' ' + enrichment + ' ' + enrichColor;
   }
 
   classifyByClinvar(d) {

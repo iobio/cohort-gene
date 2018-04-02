@@ -55,7 +55,6 @@ nav.toolbar
       </v-toolbar-items>
 
       <v-spacer></v-spacer>
-
       <v-menu
       offset-y
       :close-on-content-click="false"

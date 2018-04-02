@@ -2703,8 +2703,11 @@ CohortModel._summarizeDanger = function(geneName, theVcfData, options = {}, gene
   var lowestAf = 999;
   dangerCounts.harmfulVariantsInfo = [];
 
-
   theVcfData.features.forEach( function(variant) {
+
+    // SJG TODO: assign clazz based on ratio
+
+
       for (key in variant.highestImpactSnpeff) {
         if (translator.impactMap.hasOwnProperty(key) && translator.impactMap[key].badge) {
           impactClasses[key] = impactClasses[key] || {};

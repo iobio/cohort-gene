@@ -32,6 +32,7 @@ class Translator {
                         LOW:      {value: 4, badge: false, clazz: 'impact_LOW',      symbolFunction: this.glyph.showImpactSymbol},
                         none:     {value: 5, badge: false, clazz: 'impact_none',      symbolFunction: this.glyph.showImpactSymbol}
                      };
+
     this.highestImpactMap = {
                       HIGH:     {value: 1, badge: true, clazz: 'impact_HIGH',     symbolFunction: this.showHighestImpactSymbol, bind: this},
                         MODERATE: {value: 2, badge: true, clazz: 'impact_MODERATE', symbolFunction: this.showHighestImpactSymbol, bind: this},

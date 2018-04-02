@@ -220,7 +220,10 @@ export default {
         this.variantChart =  variantD3()
           .width(this.width)
           .clazz(function(variant) {
-            return self.classifySymbolFunc(variant, self.annotationScheme);
+            debugger; // SJG what does this look like
+            var clazz = self.classifySymbolFunc(variant, self.annotationScheme);
+            return clazz;
+            //return self.classifySymbolFunc(variant, self.annotationScheme);
           })
           .margin(this.margin)
           .showXAxis(this.showXAxis)
@@ -298,14 +301,17 @@ export default {
       },
       showFlaggedVariant: function(variant, container) {
         this.variantChart.showFlaggedVariant(container, variant);
+      },
+      changeVariantColorScheme: function(enrichmentMode, svg) {
+        let self = this;
+        self.variantChart.switchColorScheme()(enrichmentMode, svg);
       }
     },
     watch: {
       data: function() {
-        console.log("VariantViz data has changed")
+        console.log("VariantViz data has changed");
         this.update();
       }
-
     }
 }
 </script>

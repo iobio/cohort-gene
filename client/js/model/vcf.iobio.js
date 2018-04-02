@@ -1519,6 +1519,8 @@ var effectCategories = [
             var clinvarResult = me.parseClinvarInfo(rec.info, clinvarMap);
 
             var gtResult = me._parseGenotypes(rec, alt, altIdx, gtSampleIndices, gtSampleNames);
+            let samplesWithVarCount = gtResult.genotypes.filter(gt => (gt.zygosity == "HET" || gt.zygosity == "HOM")).length;
+            let totalSamples = gtResult.genotypes.length;
 
             var clinvarObject = me._formatClinvarCoordinates(rec, alt);
 
@@ -1550,6 +1552,8 @@ var effectCategories = [
                     'recfilter':                rec.filter.split(";").join("-"),
 
                     'extraAnnot':               hasExtraAnnot,
+                    'samplesWithVarCount':      samplesWithVarCount,  // Number of samples in cohort with variant
+                    'totalSamples':             totalSamples,         // Number of total samples in cohort
 
                     // genotype fields
                     'genotypes':                gtResult.genotypeMap,

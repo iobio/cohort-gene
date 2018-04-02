@@ -69,6 +69,9 @@ Updated: SJG Mar2018
   <v-card tile id="variant-card" class="app-card">
     <v-card-title primary-title>
       <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 10px">VARIANTS</span>
+      <v-container fluid align-content-end>
+        <v-switch :label="`Enrichment Mode: ${enrichmentModeDisplay(enrichmentMode)}`" v-model="enrichmentMode"></v-switch>
+      </v-container>
       <div style="width:100%">
         <variant-viz
           v-if="showVariantViz"
@@ -156,8 +159,8 @@ export default {
         bottom: 5,
         left: 4
       },
-      variantSymbolHeight: 8, // SJG TODO: this is where can increase based on frequency
-      variantSymbolPadding: 2,  // Increased from 2 SJG
+      variantSymbolHeight: 8,
+      variantSymbolPadding: 2,
       geneVizMargin: {
         top: 0,
         right: 2,
@@ -166,11 +169,15 @@ export default {
       },
       geneVizTrackHeight: 16,
       geneVizCdsHeight: 12,
-      // TODO: if bam stuff, add depthViz margin info
-      coveragePoint: null
+      coveragePoint: null,
+      enrichmentMode: false
     }
   },
   methods: {
+    enrichmentModeDisplay: function(mode) {
+      if (mode) return 'ON';
+      else return 'OFF';
+    },
     depthVizYTickFormat: function(val) {
       if (val == 0) {
         return "";
@@ -266,7 +273,7 @@ export default {
       let self = this;
       if (self.showVariantViz) {
         self.$refs.variantVizRef.forEach(function(variantViz) {
-          variantViz.showVariantCircle(variant, self.getVariantSVG(variant, variantViz.name), true);
+          variantViz.showVariantCircle(variant, self.getVariantSVG(variantViz.name), true);
         })
       }
     },
@@ -274,11 +281,11 @@ export default {
       let self = this;
       if (this.showVariantViz) {
         this.$refs.variantVizRef.forEach(function(variantViz) {
-          variantViz.hideVariantCircle(self.getVariantSVG(variant, variantViz.name));
+          variantViz.hideVariantCircle(self.getVariantSVG(variantViz.name));
         })
       }
     },
-    getVariantSVG: function(variant, vizTrackName) {
+    getVariantSVG: function(vizTrackName) {
       var svg = d3.select(this.$el).select('#' + vizTrackName + ' > svg');
       return svg;
     },
@@ -414,6 +421,13 @@ export default {
     }
   },
   watch: {
+    enrichmentMode: function() {
+      console.log('enrichmentMode flipped')
+      let self = this;
+      self.$refs.variantVizRef.forEach(function(variantViz) {
+        variantViz.changeVariantColorScheme(self.enrichmentMode, self.getVariantSVG(variantViz.name));
+      })
+    }
   },
   mounted: function() {
     this.name = this.dataSetModel.name;

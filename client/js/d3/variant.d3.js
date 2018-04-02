@@ -124,7 +124,6 @@ function variantD3() {
   };
 
   var hideCircle = function(svgContainer, parentContainer) {
-    // SJG TODO: can we multithread/promise these d3 transitions
     svgContainer.select(".circle").transition()
                 .duration(100)
                 .style("opacity", 0);
@@ -140,6 +139,90 @@ function variantD3() {
 
     }
   }
+
+  var switchColorScheme = function(enrichmentMode, svgContainer) {
+    let variants = svgContainer.selectAll(".variant");
+    let highVars = variants.filter(".HIGH");
+    let moderateVars = variants.filter(".MODERATE");
+    let modifierVars = variants.filter(".MODIFIER");
+    let lowVars = variants.filter(".LOW");
+    // SJG TODO: get this working when we incorporate 'none' variants
+    //let noVars = variants.filter("none");
+
+    let veryHighEnrichVars = variants.filter(".eVERYHIGH");
+    let highEnrichVars = variants.filter(".eHIGH");
+    let mediumEnrichVars = variants.filter(".eMED");
+    let lowEnrichVars = variants.filter(".eLOW");
+
+    if (enrichmentMode) {
+
+      // Remove impact color scheme
+      highVars.classed({
+        'impact_HIGH' : false
+      });
+      moderateVars.classed({
+        'impact_MODERATE' : false
+      });
+      modifierVars.classed({
+        'impact_MODIFIER' : false
+      });
+      lowVars.classed({
+        'impact_LOW' : false
+      });
+
+      // noVars.classed({
+      //   'impact_none' : false
+      // });
+
+      // Turn on enrichment color scheme
+      veryHighEnrichVars.classed({
+        'enrichment_VERY_HIGH': true
+      });
+      highEnrichVars.classed({
+        'enrichment_HIGH': true
+      });
+      mediumEnrichVars.classed({
+        'enrichment_MEDIUM': true
+      });
+      lowEnrichVars.classed({
+        'enrichment_LOW': true
+      });
+    }
+
+    else {
+      // Turn off enrichment color scheme
+      veryHighEnrichVars.classed({
+        'enrichment_VERY_HIGH': false
+      });
+      highEnrichVars.classed({
+        'enrichment_HIGH': false
+      });
+      mediumEnrichVars.classed({
+        'enrichment_MEDIUM': false
+      });
+      lowEnrichVars.classed({
+        'enrichment_LOW': false
+      });
+
+      // Turn on impact color scheme
+      highVars.classed({
+        'impact_HIGH' : true
+      });
+      moderateVars.classed({
+        'impact_MODERATE' : true
+      });
+      modifierVars.classed({
+        'impact_MODIFIER' : true
+      });
+      lowVars.classed({
+        'impact_LOW' : true
+      });
+      // noVars.classed({
+      //   'impact_none' : true
+      // });
+    }
+  }
+
   function chart(selection, options) {
     // merge options and defaults
     options = $.extend(defaults,options);
@@ -824,6 +907,12 @@ function variantD3() {
   chart.highlightVariant = function(_) {
     if (!arguments.length) return highlightVariant;
     highlightVariant = _;
+    return chart;
+  }
+
+  chart.switchColorScheme = function(_) {
+    if (!arguments.length) return switchColorScheme;
+    switchColorScheme = _;
     return chart;
   }
 
