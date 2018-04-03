@@ -55,6 +55,7 @@
             :showGeneViz="true"
             :showVariantViz="true"
             :geneVizShowXAxis="true"
+            :displayEnrichmentSwitch="doneLoadingData"
             @dataSetVariantClick="onDataSetVariantClick"
             @dataSetVariantClickEnd="onDataSetVariantClickEnd"
             @dataSetVariantHover="onDataSetVariantHover"
@@ -141,7 +142,8 @@ export default {
       inProgress: {},
       cardWidth: 0,
       showClinvarVariants: false,
-      activeBookmarksDrawer: null
+      activeBookmarksDrawer: null,
+      doneLoadingData: false
     }
   },
 
@@ -268,7 +270,6 @@ export default {
       })
     },
     promiseLoadData: function() {
-      console.log("promiseLoadData called");
       let self = this;
 
       return new Promise(function(resolve, reject) {
@@ -281,7 +282,7 @@ export default {
             self.filterModel,
             options)
           .then(function(resultMap) {
-            console.log("Done with promiseLoadData");
+            self.doneLoadingData = true;
             // self.filterModel.populateEffectFilters(resultMap);
             // self.filterModel.populateRecFilters(resultMap);
 

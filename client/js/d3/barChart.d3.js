@@ -60,7 +60,6 @@ function barChart() {
   };
 
   var redrawYAxis = function(newYValueMax, newYValueTicks = 5) {
-    debugger;
     _y = d3.scale.linear().range([dataHeight, 0]);
 
     var yAxis = d3.svg.axis()

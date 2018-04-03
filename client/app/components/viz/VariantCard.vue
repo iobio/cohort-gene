@@ -73,10 +73,10 @@ Updated: SJG Mar2018
           <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 10px">VARIANTS</span>
         </v-flex>
         <v-flex xs6>
-          <v-container fluid style="padding-left: 70%;" id="enrichmentModeSwitch">
-            <v-switch :label="`Enrichment Mode: ${enrichmentModeDisplay(enrichmentMode)}`" v-model="enrichmentMode"></v-switch>
+          <v-container fluid style="padding-left: 70%;" id="enrichmentModeSwitch" v-bind:class="{hide: !displayEnrichmentSwitch}">
+            <v-switch :label="`Enrichment Mode: ${enrichmentModeDisplay(enrichmentMode)}`" v-model="enrichmentMode" hide-details></v-switch>
+            <span id="enrichmentColorLegend" v-bind:class="{hide: !enrichmentMode}"></span>
           </v-container>
-          <!-- SJG TODO: put in color indicator bar -->
         </v-flex>
       </v-layout>
       <div style="width:100%">
@@ -149,7 +149,8 @@ export default {
     width: 0,
     showVariantViz: true,
     showGeneViz: true,
-    geneVizShowXAxis: null
+    geneVizShowXAxis: null,
+    displayEnrichmentSwitch: false
   },
   data() {
     let self = this;
@@ -177,10 +178,18 @@ export default {
       geneVizTrackHeight: 16,
       geneVizCdsHeight: 12,
       coveragePoint: null,
-      enrichmentMode: false
+      enrichmentMode: false,
+      enrichmentColorLegend: {}
     }
   },
   methods: {
+    drawColorLegend: function() {
+      this.enrichmentColorLegend = colorLegend()
+        .numberSegments(4)
+        .on('d3rendered', function() {
+        });
+      this.enrichmentColorLegend();
+    },
     enrichmentModeDisplay: function(mode) {
       if (mode) return 'ON';
       else return 'OFF';
@@ -438,6 +447,7 @@ export default {
   },
   mounted: function() {
     this.name = this.dataSetModel.name;
+    this.drawColorLegend();
   },
   created: function() {
     this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
