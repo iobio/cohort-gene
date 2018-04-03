@@ -25,12 +25,12 @@
        <v-flex xs6 md7 id="exAcProgress" class="field-value"></v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs4 class="field-label">Cohort Enrichment:</v-flex>
-       <v-flex xs2 md1 class="field-value">{{ affectedSamplePercentageDisplay }}</v-flex>
+       <v-flex xs4 class="field-label">Proband Frequency:</v-flex>
+       <v-flex xs2 md1 class="field-value">{{ affectedProbandPercentageDisplay }}</v-flex>
        <v-flex xs6 md7 id="sampleProgress" class="field-value"></v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs4 class="field-label">Subset Enrichment:</v-flex>
+       <v-flex xs4 class="field-label">Subset Frequency:</v-flex>
        <v-flex xs2 md1 class="field-value">{{ enrichmentPercentage }}</v-flex>
        <v-flex xs6 md7 id="enrichmentProgress" class="field-value"></v-flex>
     </v-layout>
@@ -59,7 +59,7 @@ export default {
       default: "",
       type: String
     },
-    affectedSampleCount: {
+    affectedProbandCount: {
       default: 0,
       type: Number
     },
@@ -77,22 +77,22 @@ export default {
     this.drawProgressBars();
   },
   computed: {
-    affectedSamplePercentageDisplay: function() {
+    affectedProbandPercentageDisplay: function() {
       if (this.totalSampleCount == 0) return "-";
 
-      var freq = Math.round((this.affectedSampleCount / this.totalSampleCount) * 100);
-      if (freq == 0 && this.affectedSampleCount > 0) {
+      var freq = Math.round((this.affectedProbandCount / this.totalSampleCount) * 100);
+      if (freq == 0 && this.affectedProbandCount > 0) {
         return "< 1%";
       }
       return freq + "%";
     },
-    affectedSamplePercentage: function() {
+    affectedProbandPercentage: function() {
       if (this.totalSampleCount == 0) return "0";
-      var freq = (Math.round((this.affectedSampleCount / this.totalSampleCount) * 100));
-      if (freq == 0 && this.affectedSampleCount > 0) {
+      var freq = (Math.round((this.affectedProbandCount / this.totalSampleCount) * 100));
+      if (freq == 0 && this.affectedProbandCount > 0) {
         return "1%";
       }
-      return (Math.round((this.affectedSampleCount / this.totalSampleCount) * 100)) + "";
+      return (Math.round((this.affectedProbandCount / this.totalSampleCount) * 100)) + "";
     }
   },
   methods: {
@@ -128,7 +128,7 @@ export default {
 
       self.oneKBar.moveProgressBar()(self.oneKGenomes);
       self.exAcBar.moveProgressBar()(self.exAc);
-      self.sampleBar.moveProgressBar()(self.affectedSamplePercentage);
+      self.sampleBar.moveProgressBar()(self.affectedProbandPercentage);
       self.enrichmentBar.moveProgressBar()(self.enrichmentPercentage);
     },
     clear() {
@@ -136,8 +136,8 @@ export default {
 
       self.oneKBar.moveProgressBar()(0);
       self.exAcBar.moveProgressBar()(0);
-      self.enrichmentBar.moveProgressBar()(0);
       self.sampleBar.moveProgressBar()(0);
+      self.enrichmentBar.moveProgressBar()(0);
     }
   },
   watch: {

@@ -334,6 +334,7 @@ export default {
       var self = this;
       self.deselectVariant();
       self.promiseLoadGene(geneName);
+      self.doneLoadingData = false;
     },
     promiseLoadGene: function(geneName) {
       let self = this;
@@ -356,6 +357,7 @@ export default {
           self.selectedTranscript = self.geneModel.getCanonicalTranscript(self.selectedGene);
           self.promiseLoadData()
           .then(function() {
+            self.doneLoadingData = true;
             resolve();
           })
         })

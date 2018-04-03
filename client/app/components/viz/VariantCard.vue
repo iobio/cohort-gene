@@ -443,6 +443,10 @@ export default {
       self.$refs.variantVizRef.forEach(function(variantViz) {
         variantViz.changeVariantColorScheme(self.enrichmentMode, self.getVariantSVG(variantViz.name));
       })
+    },
+    selectedGene: function() {
+      let self = this;
+      self.enrichmentMode = false;
     }
   },
   mounted: function() {

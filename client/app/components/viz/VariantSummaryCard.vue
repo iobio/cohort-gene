@@ -1,6 +1,5 @@
 <!-- Variant Summary card -->
 
-<!-- SJG: Imported styling from TDS -->
 <style lang="sass" >
 @import ../../../assets/sass/variables
 @import ../../../assets/sass/symbols
@@ -196,7 +195,8 @@
         :oneKGenomes="oneKGenomes"
         :exAc="exAc"
         :enrichmentPercentage="enrichmentPercentage"
-        :affectedSampleCount="affectedSampleCount"
+        :affectedProbandCount="affectedSampleCount"
+        :affectedSubsetCount="affectedSubsetCount"
         :totalSampleCount="totalSampleCount">
         </allele-frequency-viz>
         <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
@@ -233,7 +233,8 @@ export default {
     selectedGene: ''
   },
   data() { return {
-    affectedSampleCount: 0,
+    affectedSampleCount: 0, // SJG TODO: rename this to affected proband count
+    affectedSubsetCount: 0,
     totalSampleCount: 0
   }},
   methods: {
