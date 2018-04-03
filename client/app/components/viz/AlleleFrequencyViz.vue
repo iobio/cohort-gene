@@ -82,7 +82,7 @@ export default {
 
       var freq = Math.round((this.affectedProbandCount / this.totalSampleCount) * 100);
       if (freq == 0 && this.affectedProbandCount > 0) {
-        return "< 1%";
+        return "<1%";
       }
       return freq + "%";
     },

@@ -55,7 +55,7 @@
             :showGeneViz="true"
             :showVariantViz="true"
             :geneVizShowXAxis="true"
-            :displayEnrichmentSwitch="doneLoadingData"
+            :displayImpactSwitch="doneLoadingData"
             @dataSetVariantClick="onDataSetVariantClick"
             @dataSetVariantClickEnd="onDataSetVariantClickEnd"
             @dataSetVariantHover="onDataSetVariantHover"

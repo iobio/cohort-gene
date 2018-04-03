@@ -189,6 +189,10 @@ export default {
       phenotypes: {
         type: Array,
         default: () => []
+      },
+      impactMode: {
+        type: Boolean,
+        default: false
       }
     },
     computed: {
@@ -220,9 +224,7 @@ export default {
         this.variantChart =  variantD3()
           .width(this.width)
           .clazz(function(variant) {
-            var clazz = self.classifySymbolFunc(variant, self.annotationScheme);
-            return clazz;
-            //return self.classifySymbolFunc(variant, self.annotationScheme);
+            return self.classifySymbolFunc(variant, self.annotationScheme);
           })
           .margin(this.margin)
           .showXAxis(this.showXAxis)
@@ -235,6 +237,7 @@ export default {
           .regionStart(this.regionStart)
           .regionEnd(this.regionEnd)
           .on("d3rendered", function() {
+            self.$emit("trackRendered");
           })
           .on('d3click', function(variant) {
             self.onVariantClick(variant);

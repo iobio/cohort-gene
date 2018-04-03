@@ -1545,7 +1545,7 @@ var effectCategories = [
                     'strand':                   geneObject.strand,
                     'chrom':                    refName,
                     'type':                     annot.typeAnnotated && annot.typeAnnotated != '' ? annot.typeAnnotated : type,
-                    'id':                       rec.id,
+                    'id':                       (rec.pos + end + len + refName + geneObject.strand + (annot.typeAnnotated && annot.typeAnnotated != '' ? annot.typeAnnotated : type) + rec.ref + alt),
                     'ref':                      rec.ref,
                     'alt':                      alt,
                     'qual':                     rec.qual,
@@ -1617,7 +1617,10 @@ var effectCategories = [
                     'highestImpactSnpeff':     highestImpactSnpeff,
                     'highestImpactVep':        highestImpactVep,
                     'highestSIFT':             highestSIFT,
-                    'highestPolyphen':         highestPolyphen
+                    'highestPolyphen':         highestPolyphen,
+
+                    // cohort specific
+                    'subsetDelta':            0
                   }
 
                   for (var key in clinvarResult) {

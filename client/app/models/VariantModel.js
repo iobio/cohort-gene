@@ -33,7 +33,9 @@ class VariantModel {
 
     this.userVcf = "https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz";
     this.demoGenes = ['RAI1', 'MYLK2', 'PDHA1', 'PDGFB', 'AIRE'];
-    this.simonsIdMap = {};
+    this.simonsIdMap = {},
+    this.HUB_PROBANDS_NAME = "HubProbands",
+    this.HUB_SUBSET_NAME = "HubSubsetProbands";
   }
 
   getMainCohort() {
@@ -140,7 +142,7 @@ class VariantModel {
     // Setup proband track
     var topLevelCohort = new CohortModel(self);
     topLevelCohort.inProgress.fetchingHubData = true;
-    topLevelCohort.name = 'HubProbands';
+    topLevelCohort.name =self.HUB_PROBANDS_NAME;
     topLevelCohort.trackName = 'Variants for';
     topLevelCohort.subsetPhenotypes = [];
     topLevelCohort.subsetPhenotypes.push('Probands');
@@ -190,9 +192,9 @@ class VariantModel {
                 // Setup subset track
                 var subsetCohort = new CohortModel(self);
                 subsetCohort.inProgress.fetchingHubData = true;
-                subsetCohort.name = 'HubSubsetProbands';
+                subsetCohort.name = self.HUB_SUBSET_NAME;
                 subsetCohort.trackName = 'Variants for';
-                subsetCohort.subsetPhenotypes.push('Probands');
+                subsetCohort.subsetPhenotypes.push('Subsets');
 
                 // Flag to add proband filter
                 var hasAbcTotalScore = false;
@@ -615,11 +617,8 @@ class VariantModel {
 
         Promise.all(annotatePromises)
           .then(function() {
-            // Filter proband variants to only those also found in subset
-            // SJG NOTE putting this in vcf.iobio for now
-            //var filteredMapList = self.filterProbandVariantsBySubset(resultMapList);
-
-            console.log("got filtered variants and about to annotate with clinvar...");
+            debugger;
+            self.annotateCohortFrequencies(resultMapList);
             self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
             .then(function(data) {
               resolve(data);
@@ -631,66 +630,71 @@ class VariantModel {
     });
   }
 
-  // Returns array of objects CohortName : {}
-  filterProbandVariantsBySubset(resultMapList) {
-    console.log("filtering proband variants...");
-    // If we only have a proband track coming in, don't need to filter
-    if (resultMapList.length < 2) {
-      return resultMapList;
-    }
-    // SJG TODO: this is an overcomplicated loop that can be simplified w/ a subset flag on cohort model
-    // Iterate through maps and separate subset features from proband ones
-    var probandMapInfo = {};
-    var subsetMapsInfo = [];
-    var subsetMapFeatures = {};
-    for (var i in resultMapList) {
-      let mapObj = resultMapList[i];
-      for (var key in mapObj) {
-        if (Object.prototype.hasOwnProperty.call(mapObj, key)) {
-          if (key == "HubProbands") { // SJG TODO: trade name for flags
-            probandMapInfo = mapObj[key];
-          }
-          else {
-            subsetMapsInfo[key] = mapObj[key];
-            let subsetFeatures = mapObj[key].features;
-            var debugCount = 0;
-            for(var feat in subsetFeatures) {
-              let currFeat = subsetFeatures[feat];
-              let id = currFeat.start + currFeat.end + currFeat.strand + currFeat.type
-                      + currFeat.ref + currFeat.alt;
-              subsetMapFeatures[id] = ''; // Don't need key, just need hash table of ids
-              debugCount++;
-            }
-            console.log('subset feature count: ' + debugCount);
-          }
-        }
-      }
-    }
+  annotateCohortFrequencies(resultMapList) {
+    let self = this;
+    var probandFeatures = null;
+    var subsetFeatures = null;
+    try {
+      // Pull out features
+      let firstObj = resultMapList[0];
+      let secondObj = resultMapList[1];
+      let probandInfo = firstObj["HubProbands"] == null ? secondObj["HubProbands"] : firstObj["HubProbands"];
+      let subsetInfo = firstObj["HubSubsetProbands"] == null ? secondObj["HubSubsetProbands"] : firstObj["HubSubsetProbands"];
+      probandFeatures = probandInfo.features;
+      subsetFeatures = subsetInfo.features;
 
-    // Filter proband features to those found in the subset cohort
-    var filteredProFeatures = [];
-    for (var proFeat in probandMapInfo.features) {
-      let currProFeat = probandMapInfo.features[proFeat];
-      let id = currProFeat.start + currProFeat.end + currProFeat.strand + currProFeat.type
-              + currProFeat.ref + currProFeat.alt;
-      if (subsetMapFeatures[id] != null) {
-        filteredProFeatures.push(currProFeat);
-      }
+      // Update features with enrichment info
+      let updatedSubsetFeatures = self.assignEnrichmentRatios(probandFeatures, subsetFeatures);
+      subsetInfo.features = updatedSubsetFeatures;
     }
-    probandMapInfo.features = filteredProFeatures;
+    catch(e) {
+      console.log("There was a problem pulling out features from the result map in annotateCohortFrequencies. Unable to assign enrichment colors.");
+    }
+  }
 
-    // Reconstruct map object to return
-    var updatedMapList = [];
-    var wrapperMap = {};
-    wrapperMap["HubProbands"] = probandMapInfo;
-    updatedMapList.push(wrapperMap);
-    for (var map in subsetMapsInfo) {
-      let wrapperObj = {};
-      wrapperObj[map] = subsetMapsInfo[map];
-      updatedMapList.push(wrapperObj);
-    }
-    console.log("done filtering proband variants: ");
-    return updatedMapList;
+  assignEnrichmentRatios(probandFeatures, subsetFeatures) {
+    let totalProbandSampleNum = 0;
+    let affectedProbandSampleNum = 0;
+    let totalSubsetSampleNum = 0;
+    let affectedSubsetSampleNum = 0;
+    let probandLookup = {};
+    var updatedSubsetFeatures = [];
+
+    // Cycle through probands and store values in lookup
+    probandFeatures.forEach(function(feature) {
+      let currSample = null;
+      for (var key in feature.genotypes) {
+        totalProbandSampleNum++;
+        currSample = feature.genotypes[key];
+        if (currSample.zygosity == "HET" || currSample.zygosity == "HOM")
+          affectedProbandSampleNum++;
+      }
+      probandLookup[currSample.id] = [totalProbandSampleNum, affectedProbandSampleNum];
+      totalProbandSampleNum = 0;
+      affectedProbandSampleNum = 0;
+    })
+
+    // Cycle through subsets and compute deltas
+    subsetFeatures.forEach(function(feature) {
+      let currSample = null;
+      for (var key in feature.genotypes) {
+        totalSubsetSampleNum++;
+        currSample = feature.genotypes[key];
+        if (currSample.zygosity == "HET" || currSample.zygosity == "HOM")
+          affectedSubsetSampleNum++;
+      }
+      // Compute deltas
+      totalProbandSampleNum = probandLookup[currSample.id][0];
+      affectedProbandSampleNum = probandLookup[currSample.id][1];
+
+      let subsetPercentage = affectedSubsetSampleNum / totalSubsetSampleNum * 100;
+      let probandPercentage = affectedProbandSampleNum / totalProbandSampleNum * 100;
+      let foldEnrichment = subsetPercentage / probandPercentage;
+
+      currSample.subsetDelta = foldEnrichment;
+      updatedSubsetFeatures.push(currSample);
+    })
+    return updatedSubsetFeatures;
   }
 
   promiseAnnotateWithClinvar(resultMap, geneObject, transcript, isBackground) {
@@ -895,29 +899,34 @@ class VariantModel {
     var sift = "";
     var polyphen = "";
     var regulatory = "";
-    var enrichment = "";
-    var enrichColor = "";
 
-    let sampleCountWithVariant = d.samplesWithVarCount;
-    let sampleCountTotal = d.totalSamples;
-    let cohortFreq = sampleCountTotal > 0 ? sampleCountWithVariant / sampleCountTotal : 0;
-    if (cohortFreq > 0 && cohortFreq <= 0.25)
-    {
-      enrichment = 'enrichment_LOW';
-      enrichColor = 'eLOW';
-    }
-    else if (cohortFreq > 0.25 && cohortFreq <= 0.50) {
-      enrichment = 'enrichment_MEDIUM';
-      enrichColor = 'eMED';
-    }
-    else if (cohortFreq > 0.50 && cohortFreq <= 0.75) {
-      enrichment = 'enrichment_HIGH';
-      enrichColor = 'eHIGH';
-    }
-    else {
-      enrichment = 'enrichment_VERY_HIGH';
-      enrichColor = 'eVERYHIGH';
-    }
+    // SJG TODO: this is not the place to assign enrichment color
+    // var enrichment = "";
+    // var enrichColor = "";
+    //
+    // let affectedSubsetCount = d.samplesWithVarCount;
+    // let totalSubsetCount = ;
+    // let affectedProbandCount = ;
+    // let totalProbandCount = d.totalSamples;
+    //
+    // let cohortFreq = sampleCountTotal > 0 ? sampleCountWithVariant / sampleCountTotal : 0;
+    // if (cohortFreq > 0 && cohortFreq <= 0.25)
+    // {
+    //   enrichment = 'enrichment_LOW';
+    //   enrichColor = 'eLOW';
+    // }
+    // else if (cohortFreq > 0.25 && cohortFreq <= 0.50) {
+    //   enrichment = 'enrichment_MEDIUM';
+    //   enrichColor = 'eMED';
+    // }
+    // else if (cohortFreq > 0.50 && cohortFreq <= 0.75) {
+    //   enrichment = 'enrichment_HIGH';
+    //   enrichColor = 'eHIGH';
+    // }
+    // else {
+    //   enrichment = 'enrichment_VERY_HIGH';
+    //   enrichColor = 'eVERYHIGH';
+    // }
 
     var effectList = (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.effect : d.vepConsequence);
     for (var key in effectList) {

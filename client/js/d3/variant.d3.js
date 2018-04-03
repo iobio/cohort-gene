@@ -68,8 +68,6 @@ function variantD3() {
           } else {
             matchingVariant = variant;
           }
-
-
        }
     });
 
@@ -149,10 +147,9 @@ function variantD3() {
     // SJG TODO: get this working when we incorporate 'none' variants
     //let noVars = variants.filter("none");
 
-    let veryHighEnrichVars = variants.filter(".eVERYHIGH");
-    let highEnrichVars = variants.filter(".eHIGH");
-    let mediumEnrichVars = variants.filter(".eMED");
-    let lowEnrichVars = variants.filter(".eLOW");
+    let enrichUp = variants.filter(".eUP");
+    let enrichDown = variants.filter(".eDOWN");
+    let enrichNone = variants.filter(".eNONE");
 
     if (enrichmentMode) {
 
@@ -175,35 +172,28 @@ function variantD3() {
       // });
 
       // Turn on enrichment color scheme
-      veryHighEnrichVars.classed({
-        'enrichment_VERY_HIGH': true
+      enrichUp.classed({
+        'enrichment_subset_UP': true
       });
-      highEnrichVars.classed({
-        'enrichment_HIGH': true
+      enrichDown.classed({
+        'enrichment_subset_DOWN': true
       });
-      mediumEnrichVars.classed({
-        'enrichment_MEDIUM': true
-      });
-      lowEnrichVars.classed({
-        'enrichment_LOW': true
+      enrichNone.classed({
+        'enrichment_NONE': true
       });
     }
 
     else {
       // Turn off enrichment color scheme
-      veryHighEnrichVars.classed({
-        'enrichment_VERY_HIGH': false
+      enrichUp.classed({
+        'enrichment_subset_UP': false
       });
-      highEnrichVars.classed({
-        'enrichment_HIGH': false
+      enrichDown.classed({
+        'enrichment_subset_DOWN': false
       });
-      mediumEnrichVars.classed({
-        'enrichment_MEDIUM': false
+      enrichNone.classed({
+        'enrichment_NONE': false
       });
-      lowEnrichVars.classed({
-        'enrichment_LOW': false
-      });
-
       // Turn on impact color scheme
       highVars.classed({
         'impact_HIGH' : true

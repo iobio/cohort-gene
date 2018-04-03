@@ -73,9 +73,9 @@ Updated: SJG Mar2018
           <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 10px">VARIANTS</span>
         </v-flex>
         <v-flex xs6>
-          <v-container fluid style="padding-left: 70%;" id="enrichmentModeSwitch" v-bind:class="{hide: !displayEnrichmentSwitch}">
-            <v-switch :label="`Enrichment Mode: ${enrichmentModeDisplay(enrichmentMode)}`" v-model="enrichmentMode" hide-details></v-switch>
-            <span id="enrichmentColorLegend" v-bind:class="{hide: !enrichmentMode}"></span>
+          <v-container fluid style="padding-left: 70%;" id="impactModeSwitch" v-bind:class="{hide: !displayImpactSwitch}">
+            <v-switch :label="`Impact Mode: ${impactModeDisplay(impactMode)}`" v-model="impactMode" hide-details></v-switch>
+            <span id="enrichmentColorLegend" v-bind:class="{hide: impactMode}"></span>
           </v-container>
         </v-flex>
       </v-layout>
@@ -101,9 +101,11 @@ Updated: SJG Mar2018
           :showBrush="false"
           :showXAxis="true"
           :classifySymbolFunc="classifyVariantSymbolFunc"
+          :impactMode="impactMode"
           @variantClick="onVariantClick"
           @variantHover="onVariantHover"
           @variantHoverEnd="onVariantHoverEnd"
+          @trackRendered="switchColorScheme"
           >
         </variant-viz>
         <gene-viz id="gene-viz"
@@ -150,7 +152,7 @@ export default {
     showVariantViz: true,
     showGeneViz: true,
     geneVizShowXAxis: null,
-    displayEnrichmentSwitch: false
+    displayImpactSwitch: false
   },
   data() {
     let self = this;
@@ -178,7 +180,7 @@ export default {
       geneVizTrackHeight: 16,
       geneVizCdsHeight: 12,
       coveragePoint: null,
-      enrichmentMode: false,
+      impactMode: false,
       enrichmentColorLegend: {}
     }
   },
@@ -190,7 +192,7 @@ export default {
         });
       this.enrichmentColorLegend();
     },
-    enrichmentModeDisplay: function(mode) {
+    impactModeDisplay: function(mode) {
       if (mode) return 'ON';
       else return 'OFF';
     },
@@ -346,85 +348,13 @@ export default {
       } else {
         return exon.feature_type.toLowerCase();
       }
+    },
+    switchColorScheme: function() {
+      let self = this;
+      self.$refs.variantVizRef.forEach(function(variantViz) {
+        variantViz.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(variantViz.name));
+      })
     }
-    // showExonTooltip: function(featureObject, feature, lock) {
-    //   let self = this;
-    //   let tooltip = d3.select("#exon-tooltip");
-    //   if (featureObject == null) {
-    //     self.hideExonTooltip();
-    //     return;
-    //   }
-    //   if (self.selectedExon) {
-    //     return;
-    //   }
-    //   if (lock) {
-    //     self.selectedExon = feature;
-    //     tooltip.style("pointer-events", "all");
-    //     tooltip.classed("locked", true);
-    //   } else {
-    //     tooltip.style("pointer-events", "none");
-    //     tooltip.classed("locked", false);
-    //   }
-    //   var coverageRow = function(fieldName, coverageVal, covFields) {
-    //     var row = '<div>';
-    //     row += '<span style="padding-left:10px;width:60px;display:inline-block">' + fieldName   + '</span>';
-    //     row += '<span style="width:40px;display:inline-block">' + d3.round(coverageVal) + '</span>';
-    //     row += '<span class="' + (covFields[fieldName] ? 'danger' : '') + '">' + (covFields[fieldName] ? covFields[fieldName]: '') + '</span>';
-    //     row += "</div>";
-    //     return row;
-    //   }
-    //   var html = '<div>'
-    //            + '<span id="exon-tooltip-title"' + (lock ? 'style="margin-top:8px">' : '>') + (feature.hasOwnProperty("exon_number") ? "Exon " + feature.exon_number : "") + '</span>'
-    //            + (lock ? '<a href="javascript:void(0)" id="exon-tooltip-close">X</a>' : '')
-    //            + '</div>';
-    //   html     += '<div style="clear:both">' + feature.feature_type + ' ' + utility.addCommas(feature.start) + ' - '       + utility.addCommas(feature.end) + '</div>';
-    //   if (feature.geneCoverage && feature.geneCoverage[self.sampleModel.getRelationship()]) {
-    //       var covFields = self.sampleModel.cohort.filterModel.whichLowCoverage(feature.geneCoverage[self.sampleModel.getRelationship()]);
-    //       html += "<div style='margin-top:4px'>" + "Coverage:"
-    //            +  coverageRow('min',    feature.geneCoverage[self.sampleModel.getRelationship()].min, covFields)
-    //            +  coverageRow('median', feature.geneCoverage[self.sampleModel.getRelationship()].median, covFields)
-    //            +  coverageRow('mean',   feature.geneCoverage[self.sampleModel.getRelationship()].mean, covFields)
-    //            +  coverageRow('max',    feature.geneCoverage[self.sampleModel.getRelationship()].max, covFields)
-    //            +  coverageRow('sd',     feature.geneCoverage[self.sampleModel.getRelationship()].sd, covFields)
-    //   }
-    //   if (lock) {
-    //     html += '<div style="text-align:right;margin-top:8px">'
-    //     + '<a href="javascript:void(0)" id="exon-tooltip-thresholds" class="danger" style="float:left"  >Set cutoffs</a>'
-    //     + '</div>'
-    //   }
-    //   tooltip.html(html);
-    //   if (lock) {
-    //     //tooltip.select("#exon-tooltip-thresholds").on("click", function() {
-    //       //$('#filter-track #coverage-thresholds').addClass('attention');
-    //     //})
-    //     tooltip.select("#exon-tooltip-close").on("click", function() {
-    //       self.selectedExon = null;
-    //       self.hideExonTooltip(true);
-    //     })
-    //   }
-    //   var coord = utility.getTooltipCoordinates(featureObject.node(),
-    //     tooltip, self.$el.offsetWidth, $('nav.toolbar').outerHeight());
-    //   tooltip.style("left", coord.x + "px")
-    //          .style("text-align", 'left')
-    //          .style("top", (coord.y-60) + "px");
-    //   tooltip.style("z-index", 1032);
-    //   tooltip.transition()
-    //          .duration(200)
-    //          .style("opacity", .9);
-    // },
-    // hideExonTooltip: function(force) {
-    //   let self = this;
-    //   let tooltip = d3.select("#exon-tooltip");
-    //   if (force || !self.selectedExon) {
-    //     tooltip.classed("locked", false);
-    //     tooltip.classed("black-arrow-left", false);
-    //     tooltip.classed("black-arrow-right", false);
-    //     tooltip.style("pointer-events", "none");
-    //     tooltip.transition()
-    //        .duration(500)
-    //        .style("opacity", 0);
-    //   }
-    // }
   },
   filters: {
   },
@@ -437,16 +367,13 @@ export default {
     }
   },
   watch: {
-    enrichmentMode: function() {
-      console.log('enrichmentMode flipped')
+    impactMode: function() {
       let self = this;
-      self.$refs.variantVizRef.forEach(function(variantViz) {
-        variantViz.changeVariantColorScheme(self.enrichmentMode, self.getVariantSVG(variantViz.name));
-      })
+      self.switchColorScheme();
     },
     selectedGene: function() {
       let self = this;
-      self.enrichmentMode = false;
+      self.impactMode = false;
     }
   },
   mounted: function() {
