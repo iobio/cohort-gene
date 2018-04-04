@@ -1620,7 +1620,11 @@ var effectCategories = [
                     'highestPolyphen':         highestPolyphen,
 
                     // cohort specific
-                    'subsetDelta':            1
+                    'subsetDelta':            1,
+                    'totalProbandCount':      0,
+                    'totalSubsetCount':       0,
+                    'affectedProbandCount':   0,
+                    'affectedSubsetCount':    0
                   }
 
                   for (var key in clinvarResult) {

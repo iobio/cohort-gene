@@ -51,8 +51,10 @@ export default {
     zygMap: {},
     statusMap: {},
     depthMap: {},
-    affectedSampleCount: {},  // Number of samples in cohort that have variant (hom alt or het)
-    totalSampleCount: {}      // Number of samples in cohort within which variant was clicked on
+    affectedProbandCount: {},
+    affectedSubsetCount: {},
+    totalProbandCount: {},
+    totalSubsetCount: {}      
   },
   created: function() {},
   mounted: function() {

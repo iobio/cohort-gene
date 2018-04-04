@@ -75,7 +75,7 @@ Updated: SJG Mar2018
         <v-flex xs6>
           <v-container fluid style="padding-left: 70%;" id="impactModeSwitch" v-bind:class="{hide: !displayImpactSwitch}">
             <v-switch :label="`Impact Mode: ${impactModeDisplay(impactMode)}`" v-model="impactMode" hide-details></v-switch>
-            <span id="enrichmentColorLegend" v-bind:class="{hide: impactMode}"></span>
+            <!-- <span id="enrichmentColorLegend" v-bind:class="{hide: impactMode}"></span> -->
           </v-container>
         </v-flex>
       </v-layout>
@@ -380,7 +380,7 @@ export default {
   },
   mounted: function() {
     this.name = this.dataSetModel.name;
-    this.drawColorLegend();
+    //this.drawColorLegend();
   },
   created: function() {
     this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;

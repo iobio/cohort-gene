@@ -140,12 +140,11 @@ function variantD3() {
 
   var switchColorScheme = function(enrichmentMode, svgContainer) {
     let variants = svgContainer.selectAll(".variant");
-    let highVars = variants.filter(".HIGH");
-    let moderateVars = variants.filter(".MODERATE");
-    let modifierVars = variants.filter(".MODIFIER");
-    let lowVars = variants.filter(".LOW");
-    // SJG TODO: get this working when we incorporate 'none' variants
-    //let noVars = variants.filter("none");
+    let highVars = variants.filter(".iHIGH");
+    let moderateVars = variants.filter(".iMODERATE");
+    let modifierVars = variants.filter(".iMODIFIER");
+    let lowVars = variants.filter(".iLOW");
+    let noVars = variants.filter(".iNONE");
 
     let enrichUp = variants.filter(".eUP");
     let enrichDown = variants.filter(".eDOWN");
@@ -166,10 +165,9 @@ function variantD3() {
       lowVars.classed({
         'impact_LOW' : false
       });
-
-      // noVars.classed({
-      //   'impact_none' : false
-      // });
+      noVars.classed({
+        'impact_none' : false
+      });
 
       // Turn on enrichment color scheme
       enrichUp.classed({
@@ -207,9 +205,9 @@ function variantD3() {
       lowVars.classed({
         'impact_LOW' : true
       });
-      // noVars.classed({
-      //   'impact_none' : true
-      // });
+      noVars.classed({
+        'impact_none' : true
+      });
     }
   }
 

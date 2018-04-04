@@ -27,12 +27,12 @@
     <v-layout row>
        <v-flex xs4 class="field-label">Proband Frequency:</v-flex>
        <v-flex xs2 md1 class="field-value">{{ affectedProbandPercentageDisplay }}</v-flex>
-       <v-flex xs6 md7 id="sampleProgress" class="field-value"></v-flex>
+       <v-flex xs6 md7 id="probandProgress" class="field-value"></v-flex>
     </v-layout>
     <v-layout row>
        <v-flex xs4 class="field-label">Subset Frequency:</v-flex>
-       <v-flex xs2 md1 class="field-value">{{ enrichmentPercentage }}</v-flex>
-       <v-flex xs6 md7 id="enrichmentProgress" class="field-value"></v-flex>
+       <v-flex xs2 md1 class="field-value">{{ affectedSubsetPercentageDisplay }}</v-flex>
+       <v-flex xs6 md7 id="subsetProgress" class="field-value"></v-flex>
     </v-layout>
   </v-flex>
 </template>
@@ -45,8 +45,8 @@ export default {
     return {
       oneKBar: {},
       exAcBar: {},
-      enrichmentBar: {},
-      sampleBar: {}
+      probandBar: {},
+      subsetBar: {},
     }
   },
   props: {
@@ -60,16 +60,20 @@ export default {
       type: String
     },
     affectedProbandCount: {
-      default: 0,
+      default: -1,
       type: Number
     },
-    totalSampleCount: {
-      default: 0,
+    affectedSubsetCount: {
+      default: -1,
       type: Number
     },
-    enrichmentPercentage: {
-      default: "",
-      type: String
+    totalProbandCount: {
+      default: -1,
+      type: Number
+    },
+    totalSubsetCount: {
+      default: -1,
+      type: Number
     }
   },
   created: function() {},
@@ -78,21 +82,38 @@ export default {
   },
   computed: {
     affectedProbandPercentageDisplay: function() {
-      if (this.totalSampleCount == 0) return "-";
-
-      var freq = Math.round((this.affectedProbandCount / this.totalSampleCount) * 100);
+      if (this.totalProbandCount == -1) return "-";
+      else if (this.totalProbandCount == 0) return "0%";
+      var freq = Math.round((this.affectedProbandCount / this.totalProbandCount) * 100);
       if (freq == 0 && this.affectedProbandCount > 0) {
         return "<1%";
       }
       return freq + "%";
     },
     affectedProbandPercentage: function() {
-      if (this.totalSampleCount == 0) return "0";
-      var freq = (Math.round((this.affectedProbandCount / this.totalSampleCount) * 100));
+      if (this.totalProbandCount < 1) return "0";
+      var freq = (Math.round((this.affectedProbandCount / this.totalProbandCount) * 100));
       if (freq == 0 && this.affectedProbandCount > 0) {
         return "1%";
       }
-      return (Math.round((this.affectedProbandCount / this.totalSampleCount) * 100)) + "";
+      return (Math.round((this.affectedProbandCount / this.totalProbandCount) * 100)) + "";
+    },
+    affectedSubsetPercentageDisplay: function() {
+      if (this.totalSubsetCount == -1) return "-";
+      else if (this.totalSubsetCount == 0) return "0%";
+      var freq = Math.round((this.affectedSubsetCount / this.totalSubsetCount) * 100);
+      if (freq == 0 && this.affectedSubsetCount > 0) {
+        return "<1%";
+      }
+      return freq + "%";
+    },
+    affectedSubsetPercentage: function() {
+      if (this.totalSubsetCount < 1) return "0";
+      var freq = (Math.round((this.affectedSubsetCount / this.totalSubsetCount) * 100));
+      if (freq == 0 && this.affectedSubsetCount > 0) {
+        return "1%";
+      }
+      return (Math.round((this.affectedSubsetCount / this.totalSubsetCount) * 100)) + "";
     }
   },
   methods: {
@@ -111,33 +132,33 @@ export default {
         });
       self.exAcBar();
 
-      self.enrichmentBar = progressBar()
-        .parentId('enrichmentProgress')
+      self.probandBar = progressBar()
+        .parentId('probandProgress')
         .on('d3rendered', function() {
         });
-      self.enrichmentBar();
+      self.probandBar();
 
-      self.sampleBar = progressBar()
-        .parentId('sampleProgress')
+      self.subsetBar = progressBar()
+        .parentId('subsetProgress')
         .on('d3rendered', function() {
         });
-      self.sampleBar();
+      self.subsetBar();
     },
     fillProgressBars() {
       let self = this;
 
       self.oneKBar.moveProgressBar()(self.oneKGenomes);
       self.exAcBar.moveProgressBar()(self.exAc);
-      self.sampleBar.moveProgressBar()(self.affectedProbandPercentage);
-      self.enrichmentBar.moveProgressBar()(self.enrichmentPercentage);
+      self.probandBar.moveProgressBar()(self.affectedProbandPercentage);
+      self.subsetBar.moveProgressBar()(self.affectedSubsetPercentage);
     },
     clear() {
       let self = this;
 
       self.oneKBar.moveProgressBar()(0);
       self.exAcBar.moveProgressBar()(0);
-      self.sampleBar.moveProgressBar()(0);
-      self.enrichmentBar.moveProgressBar()(0);
+      self.probandBar.moveProgressBar()(0);
+      self.subsetBar.moveProgressBar()(0);
     }
   },
   watch: {

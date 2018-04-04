@@ -194,20 +194,22 @@
         :selectedVariant="variant"
         :oneKGenomes="oneKGenomes"
         :exAc="exAc"
-        :enrichmentPercentage="enrichmentPercentage"
-        :affectedProbandCount="affectedSampleCount"
+        :affectedProbandCount="affectedProbandCount"
         :affectedSubsetCount="affectedSubsetCount"
-        :totalSampleCount="totalSampleCount">
+        :totalProbandCount="totalProbandCount"
+        :totalSubsetCount="totalSubsetCount">
         </allele-frequency-viz>
-        <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
+        <!-- <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
         ref="summaryBarFeatureViz"
         :selectedVariant="variant"
         :zygMap="zygMap"
         :statusMap="statusMap"
         :depthMap="depthMap"
-        :affectedSampleCount="affectedSampleCount"
-        :totalSampleCount="totalSampleCount">
-        </bar-feature-viz>
+        :affectedProbandCount="affectedProbandCount"
+        :affectedSubsetCount="affectedSubsetCount"
+        :totalProbandCount="totalProbandCount"
+        :totalSubsetCount="totalSubsetCount">
+        </bar-feature-viz> -->
       </v-layout>
     </v-container>
   </v-card>
@@ -232,15 +234,11 @@ export default {
     variantInfo: null,
     selectedGene: ''
   },
-  data() { return {
-    affectedSampleCount: 0, // SJG TODO: rename this to affected proband count
-    affectedSubsetCount: 0,
-    totalSampleCount: 0
-  }},
+  data() { return {}
+  },
   methods: {
     summaryCardVariantDeselect: function() {
       var self = this;
-
       self.$refs.summaryFrequencyViz.clear();
       self.$refs.summaryBarFeatureViz.clear();
       self.$emit("summaryCardVariantDeselect");
@@ -248,6 +246,45 @@ export default {
   },
   filters: {},
   computed: {
+    totalProbandCount: function() {
+      if (this.variant != null)
+        return this.variant.totalProbandCount;
+      return 0;
+    },
+    totalSubsetCount: function() {
+      if (this.variant != null)
+        return this.variant.totalSubsetCount;
+      return 0;
+    },
+    affectedProbandCount: function() {
+      if (this.variant != null)
+        return this.variant.affectedProbandCount;
+      return 0;
+    },
+    affectedSubsetCount: function() {
+      if (this.variant != null)
+        return this.variant.affectedSubsetCount;
+      return 0;
+    },
+    // Currently not using these but could be useful in the future...
+    totalCountSelectedTrack: function() {
+      if (this.variant != null) {
+        if (this.variant.name == "HubProbands")
+          return this.totalProbandCount;
+        else if (this.variant.name == "HubSubsetProbands")
+          return this.totalSubsetCount;
+      }
+      return 0;
+    },
+    affectedCountSelectedTrack: function() {
+      if (this.variant != null) {
+        if (this.variant.name == "HubProbands")
+          return this.affectedProbandCount;
+        else if (this.variant.name == "HubSubsetProbands")
+          return this.affectedSubsetCount;
+      }
+      return 0;
+    },
     effect: function() {
       if (this.variantInfo != null)
         return this.variantInfo.vepConsequence;
@@ -319,10 +356,6 @@ export default {
         return Math.round(this.variant.afExAC * 100) + "%";
       return "-";
     },
-    enrichmentPercentage: function() {
-      // SJG TODO: implement
-      return "-";
-    },
     zygMap: function() {
       var map = [];
       var homRefCount = 0, hetCount = 0, homAltCount = 0, noCallCount = 0;
@@ -342,8 +375,6 @@ export default {
       map.push({label: "hom alt", value: homAltCount})
       map.push({label: "no call", value: noCallCount})
 
-      this.affectedSampleCount = hetCount + homAltCount;
-      this.totalSampleCount = homRefCount + hetCount + homAltCount + noCallCount;
       return map;
     },
     statusMap: function() {

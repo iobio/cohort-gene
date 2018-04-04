@@ -34,6 +34,12 @@ class VariantModel {
     this.userVcf = "https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz";
     this.demoGenes = ['RAI1', 'MYLK2', 'PDHA1', 'PDGFB', 'AIRE'];
     this.simonsIdMap = {},
+
+    this.totalProbandCount = 0,
+    this.totalSubsetCount = 0,
+    this.affectedProbandCount = 0,
+    this.affectedSubsetCount = 0,
+
     this.HUB_PROBANDS_NAME = "HubProbands",
     this.HUB_SUBSET_NAME = "HubSubsetProbands";
   }
@@ -624,8 +630,7 @@ class VariantModel {
       subsetFeatures = subsetInfo.features;
 
       // Update features with enrichment info
-      let updatedSubsetFeatures = self.assignEnrichmentRatios(probandFeatures, subsetFeatures);
-      subsetInfo.features = updatedSubsetFeatures;
+      self.assignEnrichmentRatios(probandFeatures, subsetFeatures);
     }
     catch(e) {
       console.log("There was a problem pulling out features from the result map in annotateCohortFrequencies. Unable to assign enrichment colors.");
@@ -637,10 +642,11 @@ class VariantModel {
     let affectedProbandSampleNum = 0;
     let totalSubsetSampleNum = 0;
     let affectedSubsetSampleNum = 0;
-    let probandLookup = {};
-    var updatedSubsetFeatures = [];
+    let probandLookup = {}; // Contains proband variants
 
     // Cycle through probands and store values in lookup
+    let i = 0;
+    debugger;
     probandFeatures.forEach(function(feature) {
       let currSample = null;
       for (var key in feature.genotypes) {
@@ -649,9 +655,13 @@ class VariantModel {
         if (currSample.zygosity == "HET" || currSample.zygosity == "HOM")
           affectedProbandSampleNum++;
       }
-      probandLookup[currSample.id] = [totalProbandSampleNum, affectedProbandSampleNum];
+      debugger; // This might be wrong way of thinking about this...
+      probandLookup[feature.id] = [totalProbandSampleNum, affectedProbandSampleNum, i];
+      feature.totalProbandCount = totalProbandSampleNum;
+      feature.affectedProbandCount = affectedProbandSampleNum;
       totalProbandSampleNum = 0;
       affectedProbandSampleNum = 0;
+      i++;
     })
 
     // Cycle through subsets and compute deltas
@@ -664,17 +674,27 @@ class VariantModel {
           affectedSubsetSampleNum++;
       }
       // Compute deltas
-      totalProbandSampleNum = probandLookup[currSample.id][0];
-      affectedProbandSampleNum = probandLookup[currSample.id][1];
+      let selectFeat = probandLookup[feature.id];
+      totalProbandSampleNum = selectFeat[0];
+      affectedProbandSampleNum = selectFeat[1];
+      let matchingFeatureIndex = selectFeat[2];
 
       let subsetPercentage = affectedSubsetSampleNum / totalSubsetSampleNum * 100;
       let probandPercentage = affectedProbandSampleNum / totalProbandSampleNum * 100;
       let foldEnrichment = subsetPercentage / probandPercentage;
 
+      // Plug in subset feature info
       feature.subsetDelta = foldEnrichment;
-      updatedSubsetFeatures.push(feature);
+      feature.totalProbandCount = totalProbandSampleNum;
+      feature.totalSubsetCount = totalSubsetSampleNum;
+      feature.affectedProbandCount = affectedProbandSampleNum;
+      feature.affectedSubsetCount = affectedSubsetSampleNum;
+
+      // Plug in subset info into matching proband feature
+      debugger;
+      probandFeatures[matchingFeatureIndex].totalSubsetCount = totalSubsetSampleNum;
+      probandFeatures[matchingFeatureIndex].affectedSubsetCount = affectedSubsetSampleNum;
     })
-    return updatedSubsetFeatures;
   }
 
   promiseAnnotateWithClinvar(resultMap, geneObject, transcript, isBackground) {
@@ -871,11 +891,11 @@ class VariantModel {
     return theDataSets.length == this.dataSets.length;
   }
 
-  // SJG where classes assigned
   classifyByImpact(d, annotationScheme) {
     let self = this;
     var impacts = "";
     var colorimpacts = "";
+    var toggleImpact = "";  // Used to retain state of impact color for toggling since impacts class sometimes differs from colorImpacts
     var effects = "";
     var sift = "";
     var polyphen = "";
@@ -884,11 +904,11 @@ class VariantModel {
     var enrichColor = "";
 
     var subsetEnrichment = d.subsetDelta;
-    if (subsetEnrichment >= 1.5) {
+    if (subsetEnrichment >= 2) {
       enrichment = "eUP";
       enrichColor = "enrichment_subset_UP";
     }
-    else if (subsetEnrichment <= 0.015) {
+    else if (subsetEnrichment <= 0.5) {
       enrichment = "eDOWN";
       enrichColor = "enrichment_subset_DOWN";
     }
@@ -916,9 +936,11 @@ class VariantModel {
     var colorImpactList =  (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_COLOR]);
     for (var key in colorImpactList) {
       colorimpacts += " " + 'impact_'+key;
+      toggleImpact += " " + 'i' + key;
     }
     if (colorimpacts == "") {
       colorimpacts = "impact_none";
+      toggleImpact += "iNONE";
     }
     for (var key in d.sift) {
       sift += " " + key;
@@ -930,7 +952,7 @@ class VariantModel {
       regulatory += " " + key;
     }
 
-    return  'variant ' + d.type.toLowerCase()  + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' '  + sift + ' ' + polyphen + ' ' + regulatory +  ' ' + + ' ' + d.clinvar + ' ' + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts + ' ' + enrichment + ' ' + enrichColor;
+    return  'variant ' + d.type.toLowerCase()  + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' '  + sift + ' ' + polyphen + ' ' + regulatory +  ' ' + + ' ' + d.clinvar + ' ' + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts + ' ' + toggleImpact + ' ' + enrichment + ' ' + enrichColor;
   }
 
   classifyByClinvar(d) {
