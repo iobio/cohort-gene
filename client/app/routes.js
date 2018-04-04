@@ -21,7 +21,9 @@ Vue.use(Vuetify, {
   theme: {
     cohortBlue: '#95b0c6',
     cohortDarkBlue: '#6c94b7',
-    cohortNavy: '#516e87'
+    cohortNavy: '#516e87',
+    limeGreen: '#00FF00',
+    cherryRed: '#FF000D'
   }
 })
 

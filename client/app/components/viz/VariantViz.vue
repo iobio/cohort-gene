@@ -228,7 +228,7 @@ export default {
         this.variantChart =  variantD3()
           .width(this.width)
           .clazz(function(variant) {
-            return self.classifySymbolFunc(variant, self.annotationScheme);
+            return self.classifySymbolFunc(variant, self.annotationScheme, self.name);
           })
           .margin(this.margin)
           .showXAxis(this.showXAxis)

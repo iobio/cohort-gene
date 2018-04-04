@@ -646,7 +646,6 @@ class VariantModel {
 
     // Cycle through probands and store values in lookup
     let i = 0;
-    debugger;
     probandFeatures.forEach(function(feature) {
       let currSample = null;
       for (var key in feature.genotypes) {
@@ -655,7 +654,6 @@ class VariantModel {
         if (currSample.zygosity == "HET" || currSample.zygosity == "HOM")
           affectedProbandSampleNum++;
       }
-      debugger; // This might be wrong way of thinking about this...
       probandLookup[feature.id] = [totalProbandSampleNum, affectedProbandSampleNum, i];
       feature.totalProbandCount = totalProbandSampleNum;
       feature.affectedProbandCount = affectedProbandSampleNum;
@@ -691,7 +689,7 @@ class VariantModel {
       feature.affectedSubsetCount = affectedSubsetSampleNum;
 
       // Plug in subset info into matching proband feature
-      debugger;
+      probandFeatures[matchingFeatureIndex].subsetDelta = foldEnrichment;
       probandFeatures[matchingFeatureIndex].totalSubsetCount = totalSubsetSampleNum;
       probandFeatures[matchingFeatureIndex].affectedSubsetCount = affectedSubsetSampleNum;
     })
@@ -891,7 +889,7 @@ class VariantModel {
     return theDataSets.length == this.dataSets.length;
   }
 
-  classifyByImpact(d, annotationScheme) {
+  classifyByImpact(d, annotationScheme, cohortName) {
     let self = this;
     var impacts = "";
     var colorimpacts = "";
@@ -904,11 +902,12 @@ class VariantModel {
     var enrichColor = "";
 
     var subsetEnrichment = d.subsetDelta;
-    if (subsetEnrichment >= 2) {
+    // TODO: put constant somewhere to replace name
+    if (subsetEnrichment >= 2 && cohortName == "HubSubsetProbands") {
       enrichment = "eUP";
       enrichColor = "enrichment_subset_UP";
     }
-    else if (subsetEnrichment <= 0.5) {
+    else if (subsetEnrichment <= 0.5 && cohortName == "HubSubsetProbands") {
       enrichment = "eDOWN";
       enrichColor = "enrichment_subset_DOWN";
     }

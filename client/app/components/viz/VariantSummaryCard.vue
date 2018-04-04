@@ -173,6 +173,9 @@
          <span style="padding-right: 12px; font-size: 14px; text-align:center;" v-bind:class="{hide: geneName == ''}">{{geneName}}</span>
          <span style="padding-top: 1px; font-size: 12px; padding-right: 6px">{{selectedVariantLocation}}</span>
       </v-chip>
+      <v-icon large color="limeGreen" v-bind:class="{hide: variant == null || subsetDelta < 2}">arrow_upward</v-icon>
+      <v-icon large color="cherryRed" v-bind:class="{hide: variant == null || subsetDelta > 0.5}">arrow_downward</v-icon>
+      <span style="display:inline-block; font-size: 14px">{{ foldEnrichmentInfo }}</span>
     </v-card-title>
     <v-container fluid grid-list-md>
       <v-layout row wrap>
@@ -199,7 +202,7 @@
         :totalProbandCount="totalProbandCount"
         :totalSubsetCount="totalSubsetCount">
         </allele-frequency-viz>
-        <!-- <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
+        <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
         ref="summaryBarFeatureViz"
         :selectedVariant="variant"
         :zygMap="zygMap"
@@ -209,7 +212,7 @@
         :affectedSubsetCount="affectedSubsetCount"
         :totalProbandCount="totalProbandCount"
         :totalSubsetCount="totalSubsetCount">
-        </bar-feature-viz> -->
+        </bar-feature-viz>
       </v-layout>
     </v-container>
   </v-card>
@@ -240,8 +243,7 @@ export default {
     summaryCardVariantDeselect: function() {
       var self = this;
       self.$refs.summaryFrequencyViz.clear();
-      // SJG TODO: fix this
-      //self.$refs.summaryBarFeatureViz.clear();
+      self.$refs.summaryBarFeatureViz.clear();
       self.$emit("summaryCardVariantDeselect");
     }
   },
@@ -266,6 +268,26 @@ export default {
       if (this.variant != null)
         return this.variant.affectedSubsetCount;
       return 0;
+    },
+    subsetDelta: function() {
+      if (this.variant != null)
+        return this.variant.subsetDelta;
+      return 1;
+    },
+    foldEnrichmentInfo: function() {
+      if (this.variant != null) {
+        let foldEnrich = Math.round(this.variant.subsetDelta * 10) / 10 + "x";
+        if (this.variant.subsetDelta >= 2) return (foldEnrich + " IN SUBSET");
+        else if (this.variant.subsetDelta <= 0.5) return (foldEnrich + " IN SUBSET");
+      }
+      return "";
+    },
+    enrichTextClass: function() {
+      if (this.variant != null) {
+        if (this.variant.subsetDelta >= 2) return '.enrichment_subset_UP';
+        else if (this.variant.subsetDelta <= 0.5) return '.enrichment_subset_DOWN';
+      }
+      return "";
     },
     // Currently not using these but could be useful in the future...
     totalCountSelectedTrack: function() {
@@ -417,7 +439,9 @@ export default {
     }
   },
   watch: {},
-  mounted: function() {},
+  mounted: function() {
+    let self = this;
+  },
   created: function() {}
 }
 

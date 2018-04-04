@@ -54,7 +54,7 @@ export default {
     affectedProbandCount: {},
     affectedSubsetCount: {},
     totalProbandCount: {},
-    totalSubsetCount: {}      
+    totalSubsetCount: {}
   },
   created: function() {},
   mounted: function() {
