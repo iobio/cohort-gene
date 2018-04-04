@@ -240,7 +240,8 @@ export default {
     summaryCardVariantDeselect: function() {
       var self = this;
       self.$refs.summaryFrequencyViz.clear();
-      self.$refs.summaryBarFeatureViz.clear();
+      // SJG TODO: fix this
+      //self.$refs.summaryBarFeatureViz.clear();
       self.$emit("summaryCardVariantDeselect");
     }
   },

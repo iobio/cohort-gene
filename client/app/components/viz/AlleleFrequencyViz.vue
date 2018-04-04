@@ -26,12 +26,12 @@
     </v-layout>
     <v-layout row>
        <v-flex xs4 class="field-label">Proband Frequency:</v-flex>
-       <v-flex xs2 md1 class="field-value">{{ affectedProbandPercentageDisplay }}</v-flex>
+       <v-flex xs2 md1 class="field-value">{{ probandDisplay }}</v-flex>
        <v-flex xs6 md7 id="probandProgress" class="field-value"></v-flex>
     </v-layout>
     <v-layout row>
        <v-flex xs4 class="field-label">Subset Frequency:</v-flex>
-       <v-flex xs2 md1 class="field-value">{{ affectedSubsetPercentageDisplay }}</v-flex>
+       <v-flex xs2 md1 class="field-value">{{ subsetDisplay }}</v-flex>
        <v-flex xs6 md7 id="subsetProgress" class="field-value"></v-flex>
     </v-layout>
   </v-flex>
@@ -47,6 +47,8 @@ export default {
       exAcBar: {},
       probandBar: {},
       subsetBar: {},
+      probandDisplay: '-',
+      subsetDisplay: '-'
     }
   },
   props: {
@@ -60,19 +62,19 @@ export default {
       type: String
     },
     affectedProbandCount: {
-      default: -1,
+      default: 0,
       type: Number
     },
     affectedSubsetCount: {
-      default: -1,
+      default: 0,
       type: Number
     },
     totalProbandCount: {
-      default: -1,
+      default: 0,
       type: Number
     },
     totalSubsetCount: {
-      default: -1,
+      default: 0,
       type: Number
     }
   },
@@ -81,15 +83,6 @@ export default {
     this.drawProgressBars();
   },
   computed: {
-    affectedProbandPercentageDisplay: function() {
-      if (this.totalProbandCount == -1) return "-";
-      else if (this.totalProbandCount == 0) return "0%";
-      var freq = Math.round((this.affectedProbandCount / this.totalProbandCount) * 100);
-      if (freq == 0 && this.affectedProbandCount > 0) {
-        return "<1%";
-      }
-      return freq + "%";
-    },
     affectedProbandPercentage: function() {
       if (this.totalProbandCount < 1) return "0";
       var freq = (Math.round((this.affectedProbandCount / this.totalProbandCount) * 100));
@@ -97,15 +90,6 @@ export default {
         return "1%";
       }
       return (Math.round((this.affectedProbandCount / this.totalProbandCount) * 100)) + "";
-    },
-    affectedSubsetPercentageDisplay: function() {
-      if (this.totalSubsetCount == -1) return "-";
-      else if (this.totalSubsetCount == 0) return "0%";
-      var freq = Math.round((this.affectedSubsetCount / this.totalSubsetCount) * 100);
-      if (freq == 0 && this.affectedSubsetCount > 0) {
-        return "<1%";
-      }
-      return freq + "%";
     },
     affectedSubsetPercentage: function() {
       if (this.totalSubsetCount < 1) return "0";
@@ -154,16 +138,39 @@ export default {
     },
     clear() {
       let self = this;
-
       self.oneKBar.moveProgressBar()(0);
       self.exAcBar.moveProgressBar()(0);
       self.probandBar.moveProgressBar()(0);
       self.subsetBar.moveProgressBar()(0);
+    },
+    getProbandDisplay() {
+      if (this.selectedVariant == null) return "-";
+      else if (this.totalProbandCount == 0) return "0%";
+      else {
+        var freq = Math.round((this.affectedProbandCount / this.totalProbandCount) * 100);
+        if (freq == 0 && this.affectedProbandCount > 0) {
+          return "<1%";
+        }
+        return freq + "%";
+      }
+    },
+    getSubsetDisplay() {
+      if (this.selectedVariant == null) return "-";
+      else if (this.totalSubsetCount == 0) return "0%";
+      else {
+        var freq = Math.round((this.affectedSubsetCount / this.totalSubsetCount) * 100);
+        if (freq == 0 && this.affectedSubsetCount > 0) {
+          return "<1%";
+        }
+        return freq + "%";
+      }
     }
   },
   watch: {
     selectedVariant: function() {
       this.fillProgressBars();
+      this.probandDisplay = this.getProbandDisplay();
+      this.subsetDisplay = this.getSubsetDisplay();
     }
   }
 }
