@@ -102,6 +102,7 @@ Updated: SJG Mar2018
           :showXAxis="true"
           :classifySymbolFunc="classifyVariantSymbolFunc"
           :impactMode="impactMode"
+          :doneLoadingData="displayImpactSwitch"
           @variantClick="onVariantClick"
           @variantHover="onVariantHover"
           @variantHoverEnd="onVariantHoverEnd"
@@ -374,6 +375,7 @@ export default {
     selectedGene: function() {
       let self = this;
       self.impactMode = false;
+      self.doneLoadingData = false;
     }
   },
   mounted: function() {

@@ -193,6 +193,10 @@ export default {
       impactMode: {
         type: Boolean,
         default: false
+      },
+      doneLoadingData: {
+        type: Boolean,
+        default: false
       }
     },
     computed: {
@@ -311,8 +315,9 @@ export default {
     },
     watch: {
       data: function() {
-        console.log("VariantViz data has changed");
-        this.update();
+        let self = this;
+        self.update();
+        console.log("redrawing variants");
       }
     }
 }

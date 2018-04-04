@@ -430,7 +430,7 @@ class VariantModel {
         .then(function(data) {
           console.log('done with promseLoadVariants in VariantModel');
           dataSetResultMap = data.resultMap;
-          self.setLoadedVariants(data.gene);
+          self.setLoadedVariants(data.gene);  // SJG NOTE this is where variants get set
         })
         promises.push(p1);
 
@@ -438,11 +438,6 @@ class VariantModel {
         .then(function() {
           console.log("Done with promiseLoadData in VariantModel")
           resolve(dataSetResultMap);
-            // TODO: what sample needs to go in here?
-            // self.promiseSummarizeDanger(theGene, theTranscript, , null)
-            // .then(function() {
-            //   resolve();
-            // })
         })
         .catch(function(error) {
           reject(error);
@@ -473,7 +468,6 @@ class VariantModel {
     return new Promise(function(resolve, reject) {
       self.promiseAnnotateVariants(theGene, theTranscript, false, options)
       .then(function(resultMap) {
-        // TODO: bookmark stuff
         return self.promiseAnnotateInheritance(theGene, theTranscript, resultMap, {isBackground: false, cacheData: true})
       })
       .then(function(data) {
@@ -586,10 +580,11 @@ class VariantModel {
                     theTranscript, [cohortModel],
                     false, isBackground, self.cacheHelper, self.keepVariantsCombined)
                   .then(function(resultMap) {
+                    // Update loader icons
                     cohortModel.inProgress.loadingVariants = false;
                     cohortModel.inProgress.drawingVariants = true;
-                    //theResultMap = resultMap;
 
+                    // Add results to map
                     resultMapList.push(resultMap);
                     })
                 annotatePromises.push(p)
@@ -601,23 +596,8 @@ class VariantModel {
             })
           }
         })
-
-        // SJG not currently going in here
-        // if (options.getKnownVariants) {
-        //   self.getModel('known-variants').inProgress.loadingVariants = true;
-        //   p = self.sampleMap['known-variants'].model.promiseAnnotateVariants(theGene, theTranscript, false, isBackground)
-        //       .then(function(resultMap) {
-        //         self.getModel('known-variants').inProgress.loadingVariants = false;
-        //         for (var rel in resultMap) {
-        //           theResultMap[rel] = resultMap[rel];
-        //         }
-        //       })
-        //   annotatePromises.push(p);
-        // }
-
         Promise.all(annotatePromises)
           .then(function() {
-            debugger;
             self.annotateCohortFrequencies(resultMapList);
             self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
             .then(function(data) {
@@ -691,8 +671,8 @@ class VariantModel {
       let probandPercentage = affectedProbandSampleNum / totalProbandSampleNum * 100;
       let foldEnrichment = subsetPercentage / probandPercentage;
 
-      currSample.subsetDelta = foldEnrichment;
-      updatedSubsetFeatures.push(currSample);
+      feature.subsetDelta = foldEnrichment;
+      updatedSubsetFeatures.push(feature);
     })
     return updatedSubsetFeatures;
   }
@@ -891,6 +871,7 @@ class VariantModel {
     return theDataSets.length == this.dataSets.length;
   }
 
+  // SJG where classes assigned
   classifyByImpact(d, annotationScheme) {
     let self = this;
     var impacts = "";
@@ -899,34 +880,22 @@ class VariantModel {
     var sift = "";
     var polyphen = "";
     var regulatory = "";
+    var enrichment = "";
+    var enrichColor = "";
 
-    // SJG TODO: this is not the place to assign enrichment color
-    // var enrichment = "";
-    // var enrichColor = "";
-    //
-    // let affectedSubsetCount = d.samplesWithVarCount;
-    // let totalSubsetCount = ;
-    // let affectedProbandCount = ;
-    // let totalProbandCount = d.totalSamples;
-    //
-    // let cohortFreq = sampleCountTotal > 0 ? sampleCountWithVariant / sampleCountTotal : 0;
-    // if (cohortFreq > 0 && cohortFreq <= 0.25)
-    // {
-    //   enrichment = 'enrichment_LOW';
-    //   enrichColor = 'eLOW';
-    // }
-    // else if (cohortFreq > 0.25 && cohortFreq <= 0.50) {
-    //   enrichment = 'enrichment_MEDIUM';
-    //   enrichColor = 'eMED';
-    // }
-    // else if (cohortFreq > 0.50 && cohortFreq <= 0.75) {
-    //   enrichment = 'enrichment_HIGH';
-    //   enrichColor = 'eHIGH';
-    // }
-    // else {
-    //   enrichment = 'enrichment_VERY_HIGH';
-    //   enrichColor = 'eVERYHIGH';
-    // }
+    var subsetEnrichment = d.subsetDelta;
+    if (subsetEnrichment >= 1.5) {
+      enrichment = "eUP";
+      enrichColor = "enrichment_subset_UP";
+    }
+    else if (subsetEnrichment <= 0.015) {
+      enrichment = "eDOWN";
+      enrichColor = "enrichment_subset_DOWN";
+    }
+    else {
+      enrichment = "eNONE";
+      enrichColor = "enrichment_NONE";
+    }
 
     var effectList = (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.effect : d.vepConsequence);
     for (var key in effectList) {
