@@ -39,6 +39,8 @@ class VariantModel {
     this.totalSubsetCount = 0,
     this.affectedProbandCount = 0,
     this.affectedSubsetCount = 0,
+    this.probandZygMap = {},
+    this.subsetZygMap = {},
 
     this.HUB_PROBANDS_NAME = "HubProbands",
     this.HUB_SUBSET_NAME = "HubSubsetProbands";
@@ -630,18 +632,29 @@ class VariantModel {
       subsetFeatures = subsetInfo.features;
 
       // Update features with enrichment info
-      self.assignEnrichmentRatios(probandFeatures, subsetFeatures);
+      self.assignEnrichmentZygosityInfo(probandFeatures, subsetFeatures);
     }
     catch(e) {
       console.log("There was a problem pulling out features from the result map in annotateCohortFrequencies. Unable to assign enrichment colors.");
     }
   }
 
-  assignEnrichmentRatios(probandFeatures, subsetFeatures) {
+  assignEnrichmentZygosityInfo(probandFeatures, subsetFeatures) {
     let totalProbandSampleNum = 0;
     let affectedProbandSampleNum = 0;
     let totalSubsetSampleNum = 0;
     let affectedSubsetSampleNum = 0;
+
+    let probandHets = 0;
+    let probandHomAlts = 0;
+    let probandHomRefs = 0;
+    let probandNoCalls = 0;
+
+    let subsetHets = 0;
+    let subsetHomAlts = 0;
+    let subsetHomRefs = 0;
+    let subsetNoCalls = 0;
+
     let probandLookup = {}; // Contains proband variants
 
     // Cycle through probands and store values in lookup
@@ -651,8 +664,20 @@ class VariantModel {
       for (var key in feature.genotypes) {
         totalProbandSampleNum++;
         currSample = feature.genotypes[key];
-        if (currSample.zygosity == "HET" || currSample.zygosity == "HOM")
+        if (currSample.zygosity == "HET") {
           affectedProbandSampleNum++;
+          probandHets++;
+        }
+        else if (currSample.zygosity == "HOM") {
+          affectedProbandSampleNum++;
+          probandHomAlts++;
+        }
+        else if (currSample.zygosity == "HOMREF") {
+          probandHomRefs++;
+        }
+        else {
+          probandNoCalls++;
+        }
       }
       probandLookup[feature.id] = [totalProbandSampleNum, affectedProbandSampleNum, i];
       feature.totalProbandCount = totalProbandSampleNum;
@@ -668,8 +693,20 @@ class VariantModel {
       for (var key in feature.genotypes) {
         totalSubsetSampleNum++;
         currSample = feature.genotypes[key];
-        if (currSample.zygosity == "HET" || currSample.zygosity == "HOM")
+        if (currSample.zygosity == "HET") {
           affectedSubsetSampleNum++;
+          subsetHets++;
+        }
+        else if (currSample.zygosity == "HOM") {
+          affectedSubsetSampleNum++;
+          subsetHomAlts++;
+        }
+        else if (currSample.zygosity == "HOMREF") {
+          subsetHomRefs++;
+        }
+        else {
+          subsetNoCalls++;
+        }
       }
       // Compute deltas
       let selectFeat = probandLookup[feature.id];
@@ -681,17 +718,21 @@ class VariantModel {
       let probandPercentage = affectedProbandSampleNum / totalProbandSampleNum * 100;
       let foldEnrichment = subsetPercentage / probandPercentage;
 
-      // Plug in subset feature info
+      // Plug in feature info
       feature.subsetDelta = foldEnrichment;
       feature.totalProbandCount = totalProbandSampleNum;
       feature.totalSubsetCount = totalSubsetSampleNum;
       feature.affectedProbandCount = affectedProbandSampleNum;
       feature.affectedSubsetCount = affectedSubsetSampleNum;
+      feature.subsetZygCounts = [subsetHomRefs, subsetHets, subsetHomAlts, subsetNoCalls];  // SJG these must be in homref, het, homalt, no call order
+      feature.probandZygCounts = [probandHomRefs, probandHets, probandHomAlts, probandNoCalls];
 
-      // Plug in subset info into matching proband feature
+      // Plug in info into matching proband feature
       probandFeatures[matchingFeatureIndex].subsetDelta = foldEnrichment;
       probandFeatures[matchingFeatureIndex].totalSubsetCount = totalSubsetSampleNum;
       probandFeatures[matchingFeatureIndex].affectedSubsetCount = affectedSubsetSampleNum;
+      probandFeatures[matchingFeatureIndex].subsetZygCounts = [subsetHomRefs, subsetHets, subsetHomAlts, subsetNoCalls];
+      probandFeatures[matchingFeatureIndex].probandZygCounts = [probandHomRefs, probandHets, probandHomAlts, probandNoCalls];
     })
   }
 

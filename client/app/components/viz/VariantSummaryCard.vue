@@ -166,7 +166,7 @@
 
 <template>
   <v-card>
-    <v-card-title primary-title style="margin-bottom: 8px; width: 100%; height: 30px">
+    <v-card-title primary-title style="width: 100%; height: 30px">
       <span style="display:inline-block; padding-right: 10px; font-size: 16px">VARIANT SUMMARY</span>
       <v-chip v-bind:class="{hide: variant == null}" small outline close color="cohortDarkBlue"
         @input="summaryCardVariantDeselect()">
@@ -205,9 +205,8 @@
         <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
         ref="summaryBarFeatureViz"
         :selectedVariant="variant"
-        :zygMap="zygMap"
-        :statusMap="statusMap"
-        :depthMap="depthMap"
+        :probandZygMap="probandZygMap"
+        :subsetZygMap="subsetZygMap"
         :affectedProbandCount="affectedProbandCount"
         :affectedSubsetCount="affectedSubsetCount"
         :totalProbandCount="totalProbandCount"
@@ -379,25 +378,38 @@ export default {
         return Math.round(this.variant.afExAC * 100) + "%";
       return "-";
     },
-    zygMap: function() {
-      var map = [];
-      var homRefCount = 0, hetCount = 0, homAltCount = 0, noCallCount = 0;
-      if (this.variant != null && this.variant.genotypes != null) {
-        var gtObj = this.variant.genotypes;
-        for (var gt in gtObj) {  // SJG TODO: not sure if this type of iteration supported by all browsers
-          if (gtObj.hasOwnProperty(gt)) {
-            if (gtObj[gt].zygosity == 'HOM') homAltCount++;
-            else if (gtObj[gt].zygosity == 'HET') hetCount++;
-            else if (gtObj[gt].zygosity == 'HOMREF') homRefCount++;
-            else noCallCount++;
-          }
-        }
+    probandZygMap: function() {
+      let map = [];
+      if (this.variant != null) {
+        let zygArr = this.variant.probandZygCounts;
+        map.push({label: "hom ref", value: zygArr[0]})
+        map.push({label: "het", value: zygArr[1]})
+        map.push({label: "hom alt", value: zygArr[2]})
+        map.push({label: "no call", value: zygArr[3]})
       }
-      map.push({label: "hom ref", value: homRefCount})
-      map.push({label: "het", value: hetCount})
-      map.push({label: "hom alt", value: homAltCount})
-      map.push({label: "no call", value: noCallCount})
-
+      else {
+        map.push({label: "hom ref", value: 0})
+        map.push({label: "het", value: 0})
+        map.push({label: "hom alt", value: 0})
+        map.push({label: "no call", value: 0})
+      }
+      return map;
+    },
+    subsetZygMap: function() {
+      let map = [];
+      if (this.variant != null) {
+        let zygArr = this.variant.subsetZygCounts;
+        map.push({label: "hom ref", value: zygArr[0]})
+        map.push({label: "het", value: zygArr[1]})
+        map.push({label: "hom alt", value: zygArr[2]})
+        map.push({label: "no call", value: zygArr[3]})
+      }
+      else {
+        map.push({label: "hom ref", value: 0})
+        map.push({label: "het", value: 0})
+        map.push({label: "hom alt", value: 0})
+        map.push({label: "no call", value: 0})
+      }
       return map;
     },
     statusMap: function() {
@@ -420,11 +432,11 @@ export default {
       map.push({label: "aff", value: affectedCount});
       return map;
     },
-    depthMap: function() {
-      var map = [];
-      // SJG TODO: not sure how to get these numbers - maybe leave this graph out for the demo?
-      return map;
-    },
+    // depthMap: function() {
+    //   var map = [];
+    //   // SJG TODO: not sure how to get these numbers - maybe leave this graph out for the demo?
+    //   return map;
+    // },
     geneName: function() {
       if (this.variant != null && this.selectedGene != null) {
         return this.selectedGene;

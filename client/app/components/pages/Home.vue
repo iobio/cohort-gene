@@ -64,6 +64,7 @@
             @knownVariantsFilterChange="onKnownVariantsFilterChange"
           ></variant-card>
 
+          <!-- v-bind:class="{ hide: !doneLoadingData }" -->
           <variant-summary-card
             :selectedGene="selectedGene.gene_name"
             :variant="selectedVariant"

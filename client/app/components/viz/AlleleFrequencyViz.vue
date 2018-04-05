@@ -9,7 +9,7 @@
 </style>
 
 <template>
-  <v-flex xs12 sm12 md6 lg4>
+  <v-flex xs12 sm12 md6 lg5>
     <v-layout row>
       <v-flex xs4 class="field-label-header">Allele Frequencies</v-flex>
       <v-flex xs8></v-flex>

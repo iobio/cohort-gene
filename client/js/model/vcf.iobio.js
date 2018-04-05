@@ -1624,7 +1624,9 @@ var effectCategories = [
                     'totalProbandCount':      0,
                     'totalSubsetCount':       0,
                     'affectedProbandCount':   0,
-                    'affectedSubsetCount':    0
+                    'affectedSubsetCount':    0,
+                    'probandZygCounts':       [],
+                    'subsetZygCounts':        []
                   }
 
                   for (var key in clinvarResult) {

@@ -14,16 +14,16 @@ function barChart() {
   // Instance variables
       var parentId,
       barColor = '#6c94b7',
-      comingSoonFlag = false;
+      comingSoonFlag = false,
+      yValueMax = 550,
+      yValueTicks = 5;
 
   // Private variables (can be made public if necessary except for _x and _y)
   var _x, _y,
-      height = 160,
-      dataHeight = height - 40,
-      width = 175,
-      roundedCorners = 2,
-      yValueMax = 100,
-      yValueTicks = 5;
+      height = 165,
+      dataHeight = height - 45,
+      width = 200,
+      roundedCorners = 2;
 
 
   /* Takes in array of maps with {label:, value:} entries and draws bars based on provided values.
@@ -116,7 +116,7 @@ function barChart() {
         .call(yAxis)
         .append("text")
         .attr("transform", "rotate(-90)")
-        .attr("y", 6) // Distance label is from y-axis
+        .attr("y", -2) // Distance label is from y-axis
         .attr("dx", "-3em")
         .attr("dy", "-3em")
         .style("text-anchor", "end")
@@ -178,6 +178,22 @@ function barChart() {
       return parentId;
     }
     parentId = _;
+    return chart;
+  };
+
+  chart.yValueMax = function(_) {
+    if (!arguments.length) {
+      return yValueMax;
+    }
+    yValueMax = _;
+    return chart;
+  };
+
+  chart.yValueTicks = function(_) {
+    if (!arguments.length) {
+      return yValueTicks;
+    }
+    yValueTicks = _;
     return chart;
   };
 

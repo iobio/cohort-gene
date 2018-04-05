@@ -22,16 +22,16 @@
 </style>
 
 <template>
-  <v-flex xs12 sm12 md12 lg6>
+  <v-flex xs12 sm12 md12 lg5>
     <v-layout row>
-      <v-flex xs4 class="subtitle-label">Sample Zygosities</v-flex>
-      <v-flex xs4 class="subtitle-label">Affected Status</v-flex>
-      <v-flex xs4 class="subtitle-label">Sample Depths</v-flex>
+      <v-flex xs6 class="subtitle-label">Proband Zygosities</v-flex>
+      <v-flex xs6 class="subtitle-label">Subset Zygosities</v-flex>
+      <!-- <v-flex xs4 class="subtitle-label">Sample Depths</v-flex> -->
     </v-layout>
-    <v-layout row>
-      <v-flex xs4 id="zygBar"></v-flex>
-      <v-flex xs4 id="statusBar"></v-flex>
-      <v-flex xs4 id="depthBar"></v-flex>
+    <v-layout row style="padding-left: 5%">
+      <v-flex xs6 id="probandZygBar"></v-flex>
+      <v-flex xs6 id="subsetZygBar"></v-flex>
+      <!-- <v-flex xs4 id="depthBar"></v-flex> -->
     </v-layout>
   </v-flex>
 </template>
@@ -41,14 +41,15 @@ export default {
   name: 'bar-feature-viz',
   data() {
     return {
-      zygChart: {},
-      statusChart: {},
-      depthChart: {}
+      probandZygChart: {},
+      subsetZygChart: {},
+      //depthChart: {}
     }
   },
   props: {
     selectedVariant: {},
-    zygMap: {},
+    probandZygMap: {},
+    subsetZygMap: {},
     statusMap: {},
     depthMap: {},
     affectedProbandCount: {},
@@ -64,38 +65,38 @@ export default {
     drawCharts() {
       let self = this;
 
-      self.zygChart = barChart()
-        .parentId('zygBar')
+      self.probandZygChart = barChart()
+        .parentId('probandZygBar')
+        //.yValueMax(self.totalProbandCount)
         .on('d3rendered', function() {
         });
-      self.zygChart(self.zygMap);
+      self.probandZygChart(self.probandZygMap);
 
-      self.statusChart = barChart()
-        .parentId('statusBar')
+      self.subsetZygChart = barChart()
+        .parentId('subsetZygBar')
+        //.yValueMax(self.totalSubsetCount)
         .on('d3rendered', function() {
         });
-      self.statusChart(self.statusMap);
+      self.subsetZygChart(self.subsetZygMap);
 
-      self.depthChart = barChart()
-        .parentId('depthBar')
-        .comingSoonFlag(true)
-        .on('d3rendered', function() {
-        });
-      self.depthChart(self.depthMap);
+      // self.depthChart = barChart()
+      //   .parentId('depthBar')
+      //   .comingSoonFlag(true)
+      //   .on('d3rendered', function() {
+      //   });
+      // self.depthChart(self.depthMap);
     },
     fillCharts() {
       let self = this;
-      // SJG TODO: get this working
-      //self.zygChart.redrawYAxis()(self.totalSampleCount);
-      self.zygChart.fillChart()(self.zygMap);
-      self.statusChart.fillChart()(self.statusMap);
-      self.depthChart.fillChart()(self.depthMap);
+      self.probandZygChart.fillChart()(self.probandZygMap);
+      self.subsetZygChart.fillChart()(self.subsetZygMap);
+      //self.depthChart.fillChart()(self.depthMap);
     },
     clear() {
       let self = this;
-      self.zygChart.fillChart()();
-      self.statusChart.fillChart()();
-      self.depthChart.fillChart()();
+      self.probandZygChart.fillChart()();
+      self.subsetZygChart.fillChart()();
+      //self.depthChart.fillChart()();
     }
   },
   watch: {
