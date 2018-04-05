@@ -275,7 +275,11 @@ export default {
     },
     foldEnrichmentInfo: function() {
       if (this.variant != null) {
-        let foldEnrich = Math.round(this.variant.subsetDelta * 10) / 10 + "x";
+        let delta = this.variant.subsetDelta;
+        if (delta < 0.5 && delta > 0) {
+          delta = 1/delta;
+        }
+        let foldEnrich = Math.round(delta * 10) / 10 + "x";
         if (this.variant.subsetDelta >= 2) return (foldEnrich + " IN SUBSET");
         else if (this.variant.subsetDelta <= 0.5) return (foldEnrich + " IN SUBSET");
       }
