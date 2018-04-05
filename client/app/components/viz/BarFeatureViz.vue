@@ -67,27 +67,19 @@ export default {
 
       self.probandZygChart = barChart()
         .parentId('probandZygBar')
-        //.yValueMax(self.totalProbandCount)
         .on('d3rendered', function() {
         });
       self.probandZygChart(self.probandZygMap);
 
       self.subsetZygChart = barChart()
         .parentId('subsetZygBar')
-        //.yValueMax(self.totalSubsetCount)
         .on('d3rendered', function() {
         });
       self.subsetZygChart(self.subsetZygMap);
-
-      // self.depthChart = barChart()
-      //   .parentId('depthBar')
-      //   .comingSoonFlag(true)
-      //   .on('d3rendered', function() {
-      //   });
-      // self.depthChart(self.depthMap);
     },
     fillCharts() {
       let self = this;
+      debugger; // make sure values look correct in maps
       self.probandZygChart.fillChart()(self.probandZygMap);
       self.subsetZygChart.fillChart()(self.subsetZygMap);
       //self.depthChart.fillChart()(self.depthMap);

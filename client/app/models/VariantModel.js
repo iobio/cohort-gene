@@ -679,11 +679,16 @@ class VariantModel {
           probandNoCalls++;
         }
       }
-      probandLookup[feature.id] = [totalProbandSampleNum, affectedProbandSampleNum, i];
+      probandLookup[feature.id] = [totalProbandSampleNum, affectedProbandSampleNum, i, probandHomRefs, probandHets, probandHomAlts, probandNoCalls];
       feature.totalProbandCount = totalProbandSampleNum;
       feature.affectedProbandCount = affectedProbandSampleNum;
+      feature.probandZygCounts = [probandHomRefs, probandHets, probandHomAlts, probandNoCalls];
       totalProbandSampleNum = 0;
       affectedProbandSampleNum = 0;
+      probandHets = 0;
+      probandHomAlts = 0;
+      probandHomRefs = 0;
+      probandNoCalls = 0;
       i++;
     })
 
@@ -708,12 +713,17 @@ class VariantModel {
           subsetNoCalls++;
         }
       }
-      // Compute deltas
+      // Pull data out of our lookup
       let selectFeat = probandLookup[feature.id];
       totalProbandSampleNum = selectFeat[0];
       affectedProbandSampleNum = selectFeat[1];
       let matchingFeatureIndex = selectFeat[2];
+      let matchingProbandHomRefs = selectFeat[3];
+      let matchingProbandHets = selectFeat[4];
+      let matchingProbandHomAlts = selectFeat[5];
+      let matchingProbandNoCalls = selectFeat[6];
 
+      // Compute deltas
       let subsetPercentage = affectedSubsetSampleNum / totalSubsetSampleNum * 100;
       let probandPercentage = affectedProbandSampleNum / totalProbandSampleNum * 100;
       let foldEnrichment = subsetPercentage / probandPercentage;
@@ -725,14 +735,21 @@ class VariantModel {
       feature.affectedProbandCount = affectedProbandSampleNum;
       feature.affectedSubsetCount = affectedSubsetSampleNum;
       feature.subsetZygCounts = [subsetHomRefs, subsetHets, subsetHomAlts, subsetNoCalls];  // SJG these must be in homref, het, homalt, no call order
-      feature.probandZygCounts = [probandHomRefs, probandHets, probandHomAlts, probandNoCalls];
+      feature.probandZygCounts = [matchingProbandHomRefs, matchingProbandHets, matchingProbandHomAlts, matchingProbandNoCalls];
 
       // Plug in info into matching proband feature
       probandFeatures[matchingFeatureIndex].subsetDelta = foldEnrichment;
       probandFeatures[matchingFeatureIndex].totalSubsetCount = totalSubsetSampleNum;
       probandFeatures[matchingFeatureIndex].affectedSubsetCount = affectedSubsetSampleNum;
       probandFeatures[matchingFeatureIndex].subsetZygCounts = [subsetHomRefs, subsetHets, subsetHomAlts, subsetNoCalls];
-      probandFeatures[matchingFeatureIndex].probandZygCounts = [probandHomRefs, probandHets, probandHomAlts, probandNoCalls];
+
+      // Reset loop variables
+      totalSubsetSampleNum = 0;
+      affectedSubsetSampleNum = 0;
+      subsetHets = 0;
+      subsetHomAlts = 0;
+      subsetHomRefs = 0;
+      subsetNoCalls = 0;
     })
   }
 
