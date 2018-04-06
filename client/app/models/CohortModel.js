@@ -38,12 +38,22 @@ class CohortModel {
       'drawingVariants': false
     };
 
+    // Private access to parent variant model
     this._variantModel = theVariantModel;
     this.getVariantModel = function() { return this._variantModel; }
+
+    // Identifiers
+    this.isProbandCohort = false;
+    this.isSubsetCohort = false;
+    this.isUnaffectedCohort = false;
   }
 
   getName() {
-    return this.name;
+    let self = this;
+    if (self.isProbandCohort) return PROBAND_ID;
+    if (self.isSubsetCohort) return SUBSET_ID;
+    if (self.isUnaffectedCohort) return UNAFFECTED_ID;
+    return '';
   }
 
   getSampleName() {
@@ -633,24 +643,6 @@ class CohortModel {
 
   }
 
-  getName() {
-    return this.name;
-  }
-
-  setName(theName) {
-    if (theName) {
-      this.name = theName;
-    }
-  }
-
-  // addSubsetSampleId(sampleId) {
-  //   this.subsetIdList.push(sampleId);
-  // }
-  //
-  // getSubsetSampleIdList() {
-  //   return this.subsetIdList;
-  // }
-
   /* Setup VCF fields */
   init(variantModel) {
     var me = this;
@@ -777,43 +769,43 @@ class CohortModel {
   }
 
   onVcfUrlEntered(vcfUrl, tbiUrl, callback) {
-    var me = this;
-    this.vcfData = null;
-    var success = true;
-    this.sampleName = null;
+   var me = this;
+   this.vcfData = null;
+   var success = true;
+   this.sampleName = null;
 
-    if (vcfUrl == null || vcfUrl == '') {
-      this.vcfUrlEntered = false;
-      success = false;
-    } else {
-      me.vcfUrlEntered = true;
-        me.vcfFileOpened = false;
-        me.getVcfRefName = null;
-        me.isMultiSample = true;  // SJG changed this to true
+   if (vcfUrl == null || vcfUrl == '') {
+     this.vcfUrlEntered = false;
+     success = false;
+   } else {
+     me.vcfUrlEntered = true;
+       me.vcfFileOpened = false;
+       me.getVcfRefName = null;
+       me.isMultiSample = true;  // SJG changed this to true
 
-        success = this.vcf.openVcfUrl(vcfUrl, tbiUrl, function(success, errorMsg) {
-          if (me.lastVcfAlertify) {
-            me.lastVcfAlertify.dismiss();
-          }
-          if (success) {
-          me.vcfUrlEntered = true;
-            me.vcfFileOpened = false;
-            me.getVcfRefName = null;
-            // Get the sample names from the vcf header
-            me.vcf.getSampleNames( function(sampleNames) {
-              me.isMultiSample = sampleNames && sampleNames.length > 1 ? true : false;
-              callback(success, sampleNames);
-            });
-          } else {
-            me.vcfUrlEntered = false;
-            var msg = "<span style='font-size:18px'>" + errorMsg + "</span><br><span style='font-size:12px'>" + vcfUrl + "</span>";
-            alertify.set('notifier','position', 'top-right');
-            me.lastVcfAlertify = alertify.error(msg, 15);
-            callback(success);
-          }
-        });
-    }
-  }
+       success = this.vcf.openVcfUrl(vcfUrl, tbiUrl, function(success, errorMsg) {
+         if (me.lastVcfAlertify) {
+           me.lastVcfAlertify.dismiss();
+         }
+         if (success) {
+         me.vcfUrlEntered = true;
+           me.vcfFileOpened = false;
+           me.getVcfRefName = null;
+           // Get the sample names from the vcf header
+           me.vcf.getSampleNames( function(sampleNames) {
+             me.isMultiSample = sampleNames && sampleNames.length > 1 ? true : false;
+             callback(success, sampleNames);
+           });
+         } else {
+           me.vcfUrlEntered = false;
+           var msg = "<span style='font-size:18px'>" + errorMsg + "</span><br><span style='font-size:12px'>" + vcfUrl + "</span>";
+           alertify.set('notifier','position', 'top-right');
+           me.lastVcfAlertify = alertify.error(msg, 15);
+           callback(success);
+         }
+       });
+   }
+ }
 
   _promiseVcfRefName(ref) {
     var me = this;
@@ -1290,7 +1282,6 @@ class CohortModel {
 
   // Called once per cohort - need to make this call subset first
   promiseAnnotateVariants(theGene, theTranscript, cohortModels, isMultiSample, isBackground, cacheHelper, keepVariantsCombined) {
-    console.log("called promiseAnnotateVariants in CohortModel");
     var me = this;
     return new Promise( function(resolve, reject) {
 
@@ -1303,7 +1294,7 @@ class CohortModel {
       cohortModels.forEach(function(model) {
         var p = model._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript, cacheHelper)
          .then(function(vcfData) {
-           console.log('Got vcf data back from cache in CohortModel');
+            // SJG TODO: vcfData coming back null here
           if (vcfData != null && vcfData != '') {
             resultMap[model.name] = vcfData;
 
@@ -1327,7 +1318,7 @@ class CohortModel {
           me._promiseVcfRefName(theGene.chr)
           .then(function() {
             return me.vcf.promiseGetVariants(
-               me.getVcfRefName(theGene.chr),
+               me.getVcfRefName(theGene.chr),   // SJG TODO: problem is getvcfrefname is null
                theGene,
                theTranscript,
                null,   // regions
@@ -1344,7 +1335,7 @@ class CohortModel {
               );
           })
           .then(function(data) {
-            console.log('Got variants data back from vcf.iobio.js in CohortModel');
+            console.log('Obtained annotated data from iobio services...');
             var annotatedRecs = data[0];
             var results = data[1];  // One entry per sample in results
 
@@ -1373,12 +1364,12 @@ class CohortModel {
                  return;
                 }
                 theVcfData.gene = theGeneObject;
-                resultMap[model.name] = theVcfData;
+                let cohortName = me.getName();
+                resultMap[cohortName] = theVcfData;
 
                 if (!isBackground) {
                  model.vcfData = theVcfData;      // SJG NOTE THIS IS WHERE CRASHING - might be copying object here
                 }
-                console.log("Completed promiseAnnotateVariants in CohortModel");
                 resolve(resultMap);
               } else {
                 var error = "ERROR - cannot locate gene object to match with vcf data " + data.ref + " " + data.start + "-" + data.end;
@@ -1415,7 +1406,7 @@ class CohortModel {
   _promiseDetermineVariantBookmarks(theVcfData, theGeneObject, theTranscript) {
     var me = this;
 
-    if (me.getName() == 'mainCohort') {
+    if (me.getName() == PROBAND_ID) {
       return bookmarkCard.promiseDetermineVariantBookmarks(theVcfData, theGeneObject, theTranscript);
     } else {
       return new Promise(function(resolve, reject) {
@@ -2268,7 +2259,7 @@ class CohortModel {
     var filteredFeatures = data.features.filter(function(d) {
 
       var passAffectedStatus = true;
-      if (me.getName() == 'mainCohort' && affectedFilters.length > 0) {
+      if (me.getName() == PROBAND_ID && affectedFilters.length > 0) {
         affectedFilters.forEach(function(info) {
           var genotype = data.genotypes[info.variantCard.getSampleName()];
           var zygosity = genotype && genotype.zygosity ? genotype.zygosity : "gt_unknown";
@@ -2422,7 +2413,7 @@ class CohortModel {
 
         // Bypass evaluation for non-proband on inheritance mode.  This only
         // applied to proband.
-        if (key == 'inheritance' && me.getName() != 'mainCohort') {
+        if (key == 'inheritance' && me.getName() != PROBAND_ID) {
           continue;
         }
         if (evalObject.hasOwnProperty("equals") && evalObject["equals"].matchCount == 0) {
@@ -2441,7 +2432,7 @@ class CohortModel {
 
         // Bypass evaluation for non-proband on inheritance mode.  This only
         // applied to proband.
-        if (key == 'inheritance' && me.getName() != 'mainCohort') {
+        if (key == 'inheritance' && me.getName() != PROBAND_ID) {
           continue;
         }
         // Any case where the variant attribute matches value on a 'not equal' filter,

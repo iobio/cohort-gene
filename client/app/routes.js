@@ -51,9 +51,7 @@ const router = new VueRouter({
 window.vm = new Vue({
   el: '#app',
   mounted: function() {
-        console.log("Routing info: ");
         var q = this.$route.query
-        console.log(q)
   },
   created: function() {
   },

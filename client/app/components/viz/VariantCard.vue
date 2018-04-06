@@ -1,6 +1,6 @@
 <!--
 Encapsulates Variant card
-Updated: SJG Mar2018
+Updated: SJG Apr2018
 -->
 <style lang="sass">
   @import ../../../assets/sass/variables
@@ -81,7 +81,7 @@ Updated: SJG Mar2018
       </v-layout>
       <div style="width:100%">
         <variant-viz
-          v-if="showVariantViz"
+          v-if="(showVariantViz && cohorts.length > 0)"
           v-for="cohort in cohorts"
           :key="cohort.name"
           ref="variantVizRef"
@@ -90,7 +90,6 @@ Updated: SJG Mar2018
           :data="cohort.loadedVariants"
           :title="cohort.trackName"
           :phenotypes="cohort.subsetPhenotypes"
-          :name="cohort.name"
           :regionStart="regionStart"
           :regionEnd="regionEnd"
           :annotationScheme="annotationScheme"
@@ -124,7 +123,6 @@ Updated: SJG Mar2018
           :featureClass="getExonClass"
           >
         </gene-viz>
-        <!--SJG TODO: took this out of gene-viz card above @feature-selected="showExonTooltip" -->
       </div>
     </v-card-title>
   </v-card>
@@ -257,7 +255,7 @@ export default {
         self.selectedTranscript,
         lock,
         coord,
-        self.dataSetModel.cohortMap[cohortKey].name,
+        self.dataSetModel.cohortMap[cohortKey].getName(),
         self.dataSetModel.cohortMap[cohortKey].getAffectedInfo(),
         "",     // SJG TODO: put mode in here later if necessary
         0);     // SJG TODO put max allele count in here
@@ -364,7 +362,7 @@ export default {
       this.showDepthViz ? 0 : 60;
     },
     cohorts: function() {
-      return this.dataSetModel.cohorts;
+      return this.dataSetModel._cohorts;
     }
   },
   watch: {
@@ -379,7 +377,8 @@ export default {
     }
   },
   mounted: function() {
-    this.name = this.dataSetModel.name;
+    let self = this;
+    self.name = self.dataSetModel.name;
     //this.drawColorLegend();
   },
   created: function() {

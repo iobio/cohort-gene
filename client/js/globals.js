@@ -1,23 +1,26 @@
 // Fields
 var IMPACT_FIELD_TO_FILTER    = 'highestImpactVep';
 var IMPACT_FIELD_TO_COLOR     = 'vepImpact';
-
+// Cohort model identifiers
+var PROBAND_ID = 'Proband';
+var SUBSET_ID = 'Subset';
+var UNAFFECTED_ID = 'Unaffected';
+// Hub identifiers
+var HUB_PROBANDS_NAME = "HubProbands";
+var HUB_SUBSET_NAME = "HubSubsetProbands";
 //
 // URLS
 //
 var DEV_IOBIO                 = "nv-dev-new.iobio.io/";
 var STAGE_IOBIO               = "nv-purple.iobio.io/";
 var PROD_IOBIO                = "nv-blue.iobio.io/";
-
 var CURRENT_IOBIO             = PROD_IOBIO;
-
-// SJGHUB NOTE: put api address here
-var HUB_ENV                   = "development";
-var hub_api                   = { development: "http://localhost:3000/apiv1", production: "https://staging.frameshift.io/apiv1" };
-
 var iobio_services            = isOffline              ? serverInstance : CURRENT_IOBIO;
 var iobio_http_services       = (useSSL ? "https://" : "http://") + (isOffline ? serverInstance : CURRENT_IOBIO);
 
+// Hub servicess
+var HUB_ENV                   = "development";
+var hub_api                   = { development: "http://localhost:3000/apiv1", production: "https://staging.frameshift.io/apiv1" };
 
 // http services
 var geneInfoServer            = iobio_http_services + "geneinfo/";

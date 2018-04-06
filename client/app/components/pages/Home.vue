@@ -32,16 +32,12 @@
     <v-container fluid style="padding-top: 3px">
       <!-- TODO: do I need data-sources-loader -->
 
-      <!-- TODO: would like to get away from passing giant variantModel here-->
-      <!-- v-bind:class="{ hide: Object.keys(selectedGene).length == 0 }" -->
-
-       <!-- || !variantModel -->
+      <!-- v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !variantModel }" -->
       <v-layout>
         <v-flex xs12>
           <variant-card
-            ref="variantCardRef"
-            v-for="dataSet in dataSets"
-            :key="dataSet.name"
+            v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !variantModel || !dataSet }"
+            v-if="(variantModel && dataSet)"
             :dataSetModel="dataSet"
             :annotationScheme="variantModel.annotationScheme"
             :classifyVariantSymbolFunc="variantModel.classifyByImpact"
@@ -128,7 +124,7 @@ export default {
 
       allGenes: allGenesData,
       simonsIdMap: simonsIdMap,
-      dataSets: [],
+      dataSet: {},
 
       // Models
       variantModel: null,
@@ -182,7 +178,7 @@ export default {
         self.genomeBuildHelper,
         utility.getHumanRefNames);
 
-      let mode = 'production';
+      let mode = 'development';
       let hubEndpoint = new HubEndpoint(mode);
 
       self.variantModel = new VariantModel(endpoint,
@@ -206,7 +202,7 @@ export default {
         self.genomeBuildHelper);
     })
     .then(function() {
-      self.dataSets = self.variantModel.dataSets;
+      self.dataSet = self.variantModel.dataSet;
       self.filterModel = new FilterModel(self.variantModel.affectedInfo);
       self.variantModel.filterModel = self.filterModel;
 
@@ -223,13 +219,6 @@ export default {
         return null;
       }
     }
-    // selectedGeneInfo: function() {
-    //   if (this.selectedGene) {
-    //     return this.selectedGene.gene_name + " " + this.selectedGene.chr;
-    //   } else {
-    //     return "X";
-    //   }
-    // }
   },
   watch: {},
   methods: {
@@ -264,7 +253,7 @@ export default {
       self.onGeneSelected('AIRE');
       self.variantModel.promiseInitDemo()
       .then(function() {
-        self.dataSets = self.variantModel.dataSets;
+        self.dataSet = self.variantModel.dataSet;
         if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
           self.promiseLoadData();
         }
@@ -274,7 +263,7 @@ export default {
       let self = this;
 
       return new Promise(function(resolve, reject) {
-        if (self.dataSets && self.dataSets.length > 0) {
+        if (self.dataSet) {
           //self.featureMatrixModel.inProgress.loadingVariants = true;
           var options = {'getKnownVariants': self.showClinvarVariants};
 
@@ -412,11 +401,9 @@ export default {
       let self = this;
       if (variant) {
         self.selectedVariant = variant;
-        self.$refs.variantCardRef.forEach(function(variantCard) {
-          if (sourceComponent == null || variantCard != sourceComponent) {
-            variantCard.showVariantCircle(variant);
-          }
-        })
+        if (sourceComponent == null || variantCard != sourceComponent) {
+          self.$variantCard.showVariantCircle(variant);
+        }
       }
       else {
           self.deselectVariant();
@@ -551,7 +538,7 @@ export default {
         self.variantModel.projectId = self.paramProjectId;
         self.variantModel.promiseInitFromHub()
             .then(function() {
-              self.dataSets = self.variantModel.dataSets;
+              self.dataSet = self.variantModel.dataSet;
               if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
                 self.promiseLoadData();
               }
@@ -567,7 +554,7 @@ export default {
         self.onGeneSelected('AIRE');
         self.variantModel.promiseInitDemo()
             .then(function() {
-              self.dataSets = self.variantModel.dataSets;
+              self.dataSet = self.variantModel.dataSet;
               if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
                 self.promiseLoadData();
               }
@@ -575,9 +562,6 @@ export default {
                 console.log("failed to load data because selected gene length is 0");
               }
             })
-
-        // SJG TODO: get file selection working
-        //self.variantModel.promiseInit();
       }
     },
     /* Returns array of phenotype objects {phenotypeName: phenotypeData} */

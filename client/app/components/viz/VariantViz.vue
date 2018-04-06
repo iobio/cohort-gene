@@ -182,10 +182,6 @@ export default {
         default: '',
         type: String
       },
-      name: {
-        default: '',
-        type: String
-      },
       phenotypes: {
         type: Array,
         default: () => []
@@ -213,13 +209,16 @@ export default {
     },
     data() {
       return {
-        variantChart: {}
+        variantChart: {},
+        name: ''
       }
     },
     created: function() {
     },
     mounted: function() {
-      this.draw();
+      let self = this;
+      self.name = self.model.getName();
+      self.draw();
     },
     methods: {
       draw: function() {
@@ -228,7 +227,7 @@ export default {
         this.variantChart =  variantD3()
           .width(this.width)
           .clazz(function(variant) {
-            return self.classifySymbolFunc(variant, self.annotationScheme, self.name);
+            return self.classifySymbolFunc(variant, self.annotationScheme, self.isSubsetModel);
           })
           .margin(this.margin)
           .showXAxis(this.showXAxis)
