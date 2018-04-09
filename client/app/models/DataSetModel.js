@@ -1,4 +1,5 @@
-/* Logic relative to a single data set (for example, Sfari data set). Holds list of CohortModels. */
+/* Logic relative to a single data set (for example, Sfari data set)
+   SJG Apr2018 */
 class DataSetModel {
   constructor() {
     // Public probs
@@ -32,19 +33,19 @@ class DataSetModel {
     return self._cohortMap[PROBAND_ID];
   }
 
-  /* Returns proband cohort or undefined if it does not exist. */
+  /* Returns subset cohort or undefined if it does not exist. */
   getSubsetCohort() {
     let self = this;
     return self._cohortMap[SUBSET_ID];
   }
 
-  /* Returns proband cohort or undefined if it does not exist. */
+  /* Returns unaffected cohort or undefined if it does not exist. */
   getUnaffectedCohort() {
     let self = this;
     return self._cohortMap[UNAFFECTED_ID];
   }
 
-  /* Convenience method that returns cohort given an ID. */
+  /* Convenience method that returns cohort given a valid ID. */
   getCohort(id) {
     let self = this;
     return self._cohortMap[id];

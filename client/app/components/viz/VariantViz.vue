@@ -227,7 +227,7 @@ export default {
         this.variantChart =  variantD3()
           .width(this.width)
           .clazz(function(variant) {
-            return self.classifySymbolFunc(variant, self.annotationScheme, self.isSubsetModel);
+            return self.classifySymbolFunc(variant, self.annotationScheme, self.model.isSubsetCohort);
           })
           .margin(this.margin)
           .showXAxis(this.showXAxis)
@@ -316,7 +316,7 @@ export default {
       data: function() {
         let self = this;
         self.update();
-        console.log("redrawing variants");
+        console.log("Drawing variants...");
       }
     }
 }

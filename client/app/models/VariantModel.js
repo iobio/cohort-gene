@@ -1,5 +1,5 @@
 /* Encapsulates logic for Variant Card and Variant Summary Card
-   SJG Apr2018 */
+   SJG & TS Apr2018 */
 
 class VariantModel {
   constructor(endpoint, genericAnnotation, translator, geneModel,
@@ -30,14 +30,14 @@ class VariantModel {
     this.maxAlleleCount = null;
     this.affectedInfo = null;
     this.maxDepth = 0;
-    this.keepVariantsCombined = true;     // True for cohort samples to be displayed on single track
+    this.keepVariantsCombined = true;       // True for multiple samples to be displayed on single track
     this.inProgress = { 'loadingDataSources': false };
     this.genesInProgress = [];
 
     // Hub-specific props
-    this.projectId = '';
-    this.phenoFilters = {};
-    this.simonsIdMap = {};
+    this.projectId = '';                    // Hub project ID if we're sourcing data from there
+    this.phenoFilters = {};                 // Hub filters applied to samples
+    this.simonsIdMap = {};                  // Lookup table to convert Hub VCF IDs to Simons IDs
 
     // Demo data
     this.userVcf = "https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz";
@@ -67,7 +67,7 @@ class VariantModel {
     // Initialize proband model
     let allSampleCohort = new CohortModel(self);
     allSampleCohort.isProbandCohort = true;
-    allSampleCohort.trackName = 'Complete Cohort';
+    allSampleCohort.trackName = 'Variants for';
     allSampleCohort.subsetIds.push(['NA12877', 'NA12878', 'NA12891', 'NA12892']);
     allSampleCohort.subsetPhenotypes.push('Probands');
     demoDataSet.addCohort(allSampleCohort, PROBAND_ID);
@@ -75,7 +75,7 @@ class VariantModel {
     // Initialize subset model
     let subsetCohort = new CohortModel(self);
     subsetCohort.isSubsetCohort = true;
-    subsetCohort.trackName = 'Susbet Cohort';
+    subsetCohort.trackName = 'Variants for';
     subsetCohort.subsetIds.push(['NA12878', 'NA12877']);
     subsetCohort.subsetPhenotypes.push(['0 < IQ < 80', '40 < Paternal Age < 50']);
     demoDataSet.addCohort(subsetCohort, SUBSET_ID);
@@ -101,7 +101,7 @@ class VariantModel {
     let probandCohort = new CohortModel(self);
     probandCohort.isProbandCohort = true;
     probandCohort.inProgress.fetchingHubData = true;
-    probandCohort.trackName = 'Proband Cohort';
+    probandCohort.trackName = 'Variants for';
     probandCohort.subsetPhenotypes.push('Probands');
     hubDataSet.addCohort(probandCohort, PROBAND_ID);
 
@@ -109,7 +109,7 @@ class VariantModel {
     let subsetCohort = new CohortModel(self);
     subsetCohort.isSubsetCohort = true;
     subsetCohort.inProgress.fetchingHubData = true;
-    subsetCohort.trackName = 'Subset Cohort';
+    subsetCohort.trackName = 'Variants for';
     subsetCohort.subsetPhenotypes.push('Subsets');
     hubDataSet.addCohort(subsetCohort, SUBSET_ID);
 
@@ -117,6 +117,16 @@ class VariantModel {
     return new Promise(function(resolve, reject) {
       self.promiseGetUrlsFromHub(self.projectId)
         .then(function(dataSet) {
+          if (dataSet == null) {
+            let currCohorts = self.dataSet.getCohorts();
+            if (currCohorts != undefined && currCohorts.length > 0) {
+                currCohorts.forEach(function(cohort) {
+                  cohort.inProgress.fetchingHubData = false;
+                })
+            }
+            alert("Could not obtain data from Hub. Please try relaunching application.");
+            reject();
+          }
           console.log("Obtained data routing from Hub...");
           hubDataSet.vcfUrl = dataSet.vcfUrl;
           hubDataSet.tbiUrl = dataSet.tbiUrl;
@@ -128,6 +138,16 @@ class VariantModel {
           // Retrieve proband sample IDs from Hub
           self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
               .then(function(ids) {
+                if (ids == null || ids.length == 0) {
+                  let currCohorts = self.dataSet.getCohorts();
+                  if (currCohorts != undefined && currCohorts.length > 0) {
+                    currCohorts.forEach(function(cohort) {
+                      cohort.inProgress.fetchingHubData = false;
+                    })
+                    alert("Could not obtain sample IDs from Hub. Please try relaunching application.");
+                    reject();
+                  }
+                }
                 console.log("Obtained proband IDs from Hub...");
                 probandCohort.subsetIds = ids;
                 probandCohort.subsetPhenotypes.push('n = ' + ids.length);
@@ -136,24 +156,40 @@ class VariantModel {
                 self.assignPhenoFilters(subsetCohort, probandFilter);
                 self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                     .then(function(ids) {
-                      console.log("Obtained susbset IDs from Hub...");
-                      subsetCohort.subsetIds = ids;
-                      subsetCohort.subsetPhenotypes.splice(1, 0, ('n = ' + ids.length));
+                      if (ids != null && ids.length > 0) {
+                        console.log("Obtained susbset IDs from Hub...");
+                        subsetCohort.subsetIds = ids;
+                        subsetCohort.subsetPhenotypes.splice(1, 0, ('n = ' + ids.length));
 
-                      // Start processing data
-                      self.promiseInit()
-                          .then(function() {
-                            // Update loading flags
-                            let currCohorts = self.dataSet.getCohorts();
-                            if (currCohorts != undefined && currCohorts.length > 0) {
-                                currCohorts.forEach(function(cohort) {
-                                  cohort.inProgress.fetchingHubData = false;
-                                })
-                              }
-                            resolve();
+                        // Start processing data
+                        self.promiseInit()
+                            .then(function() {
+                              // Update loading flags
+                              let currCohorts = self.dataSet.getCohorts();
+                              if (currCohorts != undefined && currCohorts.length > 0) {
+                                  currCohorts.forEach(function(cohort) {
+                                    cohort.inProgress.fetchingHubData = false;
+                                  })
+                                }
+                              resolve();
+                            })
+                      }
+                      else {
+                        let currCohorts = self.dataSet.getCohorts();
+                        if (currCohorts != undefined && currCohorts.length > 0) {
+                          currCohorts.forEach(function(cohort) {
+                            cohort.inProgress.fetchingHubData = false;
+                            alert("Could not obtain sample IDs from Hub. Please try relaunching application.");
+                            reject();
                           })
+                        }
+                      }
                     })
               })
+        })
+        .catch(function(error) {
+          console.log("There was a problem obtaining data from Hub.");
+          reject(error);
         })
     });
   }
@@ -449,13 +485,10 @@ class VariantModel {
       })
     }
 
-    // SJG: exchanged 'proband' for 'mainCohort'
     return new Promise(function(resolve, reject) {
       if (self.isAlignmentsOnly() && !autocall && resultMap == null) {
-          resolve({'resultMap': {'mainCohort': {features: []}}, 'gene': geneObject, 'transcript': theTranscript});
+          resolve({'resultMap': { PROBAND_ID: {features: []}}, 'gene': geneObject, 'transcript': theTranscript});
       } else {
-        // TODO: this is considering a 'single' mode at the moment, not a 'trio'
-        // May need to incorporate both options like before if importing trios
         resolveIt(resolve, resultMap, geneObject, theTranscript, options);
       }
     })
@@ -478,6 +511,7 @@ class VariantModel {
     alert("promiseLoadKnownVariants in VariantModel not implemented yet");
   }
 
+  /* Clears the variant data for each cohort. Falsifies flags used for chip display. */
   clearLoadedData() {
     let self = this;
     if (self.dataSet != null) {
@@ -494,6 +528,7 @@ class VariantModel {
     alert("not implemented yet");
   }
 
+  /* Filters out homozygous ref variants for each cohort. Initializes pileup rendering of variants. */
   setLoadedVariants(gene, name=null) {
     let self = this;
 
@@ -555,6 +590,8 @@ class VariantModel {
     })
   }
 
+  /* Assigns cohort-relative statistics to each variant.
+     Used to populate Summary Card graphs when clicking on a variant. */
   annotateCohortFrequencies(resultMapList) {
     let self = this;
     var probandFeatures = null;
@@ -576,6 +613,8 @@ class VariantModel {
     }
   }
 
+  /* Assigns both a delta value representing subset enrichment, and total sample zygosities, to each variant.
+     Used to populate Summary Card information when a variant is clicked on, and for visual variant rendering. */
   assignEnrichmentZygosityInfo(probandFeatures, subsetFeatures) {
     let totalProbandSampleNum = 0;
     let affectedProbandSampleNum = 0;
@@ -592,7 +631,7 @@ class VariantModel {
     let subsetHomRefs = 0;
     let subsetNoCalls = 0;
 
-    let probandLookup = {}; // Contains proband variants
+    let probandLookup = {};
 
     // Cycle through probands and store values in lookup
     let i = 0;
@@ -845,11 +884,13 @@ class VariantModel {
     alert("not implemented yet");
   }
 
+  /* Returns true if all cohorts within the data set are alignments only. */
   isAlignmentsOnly() {
     let self = this;
     return self.dataSet.isAlignmentsOnly();
   }
 
+  /* Assigns classes to each variant to control visual display in the DOM. */
   classifyByImpact(d, annotationScheme, isSubsetCohort) {
     let self = this;
     var impacts = "";
@@ -862,6 +903,7 @@ class VariantModel {
     var enrichment = "";
     var enrichColor = "";
 
+    debugger;
     var subsetEnrichment = d.subsetDelta;
     if (subsetEnrichment >= 2 && isSubsetCohort) {
       enrichment = "eUP";

@@ -1,11 +1,12 @@
-/* Represents a group of samples displayed on a single variant track. */
+/* Represents the variant data relative to a group of samples, or cohort.
+   TD & SJG Apr2018 */
 class CohortModel {
   constructor(theVariantModel) {
-    this.vcf = null;                // vcf.iobio.js
-    this.bam = null;                // bam.iobio.js
+    this.vcf = null;                // VCF iobio service endpoint
+    this.bam = null;                // BAM iobio service endpoint
 
     // BAM, VCF data fields
-    this.vcfData = null;            // Lookup for features, not samples
+    this.vcfData = null;            // Contains VCF feature/variant information
     this.fbData = null;
     this.bamData = null;
     this.vcfUrlEntered = false;
@@ -18,7 +19,6 @@ class CohortModel {
     this.sampleName = '';
     this.trackName = '';
     this.isGeneratedSampleName = false;
-    this.name = '';                 // This is used to identify track, must not contain spaces
     this.vcfRefNamesMap = {};
     this.lastVcfAlertify = null;
     this.lastBamAlertify = null;
@@ -28,9 +28,9 @@ class CohortModel {
     this.coverage = [[]];
 
     // Optional subset IDs
-    this.subsetIds = [];
-    this.subsetPhenotypes = [];
-    this.noMatchingSamples = false;
+    this.subsetIds = [];            // IDs that compose this cohort
+    this.subsetPhenotypes = [];     // Phrases describing phenotypic filtering data - displayed in track chips
+    this.noMatchingSamples = false; // Flag to display No Matching Variants chip
 
     this.inProgress = {
       'fetchingHubData': false,
@@ -38,7 +38,7 @@ class CohortModel {
       'drawingVariants': false
     };
 
-    // Private access to parent variant model
+    // Private access to variant model
     this._variantModel = theVariantModel;
     this.getVariantModel = function() { return this._variantModel; }
 
@@ -48,6 +48,8 @@ class CohortModel {
     this.isUnaffectedCohort = false;
   }
 
+  /* Returns descriptive name depending on the ID flags.
+     Returns an empty string if the track is not a proband, subset, or unaffected cohort. */
   getName() {
     let self = this;
     if (self.isProbandCohort) return PROBAND_ID;
@@ -56,31 +58,37 @@ class CohortModel {
     return '';
   }
 
+  /* Returns sample name. Used in gene.iobio */
   getSampleName() {
     return this.sampleName;
   }
 
+  /* Returns a sample name if provided in the VCF header, otherwise returns null. */
   getVcfSampleName() {
-    // Returns a sample name if provided in the vcf header; otherwise returns null.
     return !this.isGeneratedSampleName ? (this.sampleName == "" ? null : this.sampleName) : null;
   }
 
+  /* Returns gene model from parent variant model. */
   getGeneModel() {
     return this.getVariantModel().geneModel;
   }
 
+  /* Returns translator from parent variant model. */
   getTranslator() {
     return this.getVariantModel().translator;
   }
 
+  /* Returns Simons ID map from parent variant model. */
   getSimonsIdMap() {
     return this.getVariantModel().simonsIdMap;
   }
 
+  /* Returns compound name. */
   getSampleIdentifier(theSampleName) {
-    var id = this.name + "&&" + theSampleName;
+    var id = theSampleName;
   }
 
+  /* Sets sample name. */
   setSampleName(sampleName) {
     this.sampleName = sampleName;
   }
@@ -449,38 +457,6 @@ class CohortModel {
     transcript = transcript ? transcript : window.selectedTranscript;
     this._promiseCacheData(geneCoverage, CacheHelper.GENE_COVERAGE_DATA, geneObject.gene_name, transcript);
   }
-
-  // promiseGetBamData(geneObject) {
-  //   var me = this;
-  //   return new Promise(function(resolve, reject) {
-  //     var data = null;
-  //     if (geneObject == null) {
-  //       reject("Error CohortModel.promiseGetBamData(): geneObject is null");
-  //     }
-  //     if (me.bamData != null) {
-  //       if (me.getBamRefName(geneObject.chr) == me.bamData.ref &&
-  //         geneObject.start == me.bamData.start &&
-  //         geneObject.end == me.bamData.end) {
-  //         data = me.bamData;
-  //         resolve(data.coverage);
-  //       }
-  //     }
-  //     if (data == null) {
-  //       // Find in cache
-  //       me._promiseGetData(CacheHelper.BAM_DATA, geneObject.gene_name, null)
-  //        .then(function(data) {
-  //         if (data != null && data != '') {
-  //           me.bamData = data;
-  //         }
-  //         resolve( data ? data.coverage : null);
-  //        },
-  //        function(error) {
-  //         var msg = "An error occurred in CohortModel.promiseGetBamData(): " + error;
-  //         reject(msg);
-  //        })
-  //     }
-  //   })
-  // }
 
   promiseGetDangerSummary(geneName, cacheHelper) {
     return this._promiseGetData(CacheHelper.DANGER_SUMMARY_DATA, geneName, null, cacheHelper);
@@ -1335,6 +1311,10 @@ class CohortModel {
               );
           })
           .then(function(data) {
+            if (data == null) {
+              me.inProgress.loadingVariants = false;
+              alert("There was a problem communicating with our iobio services. Please refresh the application or contact iobioproject@gmail.com.")
+            }
             console.log('Obtained annotated data from iobio services...');
             var annotatedRecs = data[0];
             var results = data[1];  // One entry per sample in results

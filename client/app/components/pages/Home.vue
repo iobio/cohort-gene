@@ -38,6 +38,7 @@
           <variant-card
             v-bind:class="{ hide: Object.keys(selectedGene).length == 0 || !variantModel || !dataSet }"
             v-if="(variantModel && dataSet)"
+            ref="variantCardRef"
             :dataSetModel="dataSet"
             :annotationScheme="variantModel.annotationScheme"
             :classifyVariantSymbolFunc="variantModel.classifyByImpact"
@@ -209,6 +210,7 @@ export default {
       self.initFromUrl();
     },
     function(error) {
+      alert("There was a problem contacting our iobio services. Please refresh the application, or contact iobioproject@gmail.com if the problem persists.");
     })
   },
   computed: {
@@ -401,8 +403,8 @@ export default {
       let self = this;
       if (variant) {
         self.selectedVariant = variant;
-        if (sourceComponent == null || variantCard != sourceComponent) {
-          self.$variantCard.showVariantCircle(variant);
+        if (sourceComponent == null || self.$refs.variantCardRef != sourceComponent) {
+          self.$refs.variantCardRef.showVariantCircle(variant);
         }
       }
       else {
@@ -411,36 +413,25 @@ export default {
     },
     onDataSetVariantClickEnd: function(sourceComponent) {
       let self = this;
-      //var lastVariant = self.selectedVariant;
-      self.selectedVariant = null;
-      self.$refs.variantCardRef.forEach(function(variantCard) {
-        variantCard.hideVariantCircle();
-      })
+      self.$refs.variantCardRef.hideVariantCircle();
     },
     onDataSetVariantHover: function(variant, sourceComponent) {
       let self = this;
-      self.$refs.variantCardRef.forEach(function(variantCard) {
-        if (variantCard != sourceComponent) {
-          variantCard.showVariantCircle(variant);
+        if (self.$refs.variantCardRef != sourceComponent) {
+          self.$refs.variantCardRef.showVariantCircle(variant);
         }
-      })
     },
     onDataSetVariantHoverEnd: function(sourceVariantCard) {
       let self = this;
       if (self.$refs.variantCardRef) {
-        self.$refs.variantCardRef.forEach(function(variantCard) {
-          variantCard.hideVariantCircle();
-        })
+        self.$refs.variantCardRef.hideVariantCircle();
       }
     },
     deselectVariant: function() {
       let self = this;
       self.selectedVariant = null;
       if (self.$refs.variantCardRef) {
-        self.$refs.variantCardRef.forEach(function(variantCard) {
-          //variantCard.hideVariantTooltip();
-          variantCard.hideVariantCircle();
-        })
+        self.$refs.variantCardRef.hideVariantCircle();
       }
     },
     showVariantExtraAnnots: function(sourceComponent, variant, cohortKey) {

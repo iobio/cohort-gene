@@ -75,7 +75,6 @@ Updated: SJG Apr2018
         <v-flex xs6>
           <v-container fluid style="padding-left: 70%;" id="impactModeSwitch" v-bind:class="{hide: !displayImpactSwitch}">
             <v-switch :label="`Impact Mode: ${impactModeDisplay(impactMode)}`" v-model="impactMode" hide-details></v-switch>
-            <!-- <span id="enrichmentColorLegend" v-bind:class="{hide: impactMode}"></span> -->
           </v-container>
         </v-flex>
       </v-layout>
@@ -83,9 +82,9 @@ Updated: SJG Apr2018
         <variant-viz
           v-if="(showVariantViz && cohorts.length > 0)"
           v-for="cohort in cohorts"
-          :key="cohort.name"
+          :key="cohort.getName()"
           ref="variantVizRef"
-          :id="cohort.name"
+          :id="cohort.getName()"
           :model="cohort"
           :data="cohort.loadedVariants"
           :title="cohort.trackName"
@@ -135,7 +134,6 @@ export default {
   components: {
     VariantViz,
     GeneViz
-    // TODO: if I add knownVariantsToolbar, add that component
   },
   props: {
     dataSetModel: null,
@@ -203,8 +201,7 @@ export default {
       }
     },
     onVariantClick: function(variant, cohortKey) {
-      //this.hideVariantTooltip();
-
+      //this.Tooltip();
       if (this.showVariantViz) {
         this.hideVariantCircle();
         this.showVariantCircle(variant);
@@ -296,8 +293,8 @@ export default {
     },
     hideVariantCircle: function(variant) {
       let self = this;
-      if (this.showVariantViz) {
-        this.$refs.variantVizRef.forEach(function(variantViz) {
+      if (self.showVariantViz && self.$refs.variantVizRef != null) {
+        self.$refs.variantVizRef.forEach(function(variantViz) {
           variantViz.hideVariantCircle(self.getVariantSVG(variantViz.name));
         })
       }
@@ -379,7 +376,6 @@ export default {
   mounted: function() {
     let self = this;
     self.name = self.dataSetModel.name;
-    //this.drawColorLegend();
   },
   created: function() {
     this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
