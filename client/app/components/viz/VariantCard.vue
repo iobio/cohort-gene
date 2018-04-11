@@ -1,9 +1,9 @@
-<!--
-Encapsulates Variant card
-Updated: SJG Apr2018
--->
+<!-- Component housing variant track display and main visualization.
+TD & SJG updated Apr2018 -->
+
 <style lang="sass">
   @import ../../../assets/sass/variables
+
   #variant-card
     #gene-viz, #gene-viz-zoom
       .current
@@ -104,8 +104,7 @@ Updated: SJG Apr2018
           @variantClick="onVariantClick"
           @variantHover="onVariantHover"
           @variantHoverEnd="onVariantHoverEnd"
-          @trackRendered="switchColorScheme"
-          >
+          @trackRendered="switchColorScheme">
         </variant-viz>
         <gene-viz id="gene-viz"
           v-bind:class="{ hide: !showGeneViz }"
@@ -119,8 +118,7 @@ Updated: SJG Apr2018
           :regionEnd="regionEnd"
           :showXAxis="geneVizShowXAxis"
           :showBrush="false"
-          :featureClass="getExonClass"
-          >
+          :featureClass="getExonClass">
         </gene-viz>
       </div>
     </v-card-title>
@@ -180,6 +178,32 @@ export default {
       impactMode: false,
       enrichmentColorLegend: {}
     }
+  },
+  computed: {
+    depthVizHeight: function() {
+      this.showDepthViz ? 0 : 60;
+    },
+    cohorts: function() {
+      return this.dataSetModel._cohorts;
+    }
+  },
+  watch: {
+    impactMode: function() {
+      let self = this;
+      self.switchColorScheme();
+    },
+    selectedGene: function() {
+      let self = this;
+      self.impactMode = false;
+      self.doneLoadingData = false;
+    }
+  },
+  created: function() {
+    this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
+  },
+  mounted: function() {
+    let self = this;
+    self.name = self.dataSetModel.name;
   },
   methods: {
     drawColorLegend: function() {
@@ -254,8 +278,8 @@ export default {
         coord,
         self.dataSetModel.cohortMap[cohortKey].getName(),
         self.dataSetModel.cohortMap[cohortKey].getAffectedInfo(),
-        "",     // SJG TODO: put mode in here later if necessary
-        0);     // SJG TODO put max allele count in here
+        "",     // SJG TODO: MODE
+        0);     // SJG TODO MAX ALLELE COUNT
       tooltip.selectAll("#unpin").on('click', function() {
         self.unpin(null, true);
       });
@@ -269,12 +293,6 @@ export default {
     tooltipScroll(direction) {
       this.variantTooltip.scroll(direction, "#main-tooltip");
     },
-    // unpin(saveClickedVariant, unpinMatrixTooltip) {
-    //   this.$emit("dataSetVariantClickEnd", this);
-    //   //this.hideVariantTooltip();
-    //   this.hideVariantCircle();
-    //   this.hideCoverageCircle();
-    // },
     hideVariantTooltip: function() {
       let tooltip = d3.select("#main-tooltip");
       tooltip.transition()
@@ -351,34 +369,6 @@ export default {
         variantViz.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(variantViz.name));
       })
     }
-  },
-  filters: {
-  },
-  computed: {
-    depthVizHeight: function() {
-      this.showDepthViz ? 0 : 60;
-    },
-    cohorts: function() {
-      return this.dataSetModel._cohorts;
-    }
-  },
-  watch: {
-    impactMode: function() {
-      let self = this;
-      self.switchColorScheme();
-    },
-    selectedGene: function() {
-      let self = this;
-      self.impactMode = false;
-      self.doneLoadingData = false;
-    }
-  },
-  mounted: function() {
-    let self = this;
-    self.name = self.dataSetModel.name;
-  },
-  created: function() {
-    this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
   }
 }
 </script>

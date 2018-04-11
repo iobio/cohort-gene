@@ -1692,7 +1692,6 @@ var effectCategories = [
         }
         return  parseMultiSample ? results :  results[0];
       }
-      //return  results;
   };
 
   /* Takes in genotype calls for all samples from a vcf and returns the zygosity, as follows:
@@ -2682,7 +2681,8 @@ exports._getHighestScore = function(theObject, cullFunction, theTranscriptId) {
     return maxLevel;
   }
 
-  exports.pileupVcfRecords = function(variants, regionStart, posToPixelFactor, widthFactor) {
+  /* Determines pileup positions for symbols. Incorporates negative y-axis space if bidirectional parameter is true. */
+  exports.pileupVcfRecords = function(variants, regionStart, posToPixelFactor, widthFactor, bidirectional = false) {
       widthFactor = widthFactor ? widthFactor : 1;
       // Variant's can overlap each over.  Set a field called variant.level which determines
       // how to stack the variants vertically in these cases.
@@ -2690,15 +2690,15 @@ exports._getHighestScore = function(theObject, cullFunction, theTranscriptId) {
       var maxLevel = 0;
       var posUnitsForEachVariant = posToPixelFactor * widthFactor;
       variants.forEach(function(variant) {
-
         // get next available vertical spot starting at level 0
         var startIdx = (variant.start - regionStart);// + i;
         var posLevel = 0;
+        var inversionFactor = (bidirectional && variant.subsetDelta < 1) ? -1 : 1;   // Stack in negative direction if enriched in probands
         var stackAtStart = posLevels[startIdx];
         if (stackAtStart) {
           for (var k = 0; k <= stackAtStart.length; k++ ) {
             if (stackAtStart[k] == undefined) {
-              posLevel = k;
+              posLevel = k * inversionFactor; // SJG_P2 incorporated inversion factor here
               break;
             }
           }
@@ -2720,6 +2720,8 @@ exports._getHighestScore = function(theObject, cullFunction, theTranscriptId) {
           }
         }
       });
+
+      // SJG TODO: I have to shift the levels after the pileup because we'll have a ton of 1x variants
       return maxLevel;
   }
 

@@ -1,4 +1,5 @@
-<!-- Variant Summary card -->
+<!-- Component populated with variant details on selection.
+     SJG updated Apr2018 -->
 
 <style lang="sass" >
 @import ../../../assets/sass/variables
@@ -219,7 +220,6 @@
 
 
 <script>
-// Import viz components
 import FeatureViz from "./FeatureViz.vue"
 import AlleleFrequencyViz from "./AlleleFrequencyViz.vue"
 import BarFeatureViz from "./BarFeatureViz.vue"
@@ -238,15 +238,6 @@ export default {
   },
   data() { return {}
   },
-  methods: {
-    summaryCardVariantDeselect: function() {
-      var self = this;
-      self.$refs.summaryFrequencyViz.clear();
-      self.$refs.summaryBarFeatureViz.clear();
-      self.$emit("summaryCardVariantDeselect");
-    }
-  },
-  filters: {},
   computed: {
     totalProbandCount: function() {
       if (this.variant != null)
@@ -436,11 +427,6 @@ export default {
       map.push({label: "aff", value: affectedCount});
       return map;
     },
-    // depthMap: function() {
-    //   var map = [];
-    //   // SJG TODO: not sure how to get these numbers - maybe leave this graph out for the demo?
-    //   return map;
-    // },
     geneName: function() {
       if (this.variant != null && this.selectedGene != null) {
         return this.selectedGene;
@@ -454,11 +440,17 @@ export default {
       return '';
     }
   },
-  watch: {},
   mounted: function() {
     let self = this;
   },
-  created: function() {}
+  methods: {
+    summaryCardVariantDeselect: function() {
+      var self = this;
+      self.$refs.summaryFrequencyViz.clear();
+      self.$refs.summaryBarFeatureViz.clear();
+      self.$emit("summaryCardVariantDeselect");
+    }
+  }
 }
 
 </script>

@@ -241,8 +241,6 @@ function variantD3() {
 
       // set svg element
       container = d3.select(this).classed('ibo-variant', true);
-
-
       container.selectAll("svg").remove();
 
       if (data && data.length > 0 && data[0] && data[0].features && data[0].features.length > 0) {

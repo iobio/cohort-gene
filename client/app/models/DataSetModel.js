@@ -1,15 +1,16 @@
-/* Logic relative to a single data set (for example, Sfari data set)
-   SJG Apr2018 */
+/* Logic relative to a single data set (for example, Sfari data set).
+   SJG updated Apr2018 */
 class DataSetModel {
   constructor() {
-    // Public probs
+    // Public props
     this.name = '';   // Key for variant card
     this.vcfUrl = null;
     this.vcfFile = null;
     this.tbiUrl = null;
     this.tbiFile = null;
+    this.annotationScheme = 'VEP';
 
-    // Private props
+    // Psuedo-private props
     this._cohorts = [];
     this._cohortMap = {};
   }
@@ -49,6 +50,11 @@ class DataSetModel {
   getCohort(id) {
     let self = this;
     return self._cohortMap[id];
+  }
+
+  getAnnotationScheme() {
+    let self = this;
+    return self.annotationScheme;
   }
 
   /* Returns true if all cohort data are only alignments. */

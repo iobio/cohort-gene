@@ -1,5 +1,5 @@
 /* Encapsulates logic for Variant Card and Variant Summary Card
-   SJG & TS Apr2018 */
+   SJG & TS updated Apr2018 */
 
 class VariantModel {
   constructor(endpoint, genericAnnotation, translator, geneModel,
@@ -33,6 +33,8 @@ class VariantModel {
     this.keepVariantsCombined = true;       // True for multiple samples to be displayed on single track
     this.inProgress = { 'loadingDataSources': false };
     this.genesInProgress = [];
+    this.hubIssue = false;
+    this.iobioServicesIssue = false;
 
     // Hub-specific props
     this.projectId = '';                    // Hub project ID if we're sourcing data from there
@@ -101,7 +103,7 @@ class VariantModel {
     let probandCohort = new CohortModel(self);
     probandCohort.isProbandCohort = true;
     probandCohort.inProgress.fetchingHubData = true;
-    probandCohort.trackName = 'Variants for';
+    probandCohort.trackName = 'Variants for';     // SJG TODO: get rid of track name with display redesign (will be axes labels)
     probandCohort.subsetPhenotypes.push('Probands');
     hubDataSet.addCohort(probandCohort, PROBAND_ID);
 
@@ -124,7 +126,7 @@ class VariantModel {
                   cohort.inProgress.fetchingHubData = false;
                 })
             }
-            alert("Could not obtain data from Hub. Please try relaunching application.");
+            self.hubIssue = true;
             reject();
           }
           console.log("Obtained data routing from Hub...");
@@ -144,7 +146,7 @@ class VariantModel {
                     currCohorts.forEach(function(cohort) {
                       cohort.inProgress.fetchingHubData = false;
                     })
-                    alert("Could not obtain sample IDs from Hub. Please try relaunching application.");
+                    self.hubIssue = true;
                     reject();
                   }
                 }
@@ -179,7 +181,7 @@ class VariantModel {
                         if (currCohorts != undefined && currCohorts.length > 0) {
                           currCohorts.forEach(function(cohort) {
                             cohort.inProgress.fetchingHubData = false;
-                            alert("Could not obtain sample IDs from Hub. Please try relaunching application.");
+                            self.hubIssue = true;
                             reject();
                           })
                         }
@@ -189,6 +191,7 @@ class VariantModel {
         })
         .catch(function(error) {
           console.log("There was a problem obtaining data from Hub.");
+          self.hubIssue = true;
           reject(error);
         })
     });
@@ -275,7 +278,7 @@ class VariantModel {
     }
   }
 
-  /* Only handles affected pie chart filter, and ABC histogram filters */
+  /* Only handles affected pie chart filter, and histogram filters */
   formatPhenotypeFilterDisplay(filter, boundsArr) {
     var self = this;
 
@@ -283,15 +286,6 @@ class VariantModel {
     if (filter == 'affection_status') {
       if (boundsArr[0] == 'Affected') { return 'Affected'; }
       else if (boundsArr[0] == 'Unaffected') { return 'Unaffected'; }
-    }
-    else if (filter == 'abc.total_score') {
-      return self.formatFilterBounds('ABC Total Score', boundsArr);
-    }
-    else if (filter == 'abc.subscale_iv_hyperactivity') {
-      return self.formatFilterBounds('ABC Hyperactivity', boundsArr);
-    }
-    else if (filter == 'median_read_coverage') {
-      return self.formatFilterBounds('Median Read Coverage', boundsArr);
     }
     // In general, get rid of _ and . and capitalize things
     else {
@@ -471,14 +465,7 @@ class VariantModel {
     let self = this;
 
     var resolveIt = function(resolve, resultMap, geneObject, theTranscript, options) {
-    // TODO: incorporate
-    //   if (self.dataSet.getCohorts() != undefined)
-    //   self.dataSet.getCohorts().forEach(function(cohort) {
-    //     if (resultMap[model.getname()]) {
-    //       cohort.assessVariantImpact(resultMap[cohort.getName()], theTranscript);
-    //     }
-    //   })
-
+    // SJG TODO: incorporate assessVariantImpact
       self.promiseCacheCohortVcfData(geneObject, theTranscript, CacheHelper.VCF_DATA, resultMap, options.cacheData)
       .then(function() {
         resolve({'resultMap': resultMap, 'gene': geneObject, 'transcript': theTranscript});
@@ -532,6 +519,7 @@ class VariantModel {
   setLoadedVariants(gene, name=null) {
     let self = this;
 
+    // SJG_P2 TODO: add filter to remove variants that have less than Nx fold change?
     var filterAndPileupVariants = function(model, start, end, target='loaded') {
       var filteredVariants = $.extend({}, model.vcfData);
       filteredVariants.features = model.vcfData.features.filter(function(feature) {
@@ -579,7 +567,7 @@ class VariantModel {
           if (cohort.getName() == PROBAND_ID) {
             var allVariants = $.extend({}, cohort.loadedVariants);
             allVariants.features = cohort.loadedVariants.features.concat(cohort.calledVariants.features);
-            // TODO: comment this back in after initializing featureMatrixModel
+            // TODO: incorporate with featureMatrixModel
             //self.featureMatrixModel.promiseRankVariants(allVariants);
           }
         } else {
@@ -762,8 +750,7 @@ class VariantModel {
       // instead of on a per sample basis
       var uniqueVariants = {};
       var unionVcfData = {features: []}
-      for (var cohort in resultMap) {
-        // SJG TODO: this is an overly complicated loop that can be simplified
+      for (var cohort in resultMap) {       // SJG TODO: this is an overly complicated loop that can be simplified if data being pulled back is reformatted
         for (var key in resultMap[cohort]) {
           if (Object.prototype.hasOwnProperty.call(resultMap[cohort], key)) {
             var vcfData = resultMap[cohort][key];
@@ -869,7 +856,7 @@ class VariantModel {
 
   getCurrentTrioVcfData() {
     alert("not implemented yet");
-    // TODO: how will I adapt this?
+    // SJG TODO: how will I adapt this?
   }
 
   promiseJointCallVariants() {
@@ -894,16 +881,15 @@ class VariantModel {
   classifyByImpact(d, annotationScheme, isSubsetCohort) {
     let self = this;
     var impacts = "";
-    var colorimpacts = "";
-    var toggleImpact = "";
+    var toggleImpact = "";  // Grouping classes, added & removed based on impact mode
+    var colorimpacts = "";  // Color classes, constant
     var effects = "";
     var sift = "";
     var polyphen = "";
     var regulatory = "";
-    var enrichment = "";
-    var enrichColor = "";
+    var enrichment = "";   // Grouping classes, added & removed based on impact mode
+    var enrichColor = "";  // Color classes, constant
 
-    debugger;
     var subsetEnrichment = d.subsetDelta;
     if (subsetEnrichment >= 2 && isSubsetCohort) {
       enrichment = "eUP";
@@ -953,7 +939,9 @@ class VariantModel {
       regulatory += " " + key;
     }
 
-    return  'variant ' + d.type.toLowerCase()  + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' '  + sift + ' ' + polyphen + ' ' + regulatory +  ' ' + + ' ' + d.clinvar + ' ' + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts + ' ' + toggleImpact + ' ' + enrichment + ' ' + enrichColor;
+    return  'variant ' + d.type.toLowerCase()  + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "")
+            + ' ua_' + d.ua + ' '  + sift + ' ' + polyphen + ' ' + regulatory +  ' ' + + ' ' + d.clinvar + ' ' + impacts + ' ' + effects +
+            ' ' + d.consensus + ' ' + colorimpacts + ' ' + toggleImpact + ' ' + enrichment + ' ' + enrichColor;
   }
 
   classifyByClinvar(d) {

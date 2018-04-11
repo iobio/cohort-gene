@@ -1,10 +1,12 @@
 // Fields
 var IMPACT_FIELD_TO_FILTER    = 'highestImpactVep';
 var IMPACT_FIELD_TO_COLOR     = 'vepImpact';
+
 // Cohort model identifiers
 var PROBAND_ID = 'Proband';
 var SUBSET_ID = 'Subset';
 var UNAFFECTED_ID = 'Unaffected';
+
 // Hub identifiers
 var HUB_PROBANDS_NAME = "HubProbands";
 var HUB_SUBSET_NAME = "HubSubsetProbands";

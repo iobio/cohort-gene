@@ -1,8 +1,7 @@
 var recordedCacheErrors = {};
 var cacheErrorTypes = {};
 
-// SJG I changed all 'relationship' references to 'name'
-
+// SJG TODO: replaced relationship references with name - need to flip to flags instead
 function CacheHelper() {
 
   this.genesToCache = [];
