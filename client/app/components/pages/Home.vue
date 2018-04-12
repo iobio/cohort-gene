@@ -33,12 +33,10 @@ TD & SJG updated Apr2018 -->
     <v-container fluid style="padding-top: 3px">
       <v-layout>
         <v-flex xs12>
-          <!-- SJG TODO: put v-if component in here to display if problem communicating w/ Hub or iobio services -->
-          <variant-card
+          <updated-variant-card
             v-if="variantModel"
-            v-bind:class="{ hide: Object.keys(selectedGene).length == 0}"
             ref="variantCardRef"
-            :dataSetModel="dataSet"
+            :dataSetModel="variantModel.dataSet"
             :annotationScheme="variantModel.annotationScheme"
             :classifyVariantSymbolFunc="variantModel.classifyByImpact"
             :variantTooltip="variantTooltip"
@@ -51,14 +49,14 @@ TD & SJG updated Apr2018 -->
             :showGeneViz="true"
             :showVariantViz="true"
             :geneVizShowXAxis="true"
-            :displayImpactSwitch="doneLoadingData"
+            :doneLoadingData="doneLoadingData"
             @dataSetVariantClick="onDataSetVariantClick"
             @dataSetVariantClickEnd="onDataSetVariantClickEnd"
             @dataSetVariantHover="onDataSetVariantHover"
             @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
             @knownVariantsVizChange="onKnownVariantsVizChange"
             @knownVariantsFilterChange="onKnownVariantsFilterChange">
-          </variant-card>
+          </updated-variant-card>
           <variant-summary-card
             :selectedGene="selectedGene.gene_name"
             :variant="selectedVariant"
@@ -101,10 +99,18 @@ export default {
     // SJG TODO: add FeatureMatrixCard, GenesCard
   },
   props: {
-    paramProjectId:         null,
-    paramPhenoFilters:      null,
-    parmTokenType:          null,
-    paramToken:             null
+    paramProjectId: {
+      default: '0',
+      type: String
+    },
+    paramTokenType: {
+      default: '',
+      type: String
+    },
+    paramToken: {
+      default: '',
+      type: String
+    }
   },
   data() {
     return {
@@ -114,6 +120,7 @@ export default {
       selectedTranscript: {},
       selectedVariant: null,
       doneLoadingData: false,
+      doneInit: false,
       geneRegionStart: null,
       geneRegionEnd: null,
       adjustedVariantStart: null,
@@ -123,7 +130,6 @@ export default {
 
       allGenes: allGenesData,
       simonsIdMap: simonsIdMap,
-      dataSet: {},
 
       variantModel: null,
       geneModel: null,
@@ -240,7 +246,6 @@ export default {
       self.onGeneSelected(self.DEMO_GENE);
       self.variantModel.promiseInitDemo()
       .then(function() {
-        self.dataSet = self.variantModel.dataSet;
         if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
           self.promiseLoadData();
         }
@@ -250,7 +255,7 @@ export default {
       let self = this;
 
       return new Promise(function(resolve, reject) {
-        if (self.dataSet) {
+        if (self.variantModel.dataSet) {
           var options = {'getKnownVariants': self.showClinvarVariants};
 
           self.variantModel.promiseLoadData(self.selectedGene,
@@ -259,7 +264,8 @@ export default {
             options)
           .then(function(resultMap) {
             self.doneLoadingData = true;
-              resolve();
+            self.doneInit = true;
+            resolve();
           })
           .catch(function(error) {
             reject(error);
@@ -478,12 +484,11 @@ export default {
         self.geneModel.addGeneName(self.DEMO_GENE);
         self.onGeneSelected(self.DEMO_GENE);
 
-        localStorage.setItem('hub-iobio-tkn', self.parmTokenType + ' ' + self.paramToken);
+        localStorage.setItem('hub-iobio-tkn', self.paramTokenType + ' ' + self.paramToken);
         self.variantModel.phenoFilters = self.getHubPhenoFilters();
         self.variantModel.projectId = self.paramProjectId;
         self.variantModel.promiseInitFromHub()
             .then(function() {
-              self.dataSet = self.variantModel.dataSet;
               if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
                 self.promiseLoadData();
               }
@@ -502,7 +507,6 @@ export default {
         self.onGeneSelected(self.DEMO_GENE);
         self.variantModel.promiseInitDemo()
             .then(function() {
-              self.dataSet = self.variantModel.dataSet;
               if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
                 self.promiseLoadData();
               }

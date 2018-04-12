@@ -80,7 +80,7 @@ TD & SJG updated Apr2018 -->
       </v-layout>
       <div style="width:100%">
         <variant-viz
-          v-if="(showVariantViz && cohorts.length > 0)"
+          v-if="showVariantViz"
           v-for="cohort in cohorts"
           :key="cohort.getName()"
           ref="variantVizRef"

@@ -2722,6 +2722,8 @@ exports._getHighestScore = function(theObject, cullFunction, theTranscriptId) {
       });
 
       // SJG TODO: I have to shift the levels after the pileup because we'll have a ton of 1x variants
+      // SJG TODO: might need to return max level top and max level bottom
+
       return maxLevel;
   }
 

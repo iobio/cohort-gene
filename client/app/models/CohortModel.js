@@ -18,7 +18,7 @@ class CohortModel {
     this.getBamRefName = null;
 
     this.sampleName = '';
-    this.trackName = '';
+    this.trackName = '';            // Displays in italics before chipss
     this.isGeneratedSampleName = false;
     this.vcfRefNamesMap = {};
     this.lastVcfAlertify = null;
@@ -29,7 +29,7 @@ class CohortModel {
     this.coverage = [[]];
 
     // Optional subset IDs
-    this.subsetIds = [];            // IDs that compose this cohort
+    this.subsetIds = [];            // IDs that compose this cohort (filled for proband cohort also)
     this.subsetPhenotypes = [];     // Phrases describing phenotypic filtering data; displayed in track chips
     this.noMatchingSamples = false; // Flag to display No Matching Variants chip
 
@@ -1592,7 +1592,7 @@ class CohortModel {
     var featureWidth = 4;
     var posToPixelFactor = Math.round((end - start) / width);
     var widthFactor = featureWidth + (4);
-    var maxLevel = this.vcf.pileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, false);
+    var maxLevel = this.vcf.pileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, true);
     if ( maxLevel > 30) {
       for(var i = 1; i < posToPixelFactor; i++) {
         // TODO:  Devise a more sensible approach to setting the min width.  We want the
@@ -1611,7 +1611,7 @@ class CohortModel {
             v.level = 0;
         });
         var factor = posToPixelFactor / (i * 2);
-        maxLevel = me.vcf.pileupVcfRecords(theFeatures, start, factor, featureWidth + 1);
+        maxLevel = me.vcf.pileupVcfRecords(theFeatures, start, factor, featureWidth + 1, true);
         if (maxLevel <= 50) {
           i = posToPixelFactor;
           break;
@@ -2122,7 +2122,6 @@ class CohortModel {
     if (me.relationship == 'known-variants') {
       return me.filterKnownVariants(data, start, end, bypassRangeFilter);
     }
-
 
     var impactField = me.getAnnotationScheme().toLowerCase() === 'snpeff' ? 'impact' : IMPACT_FIELD_TO_FILTER;
     var effectField = me.getAnnotationScheme().toLowerCase() === 'snpeff' ? 'effect' : 'vepConsequence';

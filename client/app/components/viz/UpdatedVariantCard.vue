@@ -73,7 +73,7 @@ Updated: SJG Apr2018
           <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 10px">VARIANTS</span>
         </v-flex>
         <v-flex xs6>
-          <v-container fluid style="padding-left: 70%;" id="impactModeSwitch" v-bind:class="{hide: !displayImpactSwitch}">
+          <v-container fluid style="padding-left: 70%;" id="impactModeSwitch" v-bind:class="{hide: !doneLoadingData}">
             <v-switch :label="`Impact Mode: ${impactModeDisplay(impactMode)}`" v-model="impactMode" hide-details></v-switch>
           </v-container>
         </v-flex>
@@ -82,7 +82,7 @@ Updated: SJG Apr2018
         <updated-variant-viz
           v-if="(showVariantViz && cohort != null)"
           ref="variantVizRef"
-          :id="cohort.name"
+          :id="cohort.getName()"
           :model="cohort"
           :data="cohort.loadedVariants"
           :title="cohort.trackName"
@@ -98,12 +98,11 @@ Updated: SJG Apr2018
           :showXAxis="true"
           :classifySymbolFunc="classifyVariantSymbolFunc"
           :impactMode="impactMode"
-          :doneLoadingData="displayImpactSwitch"
+          :doneLoadingData="doneLoadingData"
           @variantClick="onVariantClick"
           @variantHover="onVariantHover"
           @variantHoverEnd="onVariantHoverEnd"
-          @trackRendered="switchColorScheme"
-          >
+          @trackRendered="switchColorScheme">
         </updated-variant-viz>
         <gene-viz id="gene-viz"
           v-bind:class="{ hide: !showGeneViz }"
@@ -117,8 +116,7 @@ Updated: SJG Apr2018
           :regionEnd="regionEnd"
           :showXAxis="geneVizShowXAxis"
           :showBrush="false"
-          :featureClass="getExonClass"
-          >
+          :featureClass="getExonClass">
         </gene-viz>
       </div>
     </v-card-title>
@@ -149,7 +147,7 @@ export default {
     showVariantViz: true,
     showGeneViz: true,
     geneVizShowXAxis: null,
-    displayImpactSwitch: false
+    doneLoadingData: false
   },
   data() {
     let self = this;
@@ -180,6 +178,30 @@ export default {
       impactMode: false,
       enrichmentColorLegend: {}
     }
+  },
+  computed: {
+    depthVizHeight: function() {
+      this.showDepthViz ? 0 : 60;
+    },
+    cohort: function() {
+      let self = this;
+      if (self.dataSetModel)
+        return self.dataSetModel.getProbandCohort();
+    }
+  },
+  watch: {
+    impactMode: function() {
+      let self = this;
+      self.switchColorScheme();
+    },
+    selectedGene: function() {
+      let self = this;
+      self.impactMode = false;
+      self.doneLoadingData = false;
+    }
+  },
+  created: function() {
+    this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
   },
   methods: {
     drawColorLegend: function() {
@@ -286,17 +308,13 @@ export default {
     showVariantCircle: function(variant) {
       let self = this;
       if (self.showVariantViz) {
-        self.$refs.variantVizRef.forEach(function(variantViz) {
-          variantViz.showVariantCircle(variant, self.getVariantSVG(variantViz.name), true);
-        })
+        self.$refs.variantVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.variantVizRef.name), true);
       }
     },
     hideVariantCircle: function(variant) {
       let self = this;
       if (self.showVariantViz && self.$refs.variantVizRef != null) {
-        self.$refs.variantVizRef.forEach(function(variantViz) {
-          variantViz.hideVariantCircle(self.getVariantSVG(variantViz.name));
-        })
+        self.$refs.variantVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.variantVizRef.name));
       }
     },
     getVariantSVG: function(vizTrackName) {
@@ -347,42 +365,8 @@ export default {
     },
     switchColorScheme: function() {
       let self = this;
-      self.$refs.variantVizRef.forEach(function(variantViz) {
-        variantViz.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(variantViz.name));
-      })
+      self.$refs.variantVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.variantVizRef.name));
     }
-  },
-  filters: {
-  },
-  computed: {
-    depthVizHeight: function() {
-      this.showDepthViz ? 0 : 60;
-    },
-    cohort: function() {
-      let self = this;
-      if (self.dataSetModel != null) return self.dataSetModel.getProbandCohort();
-
-      // TODO: else return what?
-      return null;
-    }
-  },
-  watch: {
-    impactMode: function() {
-      let self = this;
-      self.switchColorScheme();
-    },
-    selectedGene: function() {
-      let self = this;
-      self.impactMode = false;
-      self.doneLoadingData = false;
-    }
-  },
-  mounted: function() {
-    let self = this;
-    self.name = self.dataSetModel.name;
-  },
-  created: function() {
-    this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
   }
 }
 </script>
