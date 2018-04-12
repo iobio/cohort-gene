@@ -107,7 +107,7 @@
          No Samples Meet Criteria
       </v-chip>
     </div>
-    <div v-bind:class="{ hide: this.noVariantsFound}" style="text-align: center; padding-bottom: 20px; padding-top: 20px">
+    <div v-bind:class="{ hide: !noVariantsFound}" style="text-align: center; padding-bottom: 20px; padding-top: 20px">
       <v-chip color="red" small outline style="font-size: 12px">
          No Variants Found
       </v-chip>
@@ -182,10 +182,6 @@ export default {
         default: '',
         type: String
       },
-      name: {
-        default: '',
-        type: String
-      },
       phenotypes: {
         type: Array,
         default: () => []
@@ -199,27 +195,35 @@ export default {
         default: false
       }
     },
-    computed: {
-      noVariantsFound: function() {
-        if (this.data == null) return true;
-        if (this.data.features == null) return true;
-        if (this.data.features.length == 0) {
-          var loading = this.model.inProgress.loadingVariants || this.model.inProgress.drawingVariants || this.model.inProgress.fetchingHubData;
-          if (loading) return true;
-          return false;
-        }
-        return true;
-      }
-    },
     data() {
       return {
-        variantChart: {}
+        variantChart: {},
+        name: ''
       }
     },
-    created: function() {
+    computed: {
+      noVariantsFound: function() {
+        let self = this;
+        if (self.data == null) return false;
+        if (self.data.features == null) return false;
+        if (self.data.features.length == 0) {
+          var loading = self.model.inProgress.loadingVariants || self.model.inProgress.drawingVariants || self.model.inProgress.fetchingHubData;
+          if (!loading && self.doneLoadingData) return true;
+        }
+        return false;
+      }
+    },
+    watch: {
+      data: function() {
+        let self = this;
+        self.update();
+        console.log("Drawing variants...");
+      }
     },
     mounted: function() {
-      this.draw();
+      let self = this;
+      self.name = self.model.getName();
+      self.draw();
     },
     methods: {
       draw: function() {
@@ -228,7 +232,7 @@ export default {
         this.variantChart =  variantD3()
           .width(this.width)
           .clazz(function(variant) {
-            return self.classifySymbolFunc(variant, self.annotationScheme, self.name);
+            return self.classifySymbolFunc(variant, self.annotationScheme, self.model.isSubsetCohort);
           })
           .margin(this.margin)
           .showXAxis(this.showXAxis)
@@ -287,7 +291,7 @@ export default {
       onVariantHover: function(variant) {
         let self = this;
         var cohortKey = self.name;
-        //self.$emit("variantHover", variant, cohortKey);
+        //self.$emit("variantHover", variant, cohortKey); SJG TODO: get rid of hover or incorporate tooltip fxnality
       },
       onVariantHoverEnd: function(variant) {
         let self = this;
@@ -311,13 +315,6 @@ export default {
       changeVariantColorScheme: function(enrichmentMode, svg) {
         let self = this;
         self.variantChart.switchColorScheme()(enrichmentMode, svg);
-      }
-    },
-    watch: {
-      data: function() {
-        let self = this;
-        self.update();
-        console.log("redrawing variants");
       }
     }
 }

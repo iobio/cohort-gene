@@ -1,5 +1,7 @@
-<style lang="sass">
+<!-- Main application page holding all cards.
+TD & SJG updated Apr2018 -->
 
+<style lang="sass">
 @import ../../../assets/sass/variables
 
 .app-card
@@ -15,7 +17,6 @@
 
 <template>
 <div>
-  <!-- SJG TODO: put in flagged variant stuff -->
   <navigation
     v-if="variantModel"
     ref="navRef"
@@ -30,19 +31,12 @@
   ></navigation>
   <v-content>
     <v-container fluid style="padding-top: 3px">
-      <!-- TODO: do I need data-sources-loader -->
-
-      <!-- TODO: would like to get away from passing giant variantModel here-->
-      <!-- v-bind:class="{ hide: Object.keys(selectedGene).length == 0 }" -->
-
-       <!-- || !variantModel -->
       <v-layout>
         <v-flex xs12>
-          <variant-card
+          <updated-variant-card
+            v-if="variantModel"
             ref="variantCardRef"
-            v-for="dataSet in dataSets"
-            :key="dataSet.name"
-            :dataSetModel="dataSet"
+            :dataSetModel="variantModel.dataSet"
             :annotationScheme="variantModel.annotationScheme"
             :classifyVariantSymbolFunc="variantModel.classifyByImpact"
             :variantTooltip="variantTooltip"
@@ -55,23 +49,21 @@
             :showGeneViz="true"
             :showVariantViz="true"
             :geneVizShowXAxis="true"
-            :displayImpactSwitch="doneLoadingData"
+            :doneLoadingData="doneLoadingData"
             @dataSetVariantClick="onDataSetVariantClick"
             @dataSetVariantClickEnd="onDataSetVariantClickEnd"
             @dataSetVariantHover="onDataSetVariantHover"
             @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
             @knownVariantsVizChange="onKnownVariantsVizChange"
-            @knownVariantsFilterChange="onKnownVariantsFilterChange"
-          ></variant-card>
-
-          <!-- v-bind:class="{ hide: !doneLoadingData }" -->
+            @knownVariantsFilterChange="onKnownVariantsFilterChange">
+          </updated-variant-card>
           <variant-summary-card
             :selectedGene="selectedGene.gene_name"
             :variant="selectedVariant"
             :variantInfo="selectedVariantInfo"
             @summaryCardVariantDeselect="deselectVariant"
-            ref="variantSummaryCardRef"
-          ></variant-summary-card>
+            ref="variantSummaryCardRef">
+          </variant-summary-card>
         </v-flex>
       </v-layout>
     </v-container>
@@ -84,6 +76,7 @@
 import Navigation from '../partials/Navigation.vue'
 import GeneCard from '../viz/GeneCard.vue'
 import VariantCard from  '../viz/VariantCard.vue'
+import UpdatedVariantCard from '../viz/UpdatedVariantCard.vue'
 import VariantSummaryCard from '../viz/VariantSummaryCard.vue'
 
 // Back-end models
@@ -91,8 +84,8 @@ import GeneModel        from '../../models/GeneModel.js'
 import FilterModel      from '../../models/FilterModel.js'
 import VariantModel     from '../../models/VariantModel.js'
 
+// Static data
 import allGenesData from '../../../data/genes.json'
-
 import simonsIdMap from '../../../data/idmap.json'
 
 export default {
@@ -101,36 +94,43 @@ export default {
     Navigation,
     GeneCard,
     VariantSummaryCard,
-    VariantCard
-    //FeatureMatrixCard, TODO
-    //GenesCard, TODO
+    VariantCard,
+    UpdatedVariantCard
+    // SJG TODO: add FeatureMatrixCard, GenesCard
   },
   props: {
-    paramProjectId:         null,
-    paramPhenoFilters:      null,
-    parmTokenType:          null,
-    paramToken:             null
+    paramProjectId: {
+      default: '0',
+      type: String
+    },
+    paramTokenType: {
+      default: '',
+      type: String
+    },
+    paramToken: {
+      default: '',
+      type: String
+    }
   },
   data() {
     return {
       greeting: 'cohort-gene.iobio.vue',
 
-      // Selection properties
       selectedGene: {},
       selectedTranscript: {},
       selectedVariant: null,
-
+      doneLoadingData: false,
+      doneInit: false,
       geneRegionStart: null,
       geneRegionEnd: null,
       adjustedVariantStart: null,
       adjustedVariantEnd: null,
+      inProgress: {},
       genesInProgress: {},
 
       allGenes: allGenesData,
       simonsIdMap: simonsIdMap,
-      dataSets: [],
 
-      // Models
       variantModel: null,
       geneModel: null,
       bookmarkModel: null,
@@ -138,21 +138,25 @@ export default {
       cacheHelper: null,
       genomeBuildHelper: null,
 
-      // Things to incorporate later on
       variantTooltip: null,
-      inProgress: {},
       cardWidth: 0,
       showClinvarVariants: false,
       activeBookmarksDrawer: null,
-      doneLoadingData: false
+
+      DEMO_GENE: 'AIRE'   // SJG TODO: get rid of this outside of demo
     }
   },
-
-  created: function() {
-    // Nada
+  computed: {
+    selectedVariantInfo: function() {
+      if (this.selectedVariant) {
+        return utility.formatDisplay(this.selectedVariant, this.variantModel.translator)
+      } else {
+        return null;
+      }
+    }
   },
-
   mounted: function() {
+    // Initialize models & get data loading
     let self = this;
     self.cardWidth = self.$el.offsetWidth;
 
@@ -175,15 +179,13 @@ export default {
       self.geneModel.setAllKnownGenes(self.allGenes);
       self.geneModel.translator = translator;
 
-      // Instantiate helper class than encapsulates IOBIO commands
       let endpoint = new EndpointCmd(useSSL,
         IOBIO,
         self.cacheHelper.launchTimestamp,
         self.genomeBuildHelper,
         utility.getHumanRefNames);
 
-      let mode = 'production';
-      let hubEndpoint = new HubEndpoint(mode);
+      let hubEndpoint = new HubEndpoint(HUB_ENV);
 
       self.variantModel = new VariantModel(endpoint,
         genericAnnotation,
@@ -196,9 +198,6 @@ export default {
       self.variantModel.setIdMap(self.simonsIdMap);
       self.inProgress = self.variantModel.inProgress;
 
-      //self.featureMatrixModel = new FeatureMatrixModel(self.cohortModel);
-      //self.featureMatrixModel.init();
-
       self.variantTooltip = new VariantTooltip(genericAnnotation,
         glyph,
         translator,
@@ -206,32 +205,15 @@ export default {
         self.genomeBuildHelper);
     })
     .then(function() {
-      self.dataSets = self.variantModel.dataSets;
       self.filterModel = new FilterModel(self.variantModel.affectedInfo);
       self.variantModel.filterModel = self.filterModel;
 
       self.initFromUrl();
     },
     function(error) {
+      alert("There was a problem contacting our iobio services. Please refresh the application, or contact iobioproject@gmail.com if the problem persists.");
     })
   },
-  computed: {
-    selectedVariantInfo: function() {
-      if (this.selectedVariant) {
-        return utility.formatDisplay(this.selectedVariant, this.variantModel.translator)
-      } else {
-        return null;
-      }
-    }
-    // selectedGeneInfo: function() {
-    //   if (this.selectedGene) {
-    //     return this.selectedGene.gene_name + " " + this.selectedGene.chr;
-    //   } else {
-    //     return "X";
-    //   }
-    // }
-  },
-  watch: {},
   methods: {
     promiseInitCache: function() {
       let self = this;
@@ -261,10 +243,9 @@ export default {
     onLoadDemoData: function() {
       let self = this;
       self.geneModel.copyPasteGenes(self.variantModel.demoGenes.join(", "));
-      self.onGeneSelected('AIRE');
+      self.onGeneSelected(self.DEMO_GENE);
       self.variantModel.promiseInitDemo()
       .then(function() {
-        self.dataSets = self.variantModel.dataSets;
         if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
           self.promiseLoadData();
         }
@@ -274,8 +255,7 @@ export default {
       let self = this;
 
       return new Promise(function(resolve, reject) {
-        if (self.dataSets && self.dataSets.length > 0) {
-          //self.featureMatrixModel.inProgress.loadingVariants = true;
+        if (self.variantModel.dataSet) {
           var options = {'getKnownVariants': self.showClinvarVariants};
 
           self.variantModel.promiseLoadData(self.selectedGene,
@@ -284,16 +264,8 @@ export default {
             options)
           .then(function(resultMap) {
             self.doneLoadingData = true;
-            // self.filterModel.populateEffectFilters(resultMap);
-            // self.filterModel.populateRecFilters(resultMap);
-
-            // self.variantModel.promiseMarkCodingRegions(self.selectedGene, self.selectedTranscript)
-            // .then(function(data) {
-            //   self.analyzedTranscript = data.transcript;
-            //   self.coverageDangerRegions = data.dangerRegions;
-            //   resolve();
-            // })
-              resolve();
+            self.doneInit = true;
+            resolve();
           })
           .catch(function(error) {
             reject(error);
@@ -303,20 +275,6 @@ export default {
         }
       })
     },
-    // TODO: incorporate GenesCard and this
-    // callVariants: function(theGene) {
-    //   let self = this;
-    //   if (theGene == null) {
-    //     self.cacheHelper.analyzeAll(self.variantModel, true);
-    //   } else {
-    //     self.variantModel.promiseJointCallVariants(self.selectedGene,
-    //       self.selectedTranscript,
-    //       self.variantModel.getCurrentTrioVcfData(),
-    //       {checkCache: false, isBackground: false})
-    //     .then(function() {
-    //     })
-    //   }
-    // },
     onFilesLoaded: function() {
       let self = this;
       self.promiseClearCache()
@@ -389,34 +347,25 @@ export default {
       this.geneRegionStart = theStart;
       this.geneRegionEnd = theEnd;
 
-      //this.featureMatrixModel.setRankedVariants(this.geneRegionStart, this.geneRegionEnd);
-
       this.filterModel.regionStart = this.geneRegionStart;
       this.filterModel.regionEnd = this.geneRegionEnd;
       this.variantModel.setLoadedVariants(this.selectedGene);
-
-      //this.coverageModel.setCoverage(this.geneRegionStart, this.geneRegionEnd);
     },
     onGeneRegionZoomReset: function() {
       this.geneRegionStart = this.selectedGene.start;
       this.geneRegionEnd = this.selectedGene.end;
 
-      //this.featureMatrixModel.setRankedVariants();
-
       this.filterModel.regionStart = null;
       this.filterModel.regionEnd = null;
       this.variantModel.setLoadedVariants(this.selectedGene);
-      //this.coverageModel.setCoverage();
     },
     onDataSetVariantClick: function(variant, sourceComponent, cohortKey) {
       let self = this;
       if (variant) {
         self.selectedVariant = variant;
-        self.$refs.variantCardRef.forEach(function(variantCard) {
-          if (sourceComponent == null || variantCard != sourceComponent) {
-            variantCard.showVariantCircle(variant);
-          }
-        })
+        if (sourceComponent == null || self.$refs.variantCardRef != sourceComponent) {
+          self.$refs.variantCardRef.showVariantCircle(variant);
+        }
       }
       else {
           self.deselectVariant();
@@ -424,36 +373,25 @@ export default {
     },
     onDataSetVariantClickEnd: function(sourceComponent) {
       let self = this;
-      //var lastVariant = self.selectedVariant;
-      self.selectedVariant = null;
-      self.$refs.variantCardRef.forEach(function(variantCard) {
-        variantCard.hideVariantCircle();
-      })
+      self.$refs.variantCardRef.hideVariantCircle();
     },
     onDataSetVariantHover: function(variant, sourceComponent) {
       let self = this;
-      self.$refs.variantCardRef.forEach(function(variantCard) {
-        if (variantCard != sourceComponent) {
-          variantCard.showVariantCircle(variant);
+        if (self.$refs.variantCardRef != sourceComponent) {
+          self.$refs.variantCardRef.showVariantCircle(variant);
         }
-      })
     },
     onDataSetVariantHoverEnd: function(sourceVariantCard) {
       let self = this;
       if (self.$refs.variantCardRef) {
-        self.$refs.variantCardRef.forEach(function(variantCard) {
-          variantCard.hideVariantCircle();
-        })
+        self.$refs.variantCardRef.hideVariantCircle();
       }
     },
     deselectVariant: function() {
       let self = this;
       self.selectedVariant = null;
       if (self.$refs.variantCardRef) {
-        self.$refs.variantCardRef.forEach(function(variantCard) {
-          //variantCard.hideVariantTooltip();
-          variantCard.hideVariantCircle();
-        })
+        self.$refs.variantCardRef.hideVariantCircle();
       }
     },
     showVariantExtraAnnots: function(sourceComponent, variant, cohortKey) {
@@ -522,7 +460,6 @@ export default {
     onRemoveGene: function(geneName) {
       this.cacheHelper.clearCacheForGene(geneName);
     },
-    // TODO: this is currently broken
     onAnalyzeAll: function() {
       this.cacheHelper.analyzeAll(this.variantModel);
     },
@@ -541,58 +478,51 @@ export default {
     initFromUrl: function() {
       let self = this;
 
-      // If we have a project id, we're launching from hub
+      // Launching from hub if we have a project ID
       if (self.paramProjectId) {
-        self.geneModel.addGeneName('AIRE');
-        self.onGeneSelected('AIRE');
 
-        localStorage.setItem('hub-iobio-tkn', self.parmTokenType + ' ' + self.paramToken);
+        self.geneModel.addGeneName(self.DEMO_GENE);
+        self.onGeneSelected(self.DEMO_GENE);
+
+        localStorage.setItem('hub-iobio-tkn', self.paramTokenType + ' ' + self.paramToken);
         self.variantModel.phenoFilters = self.getHubPhenoFilters();
         self.variantModel.projectId = self.paramProjectId;
         self.variantModel.promiseInitFromHub()
             .then(function() {
-              self.dataSets = self.variantModel.dataSets;
               if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
                 self.promiseLoadData();
               }
               else {
-                console.log("failed to load data because selected gene length is 0");
+                console.log("Failed to load data because no gene selected");
               }
-            })
+          })
+          .catch(function() {
+            alert("Problem talking to Hub...");
+          })
       }
-      // Otherwise launching stand alone
+      // Otherwise launching oustide of Hub
+      // SJG TODO: incorporate stand-alone loading - right now just loading platinum demo
       else {
-        self.variantModel.userVcf = getUserVcf(); // SJG TODO: pull this from file upload menu
-        self.geneModel.addGeneName('AIRE');
-        self.onGeneSelected('AIRE');
+        self.geneModel.addGeneName(self.DEMO_GENE);
+        self.onGeneSelected(self.DEMO_GENE);
         self.variantModel.promiseInitDemo()
             .then(function() {
-              self.dataSets = self.variantModel.dataSets;
               if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
                 self.promiseLoadData();
               }
               else {
-                console.log("failed to load data because selected gene length is 0");
+                console.log("Failed to load data because no gene selected");
               }
             })
-
-        // SJG TODO: get file selection working
-        //self.variantModel.promiseInit();
       }
     },
     /* Returns array of phenotype objects {phenotypeName: phenotypeData} */
     getHubPhenoFilters: function() {
       let self = this;
-
       let params = Qs.parse(self.$route.query);
       let { filter } = params;
       return filter;
     }
-    // onBookmarkVariant(variant) {
-    //   this.$refs.navRef.onBookmarks();
-    //   this.bookmarkModel.addBookmark(variant, this.selectedGene);
-    //   this.selectedVariant = null;
-    // }
   }
 }
 </script>

@@ -1,6 +1,5 @@
 class GeneModel {
   constructor() {
-    debugger;
     this.geneSource = null;
     this.refseqOnly = {};
     this.gencodeOnly = {};

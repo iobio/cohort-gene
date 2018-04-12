@@ -38,7 +38,7 @@ const routes = [
     component: Home,
     props: (route) => ({
         paramProjectId:             route.query.project_uuid,
-        parmTokenType:              route.query.token_type,
+        paramTokenType:              route.query.token_type,
         paramToken:                 route.query.access_token
     })
   }
@@ -51,9 +51,7 @@ const router = new VueRouter({
 window.vm = new Vue({
   el: '#app',
   mounted: function() {
-        console.log("Routing info: ");
         var q = this.$route.query
-        console.log(q)
   },
   created: function() {
   },

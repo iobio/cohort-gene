@@ -79,7 +79,6 @@ export default {
     },
     fillCharts() {
       let self = this;
-      debugger; // make sure values look correct in maps
       self.probandZygChart.fillChart()(self.probandZygMap);
       self.subsetZygChart.fillChart()(self.subsetZygMap);
       //self.depthChart.fillChart()(self.depthMap);

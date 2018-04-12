@@ -1,9 +1,9 @@
-<!--
-Encapsulates Variant card
-Updated: SJG Mar2018
--->
+<!-- Component housing variant track display and main visualization.
+TD & SJG updated Apr2018 -->
+
 <style lang="sass">
   @import ../../../assets/sass/variables
+
   #variant-card
     #gene-viz, #gene-viz-zoom
       .current
@@ -75,7 +75,6 @@ Updated: SJG Mar2018
         <v-flex xs6>
           <v-container fluid style="padding-left: 70%;" id="impactModeSwitch" v-bind:class="{hide: !displayImpactSwitch}">
             <v-switch :label="`Impact Mode: ${impactModeDisplay(impactMode)}`" v-model="impactMode" hide-details></v-switch>
-            <!-- <span id="enrichmentColorLegend" v-bind:class="{hide: impactMode}"></span> -->
           </v-container>
         </v-flex>
       </v-layout>
@@ -83,14 +82,13 @@ Updated: SJG Mar2018
         <variant-viz
           v-if="showVariantViz"
           v-for="cohort in cohorts"
-          :key="cohort.name"
+          :key="cohort.getName()"
           ref="variantVizRef"
-          :id="cohort.name"
+          :id="cohort.getName()"
           :model="cohort"
           :data="cohort.loadedVariants"
           :title="cohort.trackName"
           :phenotypes="cohort.subsetPhenotypes"
-          :name="cohort.name"
           :regionStart="regionStart"
           :regionEnd="regionEnd"
           :annotationScheme="annotationScheme"
@@ -106,8 +104,7 @@ Updated: SJG Mar2018
           @variantClick="onVariantClick"
           @variantHover="onVariantHover"
           @variantHoverEnd="onVariantHoverEnd"
-          @trackRendered="switchColorScheme"
-          >
+          @trackRendered="switchColorScheme">
         </variant-viz>
         <gene-viz id="gene-viz"
           v-bind:class="{ hide: !showGeneViz }"
@@ -121,10 +118,8 @@ Updated: SJG Mar2018
           :regionEnd="regionEnd"
           :showXAxis="geneVizShowXAxis"
           :showBrush="false"
-          :featureClass="getExonClass"
-          >
+          :featureClass="getExonClass">
         </gene-viz>
-        <!--SJG TODO: took this out of gene-viz card above @feature-selected="showExonTooltip" -->
       </div>
     </v-card-title>
   </v-card>
@@ -137,7 +132,6 @@ export default {
   components: {
     VariantViz,
     GeneViz
-    // TODO: if I add knownVariantsToolbar, add that component
   },
   props: {
     dataSetModel: null,
@@ -185,6 +179,32 @@ export default {
       enrichmentColorLegend: {}
     }
   },
+  computed: {
+    depthVizHeight: function() {
+      this.showDepthViz ? 0 : 60;
+    },
+    cohorts: function() {
+      return this.dataSetModel._cohorts;
+    }
+  },
+  watch: {
+    impactMode: function() {
+      let self = this;
+      self.switchColorScheme();
+    },
+    selectedGene: function() {
+      let self = this;
+      self.impactMode = false;
+      self.doneLoadingData = false;
+    }
+  },
+  created: function() {
+    this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
+  },
+  mounted: function() {
+    let self = this;
+    self.name = self.dataSetModel.name;
+  },
   methods: {
     drawColorLegend: function() {
       this.enrichmentColorLegend = colorLegend()
@@ -205,8 +225,7 @@ export default {
       }
     },
     onVariantClick: function(variant, cohortKey) {
-      //this.hideVariantTooltip();
-
+      //this.Tooltip();
       if (this.showVariantViz) {
         this.hideVariantCircle();
         this.showVariantCircle(variant);
@@ -257,10 +276,10 @@ export default {
         self.selectedTranscript,
         lock,
         coord,
-        self.dataSetModel.cohortMap[cohortKey].name,
+        self.dataSetModel.cohortMap[cohortKey].getName(),
         self.dataSetModel.cohortMap[cohortKey].getAffectedInfo(),
-        "",     // SJG TODO: put mode in here later if necessary
-        0);     // SJG TODO put max allele count in here
+        "",     // SJG TODO: MODE
+        0);     // SJG TODO MAX ALLELE COUNT
       tooltip.selectAll("#unpin").on('click', function() {
         self.unpin(null, true);
       });
@@ -274,12 +293,6 @@ export default {
     tooltipScroll(direction) {
       this.variantTooltip.scroll(direction, "#main-tooltip");
     },
-    // unpin(saveClickedVariant, unpinMatrixTooltip) {
-    //   this.$emit("dataSetVariantClickEnd", this);
-    //   //this.hideVariantTooltip();
-    //   this.hideVariantCircle();
-    //   this.hideCoverageCircle();
-    // },
     hideVariantTooltip: function() {
       let tooltip = d3.select("#main-tooltip");
       tooltip.transition()
@@ -298,8 +311,8 @@ export default {
     },
     hideVariantCircle: function(variant) {
       let self = this;
-      if (this.showVariantViz) {
-        this.$refs.variantVizRef.forEach(function(variantViz) {
+      if (self.showVariantViz && self.$refs.variantVizRef != null) {
+        self.$refs.variantVizRef.forEach(function(variantViz) {
           variantViz.hideVariantCircle(self.getVariantSVG(variantViz.name));
         })
       }
@@ -356,34 +369,6 @@ export default {
         variantViz.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(variantViz.name));
       })
     }
-  },
-  filters: {
-  },
-  computed: {
-    depthVizHeight: function() {
-      this.showDepthViz ? 0 : 60;
-    },
-    cohorts: function() {
-      return this.dataSetModel.cohorts;
-    }
-  },
-  watch: {
-    impactMode: function() {
-      let self = this;
-      self.switchColorScheme();
-    },
-    selectedGene: function() {
-      let self = this;
-      self.impactMode = false;
-      self.doneLoadingData = false;
-    }
-  },
-  mounted: function() {
-    this.name = this.dataSetModel.name;
-    //this.drawColorLegend();
-  },
-  created: function() {
-    this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
   }
 }
 </script>

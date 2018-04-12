@@ -36,8 +36,6 @@ nav.toolbar
 
         <v-icon>search</v-icon>
         <v-form>
-          <!-- <v-text-field id="search-gene-name" label="Gene" value="AIRE" clearable>
-          </v-text-field> -->
           <div style="padding-top: 15px">
             <input id="search-gene-name" class="form-control" type="text" placeholder="Enter gene..."
               style="color: white; background-color: #516e87;">
@@ -149,7 +147,8 @@ export default {
       rightDrawer: false,
 
       leftDrawerContents: "",
-      showLegendMenu: false
+      showLegendMenu: false,
+      focusToggle: false
     }
   },
   watch: {
@@ -200,11 +199,19 @@ export default {
      document.querySelector('#search-gene-name')
              .addEventListener('keypress', function (e) {
                 var key = e.which || e.keyCode;
-                if (key === 13) { // 13 is enter
-                    // code for enter
+                if (key === 13) { // Return key
                     e.preventDefault();
                 }
             });
+
+    // Prevent window focus from opening gene name dropdown TODO
+    // document.querySelector('#search-gene-name')
+    //         .addEventListener('blur', function (e) {
+    //         }, true);
+    //
+    // document.querySelector('#search-gene-name')
+    //         .addEventListener('focus', function(e) {
+    //         })
   }
 }
 
