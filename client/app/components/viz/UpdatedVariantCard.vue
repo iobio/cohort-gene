@@ -79,6 +79,7 @@ Updated: SJG Apr2018
         </v-flex>
       </v-layout>
       <div style="width:100%">
+
         <updated-variant-viz
           v-if="(showVariantViz && cohort != null)"
           ref="variantVizRef"

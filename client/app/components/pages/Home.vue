@@ -143,7 +143,7 @@ export default {
       showClinvarVariants: false,
       activeBookmarksDrawer: null,
 
-      DEMO_GENE: 'AIRE'   // SJG TODO: get rid of this outside of demo
+      DEMO_GENE: 'BRCA2'   // SJG TODO: get rid of this outside of demo
     }
   },
   computed: {

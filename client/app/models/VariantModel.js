@@ -1,6 +1,8 @@
 /* Encapsulates logic for Variant Card and Variant Summary Card
    SJG & TS updated Apr2018 */
 
+   // SJG_TIMING tag on all timing code
+
 class VariantModel {
   constructor(endpoint, genericAnnotation, translator, geneModel,
     cacheHelper, genomeBuildHelper, hubEndpoint) {
@@ -115,10 +117,17 @@ class VariantModel {
     subsetCohort.subsetPhenotypes.push('Subsets');
     hubDataSet.addCohort(subsetCohort, SUBSET_ID);
 
+    // SJG_TIMING
+    var t0 = 0;
+    var t1 = 0;
+
     // Retrieve urls from hub
     return new Promise(function(resolve, reject) {
+      t0 = performance.now(); // SJG_TIMING
       self.promiseGetUrlsFromHub(self.projectId)
         .then(function(dataSet) {
+          t1 = performance.now(); // SJG_TIMING
+          console.log('It took ' + (t1-t0) + ' ms to get Hub urls');
           if (dataSet == null) {
             let currCohorts = self.dataSet.getCohorts();
             if (currCohorts != undefined && currCohorts.length > 0) {
@@ -138,8 +147,11 @@ class VariantModel {
           var filterObj = {'abc.total_score' : probandFilter};
 
           // Retrieve proband sample IDs from Hub
+          t0 = performance.now(); // SJG_TIMING
           self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
               .then(function(ids) {
+                t1 = performance.now(); // SJG_TIMING
+                console.log('It took ' + (t1-t0) + ' ms to get proband IDs'); // SJG_TIMING
                 if (ids == null || ids.length == 0) {
                   let currCohorts = self.dataSet.getCohorts();
                   if (currCohorts != undefined && currCohorts.length > 0) {
@@ -156,8 +168,11 @@ class VariantModel {
 
                 // Retrieve subset sample IDs from Hub
                 self.assignPhenoFilters(subsetCohort, probandFilter);
+                t0 = performance.now();   // SJG_TIMING
                 self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                     .then(function(ids) {
+                      t1 = performance.now(); // SJG_TIMING
+                      console.log('It took ' + (t1-t0) + ' ms to get subset IDs'); // SJG_TIMING
                       if (ids != null && ids.length > 0) {
                         console.log("Obtained susbset IDs from Hub...");
                         subsetCohort.subsetIds = ids;
@@ -449,7 +464,10 @@ class VariantModel {
       }
       Promise.all(annotatePromises)
         .then(function() {
+          let t0 = performance.now(); // SJG_TIMING
           self.annotateCohortFrequencies(resultMapList);
+          let t1 = performance.now(); // SJG_TIMING
+          console.log('Took ' + (t1-t0) + ' ms to annotate cohort frequencies');  // SJG_TIMING
           self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
           .then(function(data) {
             resolve(data);
@@ -503,8 +521,8 @@ class VariantModel {
     let self = this;
     if (self.dataSet != null) {
       self.dataSet.getCohorts().forEach(function(cohort) {
-        cohort.loadedVariants = {loadState: {}, features: [], maxLevel: 1, featureWidth: 0};
-        cohort.calledVariants = {loadState: {}, features: [], maxLevel: 1, featureWidth: 0};
+        cohort.loadedVariants = {loadState: {}, features: [], maxPosLevel: 0, maxNegLevel: 0, maxSubLevel: 0, featureWidth: 0};
+        cohort.calledVariants = {loadState: {}, features: [], maxPosLevel: 0, maxNegLevel: 0, maxSubLevel: 0, featureWidth: 0};
         cohort.coverage = [[]];
         cohort.noMatchingSamples = false;
       })
@@ -517,9 +535,10 @@ class VariantModel {
 
   /* Filters out homozygous ref variants for each cohort. Initializes pileup rendering of variants. */
   setLoadedVariants(gene, name=null) {
+    var t0 = 0; // SJG_TIMING
+    var t1 = 0; // SJG_TIMING
     let self = this;
 
-    // SJG_P2 TODO: add filter to remove variants that have less than Nx fold change?
     var filterAndPileupVariants = function(model, start, end, target='loaded') {
       var filteredVariants = $.extend({}, model.vcfData);
       filteredVariants.features = model.vcfData.features.filter(function(feature) {
@@ -546,7 +565,9 @@ class VariantModel {
       });
 
       var pileupObject = model._pileupVariants(filteredVariants.features, start, end);
-      filteredVariants.maxLevel = pileupObject.maxLevel + 1;
+      filteredVariants.maxPosLevel = pileupObject.maxPosLevel;
+      filteredVariants.maxNegLevel = pileupObject.maxNegLevel;
+      filteredVariants.maxSubLevel = pileupObject.maxSubLevel;
       filteredVariants.featureWidth = pileupObject.featureWidth;
 
       return filteredVariants;
@@ -558,7 +579,14 @@ class VariantModel {
           var start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
           var end   = self.filterModel.regionEnd   ? self.filterModel.regionEnd   : gene.end;
 
+          // SJG_P2 filtering out all non-enriched variants for now TODO: fix when get handle on bidirectional rendering
+          // if (cohort.getName() == PROBAND_ID)
+          //   cohort.vcfData.features = self.filterProbandsByDelta(cohort.vcfData.features);
+
+          t0 = performance.now(); // SJG_TIMING
           var loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
+          t1 = performance.now(); // SJG_TIMING
+          console.log('Took ' + (t1-t0) + ' ms to filter and pileup variants'); // SJG_TIMING
           cohort.loadedVariants = loadedVariants;
 
           var calledVariants = filterAndPileupVariants(cohort, start, end, 'called');
@@ -715,6 +743,16 @@ class VariantModel {
       subsetHomRefs = 0;
       subsetNoCalls = 0;
     })
+  }
+
+  filterProbandsByDelta(features) {
+    let filteredProbandFeatures = [];
+    features.forEach(function(feature) {
+      if (feature.subsetDelta <= 0.5 || feature.subsetDelta >= 2) {
+        filteredProbandFeatures.push(feature);
+      }
+    })
+    return filteredProbandFeatures;
   }
 
   promiseAnnotateWithClinvar(resultMap, geneObject, transcript, isBackground) {
@@ -878,7 +916,7 @@ class VariantModel {
   }
 
   /* Assigns classes to each variant to control visual display in the DOM. */
-  classifyByImpact(d, annotationScheme, isSubsetCohort) {
+  classifyByImpact(d, annotationScheme) {
     let self = this;
     var impacts = "";
     var toggleImpact = "";  // Grouping classes, added & removed based on impact mode
@@ -891,13 +929,17 @@ class VariantModel {
     var enrichColor = "";  // Color classes, constant
 
     var subsetEnrichment = d.subsetDelta;
-    if (subsetEnrichment >= 2 && isSubsetCohort) {
+    if (subsetEnrichment >= 2) {
       enrichment = "eUP";
       enrichColor = "enrichment_subset_UP";
     }
-    else if (subsetEnrichment <= 0.5 && isSubsetCohort) {
+    else if (subsetEnrichment <= 0.5) {
       enrichment = "eDOWN";
       enrichColor = "enrichment_subset_DOWN";
+    }
+    else if (subsetEnrichment != 0) {
+      enrichment = "eLOW";
+      enrichColor = "enrichment_LOW";
     }
     else {
       enrichment = "eNONE";

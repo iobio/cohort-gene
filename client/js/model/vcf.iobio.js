@@ -629,7 +629,6 @@ var effectCategories = [
       .join(",");
 
       if (sourceType == SOURCE_TYPE_URL) {
-        // SJG TODO: how am I going to access subset variants and pass here
         me._getRemoteVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
           function(annotatedData, results) {
             if (annotatedData && results) {
@@ -729,8 +728,10 @@ var effectCategories = [
 
     var serverCacheKey = me._getServerCacheKey(vcfURL, annotationEngine, refName, geneObject, vcfSampleNames, {refseq: isRefSeq, hgvs: hgvsNotation, rsid: getRsId});
 
+    var t0 = 0; // SJG_TIMING
+    var t1 = 0; // SJG_TIMING
+    t0 = performance.now(); // SJG_TIMING
     var cmd = me.getEndpoint().annotateVariants({'vcfUrl': vcfURL, 'tbiUrl': tbiUrl}, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey);
-
 
     var annotatedData = "";
     // Get the results from the iobio command
@@ -743,6 +744,8 @@ var effectCategories = [
 
     // We have all of the annotated vcf recs.  Now parse them into vcf objects
     cmd.on('end', function(data) {
+      t1 = performance.now(); // SJG_TIMING
+      console.log('Took ' + (t1-t0) + ' ms to return from iobio services');
       var annotatedRecs = annotatedData.split("\n");
       var vcfObjects = [];
       var contigHdrRecFound = false;
@@ -776,11 +779,16 @@ var effectCategories = [
       });
 
       // Parse the vcf object into a variant object that is visualized by the client.
+      t0 = performance.now(); // SJG_TIMING
       var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined);
-      // TODO: make this optional to keep gene/cohort synonymous
-      var filteredResults = me._filterVcfRecordsByVep(results);
+      t1 = performance.now(); //SJG_TIMING
+      console.log('Took ' + (t1-t0) + ' ms to parse vcf records');  // SJG_TIMING
 
-      callback(annotatedRecs, filteredResults);
+      // TODO: make this optional to keep gene/cohort synonymous
+      // var filteredResults = me._filterVcfRecordsByVep(results);  TODO: taking out for timing
+
+
+      callback(annotatedRecs, results);
     });
 
     cmd.on('error', function(error) {
@@ -1540,8 +1548,10 @@ var effectCategories = [
                   var variant = {
                     'start':                    +rec.pos,
                     'end':                      +end,
-                    'len':                      +len,
+                    'len':                      +len,   // Length of variant? Per BP?
                     'level':                    +0,
+                    'subLevel':                 +0,
+                    'adjustedLevel':            +0,
                     'strand':                   geneObject.strand,
                     'chrom':                    refName,
                     'type':                     annot.typeAnnotated && annot.typeAnnotated != '' ? annot.typeAnnotated : type,
@@ -1556,7 +1566,8 @@ var effectCategories = [
                     'totalSamples':             totalSamples,         // Number of total samples in cohort
 
                     // genotype fields
-                    'genotypes':                gtResult.genotypeMap,
+                    //'genotypes':                gtResult.genotypeMap, // SJG NOTE: cause of memory issues
+                    'genotypeDistrib':          gtResult.counts,
                     'genotype':                 genotype,
                     'genotypeDepth' :           genotype.genotypeDepth,
                     'genotypeFilteredDepth' :   genotype.filteredDepth,
@@ -1667,7 +1678,7 @@ var effectCategories = [
           'transcript':         selectedTranscript,
           'variantRegionStart': variantRegionStart,
           'loadState':          {},
-          'features':           allVariants,
+          'features':           allVariants,  // SJG TODO: wondering if I should return variants in some spacing map order
           'genericAnnotators':  me.infoFields ? Object.keys(me.infoFields) : []
         };
         return results;
@@ -2677,54 +2688,67 @@ exports._getHighestScore = function(theObject, cullFunction, theTranscriptId) {
 
   exports.pileupVcfRecordsImproved = function(variants, regionStart, posToPixelFactor, widthFactor) {
     var pileup = pileupLayout().sort(null).size(800); // 1860
-    var maxlevel = pileup(variants);
-    return maxLevel;
+    var maxPosLevel = pileup(variants);
+    return maxPosLevel;
   }
 
   /* Determines pileup positions for symbols. Incorporates negative y-axis space if bidirectional parameter is true. */
   exports.pileupVcfRecords = function(variants, regionStart, posToPixelFactor, widthFactor, bidirectional = false) {
       widthFactor = widthFactor ? widthFactor : 1;
-      // Variant's can overlap each over.  Set a field called variant.level which determines
-      // how to stack the variants vertically in these cases.
-      var posLevels = {};
-      var maxLevel = 0;
+      // A map of key: value pairs encoding individual variant relative screen positions
+      // Key = 'xPosition.yMainLevel' where yMainLevel is the SubsetDelta value assigned to the variant (which may be +/-)
+      // Value = count of variants mapping to that position, or ySubLevel count
+      var xyGrid = {};
+
+      // Cumulative return values
+      //var levelRange = [];     // Ordered list of levels (+/-)
+      var maxSubLevel = 1;     // Only goes in positive direction
+      var maxPosLevel = 1;
+      var maxNegLevel = -1;
       var posUnitsForEachVariant = posToPixelFactor * widthFactor;
+
+      // Prime loop // SJG NOTE: keeping for now in case we change display scheme
+      // if (variants.length > 0) {
+      //   let firstDelta = Math.trunc(variants[0].subsetDelta < 1 ? (-1 / variants[0].subsetDelta) : variants[0].subsetDelta) - 1;
+      //   levelRange.push(firstDelta);
+      // }
+
       variants.forEach(function(variant) {
-        // get next available vertical spot starting at level 0
-        var startIdx = (variant.start - regionStart);// + i;
-        var posLevel = 0;
-        var inversionFactor = (bidirectional && variant.subsetDelta < 1) ? -1 : 1;   // Stack in negative direction if enriched in probands
-        var stackAtStart = posLevels[startIdx];
-        if (stackAtStart) {
-          for (var k = 0; k <= stackAtStart.length; k++ ) {
-            if (stackAtStart[k] == undefined) {
-              posLevel = k * inversionFactor; // SJG_P2 incorporated inversion factor here
-              break;
-            }
-          }
-        }
+        // Get positional info
+        let xPosition = (variant.start - regionStart);
+        let yMainLevel = Math.trunc(variant.subsetDelta < 1 ? (-1 / variant.subsetDelta) : variant.subsetDelta) - 1;  // Get level relative to 0 being 1x
+        let currKey = xPosition + '.' + yMainLevel;
+        let ySubLevel = xyGrid[currKey] ? ++xyGrid[currKey] : 0;
+        xyGrid[currKey] = ySubLevel;
 
-        // Set variant level.
-        variant.level = posLevel;
+        // Keep track of levels in variant object
+        let inversionFactor = variant.subsetDelta < 1 ? -1 : 1;
+        variant.level = yMainLevel;
+        variant.subLevel = ySubLevel;
+        variant.adjustedLevel = inversionFactor * (Math.abs(yMainLevel) - 1) * ySubLevel; // Subtract main level by 1 to scale y-axis correctly (may be +/-)
 
-        // Now set new level for each positions comprised of this variant.
-        for (var i = 0; i < variant.len + posUnitsForEachVariant; i++) {
-          var idx = (variant.start - regionStart) + i;
-          var stack = posLevels[idx] || [];
-          stack[variant.level] = true;
-          posLevels[idx] = stack;
+        // // Insert level into unique, ordered list  SJG NOTE: keeping for now in case we change display scheme
+        // var smallerIndex = 0;
+        // for (i = 0; i < levelRange.length; i++) {    // Find position with largest smaller level than current
+        //   if (levelRange[i] < yMainLevel) {
+        //     smallerIndex = i;
+        //   }
+        //   else {
+        //     i = levelRange.length;                  // Short circuit loop if we've found our spot
+        //   }
+        // }
+        // if (smallerIndex < levelRange.length && levelRange[smallerIndex + 1] > yMainLevel) {
+        //   levelRange.splice((smallerIndex + 1), 0, yMainLevel);
+        // }
 
-          // Capture the max level of the entire region.
-          if (stack.length - 1 > maxLevel) {
-            maxLevel = stack.length - 1;
-          }
-        }
+        // Check for level extrema
+        if (yMainLevel > maxPosLevel) maxPosLevel = yMainLevel;
+        else if (yMainLevel < maxNegLevel) maxNegLevel = yMainLevel;
+
+        // Check for subLevel maxima
+        if (ySubLevel > maxSubLevel) maxSubLevel = ySubLevel;
       });
-
-      // SJG TODO: I have to shift the levels after the pileup because we'll have a ton of 1x variants
-      // SJG TODO: might need to return max level top and max level bottom
-
-      return maxLevel;
+      return {'maxPosLevel' : maxPosLevel, 'maxNegLevel': maxNegLevel, 'maxSubLevel': maxSubLevel};
   }
 
 

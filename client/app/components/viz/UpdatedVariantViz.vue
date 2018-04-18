@@ -252,10 +252,21 @@ export default {
 
         if (self.data) {
           // Set the vertical layer count so that the height of the chart can be recalculated
-          if (self.data.maxLevel == null) {
-            self.data.maxLevel = d3.max(self.data.features, function(d) { return d.level; }); // SJG TODO: each feature has a level?
+          if (self.data.maxPosLevel == null || self.data.maxPosLevel == undefined) {
+            self.data.maxPosLevel = d3.max(self.data.features, function(d) { return d.level; });
           }
-          self.variantChart.verticalLayers(self.data.maxLevel);
+          if (self.data.maxNegLevel == null || self.data.maxNegLevel == undefined) {
+            self.data.maxNegLevel = d3.min(self.data.features, function(d) { return d.level; });
+          }
+          if (self.data.maxSubLevel == null || self.data.maxSubLevel == undefined) {
+            self.data.maxSubLevel = d3.max(self.data.features, function(d) { return d.subLevel; });
+          }
+          //self.variantChart.verticalLayers(self.data.maxLevel + (self.data.maxNegLevel * -1));  TODO: remove don't need
+          self.variantChart.posVertLayers(self.data.maxPosLevel);
+          self.variantChart.negVertLayers(self.data.maxNegLevel);
+          self.variantChart.maxSubLevel(self.data.maxSubLevel);
+          //self.variantChart.vertLayerRange(self.data.levelRange);
+
           self.variantChart.lowestWidth(self.data.featureWidth);
           if (self.data.features == null || self.data.features.length == 0) {
             self.variantChart.showXAxis(false);

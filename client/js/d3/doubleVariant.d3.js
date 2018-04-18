@@ -24,8 +24,12 @@ function doubleVariantD3() {
       widthPercent = "100%",
       showBrush = false,
       brushHeight = null,
-      verticalLayers = 1, // SJG TODO: how is this determined?
+      verticalLayers = 1,
       verticalPadding = 4,
+      posVertLayers = 1,
+      negVertLayers = -1, // A negative value
+      maxSubLevel = 0,
+      vertLevelRange = [],
       showTransition = true,
       lowestWidth = 3,
       dividerLevel = null,
@@ -74,7 +78,8 @@ function doubleVariantD3() {
     // Get the x for this position
     if (matchingVariant) {
       var mousex = x(matchingVariant.start);
-      var mousey = height - ((matchingVariant.level + 1) * (variantHeight + verticalPadding));
+      // SJG TODO: have to modify this to match new y.range
+      var mousey = (height - (matchingVariant.adjustedLevel) * (variantHeight + verticalPadding));
 
       var circle = svgContainer.select(".circle");
       circle.transition()
@@ -134,7 +139,6 @@ function doubleVariantD3() {
                    .style("opacity", 0)
                    .style("z-index", 0)
                    .style("pointer-events", "none");
-
     }
   }
 
@@ -215,15 +219,20 @@ function doubleVariantD3() {
     // merge options and defaults
     options = $.extend(defaults,options);
 
-    if (verticalLayers == null) {
-      verticalLayers = 1;
-    }
+    // Find adjusted range based on sublevel
+    let subLayers = maxSubLevel == 0 ? 1 : maxSubLevel;
+    let posLayers = posVertLayers <= 1 ? 1 : (posVertLayers - 1) * subLayers;
+    let negLayers = negVertLayers >= -1 ? -1 : (negVertLayers + 1) * subLayers;
 
-    // Recalculate the height based on the number of vertical layers
-    // Not sure why, but we have to bump up the layers by one; otherwise,
-    // y will be negative for first layer
-    height = verticalLayers * (variantHeight + verticalPadding);
-    height += (variantHeight + verticalPadding);
+    posHeight = posLayers * (variantHeight + verticalPadding);
+    posHeight += (variantHeight + verticalPadding);
+
+    // A positive value, want to add space for negative layers
+    negHeight = (-1 * negLayers) * (variantHeight + verticalPadding);
+    negHeight += (variantHeight + verticalPadding);
+
+    height = posHeight + negHeight;
+
     // Account for the margin when we are showing the xAxis
     if (showXAxis) {
       height += margin.bottom;
@@ -233,16 +242,13 @@ function doubleVariantD3() {
     }
     var dividerY = dividerLevel ? height - ((dividerLevel + 1) * (variantHeight + verticalPadding)) : null;
 
-
-    // determine inner height (w/o margins)
-    var innerHeight = height - margin.top - margin.bottom;
+    // Determine inner height (w/o margins)
+    var innerPosHeight = posHeight - margin.top;
+    var innerNegHeight = -1 * (negHeight - margin.bottom);
 
     selection.each(function(data) {
-
       // set svg element
       container = d3.select(this).classed('ibo-variant', true);
-
-
       container.selectAll("svg").remove();
 
       if (data && data.length > 0 && data[0] && data[0].features && data[0].features.length > 0) {
@@ -267,29 +273,27 @@ function doubleVariantD3() {
         x.range([0, width - margin.left - margin.right]);
 
         // Update the y-scale.
-        y  .domain([0, data.length]);
-        y  .range([innerHeight , 0]);
+        y.domain([negLayers, posLayers]);
+        y.range([innerPosHeight, innerNegHeight]);
 
-        // Find out the smallest interval between variants on the x-axis
+        // Find out the smallest width interval between variants on the x-axis
         // for each level. For a single nucleotide variant, what is
         // the standard width we would like to show given the minimum
         // distance between all variants.
-        // TODO:  Need to use this as a factor for increasing
-        // width of multi-base variants.
         minWidth = 6;
-        // For each level
-        for (var l = 0; l < verticalLayers; l++) {
+
+        for (var l = negLayers; l < posLayers; l++) {
           // For each row in array (per variant set; only one variant set)
           var minInterval = null;
           data.forEach( function(d) {
             // For each variant.  Calculate the distance on the screen
             // between the 2 variants.
             for (var i = 0; i < d.features.length - 1; i++) {
-              if (d.features[i].level == l) {
+              if (d.features[i].adjustedLevel == l) {
                 // find the next feature at the same level
                 var nextPos = null;
                 for (var next = i+1; next < d.features.length; next++) {
-                  if (d.features[next].level == l) {
+                  if (d.features[next].adjustedLevel == l) {
                     nextPos = next;
                     break;
                   }
@@ -312,7 +316,6 @@ function doubleVariantD3() {
             if ( minInterval != null && minInterval < minWidth) {
               minWidth = minInterval;
             }
-
           });
         }
 
@@ -350,8 +353,6 @@ function doubleVariantD3() {
         // Select the svg element, if it exists.
         var svg = container.selectAll("svg").data([0]);
 
-
-
         svg.enter()
           .append("svg")
           .attr("width", widthPercent)
@@ -384,7 +385,8 @@ function doubleVariantD3() {
         // Create the X-axis.
         g.selectAll(".x.axis").remove();
         if (showXAxis) {
-          g.append("g").attr("class", "x axis").attr("transform", "translate(0," + (y.range()[0] + margin.bottom) + ")");
+          // SJG NOTE: think this is correct
+          g.append("g").attr("class", "x axis").attr("transform", "translate(0," + (y(0) + margin.bottom) + ")");
         }
 
         // Create dividing line
@@ -420,7 +422,8 @@ function doubleVariantD3() {
         var track = g.selectAll('.track.snp').data(data);
         track.enter().append('g')
             .attr('class', 'track snp')
-            .attr('transform', function(d,i) { return "translate(0," + y(i+1) + ")"});
+            // SJG TODO: THIS IS WRONG - WHY?
+            .attr('transform', function(d,i) { return "translate(0," + y(d.adjustedLevel) + ")"});
 
         var trackindel = g.selectAll('.track.indel').data(data);
         trackindel.enter().append('g')
@@ -462,7 +465,8 @@ function doubleVariantD3() {
               return showTransition ? 0 : variantHeight;
             })
             .attr('y', function(d) {
-              return showTransition ? 0 :  height - ((d.level + 1) * (variantHeight + verticalPadding));
+              return showTransition ? 0 : y(d.adjustedLevel);  // SJG TODO: verify that this is returning correct y
+              //return showTransition ? 0 : ((d.adjustedLevel) * (variantHeight + verticalPadding));  // SJG TODO: verify that this is returning correct y
             })
             .attr('height', variantHeight);
 
@@ -485,7 +489,7 @@ function doubleVariantD3() {
             .attr('class', function(d) { return chart.clazz()(d); })
             .attr("transform", function(d) {
               var xCoord = x(d.start) + 2;
-              var yCoord = showTransition ? 0 : height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
+              var yCoord = showTransition ? 0 : height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
               var tx = "translate(" + xCoord + "," + yCoord + ")";
               return tx;
              });
@@ -535,7 +539,7 @@ function doubleVariantD3() {
                   return variantHeight;
                 })
                 .attr('y', function(d) {
-                  return height - ((d.level + 1) * (variantHeight + verticalPadding));
+                  return height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding));
                 })
                 .attr('height', function(d) {
                   return variantHeight;
@@ -554,7 +558,7 @@ function doubleVariantD3() {
                 })
                 .attr("transform", function(d) {
                     var xCoord = x(d.start) + 2;
-                    var yCoord = height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
+                    var yCoord = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
                     var tx = "translate(" + xCoord +  "," + yCoord + ")";
                     return tx;
                 });
@@ -572,7 +576,7 @@ function doubleVariantD3() {
                 })
                 .attr("transform", function(d) {
                     var xCoord = x(d.start) + 2;
-                    var yCoord = height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
+                    var yCoord = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
                     var tx = "translate(" + xCoord + "," + yCoord + ")";
                     return tx;
                 });
@@ -589,7 +593,7 @@ function doubleVariantD3() {
                 })
                 .attr("transform", function(d) {
                     var xCoord = x(d.start) + 2;
-                    var yCoord = height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
+                    var yCoord = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
                     var tx = "translate(" + xCoord + "," + yCoord + ")";
                     return tx;
                 });
@@ -694,7 +698,7 @@ function doubleVariantD3() {
 
     // Get the x, y for the variant's position
     var mousex = d3.round(x(matchingVariant.start));
-    var mousey = height - ((matchingVariant.level + 1) * (variantHeight + verticalPadding));
+    var mousey = height - ((matchingVariant.adjustedLevel + 1) * (variantHeight + verticalPadding));
 
     var xpos = 0;
     var ypos = mousey-2;
@@ -841,6 +845,30 @@ function doubleVariantD3() {
   chart.verticalLayers = function(_) {
     if (!arguments.length) return verticalLayers;
     verticalLayers = _;
+    return chart;
+  }
+
+  chart.posVertLayers = function(_) {
+    if (!arguments.length) return posVertLayers;
+    posVertLayers = _;
+    return chart;
+  }
+
+  chart.negVertLayers = function(_) {
+    if (!arguments.length) return negVertLayers;
+    negVertLayers = _;
+    return chart;
+  }
+
+  chart.levelRange = function(_) {
+    if (!arguments.length) return levelRange;
+    levelRange = _;
+    return chart;
+  }
+
+  chart.maxSubLevel = function(_) {
+    if (!arguments.length) return maxSubLevel;
+    maxSubLevel = _;
     return chart;
   }
 

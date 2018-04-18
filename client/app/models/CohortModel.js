@@ -18,7 +18,7 @@ class CohortModel {
     this.getBamRefName = null;
 
     this.sampleName = '';
-    this.trackName = '';            // Displays in italics before chipss
+    this.trackName = '';            // Displays in italics before chips
     this.isGeneratedSampleName = false;
     this.vcfRefNamesMap = {};
     this.lastVcfAlertify = null;
@@ -1188,6 +1188,9 @@ class CohortModel {
          promises.push(p);
       })
 
+      var t0 = 0; // SJG_TIMING
+      var t1 = 0; // SJG_TIMING
+
       Promise.all(promises)
       .then(function() {
         if (Object.keys(resultMap).length == cohortModels.length) {
@@ -1198,6 +1201,7 @@ class CohortModel {
           // and annotate them._get
           me._promiseVcfRefName(theGene.chr)
           .then(function() {
+            t0 = performance.now(); // SJG_TIMING
             return me.vcf.promiseGetVariants(
                me.getVcfRefName(theGene.chr),
                theGene,
@@ -1216,6 +1220,8 @@ class CohortModel {
               );
           })
           .then(function(data) {
+            t1 = performance.now(); // SJG_TIMING
+            console.log('Took ' + (t1-t0) + ' ms to perform vcf.promiseGetVariants()'); // SJG_TIMING
             if (data == null) {
               me.inProgress.loadingVariants = false;
               // SJG TODO: throw exception here?
@@ -1224,24 +1230,15 @@ class CohortModel {
             var annotatedRecs = data[0];
             var results = data[1];  // One entry per sample in results
 
-            var formattedResults;
             if (results) {
-              if (!keepVariantsCombined) {
-                formattedResults = results[0];
+              if (keepVariantsCombined) {
+                results.features = results.features[0];
               }
-              else {
-                var strippedArr = [];
-                results.features[0].forEach(function(feature) {
-                  strippedArr.push(feature);
-                })
-                results.features = strippedArr;
-                formattedResults = results;
-              }
-              var theGeneObject = me.getGeneModel().geneObjects[formattedResults.gene];
+              var theGeneObject = me.getGeneModel().geneObjects[results.gene];
               if (theGeneObject) {
                 var resultMap = {};
                 var model = cohortModels[0];
-                var theVcfData = formattedResults;
+                var theVcfData = results;
                 if (theVcfData == null) {
                  if (callback) {
                    callback();
@@ -1253,7 +1250,7 @@ class CohortModel {
                 resultMap[cohortName] = theVcfData;
 
                 if (!isBackground) {
-                 model.vcfData = theVcfData;      // SJG NOTE THIS IS WHERE CRASHING - should just be assigning pointer?
+                 model.vcfData = theVcfData;
                 }
                 resolve(resultMap);
               } else {
@@ -1592,8 +1589,12 @@ class CohortModel {
     var featureWidth = 4;
     var posToPixelFactor = Math.round((end - start) / width);
     var widthFactor = featureWidth + (4);
-    var maxLevel = this.vcf.pileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, true);
-    if ( maxLevel > 30) {
+    var levelObj = this.vcf.pileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, true);
+    //var levelRange = levelObj.levelRange; // SJG NOTE: if we stick with linear scale, can get rid of this
+    var maxSubLevel = levelObj.maxSubLevel;
+    var maxPosLevel = levelObj.maxPosLevel;
+    var maxNegLevel = levelObj.maxNegLevel;
+    if (maxPosLevel > 30 && maxNegLevel < -30) {
       for(var i = 1; i < posToPixelFactor; i++) {
         // TODO:  Devise a more sensible approach to setting the min width.  We want the
         // widest width possible without increasing the levels beyond 30.
@@ -1611,14 +1612,18 @@ class CohortModel {
             v.level = 0;
         });
         var factor = posToPixelFactor / (i * 2);
-        maxLevel = me.vcf.pileupVcfRecords(theFeatures, start, factor, featureWidth + 1, true);
-        if (maxLevel <= 50) {
+        levelObj = me.vcf.pileupVcfRecords(theFeatures, start, factor, featureWidth + 1, true);
+        //levelRange = levelObj.levelRange;
+        subLevelMax = levelObj.maxSubLevel;
+        maxPosLevel = levelObj.maxPosLevel;
+        maxNegLevel = levelObj.maxNegLevel;
+        if (maxPosLevel <= 50 && maxNegLevel >= -50) {
           i = posToPixelFactor;
           break;
         }
       }
     }
-    return { 'maxLevel': maxLevel, 'featureWidth': featureWidth };
+    return { 'maxSubLevel': maxSubLevel, 'maxPosLevel': maxPosLevel, 'maxNegLevel': maxNegLevel, 'featureWidth': featureWidth };
   }
 
   flagDupStartPositions(variants) {
@@ -1951,12 +1956,7 @@ class CohortModel {
             fbVariant.probandZygosity              = source.probandZygosity;
           }
         }
-
-
       });
-
-
-
     }
   }
 
@@ -2097,16 +2097,29 @@ class CohortModel {
     });
 
     // Figure out max level (lost for some reason)
-    var maxLevel = 1;
+    var maxPosLevel = 1;
+    var maxNegLevel = 1;
+    var maxSubLevel = 1;
     theVcfData.features.forEach(function(feature) {
-      if (feature.level > maxLevel) {
-        maxLevel = feature.level;
+      if (feature.level > maxPosLevel) {
+        maxPosLevel = feature.level;
+      }
+      else if (feature.level < maxNegLevel) {
+        maxNegLevel = feature.level;
+      }
+
+      if (feature.subLevel > maxSubLevel) {
+        maxSubLevel = feature.subLevel;
       }
     });
-    theVcfData.maxLevel = maxLevel;
+    theVcfData.maxPosLevel = maxPosLevel;
+    theVcfData.maxNegLevel = maxNegLevel;
+    theVcfData.maxSubLevel = maxSubLevel;
 
     pileupObject = me._pileupVariants(theFbData.features, geneObject.start, geneObject.end);
-    theFbData.maxLevel = pileupObject.maxLevel + 1;
+    theFbData.maxPosLevel = pileupObject.maxPosLevel;
+    theFbData.maxNegLevel = pileupObject.maxNegLevel;
+    theFbData.maxSubLevel = pileupObject.maxSubLevel;
     theFbData.featureWidth = pileupObject.featureWidth;
 
   }
@@ -2331,13 +2344,17 @@ class CohortModel {
       return (!isHomRef || isGenotypeAbsent) && meetsRegion && meetsAf && meetsCoverage && meetsAnnot && meetsNotEqualAnnot && meetsExonic && meetsLoadedVsCalled && passAffectedStatus;
     });
 
+    // SJG TODO: assuming this is point of call
     var pileupObject = this._pileupVariants(filteredFeatures, start, end);
 
     var vcfDataFiltered = {
       intronsExcludedCount: intronsExcludedCount,
       end: end,
       features: filteredFeatures,
-      maxLevel: pileupObject.maxLevel + 1,
+      maxPosLevel: pileupObject.maxPosLevel,
+      maxNegLevel: pileupObject.maxNegLevel,
+      maxSubLevel: pileupObject.maxSubLevel,
+      levelRange: pileupObject.levelRange,
       featureWidth: pileupObject.featureWidth,
       name: data.name,
       start: start,
@@ -2384,7 +2401,9 @@ class CohortModel {
       intronsExcludedCount: 0,
       end: end,
       features: filteredVariants,
-      maxLevel: pileupObject.maxLevel + 1,
+      maxPosLevel: pileupObject.maxPosLevel,
+      maxNegLevel: pileupObject.maxNegLevel,
+      maxSubLevel: pileupObject.maxSubLevel,
       featureWidth: pileupObject.featureWidth,
       name: data.name,
       start: start,
@@ -2415,7 +2434,6 @@ class CohortModel {
              me.getTranslator().clinvarMap,
              me.getGeneModel().geneSource == 'refseq' ? true : false)
           .then( function(data) {
-
             if (data != null && data.features != null) {
               var annotatedRecs = data[0];
                 me.vcfData = data[1];
