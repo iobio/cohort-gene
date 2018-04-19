@@ -109,7 +109,8 @@ export default {
     paramProjectId:         null,
     paramPhenoFilters:      null,
     parmTokenType:          null,
-    paramToken:             null
+    paramToken:             null,
+    paramSource:            null
   },
   data() {
     return {
@@ -183,7 +184,7 @@ export default {
         utility.getHumanRefNames);
 
       let mode = 'production';
-      let hubEndpoint = new HubEndpoint(mode);
+      let hubEndpoint = new HubEndpoint(self.paramSource);
 
       self.variantModel = new VariantModel(endpoint,
         genericAnnotation,
