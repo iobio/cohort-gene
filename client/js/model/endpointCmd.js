@@ -4,7 +4,6 @@ function EndpointCmd(useSSL, IOBIOServiceNames, launchTimestamp, genomeBuildHelp
   this.launchTimestamp   = launchTimestamp;
   this.genomeBuildHelper = genomeBuildHelper;
   this.getHumanRefNames  = getHumanRefNamesFunc;
-
 }
 
 

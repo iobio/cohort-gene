@@ -183,7 +183,7 @@ export default {
         self.genomeBuildHelper,
         utility.getHumanRefNames);
 
-      let mode = 'production';
+      // let mode = 'production';  // SJG NOTE: this does not matter now
       let hubEndpoint = new HubEndpoint(self.paramSource);
 
       self.variantModel = new VariantModel(endpoint,

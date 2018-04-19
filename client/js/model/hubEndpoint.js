@@ -1,10 +1,11 @@
 function HubEndpoint(source) {
-  this.api = decodeURI(source);
+  this.api = decodeURIComponent(source) + '/apiv1';
 }
 
 HubEndpoint.prototype.getFilesForProject = function(project_uuid) {
   let self = this;
   var key = localStorage.getItem('hub-iobio-tkn');
+  debugger; // look at api
 
   var call =  $.ajax({
     url: self.api + '/projects/' + project_uuid + '/files',
