@@ -1199,12 +1199,6 @@ class CohortModel {
           // We don't have the variants for the gene in cache,
           // so call the iobio services to retreive the variants for the gene region
           // and annotate them._get
-
-          var subsetIdMap = {};
-          me.subsetIds.forEach(function(subsetId) {
-            subsetIdMap[subsetId] = 1;
-          })
-
           me._promiseVcfRefName(theGene.chr)
           .then(function() {
             t0 = performance.now(); // SJG_TIMING
@@ -1223,7 +1217,7 @@ class CohortModel {
                global_vepAF,    // vep af
                null,
                keepVariantsCombined,
-               subsetIdMap
+               me.isSubsetCohort
               );
           })
           .then(function(data) {
