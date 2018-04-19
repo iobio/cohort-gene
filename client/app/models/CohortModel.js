@@ -1199,6 +1199,12 @@ class CohortModel {
           // We don't have the variants for the gene in cache,
           // so call the iobio services to retreive the variants for the gene region
           // and annotate them._get
+
+          var subsetIdMap = {};
+          me.subsetIds.forEach(function(subsetId) {
+            subsetIdMap[subsetId] = 1;
+          })
+
           me._promiseVcfRefName(theGene.chr)
           .then(function() {
             t0 = performance.now(); // SJG_TIMING
@@ -1216,7 +1222,8 @@ class CohortModel {
                global_getVariantIdsForGene,  // rsid
                global_vepAF,    // vep af
                null,
-               keepVariantsCombined
+               keepVariantsCombined,
+               subsetIdMap
               );
           })
           .then(function(data) {
@@ -1525,7 +1532,6 @@ class CohortModel {
         subsetSamples.push( {vcfSampleName: sample, sampleName: sample} );
       }
     })
-
     return subsetSamples;
   }
 
@@ -2344,7 +2350,6 @@ class CohortModel {
       return (!isHomRef || isGenotypeAbsent) && meetsRegion && meetsAf && meetsCoverage && meetsAnnot && meetsNotEqualAnnot && meetsExonic && meetsLoadedVsCalled && passAffectedStatus;
     });
 
-    // SJG TODO: assuming this is point of call
     var pileupObject = this._pileupVariants(filteredFeatures, start, end);
 
     var vcfDataFiltered = {
@@ -2420,9 +2425,7 @@ class CohortModel {
     return new Promise( function(resolve, reject) {
       if (me.vcfData == null) {
         me._promiseVcfRefName().then( function() {
-
           var sampleNames = me._getSamplesToRetrieve();
-
           me.vcf.promiseGetVariants(
              me.getVcfRefName(window.gene.chr),
              window.gene,

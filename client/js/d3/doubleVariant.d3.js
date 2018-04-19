@@ -601,9 +601,6 @@ function doubleVariantD3() {
 
         }
 
-
-
-
         // Generate the x axis
         if (showXAxis) {
           if (xTickFormat) {
@@ -613,8 +610,6 @@ function doubleVariantD3() {
               .duration(200)
               .call(xAxis);
         }
-
-
 
         // add a circle and label
         if (svg.selectAll(".circle").empty()) {
@@ -654,19 +649,9 @@ function doubleVariantD3() {
                 .attr("y2", variantHeight + 2)
                 .style("opacity", 0);
         }
-
-
-
         dispatch.d3rendered();
-
-
-
       }
-
-
-
     });
-
   }
 
   function tickFormatter (d) {

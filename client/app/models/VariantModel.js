@@ -580,8 +580,8 @@ class VariantModel {
           var end   = self.filterModel.regionEnd   ? self.filterModel.regionEnd   : gene.end;
 
           // SJG_P2 filtering out all non-enriched variants for now TODO: fix when get handle on bidirectional rendering
-          // if (cohort.getName() == PROBAND_ID)
-          //   cohort.vcfData.features = self.filterProbandsByDelta(cohort.vcfData.features);
+           if (cohort.getName() == PROBAND_ID)
+             cohort.vcfData.features = self.filterProbandsByDelta(cohort.vcfData.features);
 
           t0 = performance.now(); // SJG_TIMING
           var loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
@@ -622,7 +622,8 @@ class VariantModel {
       subsetFeatures = subsetInfo.features;
 
       // Update features with enrichment info
-      self.assignEnrichmentZygosityInfo(probandFeatures, subsetFeatures);
+      // SJG TODO: fix point of call here
+      //self.assignEnrichmentZygosityInfo(probandFeatures, subsetFeatures);
     }
     catch(e) {
       console.log("There was a problem pulling out features from the result map in annotateCohortFrequencies. Unable to assign enrichment colors.");
@@ -631,119 +632,120 @@ class VariantModel {
 
   /* Assigns both a delta value representing subset enrichment, and total sample zygosities, to each variant.
      Used to populate Summary Card information when a variant is clicked on, and for visual variant rendering. */
-  assignEnrichmentZygosityInfo(probandFeatures, subsetFeatures) {
-    let totalProbandSampleNum = 0;
-    let affectedProbandSampleNum = 0;
-    let totalSubsetSampleNum = 0;
-    let affectedSubsetSampleNum = 0;
-
-    let probandHets = 0;
-    let probandHomAlts = 0;
-    let probandHomRefs = 0;
-    let probandNoCalls = 0;
-
-    let subsetHets = 0;
-    let subsetHomAlts = 0;
-    let subsetHomRefs = 0;
-    let subsetNoCalls = 0;
-
-    let probandLookup = {};
-
-    // Cycle through probands and store values in lookup
-    let i = 0;
-    probandFeatures.forEach(function(feature) {
-      let currSample = null;
-      for (var key in feature.genotypes) {
-        totalProbandSampleNum++;
-        currSample = feature.genotypes[key];
-        if (currSample.zygosity == "HET") {
-          affectedProbandSampleNum++;
-          probandHets++;
-        }
-        else if (currSample.zygosity == "HOM") {
-          affectedProbandSampleNum++;
-          probandHomAlts++;
-        }
-        else if (currSample.zygosity == "HOMREF") {
-          probandHomRefs++;
-        }
-        else {
-          probandNoCalls++;
-        }
-      }
-      probandLookup[feature.id] = [totalProbandSampleNum, affectedProbandSampleNum, i, probandHomRefs, probandHets, probandHomAlts, probandNoCalls];
-      feature.totalProbandCount = totalProbandSampleNum;
-      feature.affectedProbandCount = affectedProbandSampleNum;
-      feature.probandZygCounts = [probandHomRefs, probandHets, probandHomAlts, probandNoCalls];
-      totalProbandSampleNum = 0;
-      affectedProbandSampleNum = 0;
-      probandHets = 0;
-      probandHomAlts = 0;
-      probandHomRefs = 0;
-      probandNoCalls = 0;
-      i++;
-    })
-
-    // Cycle through subsets and compute deltas
-    subsetFeatures.forEach(function(feature) {
-      let currSample = null;
-      for (var key in feature.genotypes) {
-        totalSubsetSampleNum++;
-        currSample = feature.genotypes[key];
-        if (currSample.zygosity == "HET") {
-          affectedSubsetSampleNum++;
-          subsetHets++;
-        }
-        else if (currSample.zygosity == "HOM") {
-          affectedSubsetSampleNum++;
-          subsetHomAlts++;
-        }
-        else if (currSample.zygosity == "HOMREF") {
-          subsetHomRefs++;
-        }
-        else {
-          subsetNoCalls++;
-        }
-      }
-      // Pull data out of our lookup
-      let selectFeat = probandLookup[feature.id];
-      totalProbandSampleNum = selectFeat[0];
-      affectedProbandSampleNum = selectFeat[1];
-      let matchingFeatureIndex = selectFeat[2];
-      let matchingProbandHomRefs = selectFeat[3];
-      let matchingProbandHets = selectFeat[4];
-      let matchingProbandHomAlts = selectFeat[5];
-      let matchingProbandNoCalls = selectFeat[6];
-
-      // Compute deltas
-      let subsetPercentage = affectedSubsetSampleNum / totalSubsetSampleNum * 100;
-      let probandPercentage = affectedProbandSampleNum / totalProbandSampleNum * 100;
-      let foldEnrichment = subsetPercentage / probandPercentage;
-
-      // Plug in feature info
-      feature.subsetDelta = foldEnrichment;
-      feature.totalProbandCount = totalProbandSampleNum;
-      feature.totalSubsetCount = totalSubsetSampleNum;
-      feature.affectedProbandCount = affectedProbandSampleNum;
-      feature.affectedSubsetCount = affectedSubsetSampleNum;
-      feature.subsetZygCounts = [subsetHomRefs, subsetHets, subsetHomAlts, subsetNoCalls];  // SJG these must be in homref, het, homalt, no call order
-      feature.probandZygCounts = [matchingProbandHomRefs, matchingProbandHets, matchingProbandHomAlts, matchingProbandNoCalls];
-
-      // Plug in info into matching proband feature
-      probandFeatures[matchingFeatureIndex].subsetDelta = foldEnrichment;
-      probandFeatures[matchingFeatureIndex].totalSubsetCount = totalSubsetSampleNum;
-      probandFeatures[matchingFeatureIndex].affectedSubsetCount = affectedSubsetSampleNum;
-      probandFeatures[matchingFeatureIndex].subsetZygCounts = [subsetHomRefs, subsetHets, subsetHomAlts, subsetNoCalls];
-
-      // Reset loop variables
-      totalSubsetSampleNum = 0;
-      affectedSubsetSampleNum = 0;
-      subsetHets = 0;
-      subsetHomAlts = 0;
-      subsetHomRefs = 0;
-      subsetNoCalls = 0;
-    })
-  }
+     // SJG NOTE: moved this to vcf.iobio.js for now to combat memory consumption problem
+  // assignEnrichmentZygosityInfo(probandFeatures, subsetFeatures) {
+  //   let totalProbandSampleNum = 0;
+  //   let affectedProbandSampleNum = 0;
+  //   let totalSubsetSampleNum = 0;
+  //   let affectedSubsetSampleNum = 0;
+  //
+  //   let probandHets = 0;
+  //   let probandHomAlts = 0;
+  //   let probandHomRefs = 0;
+  //   let probandNoCalls = 0;
+  //
+  //   let subsetHets = 0;
+  //   let subsetHomAlts = 0;
+  //   let subsetHomRefs = 0;
+  //   let subsetNoCalls = 0;
+  //
+  //   let probandLookup = {};
+  //
+  //   // Cycle through probands and store values in lookup
+  //   let i = 0;
+  //   probandFeatures.forEach(function(feature) {
+  //     let currSample = null;
+  //     for (var key in feature.genotypes) {
+  //       totalProbandSampleNum++;
+  //       currSample = feature.genotypes[key];
+  //       if (currSample.zygosity == "HET") {
+  //         affectedProbandSampleNum++;
+  //         probandHets++;
+  //       }
+  //       else if (currSample.zygosity == "HOM") {
+  //         affectedProbandSampleNum++;
+  //         probandHomAlts++;
+  //       }
+  //       else if (currSample.zygosity == "HOMREF") {
+  //         probandHomRefs++;
+  //       }
+  //       else {
+  //         probandNoCalls++;
+  //       }
+  //     }
+  //     probandLookup[feature.id] = [totalProbandSampleNum, affectedProbandSampleNum, i, probandHomRefs, probandHets, probandHomAlts, probandNoCalls];
+  //     feature.totalProbandCount = totalProbandSampleNum;
+  //     feature.affectedProbandCount = affectedProbandSampleNum;
+  //     feature.probandZygCounts = [probandHomRefs, probandHets, probandHomAlts, probandNoCalls];
+  //     totalProbandSampleNum = 0;
+  //     affectedProbandSampleNum = 0;
+  //     probandHets = 0;
+  //     probandHomAlts = 0;
+  //     probandHomRefs = 0;
+  //     probandNoCalls = 0;
+  //     i++;
+  //   })
+  //
+  //   // Cycle through subsets and compute deltas
+  //   subsetFeatures.forEach(function(feature) {
+  //     let currSample = null;
+  //     for (var key in feature.genotypes) {
+  //       totalSubsetSampleNum++;
+  //       currSample = feature.genotypes[key];    // SJG TODO: need to not use genotypes map
+  //       if (currSample.zygosity == "HET") {
+  //         affectedSubsetSampleNum++;
+  //         subsetHets++;
+  //       }
+  //       else if (currSample.zygosity == "HOM") {
+  //         affectedSubsetSampleNum++;
+  //         subsetHomAlts++;
+  //       }
+  //       else if (currSample.zygosity == "HOMREF") {
+  //         subsetHomRefs++;
+  //       }
+  //       else {
+  //         subsetNoCalls++;
+  //       }
+  //     }
+  //     // Pull data out of our lookup
+  //     let selectFeat = probandLookup[feature.id];
+  //     totalProbandSampleNum = selectFeat[0];
+  //     affectedProbandSampleNum = selectFeat[1];
+  //     let matchingFeatureIndex = selectFeat[2];
+  //     let matchingProbandHomRefs = selectFeat[3];
+  //     let matchingProbandHets = selectFeat[4];
+  //     let matchingProbandHomAlts = selectFeat[5];
+  //     let matchingProbandNoCalls = selectFeat[6];
+  //
+  //     // Compute deltas
+  //     let subsetPercentage = affectedSubsetSampleNum / totalSubsetSampleNum * 100;
+  //     let probandPercentage = affectedProbandSampleNum / totalProbandSampleNum * 100;
+  //     let foldEnrichment = subsetPercentage / probandPercentage;
+  //
+  //     // Plug in feature info
+  //     feature.subsetDelta = foldEnrichment;
+  //     feature.totalProbandCount = totalProbandSampleNum;
+  //     feature.totalSubsetCount = totalSubsetSampleNum;
+  //     feature.affectedProbandCount = affectedProbandSampleNum;
+  //     feature.affectedSubsetCount = affectedSubsetSampleNum;
+  //     feature.subsetZygCounts = [subsetHomRefs, subsetHets, subsetHomAlts, subsetNoCalls];  // SJG these must be in homref, het, homalt, no call order
+  //     feature.probandZygCounts = [matchingProbandHomRefs, matchingProbandHets, matchingProbandHomAlts, matchingProbandNoCalls];
+  //
+  //     // Plug in info into matching proband feature
+  //     probandFeatures[matchingFeatureIndex].subsetDelta = foldEnrichment;
+  //     probandFeatures[matchingFeatureIndex].totalSubsetCount = totalSubsetSampleNum;
+  //     probandFeatures[matchingFeatureIndex].affectedSubsetCount = affectedSubsetSampleNum;
+  //     probandFeatures[matchingFeatureIndex].subsetZygCounts = [subsetHomRefs, subsetHets, subsetHomAlts, subsetNoCalls];
+  //
+  //     // Reset loop variables
+  //     totalSubsetSampleNum = 0;
+  //     affectedSubsetSampleNum = 0;
+  //     subsetHets = 0;
+  //     subsetHomAlts = 0;
+  //     subsetHomRefs = 0;
+  //     subsetNoCalls = 0;
+  //   })
+  // }
 
   filterProbandsByDelta(features) {
     let filteredProbandFeatures = [];
