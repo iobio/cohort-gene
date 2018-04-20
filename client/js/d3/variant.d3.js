@@ -148,6 +148,7 @@ function variantD3() {
 
     let enrichUp = variants.filter(".eUP");
     let enrichDown = variants.filter(".eDOWN");
+    let enrichLow = variants.filter("e.LOW");
     let enrichNone = variants.filter(".eNONE");
 
     if (enrichmentMode) {
@@ -176,6 +177,9 @@ function variantD3() {
       enrichDown.classed({
         'enrichment_subset_DOWN': true
       });
+      enrichLow.classed({
+        'enrichment_LOW': true
+      });
       enrichNone.classed({
         'enrichment_NONE': true
       });
@@ -188,6 +192,9 @@ function variantD3() {
       });
       enrichDown.classed({
         'enrichment_subset_DOWN': false
+      });
+      enrichLow.classed({
+        'enrichment_LOW': false
       });
       enrichNone.classed({
         'enrichment_NONE': false

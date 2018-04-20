@@ -50,6 +50,7 @@ TD & SJG updated Apr2018 -->
             :showVariantViz="true"
             :geneVizShowXAxis="true"
             :doneLoadingData="doneLoadingData"
+            :doubleMode="true"
             @dataSetVariantClick="onDataSetVariantClick"
             @dataSetVariantClickEnd="onDataSetVariantClickEnd"
             @dataSetVariantHover="onDataSetVariantHover"
@@ -143,7 +144,7 @@ export default {
       showClinvarVariants: false,
       activeBookmarksDrawer: null,
 
-      DEMO_GENE: 'BRCA2'   // SJG TODO: get rid of this outside of demo
+      DEMO_GENE: 'POGZ'   // SJG TODO: get rid of this outside of demo
     }
   },
   computed: {

@@ -731,6 +731,7 @@ var effectCategories = [
     var annotatedData = "";
     // Get the results from the iobio command
     cmd.on('data', function(data) {
+      // SJG TODO: need to filter stream for large variants
          if (data == undefined) {
             return;
          }
@@ -739,8 +740,9 @@ var effectCategories = [
 
     // We have all of the annotated vcf recs.  Now parse them into vcf objects
     cmd.on('end', function(data) {
+      debugger;
       t1 = performance.now(); // SJG_TIMING
-      console.log('Took ' + (t1-t0) + ' ms to return from iobio services');
+      //console.log('Took ' + (t1-t0) + ' ms to return from iobio services');
       var annotatedRecs = annotatedData.split("\n");
       var vcfObjects = [];
       var contigHdrRecFound = false;
@@ -776,7 +778,7 @@ var effectCategories = [
       t0 = performance.now(); // SJG_TIMING
       var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined, isSubset);
       t1 = performance.now(); //SJG_TIMING
-      console.log('Took ' + (t1-t0) + ' ms to parse vcf records');  // SJG_TIMING
+      //console.log('Took ' + (t1-t0) + ' ms to parse vcf records');  // SJG_TIMING
       callback(annotatedRecs, results);
     });
 
@@ -1457,7 +1459,6 @@ var effectCategories = [
       // of the region start, so to prevent a negative index, we will
       // keep track of the region start based on the variants.
       var variantRegionStart = geneObject.start;
-      var gtResult = null;
 
       // Interate through the vcf records.  For each record, if multiple
       // alternates are provided, iterate through each alternate
@@ -1516,7 +1517,8 @@ var effectCategories = [
 
             var clinvarResult = me.parseClinvarInfo(rec.info, clinvarMap);
 
-            gtResult = me._parseGenotypes(rec, alt, altIdx, gtSampleIndices, gtSampleNames);
+            var gtResult = me._parseGenotypes(rec, alt, altIdx, gtSampleIndices, gtSampleNames);
+
             let samplesWithVarCount = gtResult.genotypes.filter(gt => (gt.zygosity == "HET" || gt.zygosity == "HOM")).length;
             let totalSamples = gtResult.genotypes.length;
             var clinvarObject = me._formatClinvarCoordinates(rec, alt);
@@ -1637,6 +1639,8 @@ var effectCategories = [
                     me.getGenericAnnotation().setSimpleFields(variant);
                   }
 
+                  // Annotate cohort-level counts and keep track of in each variant
+                  me._assignCohortInfo(variant, gtResult.genotypeMap, isSubset);
                   allVariants[i].push(variant);
                 }
               }
@@ -1651,12 +1655,6 @@ var effectCategories = [
           });
         }
       });
-
-      // Add cohort-specific information to each variant if we're in cohort mode
-      debugger;
-      if (keepVariantsCombined) {
-        me._assignCohortInfo(allVariants, gtResult.genotypeMap, isSubset);
-      }
 
       // Here is the result set.  An object representing the entire region with a field called
       // 'features' that contains an array of variants for this region of interest.
@@ -2479,134 +2477,71 @@ exports.parseClinvarInfo = function(info, clinvarMap) {
  }
 
 /* Assigns total cohort counts. To be used to determine subset delta values. */
-exports._assignCohortInfo = function(variants, genotypes, isSubset) {
-  let features = variants[0];   // Unwrap object
-
-  let totalProbandSampleNum = 0;
-  let affectedProbandSampleNum = 0;
-  let totalSubsetSampleNum = 0;
-  let affectedSubsetSampleNum = 0;
-
-  let probandHets = 0;
-  let probandHomAlts = 0;
-  let probandHomRefs = 0;
-  let probandNoCalls = 0;
-
-  let subsetHets = 0;
-  let subsetHomAlts = 0;
-  let subsetHomRefs = 0;
-  let subsetNoCalls = 0;
+exports._assignCohortInfo = function(variant, genotypeMap, isSubset) {
+  let totalSampleNumber = 0;
+  let hets = 0;
+  let homAlts = 0;
+  let homRefs = 0;
+  let noCalls = 0;
 
   // Assign cumulative subset counts
   if (isSubset) {
-    features.forEach(function(feature) {
-      let currSample = null;
-      for (var key in genotypes) {
-        totalSubsetSampleNum++;
-        currSample = genotypes[key];
-        if (currSample.zygosity == "HET") {
-          affectedSubsetSampleNum++;
-          subsetHets++;
-        }
-        else if (currSample.zygosity == "HOM") {
-          affectedSubsetSampleNum++;
-          subsetHomAlts++;
-        }
-        else if (currSample.zygosity == "HOMREF") {
-          subsetHomRefs++;
-        }
-        else {
-          subsetNoCalls++;
-        }
+    let currSample = null;
+    for (var key in genotypeMap) {
+      totalSampleNumber++;
+      currSample = genotypeMap[key];
+      if (currSample.zygosity == "HET") {
+        hets++;
       }
-    })
-    features.forEach(function(feature) {
-      feature.totalSubsetCount = totalSubsetSampleNum;
-      feature.affectedSubsetCount = affectedSubsetSampleNum;
-      feature.subsetZygCounts = [subsetHomRefs, subsetHets, subsetHomAlts, subsetNoCalls];
-    })
+      else if (currSample.zygosity == "HOM") {
+        homAlts++;
+      }
+      else if (currSample.zygosity == "HOMREF") {
+        homRefs++;
+      }
+      else {
+        noCalls++;
+      }
+    }
+    variant.totalSubsetCount = totalSampleNumber;
+    variant.affectedSubsetCount = (hets + homAlts);
+    variant.subsetZygCounts = [homRefs, hets, homAlts, noCalls];
+
+    totalSampleNumber = 0;
+    homRefs = 0;
+    hets = 0;
+    homAlts = 0;
+    noCalls = 0;
   }
   // Assign cumulative proband counts
   else {
-    let i = 0;
-    features.forEach(function(feature) {
-      let currSample = null;
-      for (var key in genotypes) {
-        totalProbandSampleNum++;
-        currSample = genotypes[key];
-        if (currSample.zygosity == "HET") {
-          affectedProbandSampleNum++;
-          probandHets++;
-        }
-        else if (currSample.zygosity == "HOM") {
-          affectedProbandSampleNum++;
-          probandHomAlts++;
-        }
-        else if (currSample.zygosity == "HOMREF") {
-          probandHomRefs++;
-        }
-        else {
-          probandNoCalls++;
-        }
+    let currSample = null;
+    for (var key in genotypeMap) {
+      totalSampleNumber++;
+      currSample = genotypeMap[key];
+      if (currSample.zygosity == "HET") {
+        hets++;
       }
-      i++;
-    })
-    features.forEach(function(feature) {
-      feature.totalProbandCount = totalProbandSampleNum;
-      feature.affectedProbandCount = affectedProbandSampleNum;
-      feature.probandZygCounts = [probandHomRefs, probandHets, probandHomAlts, probandNoCalls];
-    })
-  }
+      else if (currSample.zygosity == "HOM") {
+        homAlts++;
+      }
+      else if (currSample.zygosity == "HOMREF") {
+        homRefs++;
+      }
+      else {
+        noCalls++;
+      }
+    }
+    variant.totalProbandCount = totalSampleNumber;
+    variant.affectedProbandCount = (hets + homAlts);
+    variant.probandZygCounts = [homRefs, hets, homAlts, noCalls];
 
-  // probandLookup[feature.id] = [totalProbandSampleNum, affectedProbandSampleNum, i, probandHomRefs, probandHets, probandHomAlts, probandNoCalls];
-  // feature.totalProbandCount = totalProbandSampleNum;
-  // feature.affectedProbandCount = affectedProbandSampleNum;
-  // feature.probandZygCounts = [probandHomRefs, probandHets, probandHomAlts, probandNoCalls];
-  // totalProbandSampleNum = 0;
-  // affectedProbandSampleNum = 0;
-  // probandHets = 0;
-  // probandHomAlts = 0;
-  // probandHomRefs = 0;
-  // probandNoCalls = 0;
-  //
-  //
-  //   // Pull data out of our lookup
-  //   let selectFeat = probandLookup[feature.id];
-  //   totalProbandSampleNum = selectFeat[0];
-  //   affectedProbandSampleNum = selectFeat[1];
-  //   let matchingFeatureIndex = selectFeat[2];
-  //   let matchingProbandHomRefs = selectFeat[3];
-  //   let matchingProbandHets = selectFeat[4];
-  //   let matchingProbandHomAlts = selectFeat[5];
-  //   let matchingProbandNoCalls = selectFeat[6];
-  //
-  //   // Compute deltas
-  //   let subsetPercentage = affectedSubsetSampleNum / totalSubsetSampleNum * 100;
-  //   let probandPercentage = affectedProbandSampleNum / totalProbandSampleNum * 100;
-  //   let foldEnrichment = subsetPercentage / probandPercentage;
-  //
-  //   // Plug in feature info
-  //   feature.subsetDelta = foldEnrichment;
-  //   feature.totalProbandCount = totalProbandSampleNum;
-  //   feature.totalSubsetCount = totalSubsetSampleNum;
-  //   feature.affectedProbandCount = affectedProbandSampleNum;
-  //   feature.affectedSubsetCount = affectedSubsetSampleNum;
-  //   feature.subsetZygCounts = [subsetHomRefs, subsetHets, subsetHomAlts, subsetNoCalls];  // SJG these must be in homref, het, homalt, no call order
-  //   feature.probandZygCounts = [matchingProbandHomRefs, matchingProbandHets, matchingProbandHomAlts, matchingProbandNoCalls];
-  //
-  //   // Plug in info into matching proband feature
-  //   probandFeatures[matchingFeatureIndex].subsetDelta = foldEnrichment;
-  //   probandFeatures[matchingFeatureIndex].totalSubsetCount = totalSubsetSampleNum;
-  //   probandFeatures[matchingFeatureIndex].affectedSubsetCount = affectedSubsetSampleNum;
-  //   probandFeatures[matchingFeatureIndex].subsetZygCounts = [subsetHomRefs, subsetHets, subsetHomAlts, subsetNoCalls];
-  //
-  //   // Reset loop variables
-  //   totalSubsetSampleNum = 0;
-  //   affectedSubsetSampleNum = 0;
-  //   subsetHets = 0;
-  //   subsetHomAlts = 0;
-  //   subsetHomRefs = 0;
-  //   subsetNoCalls = 0;
+    totalSampleNumber = 0;
+    homRefs = 0;
+    hets = 0;
+    homAlts = 0;
+    noCalls = 0;
+  }
 }
 
 exports._getServerCacheKey = function(vcfName, service, refName, geneObject, sampleName, miscObject) {
@@ -2818,8 +2753,50 @@ exports._getHighestScore = function(theObject, cullFunction, theTranscriptId) {
     return maxPosLevel;
   }
 
+  // Single directional pileup - old, single directional
+  exports.pileupVcfRecords = function(variants, regionStart, posToPixelFactor, widthFactor) {
+      widthFactor = widthFactor ? widthFactor : 1;
+      // Variant's can overlap each over.  Set a field called variant.level which determines
+      // how to stack the variants vertically in these cases.
+      var posLevels = {};
+      var maxLevel = 0;
+      var posUnitsForEachVariant = posToPixelFactor * widthFactor;
+      variants.forEach(function(variant) {
+
+        // get next available vertical spot starting at level 0
+        var startIdx = (variant.start - regionStart);// + i;
+        var posLevel = 0;
+        var stackAtStart = posLevels[startIdx];
+        if (stackAtStart) {
+          for (var k = 0; k <= stackAtStart.length; k++ ) {
+            if (stackAtStart[k] == undefined) {
+              posLevel = k;
+              break;
+            }
+          }
+        }
+
+        // Set variant level.
+        variant.level = posLevel;
+
+        // Now set new level for each positions comprised of this variant.
+        for (var i = 0; i < variant.len + posUnitsForEachVariant; i++) {
+          var idx = (variant.start - regionStart) + i;
+          var stack = posLevels[idx] || [];
+          stack[variant.level] = true;
+          posLevels[idx] = stack;
+
+          // Capture the max level of the entire region.
+          if (stack.length - 1 > maxLevel) {
+            maxLevel = stack.length - 1;
+          }
+        }
+      });
+      return maxLevel;
+  }
+
   /* Determines pileup positions for symbols. Incorporates negative y-axis space if bidirectional parameter is true. */
-  exports.pileupVcfRecords = function(variants, regionStart, posToPixelFactor, widthFactor, bidirectional = false) {
+  exports.updatedPileupVcfRecords = function(variants, regionStart, posToPixelFactor, widthFactor, bidirectional = false) {
       widthFactor = widthFactor ? widthFactor : 1;
       // A map of key: value pairs encoding individual variant relative screen positions
       // Key = 'xPosition.yMainLevel' where yMainLevel is the SubsetDelta value assigned to the variant (which may be +/-)

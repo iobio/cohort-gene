@@ -127,7 +127,7 @@ class VariantModel {
       self.promiseGetUrlsFromHub(self.projectId)
         .then(function(dataSet) {
           t1 = performance.now(); // SJG_TIMING
-          console.log('It took ' + (t1-t0) + ' ms to get Hub urls');
+          //console.log('It took ' + (t1-t0) + ' ms to get Hub urls');
           if (dataSet == null) {
             let currCohorts = self.dataSet.getCohorts();
             if (currCohorts != undefined && currCohorts.length > 0) {
@@ -151,7 +151,7 @@ class VariantModel {
           self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
               .then(function(ids) {
                 t1 = performance.now(); // SJG_TIMING
-                console.log('It took ' + (t1-t0) + ' ms to get proband IDs'); // SJG_TIMING
+                //console.log('It took ' + (t1-t0) + ' ms to get proband IDs'); // SJG_TIMING
                 if (ids == null || ids.length == 0) {
                   let currCohorts = self.dataSet.getCohorts();
                   if (currCohorts != undefined && currCohorts.length > 0) {
@@ -172,7 +172,7 @@ class VariantModel {
                 self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                     .then(function(ids) {
                       t1 = performance.now(); // SJG_TIMING
-                      console.log('It took ' + (t1-t0) + ' ms to get subset IDs'); // SJG_TIMING
+                      //console.log('It took ' + (t1-t0) + ' ms to get subset IDs'); // SJG_TIMING
                       if (ids != null && ids.length > 0) {
                         console.log("Obtained susbset IDs from Hub...");
                         subsetCohort.subsetIds = ids;
@@ -467,7 +467,7 @@ class VariantModel {
           let t0 = performance.now(); // SJG_TIMING
           self.annotateCohortFrequencies(resultMapList);
           let t1 = performance.now(); // SJG_TIMING
-          console.log('Took ' + (t1-t0) + ' ms to annotate cohort frequencies');  // SJG_TIMING
+          //console.log('Took ' + (t1-t0) + ' ms to annotate cohort frequencies');  // SJG_TIMING
           self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
           .then(function(data) {
             resolve(data);
@@ -564,6 +564,7 @@ class VariantModel {
         return isTarget && !isHomRef && inRegion && passesModelFilter;
       });
 
+      // SJG_P2 NOTE change this depending on double mode
       var pileupObject = model._pileupVariants(filteredVariants.features, start, end);
       filteredVariants.maxPosLevel = pileupObject.maxPosLevel;
       filteredVariants.maxNegLevel = pileupObject.maxNegLevel;
@@ -580,13 +581,13 @@ class VariantModel {
           var end   = self.filterModel.regionEnd   ? self.filterModel.regionEnd   : gene.end;
 
           // SJG_P2 filtering out all non-enriched variants for now TODO: fix when get handle on bidirectional rendering
-           if (cohort.getName() == PROBAND_ID)
-             cohort.vcfData.features = self.filterProbandsByDelta(cohort.vcfData.features);
+           // if (cohort.getName() == PROBAND_ID)
+           //   cohort.vcfData.features = self.filterProbandsByDelta(cohort.vcfData.features);
 
           t0 = performance.now(); // SJG_TIMING
           var loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
           t1 = performance.now(); // SJG_TIMING
-          console.log('Took ' + (t1-t0) + ' ms to filter and pileup variants'); // SJG_TIMING
+          //console.log('Took ' + (t1-t0) + ' ms to filter and pileup variants'); // SJG_TIMING
           cohort.loadedVariants = loadedVariants;
 
           var calledVariants = filterAndPileupVariants(cohort, start, end, 'called');
@@ -614,16 +615,16 @@ class VariantModel {
     var subsetFeatures = null;
     try {
       // Pull out features
-      let firstObj = resultMapList[0];
-      let secondObj = resultMapList[1];
-      let probandInfo = firstObj[PROBAND_ID] == null ? secondObj[PROBAND_ID] : firstObj[PROBAND_ID];
-      let subsetInfo = firstObj[SUBSET_ID] == null ? secondObj[SUBSET_ID] : firstObj[SUBSET_ID];
-      probandFeatures = probandInfo.features;
-      subsetFeatures = subsetInfo.features;
+      let probandId = (resultMapList[0])[PROBAND_ID] == undefined ? 1 : 0;
+      let subsetId = probandId == 0 ? 1 : 0;
+      probandFeatures = (resultMapList[probandId])[PROBAND_ID].features;
+      subsetFeatures = (resultMapList[subsetId])[SUBSET_ID].features;
 
       // Update features with enrichment info
-      debugger;
       self.assignCrossCohortInfo(probandFeatures, subsetFeatures);
+
+      (resultMapList[probandId])[PROBAND_ID].features = probandFeatures;
+      (resultMapList[subsetId])[SUBSET_ID].features = subsetFeatures;
     }
     catch(e) {
       console.log("There was a problem pulling out features from the result map in annotateCohortFrequencies. Unable to assign enrichment colors.");
@@ -633,6 +634,9 @@ class VariantModel {
   /* Assigns both a delta value representing subset enrichment, and total sample zygosities, to each variant.
      Used to populate Summary Card information when a variant is clicked on, and for visual variant rendering. */
   assignCrossCohortInfo(probandFeatures, subsetFeatures) {
+
+    // Need to see if probandFeatures has an affected count of 0 when subsetFeatures has variant ()
+
     // Put proband features into a Lookup
     let probandLookup = {};
     probandFeatures.forEach(function(feature) {
@@ -641,7 +645,6 @@ class VariantModel {
 
     // Iterate through subset
     subsetFeatures.forEach(function(feature) {
-
       // Get corresponding proband feature
       let matchingProbandFeature = probandLookup[feature.id];
 
@@ -652,13 +655,13 @@ class VariantModel {
 
       // Assign proband metrics to subset feature
       feature.totalProbandCount = matchingProbandFeature.totalProbandCount;
-      feature.affectedProbandCount = matchingProbandFeature.affectedProbandCount;
+      feature.affectedProbandCount = matchingProbandFeature.affectedProbandCount;   // SJG TODO: sometimes this is getting assigned to 0 - why?
       feature.probandZygCounts = matchingProbandFeature.probandZygCounts;
 
       // Compute delta and assign to both
-      let subsetPercentage = feature.affectedSubsetCount / feature.totalSubsetCount * 100;
-      let probandPercentage = feature.affectedProbandCount / feature.totalProbandCount * 100;
-      let foldEnrichment = subsetPercentage / probandPercentage;
+      let subsetPercentage = feature.totalSubsetCount == 0 ? 0 : feature.affectedSubsetCount / feature.totalSubsetCount * 100;  // Can be 0
+      let probandPercentage = feature.affectedProbandCount / feature.totalProbandCount * 100; // Can never be 0
+      let foldEnrichment = subsetPercentage == 0 ? 1 : subsetPercentage / probandPercentage;
       feature.subsetDelta = foldEnrichment;
       matchingProbandFeature.subsetDelta = foldEnrichment;
     })
@@ -855,10 +858,6 @@ class VariantModel {
     else if (subsetEnrichment <= 0.5) {
       enrichment = "eDOWN";
       enrichColor = "enrichment_subset_DOWN";
-    }
-    else if (subsetEnrichment != 0) {
-      enrichment = "eLOW";
-      enrichColor = "enrichment_LOW";
     }
     else {
       enrichment = "eNONE";

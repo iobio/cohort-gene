@@ -32,6 +32,7 @@ class CohortModel {
     this.subsetIds = [];            // IDs that compose this cohort (filled for proband cohort also)
     this.subsetPhenotypes = [];     // Phrases describing phenotypic filtering data; displayed in track chips
     this.noMatchingSamples = false; // Flag to display No Matching Variants chip
+    this.updatedMode = false;       // SJG TODO: take out when bidirectional display finished
 
     this.inProgress = {
       'fetchingHubData': false,
@@ -1222,7 +1223,7 @@ class CohortModel {
           })
           .then(function(data) {
             t1 = performance.now(); // SJG_TIMING
-            console.log('Took ' + (t1-t0) + ' ms to perform vcf.promiseGetVariants()'); // SJG_TIMING
+            //console.log('Took ' + (t1-t0) + ' ms to perform vcf.promiseGetVariants()'); // SJG_TIMING
             if (data == null) {
               me.inProgress.loadingVariants = false;
               // SJG TODO: throw exception here?
@@ -1251,7 +1252,7 @@ class CohortModel {
                 resultMap[cohortName] = theVcfData;
 
                 if (!isBackground) {
-                 model.vcfData = theVcfData;
+                 model.vcfData = theVcfData;  // Previously crashing here
                 }
                 resolve(resultMap);
               } else {
@@ -1589,11 +1590,20 @@ class CohortModel {
     var featureWidth = 4;
     var posToPixelFactor = Math.round((end - start) / width);
     var widthFactor = featureWidth + (4);
-    var levelObj = this.vcf.pileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, true);
-    //var levelRange = levelObj.levelRange; // SJG NOTE: if we stick with linear scale, can get rid of this
-    var maxSubLevel = levelObj.maxSubLevel;
-    var maxPosLevel = levelObj.maxPosLevel;
-    var maxNegLevel = levelObj.maxNegLevel;
+
+    var levelObj = null;
+    var maxSubLevel = 0;
+    var maxPosLevel = 0;
+    var maxNegLevel = 0;
+    if (self.updatedMode) {
+      levelObj = this.vcf.updatedPileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, true);
+      maxSubLevel = levelObj.maxSubLevel;
+      maxPosLevel = levelObj.maxPosLevel;
+      maxNegLevel = levelObj.maxNegLevel;
+    }
+    else {
+      maxPosLevel = this.vcf.pileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor);
+    }
     if (maxPosLevel > 30 && maxNegLevel < -30) {
       for(var i = 1; i < posToPixelFactor; i++) {
         // TODO:  Devise a more sensible approach to setting the min width.  We want the
@@ -1612,11 +1622,15 @@ class CohortModel {
             v.level = 0;
         });
         var factor = posToPixelFactor / (i * 2);
-        levelObj = me.vcf.pileupVcfRecords(theFeatures, start, factor, featureWidth + 1, true);
-        //levelRange = levelObj.levelRange;
-        subLevelMax = levelObj.maxSubLevel;
-        maxPosLevel = levelObj.maxPosLevel;
-        maxNegLevel = levelObj.maxNegLevel;
+        if (self.updatedMode) {
+          levelObj = me.vcf.pileupVcfRecords(theFeatures, start, factor, featureWidth + 1, true);
+          maxSubLevel = levelObj.maxSubLevel;
+          maxPosLevel = levelObj.maxPosLevel;
+          maxNegLevel = levelObj.maxNegLevel;
+        }
+        else {
+          maxPosLevel = this.vcf.pileupVcfRecords(theFeatures, start, factor, featureWidth + 1);
+        }
         if (maxPosLevel <= 50 && maxNegLevel >= -50) {
           i = posToPixelFactor;
           break;

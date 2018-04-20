@@ -80,9 +80,13 @@ Updated: SJG Apr2018
       </v-layout>
       <div style="width:100%">
 
+        <!-- v-if="(showVariantViz && cohort != null)" SJG NOTE: use this for if for single track-->
+
         <updated-variant-viz
-          v-if="(showVariantViz && cohort != null)"
+          v-if="(showVariantViz)"
+          v-for="cohort in cohorts"
           ref="variantVizRef"
+          :key="cohort.getName()"
           :id="cohort.getName()"
           :model="cohort"
           :data="cohort.loadedVariants"
@@ -148,7 +152,8 @@ export default {
     showVariantViz: true,
     showGeneViz: true,
     geneVizShowXAxis: null,
-    doneLoadingData: false
+    doneLoadingData: false,
+    doubleMode: true   // SJG NOTE: toggle for original display (true) vs new display (false)
   },
   data() {
     let self = this;
@@ -188,6 +193,11 @@ export default {
       let self = this;
       if (self.dataSetModel)
         return self.dataSetModel.getProbandCohort();
+    },
+    cohorts: function() {
+      let self = this;
+      if (self.dataSetModel)
+        return self.dataSetModel.getCohorts();
     }
   },
   watch: {
@@ -292,12 +302,7 @@ export default {
     tooltipScroll(direction) {
       this.variantTooltip.scroll(direction, "#main-tooltip");
     },
-    // unpin(saveClickedVariant, unpinMatrixTooltip) {
-    //   this.$emit("dataSetVariantClickEnd", this);
-    //   //this.hideVariantTooltip();
-    //   this.hideVariantCircle();
-    //   this.hideCoverageCircle();
-    // },
+
     hideVariantTooltip: function() {
       let tooltip = d3.select("#main-tooltip");
       tooltip.transition()
@@ -309,13 +314,27 @@ export default {
     showVariantCircle: function(variant) {
       let self = this;
       if (self.showVariantViz) {
-        self.$refs.variantVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.variantVizRef.name), true);
+        if (self.doubleMode && self.$refs.variantVizRef != null && self.$refs.variantVizRef.length > 0) {
+          self.$refs.variantVizRef.forEach(function(variantViz) {
+            variantViz.showVariantCircle(variant, self.getVariantSVG(variantViz.name), true);
+          })
+        }
+        else {
+          self.$refs.variantVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.variantVizRef.name), true);
+        }
       }
     },
     hideVariantCircle: function(variant) {
       let self = this;
-      if (self.showVariantViz && self.$refs.variantVizRef != null) {
-        self.$refs.variantVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.variantVizRef.name));
+      if (self.showVariantViz) {
+        if (self.doubleMode && self.$refs.variantVizRef != null && self.$refs.variantVizRef.length > 0) {
+          self.$refs.variantVizRef.forEach(function(variantViz) {
+              variantViz.hideVariantCircle(self.getVariantSVG(variantViz.name));
+            })
+        }
+        else if (self.$refs.variantVizRef != null) {
+          self.$refs.variantVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.variantVizRef.name));
+        }
       }
     },
     getVariantSVG: function(vizTrackName) {
@@ -366,7 +385,14 @@ export default {
     },
     switchColorScheme: function() {
       let self = this;
-      self.$refs.variantVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.variantVizRef.name));
+      if (self.doubleMode) {
+        self.$refs.variantVizRef.forEach(function(variantVizRef) {
+          variantVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(variantVizRef.name));
+        })
+      }
+      else {
+        self.$refs.variantVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.variantVizRef.name));
+      }
     }
   }
 }

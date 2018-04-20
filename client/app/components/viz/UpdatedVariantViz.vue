@@ -216,22 +216,52 @@ export default {
     methods: {
       draw: function() {
         var self = this;
-
+        self.variantChart = variantD3()
+          .width(self.width)
+          .clazz(function(variant) {
+            return self.classifySymbolFunc(variant, self.annotationScheme, self.name);
+          })
+          .margin(self.margin)
+          .showXAxis(self.showXAxis)
+          .xTickFormat(self.xTickFormat)
+          .variantHeight(self.variantHeight)
+          .verticalPadding(self.variantPadding)
+          .showBrush(self.showBrush)
+          .showTransition(self.showTransition)
+          .tooltipHTML(self.tooltipHTML)
+          .regionStart(self.regionStart)
+          .regionEnd(self.regionEnd)
+          .on("d3rendered", function() {
+            self.$emit("trackRendered");
+          })
+          .on('d3click', function(variant) {
+            self.onVariantClick(variant);
+          })
+          .on('d3mouseover', function(variant) {
+            self.onVariantHover(variant);
+          })
+          .on('d3mouseout', function() {
+            self.onVariantHoverEnd();
+          })
+          self.setVariantChart();
+      },
+      drawDouble: function() {
+        var self = this;
         this.variantChart =  doubleVariantD3()
           .width(this.width)
           .clazz(function(variant) {
             return self.classifySymbolFunc(variant, self.annotationScheme, self.model.isSubsetCohort);
           })
-          .margin(this.margin)
-          .showXAxis(this.showXAxis)
-          .xTickFormat(this.xTickFormat)
-          .variantHeight(this.variantHeight)
-          .verticalPadding(this.variantPadding)
-          .showBrush(this.showBrush)
-          .showTransition(this.showTransition)
-          .tooltipHTML(this.tooltipHTML)
-          .regionStart(this.regionStart)
-          .regionEnd(this.regionEnd)
+          .margin(self.margin)
+          .showXAxis(self.showXAxis)
+          .xTickFormat(self.xTickFormat)
+          .variantHeight(self.variantHeight)
+          .verticalPadding(self.variantPadding)
+          .showBrush(self.showBrush)
+          .showTransition(self.showTransition)
+          .tooltipHTML(self.tooltipHTML)
+          .regionStart(self.regionStart)
+          .regionEnd(self.regionEnd)
           .on('d3rendered', function() {
             self.$emit('trackRendered');
           })
@@ -244,9 +274,9 @@ export default {
           .on('d3mouseout', function() {
             self.onVariantHoverEnd();
           })
-          this.setVariantChart();
+          self.setVariantChart();
       },
-      update: function() {
+      updateDouble: function() {
         var self = this;
         self.model.inProgress.drawingVariants = false;
 
@@ -277,6 +307,27 @@ export default {
           self.variantChart.regionStart(self.regionStart);
           self.variantChart.regionEnd(self.regionEnd);
 
+          var selection = d3.select(self.$el).datum( [self.data] );
+          self.variantChart(selection);
+        }
+      },
+      update: function() {
+        var self = this;
+        self.model.inProgress.drawingVariants = false;
+        if (self.data) {
+          // Set the vertical layer count so that the height of the chart can be recalculated
+          if (self.data.maxLevel == null) {
+            self.data.maxLevel = d3.max(self.data.features, function(d) { return d.level; });
+          }
+          self.variantChart.verticalLayers(self.data.maxPosLevel); // SJG_P2 TODO: is this maxPosLevel?
+          self.variantChart.lowestWidth(self.data.featureWidth);
+          if (self.data.features == null || self.data.features.length == 0) {
+            self.variantChart.showXAxis(false);
+          } else {
+            self.variantChart.showXAxis(self.showXAxis);
+          }
+          self.variantChart.regionStart(self.regionStart);
+          self.variantChart.regionEnd(self.regionEnd);
           var selection = d3.select(self.$el).datum( [self.data] );
           self.variantChart(selection);
         }
