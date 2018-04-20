@@ -38,8 +38,9 @@ const routes = [
     component: Home,
     props: (route) => ({
         paramProjectId:             route.query.project_uuid,
-        paramTokenType:              route.query.token_type,
-        paramToken:                 route.query.access_token
+        paramTokenType:             route.query.token_type,
+        paramToken:                 route.query.access_token,
+        paramSource:                route.query.source
     })
   }
 ]

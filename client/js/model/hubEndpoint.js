@@ -1,9 +1,5 @@
-function HubEndpoint(env) {
-  this.api = {
-		development: "http://localhost:3000/apiv1",
-		production: "https://staging.frameshift.io/apiv1"
-	};
-  this.env = env;
+function HubEndpoint(source) {
+  this.api = decodeURIComponent(source) + '/apiv1';
 }
 
 HubEndpoint.prototype.getFilesForProject = function(project_uuid) {
@@ -11,7 +7,7 @@ HubEndpoint.prototype.getFilesForProject = function(project_uuid) {
   var key = localStorage.getItem('hub-iobio-tkn');
 
   var call =  $.ajax({
-    url: self.api[self.env] + '/projects/' + project_uuid + '/files',
+    url: self.api + '/projects/' + project_uuid + '/files',
     type: 'GET',
     contentType: 'application/json*',
     headers: {
@@ -24,7 +20,7 @@ HubEndpoint.prototype.getFilesForProject = function(project_uuid) {
 HubEndpoint.prototype.getProject = function(project_uuid) {
   let self = this;
   return $.ajax({
-    url: self.api[self.env] + '/projects/' + project_uuid,
+    url: self.api + '/projects/' + project_uuid,
     type: 'GET',
     contentType: 'application/json',
     headers: {
@@ -41,7 +37,7 @@ HubEndpoint.prototype.getSamplesForProject = function(project_uuid, sampleFilter
   }
 
   let params = Qs.stringify(queryParams, { addQueryPrefix: true, arrayFormat: 'brackets' });
-  let urlParam = self.api[self.env] + '/projects/' + project_uuid + '/samples' + params;
+  let urlParam = self.api + '/projects/' + project_uuid + '/samples' + params;
   let authToken = localStorage.getItem('hub-iobio-tkn');
 
   return $.ajax({
@@ -60,7 +56,7 @@ HubEndpoint.prototype.getSamplesForProject = function(project_uuid, sampleFilter
 HubEndpoint.prototype.getSignedUrlForFile = function(file) {
   let self = this;
   return $.ajax({
-    url: self.api[self.env] + '/files/' + file.uuid + '/url',
+    url: self.api + '/files/' + file.uuid + '/url',
     type: 'GET',
     contentType: 'application/json',
     headers: {

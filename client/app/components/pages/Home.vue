@@ -111,6 +111,10 @@ export default {
     paramToken: {
       default: '',
       type: String
+    },
+    paramSource: {
+      default: '',
+      type: String
     }
   },
   data() {
@@ -186,7 +190,7 @@ export default {
         self.genomeBuildHelper,
         utility.getHumanRefNames);
 
-      let hubEndpoint = new HubEndpoint(HUB_ENV);
+      let hubEndpoint = new HubEndpoint(self.paramSource);
 
       self.variantModel = new VariantModel(endpoint,
         genericAnnotation,
