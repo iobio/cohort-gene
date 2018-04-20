@@ -838,7 +838,7 @@ class VariantModel {
   }
 
   /* Assigns classes to each variant to control visual display in the DOM. */
-  classifyByImpact(d, annotationScheme) {
+  classifyByImpact(d, annotationScheme, cohortName) {
     let self = this;
     var impacts = "";
     var toggleImpact = "";  // Grouping classes, added & removed based on impact mode
@@ -851,11 +851,11 @@ class VariantModel {
     var enrichColor = "";  // Color classes, constant
 
     var subsetEnrichment = d.subsetDelta;
-    if (subsetEnrichment >= 2) {
+    if (subsetEnrichment >= 2 && cohortName == SUBSET_ID) {
       enrichment = "eUP";
       enrichColor = "enrichment_subset_UP";
     }
-    else if (subsetEnrichment <= 0.5) {
+    else if (subsetEnrichment <= 0.5 && cohortName == SUBSET_ID) {
       enrichment = "eDOWN";
       enrichColor = "enrichment_subset_DOWN";
     }

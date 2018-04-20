@@ -228,11 +228,11 @@ export default {
     methods: {
       draw: function() {
         var self = this;
-
+        debugger; // look at model.isSubsetCohort
         this.variantChart =  variantD3()
           .width(this.width)
           .clazz(function(variant) {
-            return self.classifySymbolFunc(variant, self.annotationScheme, self.model.isSubsetCohort);
+            return self.classifySymbolFunc(variant, self.annotationScheme, self.model.getName());
           })
           .margin(this.margin)
           .showXAxis(this.showXAxis)

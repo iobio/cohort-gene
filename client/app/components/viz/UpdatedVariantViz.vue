@@ -219,7 +219,7 @@ export default {
         self.variantChart = variantD3()
           .width(self.width)
           .clazz(function(variant) {
-            return self.classifySymbolFunc(variant, self.annotationScheme, self.name);
+            return self.classifySymbolFunc(variant, self.annotationScheme, self.name, self.model.isSubsetCohort);
           })
           .margin(self.margin)
           .showXAxis(self.showXAxis)
