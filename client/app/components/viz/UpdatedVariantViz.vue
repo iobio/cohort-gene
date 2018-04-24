@@ -188,6 +188,10 @@ export default {
       doneLoadingData: {
         type: Boolean,
         default: false
+      },
+      frequencyDisplayMode: { // Controls what type of layout we have here
+        type: Boolean,
+        default: false
       }
     },
     computed: {
@@ -211,7 +215,12 @@ export default {
     mounted: function() {
       let self = this;
       self.name = self.model.getName();
-      self.draw();
+      if (self.frequencyDisplayMode) {
+        self.drawDouble();
+      }
+      else {
+        self.draw();
+      }
     },
     methods: {
       draw: function() {
@@ -247,7 +256,7 @@ export default {
       },
       drawDouble: function() {
         var self = this;
-        this.variantChart =  doubleVariantD3()
+        this.variantChart = doubleVariantD3()
           .width(this.width)
           .clazz(function(variant) {
             return self.classifySymbolFunc(variant, self.annotationScheme, self.model.isSubsetCohort);
@@ -285,18 +294,14 @@ export default {
           if (self.data.maxPosLevel == null || self.data.maxPosLevel == undefined) {
             self.data.maxPosLevel = d3.max(self.data.features, function(d) { return d.level; });
           }
-          if (self.data.maxNegLevel == null || self.data.maxNegLevel == undefined) {
-            self.data.maxNegLevel = d3.min(self.data.features, function(d) { return d.level; });
-          }
+          // if (self.data.maxNegLevel == null || self.data.maxNegLevel == undefined) {
+          //   self.data.maxNegLevel = d3.min(self.data.features, function(d) { return d.level; });
+          // }
           if (self.data.maxSubLevel == null || self.data.maxSubLevel == undefined) {
             self.data.maxSubLevel = d3.max(self.data.features, function(d) { return d.subLevel; });
           }
-          //self.variantChart.verticalLayers(self.data.maxLevel + (self.data.maxNegLevel * -1));  TODO: remove don't need
           self.variantChart.posVertLayers(self.data.maxPosLevel);
-          self.variantChart.negVertLayers(self.data.maxNegLevel);
           self.variantChart.maxSubLevel(self.data.maxSubLevel);
-          //self.variantChart.vertLayerRange(self.data.levelRange);
-
           self.variantChart.lowestWidth(self.data.featureWidth);
           if (self.data.features == null || self.data.features.length == 0) {
             self.variantChart.showXAxis(false);
@@ -319,7 +324,7 @@ export default {
           if (self.data.maxLevel == null) {
             self.data.maxLevel = d3.max(self.data.features, function(d) { return d.level; });
           }
-          self.variantChart.verticalLayers(self.data.maxPosLevel); // SJG_P2 TODO: is this maxPosLevel?
+          self.variantChart.verticalLayers(self.data.maxPosLevel);
           self.variantChart.lowestWidth(self.data.featureWidth);
           if (self.data.features == null || self.data.features.length == 0) {
             self.variantChart.showXAxis(false);
@@ -369,7 +374,12 @@ export default {
     watch: {
       data: function() {
         let self = this;
-        self.update();
+        if (self.frequencyDisplayMode) {
+          self.updateDouble();
+        }
+        else {
+          self.update();
+        }
         console.log("Drawing variants...");
       }
     }

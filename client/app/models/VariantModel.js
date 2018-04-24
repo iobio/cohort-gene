@@ -6,6 +6,14 @@
 class VariantModel {
   constructor(endpoint, genericAnnotation, translator, geneModel,
     cacheHelper, genomeBuildHelper, hubEndpoint) {
+      // SJG TODO: add the following data structures?
+      // These would have to be populated in vcf.iobio.js?
+      // AllVariantMap - contains every variant pulled over from Hub, with key = ?, some arbitrary, unique ID?
+      // ProbandVariants: list of unique IDs corresponding to allvariantmap keys
+      // SubsetVariants: list of unique Ids corresponding to allvariantMap keys
+      // NonSubsetVariants: (probandvariants - subsetvariants)
+      // unaffectedvariants: todo
+
     // Data props
     this.dataSet = null;
     this.totalProbandCount = 0;
@@ -838,7 +846,7 @@ class VariantModel {
   }
 
   /* Assigns classes to each variant to control visual display in the DOM. */
-  classifyByImpact(d, annotationScheme, cohortName) {
+  classifyByImpact(d, annotationScheme, isSubset) {
     let self = this;
     var impacts = "";
     var toggleImpact = "";  // Grouping classes, added & removed based on impact mode
@@ -851,11 +859,11 @@ class VariantModel {
     var enrichColor = "";  // Color classes, constant
 
     var subsetEnrichment = d.subsetDelta;
-    if (subsetEnrichment >= 2 && cohortName == SUBSET_ID) {
+    if (subsetEnrichment >= 2 && isSubset) {
       enrichment = "eUP";
       enrichColor = "enrichment_subset_UP";
     }
-    else if (subsetEnrichment <= 0.5 && cohortName == SUBSET_ID) {
+    else if (subsetEnrichment <= 0.5 && isSubset) {
       enrichment = "eDOWN";
       enrichColor = "enrichment_subset_DOWN";
     }

@@ -83,15 +83,13 @@ Updated: SJG Apr2018
         <!-- v-if="(showVariantViz && cohort != null)" SJG NOTE: use this for if for single track-->
 
         <updated-variant-viz
-          v-if="(showVariantViz)"
-          v-for="cohort in cohorts"
-          ref="variantVizRef"
-          :key="cohort.getName()"
-          :id="cohort.getName()"
-          :model="cohort"
-          :data="cohort.loadedVariants"
-          :title="cohort.trackName"
-          :phenotypes="cohort.subsetPhenotypes"
+          v-if="(showVariantViz && subsetCohort != null)"
+          ref="subsetVizRef"
+          :id="subsetCohort.getName()"
+          :model="subsetCohort"
+          :data="subsetCohort.loadedVariants"
+          :title="subsetCohort.trackName"
+          :phenotypes="subsetCohort.subsetPhenotypes"
           :regionStart="regionStart"
           :regionEnd="regionEnd"
           :annotationScheme="annotationScheme"
@@ -104,6 +102,33 @@ Updated: SJG Apr2018
           :classifySymbolFunc="classifyVariantSymbolFunc"
           :impactMode="impactMode"
           :doneLoadingData="doneLoadingData"
+          :frequencyDisplayMode="true"
+          @variantClick="onVariantClick"
+          @variantHover="onVariantHover"
+          @variantHoverEnd="onVariantHoverEnd"
+          @trackRendered="switchColorScheme">
+        </updated-variant-viz>
+        <updated-variant-viz
+          v-if="(showVariantViz && probandCohort != null)"
+          ref="probandVizRef"
+          :id="probandCohort.getName()"
+          :model="probandCohort"
+          :data="probandCohort.loadedVariants"
+          :title="probandCohort.trackName"
+          :phenotypes="probandCohort.subsetPhenotypes"
+          :regionStart="regionStart"
+          :regionEnd="regionEnd"
+          :annotationScheme="annotationScheme"
+          :width="width"
+          :margin="variantVizMargin"
+          :variantHeight="variantSymbolHeight"
+          :variantPadding="variantSymbolPadding"
+          :showBrush="false"
+          :showXAxis="true"
+          :classifySymbolFunc="classifyVariantSymbolFunc"
+          :impactMode="impactMode"
+          :doneLoadingData="doneLoadingData"
+          :frequencyDisplayMode="false"
           @variantClick="onVariantClick"
           @variantHover="onVariantHover"
           @variantHoverEnd="onVariantHoverEnd"
@@ -153,7 +178,6 @@ export default {
     showGeneViz: true,
     geneVizShowXAxis: null,
     doneLoadingData: false,
-    doubleMode: true   // SJG NOTE: toggle for original display (true) vs new display (false)
   },
   data() {
     let self = this;
@@ -189,10 +213,15 @@ export default {
     depthVizHeight: function() {
       this.showDepthViz ? 0 : 60;
     },
-    cohort: function() {
+    probandCohort: function() {
       let self = this;
       if (self.dataSetModel)
         return self.dataSetModel.getProbandCohort();
+    },
+    subsetCohort: function() {
+      let self = this;
+      if (self.dataSetModel)
+        return self.dataSetModel.getSubsetCohort();
     },
     cohorts: function() {
       let self = this;
@@ -314,27 +343,15 @@ export default {
     showVariantCircle: function(variant) {
       let self = this;
       if (self.showVariantViz) {
-        if (self.doubleMode && self.$refs.variantVizRef != null && self.$refs.variantVizRef.length > 0) {
-          self.$refs.variantVizRef.forEach(function(variantViz) {
-            variantViz.showVariantCircle(variant, self.getVariantSVG(variantViz.name), true);
-          })
-        }
-        else {
-          self.$refs.variantVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.variantVizRef.name), true);
-        }
+        self.$refs.probandVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.probandVizRef.name), true);
+        self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
       }
     },
     hideVariantCircle: function(variant) {
       let self = this;
-      if (self.showVariantViz) {
-        if (self.doubleMode && self.$refs.variantVizRef != null && self.$refs.variantVizRef.length > 0) {
-          self.$refs.variantVizRef.forEach(function(variantViz) {
-              variantViz.hideVariantCircle(self.getVariantSVG(variantViz.name));
-            })
-        }
-        else if (self.$refs.variantVizRef != null) {
-          self.$refs.variantVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.variantVizRef.name));
-        }
+      if (self.showVariantViz && self.$refs.variantVizRef != null) {
+        self.$refs.probandVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.probandVizRef.name));
+        self.$refs.subsetVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.subsetVizRef.name));
       }
     },
     getVariantSVG: function(vizTrackName) {
@@ -385,13 +402,12 @@ export default {
     },
     switchColorScheme: function() {
       let self = this;
-      if (self.doubleMode) {
-        self.$refs.variantVizRef.forEach(function(variantVizRef) {
-          variantVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(variantVizRef.name));
-        })
+
+      if (self.$refs.probandVizRef != null) {
+        self.$refs.probandVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.probandVizRef.name));
       }
-      else {
-        self.$refs.variantVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.variantVizRef.name));
+      if (self.$refs.subsetVizRef != null) {
+        self.$refs.subsetVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.subsetVizRef.name));
       }
     }
   }

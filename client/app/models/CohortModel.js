@@ -32,7 +32,6 @@ class CohortModel {
     this.subsetIds = [];            // IDs that compose this cohort (filled for proband cohort also)
     this.subsetPhenotypes = [];     // Phrases describing phenotypic filtering data; displayed in track chips
     this.noMatchingSamples = false; // Flag to display No Matching Variants chip
-    this.updatedMode = false;       // SJG TODO: take out when bidirectional display finished
 
     this.inProgress = {
       'fetchingHubData': false,
@@ -1595,8 +1594,8 @@ class CohortModel {
     var maxSubLevel = 0;
     var maxPosLevel = 0;
     var maxNegLevel = 0;
-    if (self.updatedMode) {
-      levelObj = this.vcf.updatedPileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, true);
+    if (me.isSubsetCohort) {
+      levelObj = me.vcf.updatedPileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, true);
       maxSubLevel = levelObj.maxSubLevel;
       maxPosLevel = levelObj.maxPosLevel;
       maxNegLevel = levelObj.maxNegLevel;
@@ -1622,7 +1621,7 @@ class CohortModel {
             v.level = 0;
         });
         var factor = posToPixelFactor / (i * 2);
-        if (self.updatedMode) {
+        if (self.isSubsetCohort) {
           levelObj = me.vcf.pileupVcfRecords(theFeatures, start, factor, featureWidth + 1, true);
           maxSubLevel = levelObj.maxSubLevel;
           maxPosLevel = levelObj.maxPosLevel;

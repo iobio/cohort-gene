@@ -7,7 +7,7 @@ function doubleVariantD3() {
       height = 100;
   // scales
   var x = d3.scale.linear(),
-      y = d3.scale.linear();
+      y = d3.scale.log().base(2);
   // axis
   var xAxis = d3.svg.axis()
     .scale(x)
@@ -25,7 +25,8 @@ function doubleVariantD3() {
       showBrush = false,
       brushHeight = null,
       verticalLayers = 1,
-      verticalPadding = 4,
+      verticalPadding = 4,  // sjg changed from 4
+      verticalScaleFactor = 0.5,
       posVertLayers = 1,
       negVertLayers = -1, // A negative value
       maxSubLevel = 0,
@@ -78,8 +79,8 @@ function doubleVariantD3() {
     // Get the x for this position
     if (matchingVariant) {
       var mousex = x(matchingVariant.start);
-      // SJG TODO: have to modify this to match new y.range
-      var mousey = (height - (matchingVariant.adjustedLevel) * (variantHeight + verticalPadding));
+      //var mousey = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding));
+      var mousey = y(d.adjustedLevel);
 
       var circle = svgContainer.select(".circle");
       circle.transition()
@@ -109,7 +110,7 @@ function doubleVariantD3() {
 
     } else if (indicateMissingVariant) {
       var mousex = d3.round(x(d.start));
-      var mousey = height - verticalPadding;
+      var mousey = height - ((d.adjustedLevel) * (variantHeight + verticalPadding));
 
 
       var garrow = svgContainer.select("g.arrow");
@@ -152,6 +153,7 @@ function doubleVariantD3() {
 
     let enrichUp = variants.filter(".eUP");
     let enrichDown = variants.filter(".eDOWN");
+    let enrichLow = variants.filter("e.LOW");
     let enrichNone = variants.filter(".eNONE");
 
     if (enrichmentMode) {
@@ -180,6 +182,9 @@ function doubleVariantD3() {
       enrichDown.classed({
         'enrichment_subset_DOWN': true
       });
+      enrichLow.classed({
+        'enrichment_LOW': true
+      });
       enrichNone.classed({
         'enrichment_NONE': true
       });
@@ -192,6 +197,9 @@ function doubleVariantD3() {
       });
       enrichDown.classed({
         'enrichment_subset_DOWN': false
+      });
+      enrichLow.classed({
+        'enrichment_LOW': false
       });
       enrichNone.classed({
         'enrichment_NONE': false
@@ -220,18 +228,13 @@ function doubleVariantD3() {
     options = $.extend(defaults,options);
 
     // Find adjusted range based on sublevel
+    debugger; // what is maxSubLevel
     let subLayers = maxSubLevel == 0 ? 1 : maxSubLevel;
-    let posLayers = posVertLayers <= 1 ? 1 : (posVertLayers - 1) * subLayers;
-    let negLayers = negVertLayers >= -1 ? -1 : (negVertLayers + 1) * subLayers;
+    let mainLayers = posVertLayers;
+    let totalLayers = mainLayers * subLayers;
 
-    posHeight = posLayers * (variantHeight + verticalPadding);
-    posHeight += (variantHeight + verticalPadding);
-
-    // A positive value, want to add space for negative layers
-    negHeight = (-1 * negLayers) * (variantHeight + verticalPadding);
-    negHeight += (variantHeight + verticalPadding);
-
-    height = posHeight + negHeight;
+    height = totalLayers * (variantHeight + verticalPadding);    // Scale this to main layers size
+    height += (variantHeight + verticalPadding);
 
     // Account for the margin when we are showing the xAxis
     if (showXAxis) {
@@ -243,8 +246,7 @@ function doubleVariantD3() {
     var dividerY = dividerLevel ? height - ((dividerLevel + 1) * (variantHeight + verticalPadding)) : null;
 
     // Determine inner height (w/o margins)
-    var innerPosHeight = posHeight - margin.top;
-    var innerNegHeight = -1 * (negHeight - margin.bottom);
+    var innerHeight = height - margin.top - margin.bottom;
 
     selection.each(function(data) {
       // set svg element
@@ -273,8 +275,8 @@ function doubleVariantD3() {
         x.range([0, width - margin.left - margin.right]);
 
         // Update the y-scale.
-        y.domain([negLayers, posLayers]);
-        y.range([innerPosHeight, innerNegHeight]);
+        y.domain([1, totalLayers]);    // Give ourself some padding on top
+        y.range([innerHeight, 0]);
 
         // Find out the smallest width interval between variants on the x-axis
         // for each level. For a single nucleotide variant, what is
@@ -282,7 +284,7 @@ function doubleVariantD3() {
         // distance between all variants.
         minWidth = 6;
 
-        for (var l = negLayers; l < posLayers; l++) {
+        for (var l = 0; l < totalLayers; l++) {
           // For each row in array (per variant set; only one variant set)
           var minInterval = null;
           data.forEach( function(d) {
@@ -385,9 +387,21 @@ function doubleVariantD3() {
         // Create the X-axis.
         g.selectAll(".x.axis").remove();
         if (showXAxis) {
-          // SJG NOTE: think this is correct
-          g.append("g").attr("class", "x axis").attr("transform", "translate(0," + (y(0) + margin.bottom) + ")");
+          g.append("g").attr("class", "x axis").attr("transform", "translate(0," + (y.range()[0] + margin.bottom) + ")");
         }
+
+        // Create the Y-axis.
+        g.selectAll(".y.axis").remove();
+
+        var yAxis = d3.svg.axis()
+          .orient("left")
+          .scale(y)
+          .tickFormat(function(d) { return y.tickFormat(4, d3.format(",d"))(d) });
+        // Draw y-axis using x axis style class
+        // SJG TODO: make this dynamic based on margin in negative direction?
+        g.append("g").attr("class", "axis")
+          .attr("transform", "translate(30,0)")
+          .call(yAxis);
 
         // Create dividing line
         g.selectAll(".divider").remove();
@@ -422,13 +436,12 @@ function doubleVariantD3() {
         var track = g.selectAll('.track.snp').data(data);
         track.enter().append('g')
             .attr('class', 'track snp')
-            // SJG TODO: THIS IS WRONG - WHY?
             .attr('transform', function(d,i) { return "translate(0," + y(d.adjustedLevel) + ")"});
 
         var trackindel = g.selectAll('.track.indel').data(data);
         trackindel.enter().append('g')
             .attr('class', 'track indel')
-            .attr('transform', function(d,i) { return "translate(0," + y(i+1) + ")"});
+            .attr('transform', function(d,i) { return "translate(0," + y(d.adjustedLevel) + ")"});
 
 
         if (showBrush) {
@@ -465,8 +478,8 @@ function doubleVariantD3() {
               return showTransition ? 0 : variantHeight;
             })
             .attr('y', function(d) {
-              return showTransition ? 0 : y(d.adjustedLevel);  // SJG TODO: verify that this is returning correct y
-              //return showTransition ? 0 : ((d.adjustedLevel) * (variantHeight + verticalPadding));  // SJG TODO: verify that this is returning correct y
+              //return showTransition ? 0 : height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding));
+              return showTransition ? 0 : y(d.adjustedLevel);
             })
             .attr('height', variantHeight);
 
@@ -489,7 +502,8 @@ function doubleVariantD3() {
             .attr('class', function(d) { return chart.clazz()(d); })
             .attr("transform", function(d) {
               var xCoord = x(d.start) + 2;
-              var yCoord = showTransition ? 0 : height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
+              //var yCoord = showTransition ? 0 : height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
+              var yCoord = showTransition ? 0 : y(d.adjustedLevel) + 3;
               var tx = "translate(" + xCoord + "," + yCoord + ")";
               return tx;
              });
@@ -539,7 +553,8 @@ function doubleVariantD3() {
                   return variantHeight;
                 })
                 .attr('y', function(d) {
-                  return height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding));
+                  //var yCoord = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
+                  var yCoord = y(d.adjustedLevel + 1) + 3;
                 })
                 .attr('height', function(d) {
                   return variantHeight;
@@ -558,7 +573,8 @@ function doubleVariantD3() {
                 })
                 .attr("transform", function(d) {
                     var xCoord = x(d.start) + 2;
-                    var yCoord = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
+                    //var yCoord = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
+                    var yCoord = y(d.adjustedLevel + 1) + 3;
                     var tx = "translate(" + xCoord +  "," + yCoord + ")";
                     return tx;
                 });
@@ -576,7 +592,8 @@ function doubleVariantD3() {
                 })
                 .attr("transform", function(d) {
                     var xCoord = x(d.start) + 2;
-                    var yCoord = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
+                    //var yCoord = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
+                    var yCoord = y(d.adjustedLevel + 1) + 3;
                     var tx = "translate(" + xCoord + "," + yCoord + ")";
                     return tx;
                 });
@@ -593,7 +610,8 @@ function doubleVariantD3() {
                 })
                 .attr("transform", function(d) {
                     var xCoord = x(d.start) + 2;
-                    var yCoord = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
+                    //var yCoord = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
+                    var yCoord = y(d.adjustedLevel + 1) + 3;
                     var tx = "translate(" + xCoord + "," + yCoord + ")";
                     return tx;
                 });
