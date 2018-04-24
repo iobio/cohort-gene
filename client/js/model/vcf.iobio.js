@@ -2804,13 +2804,15 @@ exports._getHighestScore = function(theObject, cullFunction, theTranscriptId) {
 
     var maxSubLevel = 1;      // The sub-space composing the height of individual posLevels
     var maxPosLevel = 1;      // The max subset delta value, truncated to base integer (e.g. 15.8x = 15)
+    var inversionFactor = 1;
 
     variants.forEach(function(variant) {
       // Horizontal coordinate
       var xPos = (variant.start - regionStart);
 
       // Vertical starting coordinate based on subset delta value
-      var yPos = variant.subsetDelta < 1 ? 1 : Math.trunc(variant.subsetDelta);   // Have to bump 0.x up to 1 b/c log2 transforming data
+      //var yPos = variant.subsetDelta < 1 ? 1 : (Math.trunc(variant.subsetDelta * 10)) / 10;   // Have to bump 0.x up to 1 b/c log2 transforming data
+      var yPos = Math.trunc(variant.subsetDelta * 100) / 100;
       if (yPos > maxPosLevel) maxPosLevel = yPos;
 
       // Vertical precision coordinate based on stacking
@@ -2821,7 +2823,7 @@ exports._getHighestScore = function(theObject, cullFunction, theTranscriptId) {
 
       // If we already have a stack here, iterate through number of variants in stack, and find next vertical sub-position to stack at
       if (stackAtStart) {
-        for (var k = 0; k <= stackAtStart.length; k++ ) {
+        for (var k = 0; k <= stackAtStart.length; k++) {
           if (stackAtStart[k] == undefined) {
             ySubPos = k;
             break;
@@ -2848,8 +2850,17 @@ exports._getHighestScore = function(theObject, cullFunction, theTranscriptId) {
     });
 
     variants.forEach(function(variant) {
-      let scaledMainLevel = variant.level * maxSubLevel;
-      variant.adjustedLevel = (scaledMainLevel + variant.subLevel) / maxSubLevel;
+      let scaledMainLevel = variant.subsetDelta * maxSubLevel;
+      //let verticalSpreadFactor = maxSubLevel / 10;
+
+      //variant.adjustedLevel = (scaledMainLevel + (variant.subLevel * verticalSpreadFactor)) / maxSubLevel;   // Divide back down so height isn't too tall on render
+      //if (variant.adjustedLevel > maxPosLevel) maxPosLevel = variant.adjustedLevel;
+
+      let verticalSpreadFactor = 0.2; // Deduced by trial and error
+      let overlapFactor = inversionFactor * verticalSpreadFactor * variant.subLevel;
+      inversionFactor = inversionFactor * -1;
+
+      variant.adjustedLevel = variant.level + overlapFactor;
     })
 
     return {'maxPosLevel' : maxPosLevel, 'maxNegLevel': +0, 'maxSubLevel': maxSubLevel};

@@ -268,14 +268,14 @@ export default {
       if (this.variant != null) {
         let delta = this.variant.subsetDelta;
         let adjLevel = this.variant.adjustedLevel;    // SJG for testing purposes TODO remove
-        if (delta < 0.5 && delta > 0) {
-          delta = 1/delta;
-        }
+        // if (delta < 0.5 && delta > 0) {
+        //   delta = 1/delta;
+        // }
 
-        let foldEnrich = Math.round(delta * 10) / 10 + "x";
-        if (this.variant.subsetDelta >= 2) return (foldEnrich + " IN SUBSET " + ' adjLevel: ' + adjLevel + ' mainLvl: ' + this.variant.level + ' subsetLvl: ' + this.variant.subLevel);
-        else if (this.variant.subsetDelta <= 0.5) return (foldEnrich + " IN SUBSET " + adjLevel + ' mainLvl: ' + this.variant.level + ' subsetLvl: ' + this.variant.subLevel);
-        else return (foldEnrich + ' adjLevel: ' + adjLevel + ' mainLvl: ' + this.variant.level + ' subsetLvl: ' + this.variant.subLevel);
+        let foldEnrich = Math.round(delta * 100) / 100 + "x";
+        //if (this.variant.subsetDelta >= 2) return (foldEnrich + " IN SUBSET " + ' adjLevel: ' + adjLevel + ' mainLvl: ' + this.variant.level + ' subsetLvl: ' + this.variant.subLevel);
+        //else if (this.variant.subsetDelta <= 0.5) return (foldEnrich + " IN SUBSET " + adjLevel + ' mainLvl: ' + this.variant.level + ' subsetLvl: ' + this.variant.subLevel);
+        return (foldEnrich + ' adjLevel: ' + adjLevel + ' mainLvl: ' + this.variant.level + ' subsetLvl: ' + this.variant.subLevel);
       }
       return "";
     },

@@ -228,12 +228,11 @@ function doubleVariantD3() {
     options = $.extend(defaults,options);
 
     // Find adjusted range based on sublevel
-    debugger; // what is maxSubLevel
     let subLayers = maxSubLevel == 0 ? 1 : maxSubLevel;
     let mainLayers = posVertLayers;
     let totalLayers = mainLayers * subLayers;
 
-    height = totalLayers * (variantHeight + verticalPadding);    // Scale this to main layers size
+    height = totalLayers * 0.6 * (variantHeight + verticalPadding);    // Scale this to main layers size
     height += (variantHeight + verticalPadding);
 
     // Account for the margin when we are showing the xAxis
@@ -275,7 +274,7 @@ function doubleVariantD3() {
         x.range([0, width - margin.left - margin.right]);
 
         // Update the y-scale.
-        y.domain([1, totalLayers]);    // Give ourself some padding on top
+        y.domain([0.1, (mainLayers + Math.round(mainLayers * 10) / 10)]);    // Give ourself some padding on top SJG TODO: determine dynamic way to determine this
         y.range([innerHeight, 0]);
 
         // Find out the smallest width interval between variants on the x-axis
