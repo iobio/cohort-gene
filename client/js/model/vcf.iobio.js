@@ -2794,26 +2794,28 @@ exports._getHighestScore = function(theObject, cullFunction, theTranscriptId) {
       return maxLevel;
   }
 
-  // SJG TODO: this is going to be slow b/c keying w/ strings - turn into 2d array w/ x and y coordinates?
   exports.updatedPileupVcfRecords = function(variants, regionStart, posToPixelFactor, widthFactor) {
     widthFactor = widthFactor ? widthFactor : 1;
     // Variant's can overlap each over.  Set a field called variant.level which determines
     // how to stack the variants vertically in these cases.
-    var posLevels = {};
+    var posLevels = {};   // SJG TODO: this is going to be slow b/c keying w/ strings - turn into 2d array w/ x and y coordinates?
     var posUnitsForEachVariant = posToPixelFactor * widthFactor;
 
     var maxSubLevel = 1;      // The sub-space composing the height of individual posLevels
-    var maxPosLevel = 1;      // The max subset delta value, truncated to base integer (e.g. 15.8x = 15)
-    var inversionFactor = 1;
+    var maxPosLevel = 1;      // The max subset delta value, rounded to two decimal places (ex: 15.87)
+    var minPosLevel = 1;      // The min subset delta value, rounded to two decimal places (ex: 0.37)
+    var inversionFactor = 1;  // The direction to stack overlapping variants in (+1 = up, -1 = down)
 
     variants.forEach(function(variant) {
       // Horizontal coordinate
       var xPos = (variant.start - regionStart);
 
       // Vertical starting coordinate based on subset delta value
-      //var yPos = variant.subsetDelta < 1 ? 1 : (Math.trunc(variant.subsetDelta * 10)) / 10;   // Have to bump 0.x up to 1 b/c log2 transforming data
       var yPos = Math.trunc(variant.subsetDelta * 100) / 100;
+
+      // Keep track of extrema
       if (yPos > maxPosLevel) maxPosLevel = yPos;
+      else if (yPos < minPosLevel) minPosLevel = yPos;
 
       // Vertical precision coordinate based on stacking
       var ySubPos = 0;
@@ -2850,66 +2852,17 @@ exports._getHighestScore = function(theObject, cullFunction, theTranscriptId) {
     });
 
     variants.forEach(function(variant) {
-      let scaledMainLevel = variant.subsetDelta * maxSubLevel;
-      //let verticalSpreadFactor = maxSubLevel / 10;
-
-      //variant.adjustedLevel = (scaledMainLevel + (variant.subLevel * verticalSpreadFactor)) / maxSubLevel;   // Divide back down so height isn't too tall on render
-      //if (variant.adjustedLevel > maxPosLevel) maxPosLevel = variant.adjustedLevel;
-
-      let verticalSpreadFactor = 0.2; // Deduced by trial and error
+      let verticalSpreadFactor = 0.1;           // Deduced by trial and error
       let overlapFactor = inversionFactor * verticalSpreadFactor * variant.subLevel;
-      inversionFactor = inversionFactor * -1;
+      inversionFactor *= -1;   // Flip direction we're stacking in
 
-      variant.adjustedLevel = variant.level + overlapFactor;
+
+      // SJG TODO: make overlap factor incorporate inverse log2 transformation
+      variant.adjustedLevel = variant.level; //+ overlapFactor;
     })
 
-    return {'maxPosLevel' : maxPosLevel, 'maxNegLevel': +0, 'maxSubLevel': maxSubLevel};
+    return {'maxPosLevel' : maxPosLevel, 'maxNegLevel': minPosLevel, 'maxSubLevel': maxSubLevel};
   }
-
-  // /* Determines pileup positions for symbols. Incorporates negative y-axis space if bidirectional parameter is true. */
-  // exports.updatedPileupVcfRecords = function(variants, regionStart, posToPixelFactor, widthFactor, bidirectional = false) {
-  //     widthFactor = widthFactor ? widthFactor : 1;
-  //     // A map of key: value pairs encoding individual variant relative screen positions
-  //     // Key = 'xPosition.yMainLevel' where yMainLevel is the SubsetDelta value assigned to the variant (which may be +/-)
-  //     // Value = count of variants mapping to that position, or ySubLevel count
-  //     var xyGrid = {};
-  //
-  //     // Cumulative return values
-  //     //var levelRange = [];      // Ordered list of levels (+/-)
-  //     var maxSubLevel = 1;        // Only goes in positive direction
-  //     var maxPosLevel = 1;        // Start at 1 so we always have at least that much room on render
-  //     //var maxNegLevel = -1;
-  //     var posUnitsForEachVariant = posToPixelFactor * widthFactor;
-  //
-  //     variants.forEach(function(variant) {
-  //       // Get positional info
-  //       let xPosition = (variant.start - regionStart);
-  //
-  //       // SJG NOTE: have to set this to 1+ because doing a log2 transformation - add +1 to anything > 1 to scaled accordingly
-  //       let yMainLevel = variant.subsetDelta < 1 ? 1 : (Math.trunc(variant.subsetDelta) + 1);
-  //       let currKey = xPosition + '.' + yMainLevel;
-  //       let ySubLevel = xyGrid[currKey] ? ++xyGrid[currKey] : 0;    // Start at 0 since we add this to calculate adjusted level
-  //       xyGrid[currKey] = ySubLevel;                                // Assign smallest ySubLevel that hasn't already been taken
-  //
-  //       // Keep track of levels in variant object
-  //       variant.level = yMainLevel;
-  //       variant.subLevel = ySubLevel;
-  //
-  //       // Check for level extrema
-  //       if (yMainLevel > maxPosLevel) maxPosLevel = yMainLevel;
-  //
-  //       // Check for subLevel maxima
-  //       if (ySubLevel > maxSubLevel) maxSubLevel = ySubLevel;
-  //     });
-  //
-  //     // Assign adjusted level based on max sub level
-  //     variants.forEach(function(variant) {
-  //       let adjustedMainLevel = variant.level * maxSubLevel;
-  //       variant.adjustedLevel = adjustedMainLevel + variant.subLevel;
-  //     })
-  //
-  //     return {'maxPosLevel' : maxPosLevel, 'maxNegLevel': +0, 'maxSubLevel': maxSubLevel};
-  // }
 
 
   exports.compareVcfRecords = function(variants1, variants2, comparisonAttr, onMatchFunction, onNoMatchFunction) {

@@ -2,8 +2,9 @@ function doubleVariantD3() {
    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout");
 
   // dimensions
+  var yAxisWidth = 10;
   var margin = {top: 30, right: 0, bottom: 20, left: 110},
-      width = 800,
+      width = 790,
       height = 100;
   // scales
   var x = d3.scale.linear(),
@@ -78,15 +79,14 @@ function doubleVariantD3() {
 
     // Get the x for this position
     if (matchingVariant) {
-      var mousex = x(matchingVariant.start);
-      //var mousey = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding));
+      var mousex = x(matchingVariant.start) + yAxisWidth;
       var mousey = y(d.adjustedLevel);
 
       var circle = svgContainer.select(".circle");
       circle.transition()
             .duration(200)
             .style("opacity", 1);
-      circle.attr("cx", mousex + margin.left + 2)
+      circle.attr("cx", mousex + margin.left + yAxisWidth + 2)
             .attr("cy", mousey + margin.top + 4);
 
       circle.classed("emphasize", emphasize);
@@ -114,7 +114,7 @@ function doubleVariantD3() {
 
 
       var garrow = svgContainer.select("g.arrow");
-      garrow.attr("transform", "translate(" + (mousex + margin.left - variantHeight/2) + "," + (mousey + margin.top - 6) + ")");
+      garrow.attr("transform", "translate(" + (mousex + margin.left + yAxisWidth - variantHeight/2) + "," + (mousey + margin.top - 6) + ")");
       garrow.selectAll('.arrow').transition()
             .duration(200)
             .style("opacity", 1);
@@ -229,10 +229,11 @@ function doubleVariantD3() {
 
     // Find adjusted range based on sublevel
     let subLayers = maxSubLevel == 0 ? 1 : maxSubLevel;
-    let mainLayers = posVertLayers;
-    let totalLayers = mainLayers * subLayers;
+    let topLayer = posVertLayers == 0 ? 1 : posVertLayers;
+    let bottomLayer = negVertLayers == 0 ? 0.1 : negVertLayers;
+    let totalLayers = topLayer * subLayers;
 
-    height = totalLayers * 0.6 * (variantHeight + verticalPadding);    // Scale this to main layers size
+    height = totalLayers * (variantHeight + verticalPadding);    // Scale this to main layers size
     height += (variantHeight + verticalPadding);
 
     // Account for the margin when we are showing the xAxis
@@ -274,7 +275,8 @@ function doubleVariantD3() {
         x.range([0, width - margin.left - margin.right]);
 
         // Update the y-scale.
-        y.domain([0.1, (mainLayers + Math.round(mainLayers * 10) / 10)]);    // Give ourself some padding on top SJG TODO: determine dynamic way to determine this
+        // Give ourself some% breathing room
+        y.domain([(bottomLayer - (Math.round(bottomLayer * 10) / 30)), (topLayer + (Math.round(topLayer * 10) / 20))]);
         y.range([innerHeight, 0]);
 
         // Find out the smallest width interval between variants on the x-axis
@@ -283,18 +285,20 @@ function doubleVariantD3() {
         // distance between all variants.
         minWidth = 6;
 
-        for (var l = 0; l < totalLayers; l++) {
+        for (var l = 0; l < totalLayers; l += 0.1) {
           // For each row in array (per variant set; only one variant set)
           var minInterval = null;
           data.forEach( function(d) {
             // For each variant.  Calculate the distance on the screen
             // between the 2 variants.
             for (var i = 0; i < d.features.length - 1; i++) {
-              if (d.features[i].adjustedLevel == l) {
+              let currAdjLevel = Math.round(d.features[i].adjustedLevel * 10) / 10;
+              if (currAdjLevel == l) {
                 // find the next feature at the same level
                 var nextPos = null;
                 for (var next = i+1; next < d.features.length; next++) {
-                  if (d.features[next].adjustedLevel == l) {
+                  let nextAdjLevel = Math.round(d.features[next].adjustedLevel * 10) / 10;
+                  if (nextAdjLevel == l) {
                     nextPos = next;
                     break;
                   }
@@ -358,11 +362,11 @@ function doubleVariantD3() {
           .append("svg")
           .attr("width", widthPercent)
           .attr("height", heightPercent)
-          .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom))
+          .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right+yAxisWidth) + " " + parseInt(height+margin.top+margin.bottom))
           .attr("preserveAspectRatio", "none")
           .append("g")
           .attr("class", "group")
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+          .attr("transform", "translate(" + (margin.left + yAxisWidth) + "," + margin.top + ")");
 
         var g = svg.select("g.group");
 
@@ -373,7 +377,7 @@ function doubleVariantD3() {
           .filter(function() {
               return this.parentNode === container.node();
           })
-          .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom));
+          .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right+yAxisWidth) + " " + parseInt(height+margin.top+margin.bottom));
 
 
 
@@ -386,7 +390,7 @@ function doubleVariantD3() {
         // Create the X-axis.
         g.selectAll(".x.axis").remove();
         if (showXAxis) {
-          g.append("g").attr("class", "x axis").attr("transform", "translate(0," + (y.range()[0] + margin.bottom) + ")");
+          g.append("g").attr("class", "x axis").attr("transform", "translate(" + yAxisWidth + "," + (y.range()[0] + margin.bottom) + ")");
         }
 
         // Create the Y-axis.
@@ -397,9 +401,8 @@ function doubleVariantD3() {
           .scale(y)
           .tickFormat(function(d) { return y.tickFormat(4, d3.format(",d"))(d) });
         // Draw y-axis using x axis style class
-        // SJG TODO: make this dynamic based on margin in negative direction?
         g.append("g").attr("class", "axis")
-          .attr("transform", "translate(30,0)")
+          .attr("transform", "translate(" + yAxisWidth + ",0)")
           .call(yAxis);
 
         // Create dividing line
@@ -435,12 +438,12 @@ function doubleVariantD3() {
         var track = g.selectAll('.track.snp').data(data);
         track.enter().append('g')
             .attr('class', 'track snp')
-            .attr('transform', function(d,i) { return "translate(0," + y(d.adjustedLevel) + ")"});
+            .attr('transform', function(d,i) { return "translate(" + yAxisWidth + ",0)"});
 
         var trackindel = g.selectAll('.track.indel').data(data);
         trackindel.enter().append('g')
             .attr('class', 'track indel')
-            .attr('transform', function(d,i) { return "translate(0," + y(d.adjustedLevel) + ")"});
+            .attr('transform', function(d,i) { return "translate(" + yAxisWidth + ",0)"});
 
 
         if (showBrush) {
