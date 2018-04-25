@@ -359,6 +359,7 @@ export default {
           lock);
       },
       hideVariantCircle: function(container) {
+        debugger; // Am i being hit here?
         this.variantChart.hideCircle()(container);
       },
       setVariantChart: function() {

@@ -108,7 +108,7 @@ Updated: SJG Apr2018
           @variantHoverEnd="onVariantHoverEnd"
           @trackRendered="switchColorScheme">
         </updated-variant-viz>
-        <updated-variant-viz
+        <!-- <updated-variant-viz
           v-if="(showVariantViz && probandCohort != null)"
           ref="probandVizRef"
           :id="probandCohort.getName()"
@@ -133,7 +133,7 @@ Updated: SJG Apr2018
           @variantHover="onVariantHover"
           @variantHoverEnd="onVariantHoverEnd"
           @trackRendered="switchColorScheme">
-        </updated-variant-viz>
+        </updated-variant-viz> -->
         <gene-viz id="gene-viz"
           v-bind:class="{ hide: !showGeneViz }"
           :data="[selectedTranscript]"
@@ -343,14 +343,14 @@ export default {
     showVariantCircle: function(variant) {
       let self = this;
       if (self.showVariantViz) {
-        self.$refs.probandVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.probandVizRef.name), true);
+        //self.$refs.probandVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.probandVizRef.name), true);
         self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
       }
     },
     hideVariantCircle: function(variant) {
       let self = this;
       if (self.showVariantViz && self.$refs.variantVizRef != null) {
-        self.$refs.probandVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.probandVizRef.name));
+        //self.$refs.probandVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.probandVizRef.name));
         self.$refs.subsetVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.subsetVizRef.name));
       }
     },
@@ -403,9 +403,9 @@ export default {
     switchColorScheme: function() {
       let self = this;
 
-      if (self.$refs.probandVizRef != null) {
-        self.$refs.probandVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.probandVizRef.name));
-      }
+      // if (self.$refs.probandVizRef != null) {
+      //   self.$refs.probandVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.probandVizRef.name));
+      // }
       if (self.$refs.subsetVizRef != null) {
         self.$refs.subsetVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.subsetVizRef.name));
       }

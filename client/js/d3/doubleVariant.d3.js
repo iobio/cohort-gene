@@ -3,8 +3,9 @@ function doubleVariantD3() {
 
   // dimensions
   var yAxisWidth = 10;
-  var margin = {top: 30, right: 0, bottom: 20, left: 110},
-      width = 810,
+  var yAxisPadding = 4;
+  var margin = {top: 30, right: 10, bottom: 20, left: 110},
+      width = 800,
       height = 100;
   // scales
   var x = d3.scale.linear(),
@@ -26,10 +27,10 @@ function doubleVariantD3() {
       showBrush = false,
       brushHeight = null,
       verticalLayers = 1,
-      verticalPadding = 4,  // sjg changed from 4
+      verticalPadding = 4,
       verticalScaleFactor = 0.5,
       posVertLayers = 1,
-      negVertLayers = -1, // A negative value
+      negVertLayers = 1,
       maxSubLevel = 0,
       vertLevelRange = [],
       showTransition = true,
@@ -79,7 +80,7 @@ function doubleVariantD3() {
 
     // Get the x for this position
     if (matchingVariant) {
-      var mousex = x(matchingVariant.start) + yAxisWidth;
+      var mousex = x(matchingVariant.start) + yAxisWidth + yAxisPadding;
       var mousey = y(d.adjustedLevel);
 
       var circle = svgContainer.select(".circle");
@@ -231,10 +232,11 @@ function doubleVariantD3() {
     let subLayers = maxSubLevel == 0 ? 1 : maxSubLevel;
     let topLayer = posVertLayers == 0 ? 1 : posVertLayers;
     let bottomLayer = negVertLayers == 0 ? 0.1 : negVertLayers;
-    let totalLayers = topLayer * subLayers;
+    let totalLayers = topLayer + bottomLayer;
 
-    height = totalLayers * verticalScaleFactor * (variantHeight + verticalPadding);    // Scale this to main layers size
+    height = totalLayers * (variantHeight + verticalPadding);    // Scale this to main layers size
     height += (variantHeight + verticalPadding);
+    if (height < 250) height = 250;   // Set a minimum
 
     // Account for the margin when we are showing the xAxis
     if (showXAxis) {
@@ -272,7 +274,7 @@ function doubleVariantD3() {
                     ]);
 
         }
-        x.range([0, width - margin.left - margin.right]);
+        x.range([0, width - margin.left - margin.right - yAxisWidth]);
 
         // Update the y-scale.
         // Give ourself some% breathing room
@@ -410,6 +412,7 @@ function doubleVariantD3() {
           .call(yAxis)
           .append("text")
           .attr("transform", "rotate(-90)")
+          .attr("style", "padding-right: 1px")
           .attr("y", -2) // Distance label is from y-axis
           .attr("dx", "-3em")
           .attr("dy", "-3em")
@@ -449,12 +452,12 @@ function doubleVariantD3() {
         var track = g.selectAll('.track.snp').data(data);
         track.enter().append('g')
             .attr('class', 'track snp')
-            .attr('transform', function(d,i) { return "translate(" + yAxisWidth + ",0)"});
+            .attr('transform', function(d,i) { return "translate(" + (yAxisWidth + yAxisPadding) + ",0)"});
 
         var trackindel = g.selectAll('.track.indel').data(data);
         trackindel.enter().append('g')
             .attr('class', 'track indel')
-            .attr('transform', function(d,i) { return "translate(" + yAxisWidth + ",0)"});
+            .attr('transform', function(d,i) { return "translate(" + (yAxisWidth + yAxisPadding) + ",0)"});
 
 
         if (showBrush) {
