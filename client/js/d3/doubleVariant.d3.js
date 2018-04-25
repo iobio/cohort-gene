@@ -4,7 +4,7 @@ function doubleVariantD3() {
   // dimensions
   var yAxisWidth = 10;
   var margin = {top: 30, right: 0, bottom: 20, left: 110},
-      width = 790,
+      width = 810,
       height = 100;
   // scales
   var x = d3.scale.linear(),
