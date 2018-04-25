@@ -342,16 +342,20 @@ export default {
     },
     showVariantCircle: function(variant) {
       let self = this;
-      if (self.showVariantViz) {
-        //self.$refs.probandVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.probandVizRef.name), true);
+      if (self.showVariantViz && self.$refs.subsetVizRef != null) {
         self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
+      }
+      if (self.showVariantViz && self.$refs.probandVizRef != null) {
+        self.$refs.probandVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.probandVizRef.name), true);
       }
     },
     hideVariantCircle: function(variant) {
       let self = this;
-      if (self.showVariantViz && self.$refs.variantVizRef != null) {
-        //self.$refs.probandVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.probandVizRef.name));
+      if (self.showVariantViz && self.$refs.subsetVizRef != null) {
         self.$refs.subsetVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.subsetVizRef.name));
+      }
+      if (self.showVariantViz && self.$refs.probandVizRef != null) {
+        self.$refs.probandVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.probandVizRef.name));
       }
     },
     getVariantSVG: function(vizTrackName) {

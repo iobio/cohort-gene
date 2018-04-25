@@ -274,8 +274,9 @@ export default {
         }
 
         let foldEnrich = Math.round(delta * 10) / 10 + "x";
-        if (this.variant.subsetDelta >= 2) return (foldEnrich + " IN SUBSET");
-        else if (this.variant.subsetDelta <= 0.5) return (foldEnrich + " IN PROBAND");
+        if (this.variant.subsetDelta > 1) return (foldEnrich + " IN SUBSET");
+        else if (this.variant.subsetDelta < 1) return (foldEnrich + " IN PROBAND");
+        else return "EQUAL FREQUENCY";
       }
       return "";
     },

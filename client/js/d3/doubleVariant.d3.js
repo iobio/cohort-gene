@@ -277,8 +277,7 @@ function doubleVariantD3() {
         x.range([0, width - margin.left - margin.right]);
 
         // Update the y-scale.
-        // Give ourself some% breathing room
-        y.domain([(bottomLayer - (Math.round(bottomLayer * 10) / 30)), (topLayer + (Math.round(topLayer * 10) / 20))]);
+        y.domain([(bottomLayer - (Math.round(bottomLayer * 10) / 30)), (topLayer + (Math.round(topLayer * 10) / 20))]);   // Pad space above and below by 5% and 3.3% respectively
         y.range([innerHeight, 0]);
 
         // Find out the smallest width interval between variants on the x-axis
