@@ -2,10 +2,10 @@ function doubleVariantD3() {
    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout");
 
   // dimensions
-  var yAxisWidth = 10;
+  var yAxisWidth = 40;
   var yAxisPadding = 4;
-  var margin = {top: 30, right: 10, bottom: 20, left: 110},
-      width = 800,
+  var margin = {top: 30, right: 0, bottom: 20, left: 110},
+      width = 800 - yAxisWidth - yAxisPadding,  // Width of variant display area
       height = 100;
   // scales
   var x = d3.scale.linear(),
@@ -80,14 +80,14 @@ function doubleVariantD3() {
 
     // Get the x for this position
     if (matchingVariant) {
-      var mousex = x(matchingVariant.start) + yAxisWidth + yAxisPadding;
+      var mousex = x(matchingVariant.start);    // Have to offset this by y-axis
       var mousey = y(d.adjustedLevel);
 
       var circle = svgContainer.select(".circle");
       circle.transition()
             .duration(200)
             .style("opacity", 1);
-      circle.attr("cx", mousex + margin.left + yAxisWidth + 2)
+      circle.attr("cx", mousex + margin.left + 2)
             .attr("cy", mousey + margin.top + 4);
 
       circle.classed("emphasize", emphasize);
@@ -274,7 +274,7 @@ function doubleVariantD3() {
                     ]);
 
         }
-        x.range([0, width - margin.left - margin.right - yAxisWidth]);
+        x.range([0, width - margin.left - margin.right]);
 
         // Update the y-scale.
         // Give ourself some% breathing room
@@ -364,11 +364,11 @@ function doubleVariantD3() {
           .append("svg")
           .attr("width", widthPercent)
           .attr("height", heightPercent)
-          .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right+yAxisWidth) + " " + parseInt(height+margin.top+margin.bottom))
+          .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + parseInt(width + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height+margin.top+margin.bottom))
           .attr("preserveAspectRatio", "none")
           .append("g")
           .attr("class", "group")
-          .attr("transform", "translate(" + (margin.left + yAxisWidth) + "," + margin.top + ")");
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         var g = svg.select("g.group");
 
@@ -379,7 +379,7 @@ function doubleVariantD3() {
           .filter(function() {
               return this.parentNode === container.node();
           })
-          .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right+yAxisWidth) + " " + parseInt(height+margin.top+margin.bottom));
+          .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + parseInt(width + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height+margin.top+margin.bottom));
 
 
 
@@ -392,11 +392,12 @@ function doubleVariantD3() {
         // Create the X-axis.
         g.selectAll(".x.axis").remove();
         if (showXAxis) {
-          g.append("g").attr("class", "x axis").attr("transform", "translate(" + yAxisWidth + "," + (y.range()[0] + margin.bottom) + ")");
+          g.append("g").attr("class", "x axis").attr("transform", "translate(0," + (y.range()[0] + margin.bottom) + ")");
         }
 
         // Create the Y-axis.
-        g.selectAll(".y.axis").remove();
+        svg.selectAll(".y.axis").remove();
+
         var yAxis = d3.svg.axis()
           .orient("left")
           .scale(y)
@@ -407,14 +408,12 @@ function doubleVariantD3() {
           });
 
         // Draw y-axis using axis style class
-        g.append("g").attr("class", "axis")
-          .attr("transform", "translate(" + yAxisWidth + ",0)")
+        svg.append("g").attr("class", "y axis")
+          .attr("transform", "translate(" + [0, 5] + ")")
           .call(yAxis)
           .append("text")
           .attr("transform", "rotate(-90)")
-          .attr("style", "padding-right: 1px")
-          .attr("y", -2) // Distance label is from y-axis
-          .attr("dx", "-3em")
+          .attr("dx", "-8em")
           .attr("dy", "-3em")
           .style("text-anchor", "end")
           .text("Fold Expression");
@@ -452,12 +451,12 @@ function doubleVariantD3() {
         var track = g.selectAll('.track.snp').data(data);
         track.enter().append('g')
             .attr('class', 'track snp')
-            .attr('transform', function(d,i) { return "translate(" + (yAxisWidth + yAxisPadding) + ",0)"});
+            .attr('transform', function(d,i) { return "translate(0,0)"});
 
         var trackindel = g.selectAll('.track.indel').data(data);
         trackindel.enter().append('g')
             .attr('class', 'track indel')
-            .attr('transform', function(d,i) { return "translate(" + (yAxisWidth + yAxisPadding) + ",0)"});
+            .attr('transform', function(d,i) { return "translate(0,0)"});
 
 
         if (showBrush) {
