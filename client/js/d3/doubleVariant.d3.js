@@ -233,7 +233,7 @@ function doubleVariantD3() {
     let bottomLayer = negVertLayers == 0 ? 0.1 : negVertLayers;
     let totalLayers = topLayer * subLayers;
 
-    height = totalLayers * (variantHeight + verticalPadding);    // Scale this to main layers size
+    height = totalLayers * verticalScaleFactor * (variantHeight + verticalPadding);    // Scale this to main layers size
     height += (variantHeight + verticalPadding);
 
     // Account for the margin when we are showing the xAxis
@@ -395,15 +395,26 @@ function doubleVariantD3() {
 
         // Create the Y-axis.
         g.selectAll(".y.axis").remove();
-
         var yAxis = d3.svg.axis()
           .orient("left")
           .scale(y)
-          .tickFormat(function(d) { return y.tickFormat(4, d3.format(",d"))(d) });
-        // Draw y-axis using x axis style class
+          .tickFormat(function(d) {
+            let dTransform = d;
+            if (d < 1) dTransform = 1/d;
+            return (y.tickFormat(4, d3.format(""))(dTransform) + "x")
+          });
+
+        // Draw y-axis using axis style class
         g.append("g").attr("class", "axis")
           .attr("transform", "translate(" + yAxisWidth + ",0)")
-          .call(yAxis);
+          .call(yAxis)
+          .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", -2) // Distance label is from y-axis
+          .attr("dx", "-3em")
+          .attr("dy", "-3em")
+          .style("text-anchor", "end")
+          .text("Fold Expression");
 
         // Create dividing line
         g.selectAll(".divider").remove();
