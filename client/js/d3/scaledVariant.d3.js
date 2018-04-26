@@ -154,8 +154,8 @@ function scaledVariantD3() {
 
     let enrichUp = variants.filter(".eUP");
     let enrichDown = variants.filter(".eDOWN");
-    let enrichLow = variants.filter("e.LOW");
-    let enrichNone = variants.filter(".eNONE");
+    let enrichLow = variants.filter(".eLOW");
+    let enrichNotApplic = variants.filter(".eNA");
 
     if (enrichmentMode) {
 
@@ -186,8 +186,8 @@ function scaledVariantD3() {
       enrichLow.classed({
         'enrichment_LOW': true
       });
-      enrichNone.classed({
-        'enrichment_NONE': true
+      enrichNotApplic.classed({
+        'enrichment_NA': true
       });
     }
 
@@ -202,8 +202,8 @@ function scaledVariantD3() {
       enrichLow.classed({
         'enrichment_LOW': false
       });
-      enrichNone.classed({
-        'enrichment_NONE': false
+      enrichNotApplic.classed({
+        'enrichment_NA': false
       });
       // Turn on impact color scheme
       highVars.classed({

@@ -268,7 +268,7 @@ export default {
     foldEnrichmentInfo: function() {
       if (this.variant != null) {
         let delta = this.variant.subsetDelta;
-        if (delta < 0.5 && delta > 0) {
+        if (delta < 1 && delta > 0) {
           delta = 1/delta;
         }
 

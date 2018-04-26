@@ -731,7 +731,7 @@ var effectCategories = [
     var annotatedData = "";
     // Get the results from the iobio command
     cmd.on('data', function(data) {
-      // SJG TODO: need to filter stream for large variants
+      // SJG TODO: need to filter stream for large variants - remove modifier vep impact ones??
          if (data == undefined) {
             return;
          }
@@ -1545,7 +1545,10 @@ var effectCategories = [
                     'strand':                   geneObject.strand,
                     'chrom':                    refName,
                     'type':                     annot.typeAnnotated && annot.typeAnnotated != '' ? annot.typeAnnotated : type,
-                    'id':                       (rec.pos + end + len + refName + geneObject.strand + (annot.typeAnnotated && annot.typeAnnotated != '' ? annot.typeAnnotated : type) + rec.ref + alt),
+
+                                                // start.end.length.chromosome.strand.type.ref.alt
+                    'id':                       (rec.pos + '.' + end + '.' + len + '.' + refName + '.' + geneObject.strand + '.' +
+                                                (annot.typeAnnotated && annot.typeAnnotated != '' ? annot.typeAnnotated : type) + '.' + rec.ref + '.' + alt),
                     'ref':                      rec.ref,
                     'alt':                      alt,
                     'qual':                     rec.qual,

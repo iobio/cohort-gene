@@ -14,6 +14,9 @@ class VariantModel {
       // NonSubsetVariants: (probandvariants - subsetvariants)
       // unaffectedvariants: todo
 
+    // Combined cohort collections
+    this.combinedFeatures = {};
+
     // Data props
     this.dataSet = null;
     this.totalProbandCount = 0;
@@ -476,6 +479,9 @@ class VariantModel {
           self.annotateCohortFrequencies(resultMapList);
           let t1 = performance.now(); // SJG_TIMING
           //console.log('Took ' + (t1-t0) + ' ms to annotate cohort frequencies');  // SJG_TIMING
+          if (self.mergeCohortVariants) {
+            resultMapList = self.combineCohortVariants(resultMapList);
+          }
           self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
           .then(function(data) {
             resolve(data);
@@ -619,6 +625,8 @@ class VariantModel {
      Used to populate Summary Card graphs when clicking on a variant. */
   annotateCohortFrequencies(resultMapList) {
     let self = this;
+    if (resultMapList == null || resultMapList.length == 0) return;   // Avoid console output on initial lode call
+
     var probandFeatures = null;
     var subsetFeatures = null;
     try {
@@ -631,6 +639,7 @@ class VariantModel {
       // Update features with enrichment info
       self.assignCrossCohortInfo(probandFeatures, subsetFeatures);
 
+      // Do proband only features have subset total numbers? YES
       (resultMapList[probandId])[PROBAND_ID].features = probandFeatures;
       (resultMapList[subsetId])[SUBSET_ID].features = subsetFeatures;
     }
@@ -642,10 +651,7 @@ class VariantModel {
   /* Assigns both a delta value representing subset enrichment, and total sample zygosities, to each variant.
      Used to populate Summary Card information when a variant is clicked on, and for visual variant rendering. */
   assignCrossCohortInfo(probandFeatures, subsetFeatures) {
-
-    // Need to see if probandFeatures has an affected count of 0 when subsetFeatures has variant ()
-
-    // Put proband features into a Lookup
+    // Put proband features into a lookup
     let probandLookup = {};
     probandFeatures.forEach(function(feature) {
       probandLookup[feature.id] = feature;
@@ -846,7 +852,7 @@ class VariantModel {
   }
 
   /* Assigns classes to each variant to control visual display in the DOM. */
-  classifyByImpact(d, annotationScheme, isSubset) {
+  classifyByImpactEnrichment(d, annotationScheme, isSubset) {
     let self = this;
     var impacts = "";
     var toggleImpact = "";  // Grouping classes, added & removed based on impact mode
@@ -867,9 +873,13 @@ class VariantModel {
       enrichment = "eDOWN";
       enrichColor = "enrichment_subset_DOWN";
     }
+    else if (d.totalSubsetCount > 0) {
+      enrichment = "eLOW";
+      enrichColor = "enrichment_LOW";
+    }
     else {
-      enrichment = "eNONE";
-      enrichColor = "enrichment_NONE";
+      enrichment = "eNA";
+      enrichColor = "enrichment_NA";
     }
 
     var effectList = (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.effect : d.vepConsequence);

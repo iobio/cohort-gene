@@ -87,7 +87,7 @@ Updated: SJG Apr2018
           ref="subsetVizRef"
           :id="subsetCohort.getName()"
           :model="subsetCohort"
-          :data="subsetCohort.loadedVariants"
+          :data="probandCohort.loadedVariants"
           :title="subsetCohort.trackName"
           :phenotypes="subsetCohort.subsetPhenotypes"
           :regionStart="regionStart"

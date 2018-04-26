@@ -38,7 +38,7 @@ TD & SJG updated Apr2018 -->
             ref="variantCardRef"
             :dataSetModel="variantModel.dataSet"
             :annotationScheme="variantModel.annotationScheme"
-            :classifyVariantSymbolFunc="variantModel.classifyByImpact"
+            :classifyVariantSymbolFunc="variantModel.classifyByImpactEnrichment"
             :variantTooltip="variantTooltip"
             :selectedGene="selectedGene"
             :selectedTranscript="selectedTranscript"

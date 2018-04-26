@@ -1594,15 +1594,17 @@ class CohortModel {
     var maxSubLevel = 0;
     var maxPosLevel = 0;
     var maxNegLevel = 0;
-    if (me.isSubsetCohort) {
-      levelObj = me.vcf.updatedPileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, true);
-      maxSubLevel = levelObj.maxSubLevel;
-      maxPosLevel = levelObj.maxPosLevel;
-      maxNegLevel = levelObj.maxNegLevel;
-    }
-    else {
-      maxPosLevel = this.vcf.pileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor);
-    }
+
+    // Want to do this for both proband/subset now
+    //if (me.isSubsetCohort) {
+    levelObj = me.vcf.updatedPileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, true);
+    maxSubLevel = levelObj.maxSubLevel;
+    maxPosLevel = levelObj.maxPosLevel;
+    maxNegLevel = levelObj.maxNegLevel;
+    //}
+    // else {
+    //   maxPosLevel = this.vcf.pileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor);
+    // }
     if (maxPosLevel > 30 && maxNegLevel < -30) {
       for(var i = 1; i < posToPixelFactor; i++) {
         // TODO:  Devise a more sensible approach to setting the min width.  We want the
