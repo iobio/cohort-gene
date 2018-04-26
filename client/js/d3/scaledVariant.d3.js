@@ -1,4 +1,4 @@
-function doubleVariantD3() {
+function scaledVariantD3() {
    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout");
 
   // dimensions
@@ -17,7 +17,7 @@ function doubleVariantD3() {
     .tickFormat(tickFormatter);
   // variables
   var borderRadius = 1,
-      variantHeight = 10,
+      variantHeight = 8,    // Default in card assignment is 8
       regionStart = undefined,
       regionEnd = undefined,
       showXAxis = false,
@@ -34,7 +34,7 @@ function doubleVariantD3() {
       maxSubLevel = 0,
       vertLevelRange = [],
       showTransition = true,
-      lowestWidth = 3,
+      lowestWidth = 3,      // SJG NOTE: pretty sure this isn't used to size variants or stack them
       dividerLevel = null,
       container = null,
       clazz = null;
@@ -286,7 +286,7 @@ function doubleVariantD3() {
         // distance between all variants.
         minWidth = 6;
 
-        for (var l = 0; l < totalLayers; l += 0.1) {
+        for (var l = 0; l < totalLayers; l += 0.1) {  // We'll never be below 0
           // For each row in array (per variant set; only one variant set)
           var minInterval = null;
           data.forEach( function(d) {
@@ -415,7 +415,7 @@ function doubleVariantD3() {
           .attr("dx", "-8em")
           .attr("dy", "-3em")
           .style("text-anchor", "end")
-          .text("Fold Expression");
+          .text("Fold Enrichment");
 
         // Create dividing line
         g.selectAll(".divider").remove();
@@ -492,7 +492,6 @@ function doubleVariantD3() {
               return showTransition ? 0 : variantHeight;
             })
             .attr('y', function(d) {
-              //return showTransition ? 0 : height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding));
               return showTransition ? 0 : y(d.adjustedLevel);
             })
             .attr('height', variantHeight);
@@ -516,15 +515,10 @@ function doubleVariantD3() {
             .attr('class', function(d) { return chart.clazz()(d); })
             .attr("transform", function(d) {
               var xCoord = x(d.start) + 2;
-              //var yCoord = showTransition ? 0 : height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
               var yCoord = showTransition ? 0 : y(d.adjustedLevel) + 3;
               var tx = "translate(" + xCoord + "," + yCoord + ")";
               return tx;
              });
-
-
-
-
 
         g.selectAll('.variant')
              .on("click", function(d) {
@@ -536,10 +530,6 @@ function doubleVariantD3() {
              .on("mouseout", function(d) {
                 dispatch.d3mouseout();
               });
-
-
-
-
 
         // exit
         track.exit().remove();
@@ -567,7 +557,6 @@ function doubleVariantD3() {
                   return variantHeight;
                 })
                 .attr('y', function(d) {
-                  //var yCoord = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
                   var yCoord = y(d.adjustedLevel + 1) + 3;
                 })
                 .attr('height', function(d) {
@@ -587,7 +576,6 @@ function doubleVariantD3() {
                 })
                 .attr("transform", function(d) {
                     var xCoord = x(d.start) + 2;
-                    //var yCoord = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
                     var yCoord = y(d.adjustedLevel + 1) + 3;
                     var tx = "translate(" + xCoord +  "," + yCoord + ")";
                     return tx;
@@ -606,7 +594,6 @@ function doubleVariantD3() {
                 })
                 .attr("transform", function(d) {
                     var xCoord = x(d.start) + 2;
-                    //var yCoord = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
                     var yCoord = y(d.adjustedLevel + 1) + 3;
                     var tx = "translate(" + xCoord + "," + yCoord + ")";
                     return tx;
@@ -624,7 +611,6 @@ function doubleVariantD3() {
                 })
                 .attr("transform", function(d) {
                     var xCoord = x(d.start) + 2;
-                    //var yCoord = height - ((d.adjustedLevel + 1) * (variantHeight + verticalPadding)) + 3;
                     var yCoord = y(d.adjustedLevel + 1) + 3;
                     var tx = "translate(" + xCoord + "," + yCoord + ")";
                     return tx;

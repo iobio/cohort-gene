@@ -256,7 +256,7 @@ export default {
       },
       drawDouble: function() {
         var self = this;
-        this.variantChart = doubleVariantD3()
+        this.variantChart = scaledVariantD3()
           .width(this.width)
           .clazz(function(variant) {
             return self.classifySymbolFunc(variant, self.annotationScheme, self.model.isSubsetCohort);
@@ -359,7 +359,6 @@ export default {
           lock);
       },
       hideVariantCircle: function(container) {
-        debugger; // Am i being hit here?
         this.variantChart.hideCircle()(container);
       },
       setVariantChart: function() {

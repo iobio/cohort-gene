@@ -268,14 +268,13 @@ export default {
     foldEnrichmentInfo: function() {
       if (this.variant != null) {
         let delta = this.variant.subsetDelta;
-        //let adjLevel = this.variant.adjustedLevel;    // SJG for testing purposes TODO remove
         if (delta < 0.5 && delta > 0) {
           delta = 1/delta;
         }
 
-        let foldEnrich = Math.round(delta * 10) / 10 + "x";
-        if (this.variant.subsetDelta > 1) return (foldEnrich + " IN SUBSET");
-        else if (this.variant.subsetDelta < 1) return (foldEnrich + " IN PROBAND");
+        let foldEnrich = Math.round(delta * 10) / 10;
+        if (foldEnrich > 1) return (foldEnrich + "x" + " IN SUBSET");
+        else if (foldEnrich < 1) return (foldEnrich + "x" + " IN PROBAND");
         else return "EQUAL FREQUENCY";
       }
       return "";
