@@ -22,7 +22,8 @@
 </style>
 
 <template>
-<v-flex xs12 sm12 md12 lg5>
+<!-- <v-flex xs12 sm12 md12 lg5> -->
+<v-flex xs12>
   <v-layout row>
       <v-flex xs6 class="subtitle-label">Proband Zygosities</v-flex>
       <v-flex xs6 class="subtitle-label">Subset Zygosities</v-flex>

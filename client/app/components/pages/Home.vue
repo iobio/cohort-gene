@@ -32,7 +32,7 @@ TD & SJG updated Apr2018 -->
   <v-content>
     <v-container fluid style="padding-top: 3px">
       <v-layout>
-        <v-flex xs12>
+        <v-flex xs10>
           <updated-variant-card
             v-if="variantModel"
             ref="variantCardRef"
@@ -58,6 +58,12 @@ TD & SJG updated Apr2018 -->
             @knownVariantsVizChange="onKnownVariantsVizChange"
             @knownVariantsFilterChange="onKnownVariantsFilterChange">
           </updated-variant-card>
+        </v-flex>
+        <v-flex xs2>
+          <!-- SJG TODO: what info do I need to pass here selected variants and gene start/stop info (see how tony does this in gene)-->
+          <variant-zoom-card
+          >
+          </variant-zoom-card>
           <variant-summary-card
             :selectedGene="selectedGene.gene_name"
             :variant="selectedVariant"
@@ -80,7 +86,7 @@ import VariantCard from  '../viz/VariantCard.vue'
 import UpdatedVariantCard from '../viz/UpdatedVariantCard.vue'
 import VariantSummaryCard from '../viz/VariantSummaryCard.vue'
 
-// Back-end models
+// Models
 import GeneModel        from '../../models/GeneModel.js'
 import FilterModel      from '../../models/FilterModel.js'
 import VariantModel     from '../../models/VariantModel.js'

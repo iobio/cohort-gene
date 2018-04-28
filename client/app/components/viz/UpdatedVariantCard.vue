@@ -68,22 +68,19 @@ Updated: SJG Apr2018
 <template>
   <v-card tile id="variant-card" class="app-card">
     <v-card-title primary-title>
-      <v-layout row style="padding-left: 15px; padding-right: 15px">
+      <v-layout row style="padding-left: 15px; padding-right: 15px;">
         <v-flex xs6>
-          <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 10px">VARIANTS</span>
+          <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 0">VARIANTS</span>
         </v-flex>
         <v-flex xs6>
-          <v-container fluid style="padding-left: 70%;" id="impactModeSwitch" v-bind:class="{hide: !doneLoadingData}">
+          <v-container fluid style="padding-left: 70%; margin-bottom: 0" id="impactModeSwitch" v-bind:class="{hide: !doneLoadingData}">
             <v-switch :label="`Impact Mode: ${impactModeDisplay(impactMode)}`" v-model="impactMode" hide-details></v-switch>
           </v-container>
         </v-flex>
       </v-layout>
       <div style="width:100%">
-
-        <!-- v-if="(showVariantViz && cohort != null)" SJG NOTE: use this for if for single track-->
-
         <updated-variant-viz
-          v-if="(showVariantViz && subsetCohort != null)"
+          v-if="(showVariantViz && subsetCohort != null && probandCohort != null)"
           ref="subsetVizRef"
           :id="subsetCohort.getName()"
           :model="subsetCohort"

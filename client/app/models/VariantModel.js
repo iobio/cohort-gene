@@ -90,6 +90,7 @@ class VariantModel {
     // Initialize subset model
     let subsetCohort = new CohortModel(self);
     subsetCohort.isSubsetCohort = true;
+    //subsetCohort.useUpdatedPileup = true;   // SJG get rid of after design finalization
     subsetCohort.trackName = 'Variants for';
     subsetCohort.subsetIds.push(['NA12878', 'NA12877']);
     subsetCohort.subsetPhenotypes.push(['0 < IQ < 80', '40 < Paternal Age < 50']);

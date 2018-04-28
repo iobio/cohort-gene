@@ -2854,14 +2854,18 @@ exports._getHighestScore = function(theObject, cullFunction, theTranscriptId) {
       }
     });
 
+    // Spread out variants that are overlapping vertically
+    // SJG TODO: leaving in for now but not using ATM
     variants.forEach(function(variant) {
       let verticalSpreadFactor = 0.1;           // Deduced by trial and error
       let overlapFactor = inversionFactor * verticalSpreadFactor * variant.subLevel;
-      inversionFactor *= -1;   // Flip direction we're stacking in
+      inversionFactor *= -1;                    // Alternate direction we're stacking in
 
-
-      // SJG TODO: make overlap factor incorporate inverse log2 transformation
-      variant.adjustedLevel = variant.level; //+ overlapFactor;
+      if (variant.subsetDelta != 1) {
+        let antiScaleFactor = variant.level < 1.1 ? 0 : 1 / Math.log2(variant.level);
+        let scaledOverlap = antiScaleFactor * overlapFactor;
+        variant.adjustedLevel = variant.level;
+      }
     })
 
     return {'maxPosLevel' : maxPosLevel, 'maxNegLevel': minPosLevel, 'maxSubLevel': maxSubLevel};

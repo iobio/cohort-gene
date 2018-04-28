@@ -228,7 +228,6 @@ export default {
     methods: {
       draw: function() {
         var self = this;
-        debugger; // look at model.isSubsetCohort
         this.variantChart =  variantD3()
           .width(this.width)
           .clazz(function(variant) {

@@ -1,38 +1,37 @@
 <!-- Displays allele frequencies of selected variant -->
 <style lang="sass">
-
 .bar-outline
   stroke: #000 !important
   stroke-width: 1px !important
   stroke-opacity: .3 !important
-
 </style>
 
 <template>
-  <v-flex xs12 sm12 md6 lg5>
+  <!-- <v-flex xs12 sm12 md6 lg5> -->
+  <v-flex xs12>
     <v-layout row>
-      <v-flex xs4 class="field-label-header">Allele Frequencies</v-flex>
-      <v-flex xs8></v-flex>
+      <v-flex xs12 class="field-label-header" style="text-align: left">Allele Frequencies</v-flex>
+      <!-- <v-flex xs8></v-flex> -->
     </v-layout>
     <v-layout row>
-       <v-flex xs4 class="field-label">1000 Genomes:</v-flex>
-       <v-flex xs2 md1 class="field-value">{{ oneKGenomes }}</v-flex>
-       <v-flex xs6 md7 id="oneKProgress" class="field-value"></v-flex>
+       <v-flex xs4 class="summary-field-label">1000G:</v-flex>
+       <v-flex xs4 md1 class="summary-field-value">{{ oneKGenomes }}</v-flex>
+       <v-flex xs4 md7 id="oneKProgress"></v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs4 class="field-label">ExAC:</v-flex>
-       <v-flex xs2 md1 class="field-value">{{ exAc }}</v-flex>
-       <v-flex xs6 md7 id="exAcProgress" class="field-value"></v-flex>
+       <v-flex xs4 class="summary-field-label">ExAC:</v-flex>
+       <v-flex xs4 md1 class="summary-field-value">{{ exAc }}</v-flex>
+       <v-flex xs4 md7 id="exAcProgress"></v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs4 class="field-label">Proband Frequency:</v-flex>
-       <v-flex xs2 md1 class="field-value">{{ probandDisplay }}</v-flex>
-       <v-flex xs6 md7 id="probandProgress" class="field-value"></v-flex>
+       <v-flex xs4 class="summary-field-label">Proband %:</v-flex>
+       <v-flex xs4 md1 class="summary-field-value">{{ probandDisplay }}</v-flex>
+       <v-flex xs4 md7 id="probandProgress"></v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs4 class="field-label">Subset Frequency:</v-flex>
-       <v-flex xs2 md1 class="field-value">{{ subsetDisplay }}</v-flex>
-       <v-flex xs6 md7 id="subsetProgress" class="field-value"></v-flex>
+       <v-flex xs4 class="summary-field-label">Subset %:</v-flex>
+       <v-flex xs4 md1 class="summary-field-value">{{ subsetDisplay }}</v-flex>
+       <v-flex xs4 md7 id="subsetProgress"></v-flex>
     </v-layout>
   </v-flex>
 </template>

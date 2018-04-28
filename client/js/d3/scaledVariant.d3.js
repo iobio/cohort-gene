@@ -234,9 +234,10 @@ function scaledVariantD3() {
     let bottomLayer = negVertLayers == 0 ? 0.1 : negVertLayers;
     let totalLayers = topLayer + bottomLayer;
 
-    height = totalLayers * (variantHeight + verticalPadding);    // Scale this to main layers size
+    height = totalLayers * 5 * (variantHeight + verticalPadding);    // Scale this to main layers size
     height += (variantHeight + verticalPadding);
-    if (height < 250) height = 250;   // Set a minimum
+    if (height < 600) height = 600;   // Set a minimum
+    if (height > 750) height = 750;   // Set a maximum
 
     // Account for the margin when we are showing the xAxis
     if (showXAxis) {
@@ -349,12 +350,18 @@ function scaledVariantD3() {
 
 
         // Brush
-        var brush = d3.svg.brush()
-          .x(x)
-          .on("brushend", function() {
-              dispatch.d3brush(brush);
-           });
+        // var brush = d3.svg.brush()
+        //   .x(x)
+        //   .on("brushend", function() {
+        //       dispatch.d3brush(brush);
+        //    });
 
+       var brush = d3.svg.brush()
+                  .x(x)
+                  .y(y)
+                  .on('brush', brushMove)
+                  .on('brushend', brushEnd);
+                  //.extent([[0,0],[width, height]]);
 
         // Select the svg element, if it exists.
         var svg = container.selectAll("svg").data([0]);
@@ -371,6 +378,11 @@ function scaledVariantD3() {
 
         var g = svg.select("g.group");
 
+        // Attach brush
+        g.append('g')
+         .attr('class', 'brush')
+         .attr('selection', '')
+         .call(brush);
 
         // The chart dimensions could change after instantiation, so update viewbox dimensions
         // every time we draw the chart.
@@ -408,13 +420,13 @@ function scaledVariantD3() {
 
         // Draw y-axis using axis style class
         svg.append("g").attr("class", "y axis")
-          .attr("transform", "translate(" + [0, 5] + ")")
+          .attr("transform", "translate(" + [0, 10] + ")")
           .call(yAxis)
           .append("text")
           .attr("transform", "rotate(-90)")
-          .attr("dx", "-8em")
+          .attr("dx", "-25em")
           .attr("dy", "-3em")
-          .style("text-anchor", "end")
+          .style("text-anchor", "middle")
           .text("Fold Enrichment");
 
         // Create dividing line
@@ -457,22 +469,21 @@ function scaledVariantD3() {
             .attr('class', 'track indel')
             .attr('transform', function(d,i) { return "translate(0,0)"});
 
-
-        if (showBrush) {
-          if (brushHeight == null ) {
-            brushHeight = variantHeight;
-            brushY = 0;
-          } else {
-            brushY = 0;
-          }
-          track.selectAll("g.x.brush").data([0]).enter().append("g")
-              .attr("class", "x brush")
-              .call(brush)
-              .selectAll("rect")
-              .attr("y", brushY)
-              .attr("height", brushHeight);
-        }
-
+        // TDS brush stuff
+        // if (showBrush) {
+        //   if (brushHeight == null ) {
+        //     brushHeight = variantHeight;
+        //     brushY = 0;
+        //   } else {
+        //     brushY = 0;
+        //   }
+        //   track.selectAll("g.x.brush").data([0]).enter().append("g")
+        //       .attr("class", "x brush")
+        //       .call(brush)
+        //       .selectAll("rect")
+        //       .attr("y", brushY)
+        //       .attr("height", brushHeight);
+        // }
 
         track.selectAll('.variant').remove();
         trackindel.selectAll('.variant').remove();
@@ -670,6 +681,18 @@ function scaledVariantD3() {
         dispatch.d3rendered();
       }
     });
+  }
+
+  function brushMove() {
+    // SJG TODO: implement
+
+    // Redraw zoom panel
+  }
+
+  function brushEnd() {
+    // SJG TODO: implement
+
+    // Draw zoom panel
   }
 
   function tickFormatter (d) {

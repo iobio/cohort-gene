@@ -3,13 +3,18 @@
 </style>
 
 <template>
-  <v-flex xs12 sm12 md6 lg2>
+  <!-- <v-flex xs12 sm12 md6 lg2> -->
+  <v-flex xs12>
     <v-layout row>
-       <v-flex xs3 md4 class="field-label">Effect:</v-flex>
-       <v-flex xs9 md8 class="field-value">{{ effect }}</v-flex>
+      <v-flex xs12 class="field-label-header" style="text-align: left">Annotation Details</v-flex>
+      <!-- <v-flex xs8></v-flex> -->
     </v-layout>
     <v-layout row>
-       <v-flex xs3 md4 class="field-label">Impact:</v-flex>
+       <v-flex xs3 md4 class="summary-field-label">Effect:</v-flex>
+       <v-flex xs9 md8 class="summary-field-value">{{ effect }}</v-flex>
+    </v-layout>
+    <v-layout row>
+       <v-flex xs3 md4 class="summary-field-label">Impact:</v-flex>
        <v-flex xs9 md8 class="field-value">
          <span v-bind:class="{hide: impactText == ''}">
            <svg v-bind:class="{hide: (type != 'snp' && type != 'mnp')}" class="impact-badge" height="12" width="12">
@@ -42,8 +47,8 @@
        </v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs3 md4 class="field-label">Clinvar:</v-flex>
-       <v-flex xs9 md8 class="field-value">
+       <v-flex xs3 md4 class="summary-field-label">Clinvar:</v-flex>
+       <v-flex xs9 md8 class="summary-field-value">
          <span v-bind:class="{hide: clinVarText == ''}">
            <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
                <g transform="translate(1,3)" v-bind:class="clinVarColor">
@@ -56,8 +61,8 @@
        </v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs3 md4 class="field-label">Polyphen:</v-flex>
-       <v-flex xs9 md8 class="field-value">
+       <v-flex xs3 md4 class="summary-field-label">Polyphen:</v-flex>
+       <v-flex xs9 md8 class="summary-field-value">
          <span v-bind:class="{hide: polyPhenText == ''}">
            <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
                <g transform="translate(1,3)" v-bind:class="polyPhenColor">
@@ -71,8 +76,8 @@
          </span></v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs3 md4 class="field-label">SIFT:</v-flex>
-       <v-flex xs9 md8 class="field-value">
+       <v-flex xs3 md4 class="summary-field-label">SIFT:</v-flex>
+       <v-flex xs9 md8 class="summary-field-value">
          <span v-bind:class="{hide: siftText == ''}">
            <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
                <g transform="translate(1,3)" v-bind:class="siftColor">

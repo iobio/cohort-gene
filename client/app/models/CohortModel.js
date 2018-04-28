@@ -48,6 +48,7 @@ class CohortModel {
     this.isProbandCohort = false;
     this.isSubsetCohort = false;
     this.isUnaffectedCohort = false;
+    //this.useUpdatedPileup = false;      // SJG this is for testing, get rid of after final design decision
   }
 
   /* Returns descriptive name depending on the ID flags.
@@ -1596,12 +1597,12 @@ class CohortModel {
     var maxNegLevel = 0;
 
     // Want to do this for both proband/subset now
-    //if (me.isSubsetCohort) {
+    //if (me.useUpdatedPileup) {
     levelObj = me.vcf.updatedPileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, true);
     maxSubLevel = levelObj.maxSubLevel;
     maxPosLevel = levelObj.maxPosLevel;
     maxNegLevel = levelObj.maxNegLevel;
-    //}
+    // }
     // else {
     //   maxPosLevel = this.vcf.pileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor);
     // }

@@ -26,8 +26,9 @@ function progressBar() {
           .duration(700)
           .attr('fill', blueFill)
           .attr('width', function() {
-              var scaledWidth = freqNum * 0.8;  // Progress bar is 90% width of parent svg
-              return scaledWidth > 5 ? (scaledWidth + "%") : "5%"; // Keep width at a minimum so bubble fits into outline
+              var scaledWidth = freqNum * 0.9;  // Progress bar is 90% width of parent svg
+              // SJG_BOG TODO: this is going to need to change for smaller layout
+              return scaledWidth > 10 ? (scaledWidth + "%") : "10%"; // Keep width at a minimum so bubble fits into outline
           });
     }
     // Otherwise make bar disappear
@@ -55,7 +56,7 @@ function progressBar() {
         .attr('fill', backgroundFill)
         .attr('height', 15)
         .attr('width', function(){
-          return '80%';
+          return '90%';
         })
         .attr('x', 0);
 

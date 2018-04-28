@@ -25,6 +25,13 @@
     padding-left: 6px
     text-align: right
 
+  .summary-field-label
+    color: #b4b3b3
+    font-style: italic
+    font-size: 12px
+    padding-left: 2px
+    text-align: right
+
   .field-label-header
     color: #7f7f7f
     font-style: italic
@@ -41,6 +48,14 @@
     padding-right: 25px
     padding-left: 5px
     word-break: break-word
+
+  .summary-field-value
+    padding-right: 25px
+    padding-left: 5px
+    font-size: 12px
+    word-break: break-word
+    padding-left: 1px
+    padding-right: 1px
 
   #inheritance
     height: 18px
@@ -174,8 +189,10 @@
          <span style="padding-right: 12px; font-size: 14px; text-align:center;" v-bind:class="{hide: geneName == ''}">{{geneName}}</span>
          <span style="padding-top: 1px; font-size: 12px; padding-right: 6px">{{selectedVariantLocation}}</span>
       </v-chip>
-      <v-icon large color="limeGreen" v-bind:class="{hide: variant == null || subsetDelta < 2}">arrow_upward</v-icon>
-      <v-icon large color="cherryRed" v-bind:class="{hide: variant == null || subsetDelta > 0.5}">arrow_downward</v-icon>
+      <v-icon large color="limeGreen" v-bind:class="{hide: variant == null || !(subsetDelta > 2)}">arrow_upward</v-icon>
+      <v-icon large color="bananaYellow" v-bind:class="{hide: variant == null || !(subsetDelta > 1 && subsetDelta < 2)}">arrow_upward</v-icon>
+      <v-icon large color="bananaYellow" v-bind:class="{hide: variant == null || !(subsetDelta > 0.5 && subsetDelta < 1)}">arrow_downward</v-icon>
+      <v-icon large color="cherryRed" v-bind:class="{hide: variant == null || !(subsetDelta < 0.5)}">arrow_downward</v-icon>
       <span style="display:inline-block; font-size: 14px">{{ foldEnrichmentInfo }}</span>
     </v-card-title>
     <v-container fluid grid-list-md>
@@ -204,7 +221,7 @@
         :totalSubsetCount="totalSubsetCount">
         </allele-frequency-viz>
 
-        <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
+        <!-- <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
         ref="summaryBarFeatureViz"
         :selectedVariant="variant"
         :probandZygMap="probandZygMap"
@@ -213,7 +230,7 @@
         :affectedSubsetCount="affectedSubsetCount"
         :totalProbandCount="totalProbandCount"
         :totalSubsetCount="totalSubsetCount">
-        </bar-feature-viz>
+        </bar-feature-viz> -->
       </v-layout>
     </v-container>
   </v-card>
@@ -262,20 +279,22 @@ export default {
     },
     subsetDelta: function() {
       if (this.variant != null)
-        return this.variant.subsetDelta;
+        return Math.round(this.variant.subsetDelta * 10) / 10;
       return 1;
     },
     foldEnrichmentInfo: function() {
       if (this.variant != null) {
         let delta = this.variant.subsetDelta;
+        let adjDelta = this.variant.subsetDelta;
         if (delta < 1 && delta > 0) {
-          delta = 1/delta;
+          adjDelta = 1/delta;
         }
 
-        let foldEnrich = Math.round(delta * 10) / 10;
-        if (foldEnrich > 1) return (foldEnrich + "x" + " IN SUBSET");
-        else if (foldEnrich < 1) return (foldEnrich + "x" + " IN PROBAND");
-        else return "EQUAL FREQUENCY";
+        let foldEnrich = Math.round(adjDelta * 10) / 10;
+        if (delta > 1) return (foldEnrich + "x" + " IN SUBSETS");
+        else if (delta < 1) return (foldEnrich + "x" + " IN PROBANDS");
+        else if (this.variant.totalSubsetCount > 0) return ("EQUAL FREQUENCY");
+        else return "PROBANDS ONLY";
       }
       return "";
     },
