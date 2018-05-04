@@ -59,7 +59,7 @@ TD & SJG updated Apr2018 -->
             @knownVariantsFilterChange="onKnownVariantsFilterChange">
           </updated-variant-card>
         </v-flex>
-        <v-flex xs3>
+        <v-flex xs3 style="margin-left: 3px">
           <!-- <variant-zoom-card
           style="margin-bottom: 3px; height: 300px"
           :selectedGene="selectedGene.gene_name"

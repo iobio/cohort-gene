@@ -13,7 +13,7 @@
          <span class="summary-field-value">{{ foldEnrichmentInfo }}</span>
       </v-flex>
     </v-layout>
-    <v-layout row style="padding-top: 20px">
+    <v-layout row style="padding-top: 10px">
       <v-flex xs12 class="field-label-header" style="text-align: left">Annotation Details</v-flex>
     </v-layout>
     <v-layout row>

@@ -1,5 +1,5 @@
 <!-- Component populated with variant details on selection.
-     SJG updated Apr2018 -->
+     SJG updated May2018 -->
 
 <style lang="sass" >
 @import ../../../assets/sass/variables
@@ -14,7 +14,7 @@
   .content
     font-size: 12px
     padding-left: 10px
-    margin-bottom: 10px
+    margin-bottom: 0px
     float: left
     max-width: 350px
     min-width: 350px
@@ -204,7 +204,7 @@
     </v-card-title>
     <v-container fluid grid-list-md>
       <v-layout row wrap>
-        <feature-viz id="loaded-feature-viz" class="summary-viz" style="padding-top: 20px"
+        <feature-viz id="loaded-feature-viz" class="summary-viz" style="padding-top: 10px"
           ref="summaryFeatureViz"
           :effect="effect"
           :impactText="impactText"
@@ -219,7 +219,7 @@
           :foldEnrichmentInfo="foldEnrichmentInfo"
           :variantSelected="variantSelected">
         </feature-viz>
-        <allele-frequency-viz id="loaded-freq-viz" class="summary-viz" style="padding-top: 20px"
+        <allele-frequency-viz id="loaded-freq-viz" class="summary-viz" style="padding-top: 10px"
         ref="summaryFrequencyViz"
         :selectedVariant="variant"
         :oneKGenomes="oneKGenomes"
@@ -229,7 +229,7 @@
         :totalProbandCount="totalProbandCount"
         :totalSubsetCount="totalSubsetCount">
         </allele-frequency-viz>
-        <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz" style="padding-top: 20px"
+        <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz" style="padding-top: 10px"
         ref="summaryBarFeatureViz"
         :selectedVariant="variant"
         :probandZygMap="probandZygMap"

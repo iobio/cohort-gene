@@ -78,7 +78,7 @@ Updated: SJG Apr2018
           </v-container>
         </v-flex>
       </v-layout>
-      <div style="width:100%">
+      <div style="width:100%; height: 783px">
         <updated-variant-viz
           v-if="(showVariantViz && subsetCohort != null && probandCohort != null)"
           ref="subsetVizRef"
