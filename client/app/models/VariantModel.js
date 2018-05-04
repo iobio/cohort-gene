@@ -867,7 +867,9 @@ class VariantModel {
     var enrichColor = "";  // Color classes, constant
 
     var subsetEnrichment = d.subsetDelta;
-    if (subsetEnrichment >= 2 && isSubset) {
+    var roundedSubset = Math.round(d.subsetDelta * 10) / 10;
+
+    if (roundedSubset >= 2.0 && isSubset) {
       enrichment = "eUP";
       enrichColor = "enrichment_subset_UP";
     }

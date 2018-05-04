@@ -187,10 +187,10 @@
       <v-flex lg12 xl8>
         <div class='form-inline'>
           <div class='form-group'>
-            <v-icon medium color="limeGreen" v-bind:class="{hide: variantSelected == false || !(subsetDelta > 2)}">arrow_upward</v-icon>
-            <v-icon medium color="slateGray" v-bind:class="{hide: variantSelected == false || !(subsetDelta > 1 && subsetDelta <= 2)}">arrow_upward</v-icon>
-            <v-icon medium color="slateGray" v-bind:class="{hide: variantSelected == false || !(subsetDelta >= 0.5 && subsetDelta < 1)}">arrow_downward</v-icon>
-            <v-icon medium color="cherryRed" v-bind:class="{hide: variantSelected == false || !(subsetDelta < 0.5)}">arrow_downward</v-icon>
+            <v-icon medium color="limeGreen" v-bind:class="{hide: variantSelected == false || subsetDelta < 2}">arrow_upward</v-icon>
+            <v-icon medium color="slateGray" v-bind:class="{hide: variantSelected == false || (subsetDelta <= 1 || subsetDelta >= 2)}">arrow_upward</v-icon>
+            <v-icon medium color="slateGray" v-bind:class="{hide: variantSelected == false || (subsetDelta <= 0.5 || subsetDelta >= 1)}">arrow_downward</v-icon>
+            <v-icon medium color="cherryRed" v-bind:class="{hide: variantSelected == false || subsetDelta > 0.5}">arrow_downward</v-icon>
           </div>
           <div class='form-group'>
             <v-chip v-bind:class="{hide: variant == null}" v-bind:style="{margin: 0}" small outline close color="cohortDarkBlue"
@@ -287,11 +287,16 @@ export default {
       return 0;
     },
     subsetDelta: function() {
-      if (this.variant != null)
-        return Math.round(this.variant.subsetDelta * 10) / 10;
+      if (this.variant != null) {
+        let delta = this.variant.subsetDelta;
+        let roundedDelta = Math.round(this.variant.subsetDelta * 10) / 10;
+        if (delta <= 1.0)
+          return delta;
+        else
+          return roundedDelta;
+      }
       return 1;
     },
-    // SJG TODO: pass this into featureViz
     foldEnrichmentInfo: function() {
       if (this.variant != null) {
         let delta = this.variant.subsetDelta;
@@ -299,7 +304,6 @@ export default {
         if (delta < 1 && delta > 0) {
           adjDelta = 1/delta;
         }
-
         let foldEnrich = Math.round(adjDelta * 10) / 10;
         if (delta > 1) return (foldEnrich + "x" + " IN SUBSETS");
         else if (delta < 1) return (foldEnrich + "x" + " IN PROBANDS");

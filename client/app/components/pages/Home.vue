@@ -379,6 +379,10 @@ export default {
     onDataSetVariantClick: function(variant, sourceComponent, cohortKey) {
       let self = this;
       if (variant) {
+        // SJG TODO: take out after debugging
+        let foldEnrich = Math.round(variant.subsetDelta * 10) / 10;
+        console.log(variant.subsetDelta + ', ' + foldEnrich);
+
         self.selectedVariant = variant;
         if (sourceComponent == null || self.$refs.variantCardRef != sourceComponent) {
           self.$refs.variantCardRef.showVariantCircle(variant);
