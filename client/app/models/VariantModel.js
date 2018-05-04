@@ -117,7 +117,7 @@ class VariantModel {
     let probandCohort = new CohortModel(self);
     probandCohort.isProbandCohort = true;
     probandCohort.inProgress.fetchingHubData = true;
-    probandCohort.trackName = 'Variants for';     // SJG TODO: get rid of track name with display redesign (will be axes labels)
+    probandCohort.trackName = 'Variants for';
     probandCohort.subsetPhenotypes.push('Probands');
     hubDataSet.addCohort(probandCohort, PROBAND_ID);
 
@@ -125,8 +125,8 @@ class VariantModel {
     let subsetCohort = new CohortModel(self);
     subsetCohort.isSubsetCohort = true;
     subsetCohort.inProgress.fetchingHubData = true;
-    subsetCohort.trackName = 'Variants for';
-    subsetCohort.subsetPhenotypes.push('Subsets');
+    subsetCohort.trackName = 'Cohort Filters';
+    //subsetCohort.subsetPhenotypes.push('Subsets');
     hubDataSet.addCohort(subsetCohort, SUBSET_ID);
 
     // SJG_TIMING
@@ -188,7 +188,8 @@ class VariantModel {
                       if (ids != null && ids.length > 0) {
                         console.log("Obtained susbset IDs from Hub...");
                         subsetCohort.subsetIds = ids;
-                        subsetCohort.subsetPhenotypes.splice(1, 0, ('n = ' + ids.length));
+                        subsetCohort.subsetPhenotypes.splice(0, 0, ('Proband n = ' + probandCohort.subsetIds.length));
+                        subsetCohort.subsetPhenotypes.splice(1, 0, ('Subset n = ' + ids.length));
 
                         // Start processing data
                         self.promiseInit()

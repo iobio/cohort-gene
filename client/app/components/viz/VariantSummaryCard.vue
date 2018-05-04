@@ -7,7 +7,7 @@
 
 .summary-viz
   min-height: 100px
-  max-height: 200px
+  max-height: 600px
   padding-top: 0px
   overflow-x: scroll
 
@@ -50,8 +50,8 @@
     word-break: break-word
 
   .summary-field-value
-    padding-right: 25px
-    padding-left: 5px
+    // padding-right: 25px
+    // padding-left: 5px
     font-size: 12px
     word-break: break-word
     padding-left: 1px
@@ -182,18 +182,25 @@
 
 <template>
   <v-card>
-    <v-card-title primary-title style="width: 100%; height: 30px">
-      <span style="display:inline-block; padding-right: 10px; font-size: 16px">VARIANT SUMMARY</span>
-      <v-chip v-bind:class="{hide: variant == null}" small outline close color="cohortDarkBlue"
-        @input="summaryCardVariantDeselect()">
-         <span style="padding-right: 12px; font-size: 14px; text-align:center;" v-bind:class="{hide: geneName == ''}">{{geneName}}</span>
-         <span style="padding-top: 1px; font-size: 12px; padding-right: 6px">{{selectedVariantLocation}}</span>
-      </v-chip>
-      <v-icon large color="limeGreen" v-bind:class="{hide: variant == null || !(subsetDelta > 2)}">arrow_upward</v-icon>
-      <v-icon large color="bananaYellow" v-bind:class="{hide: variant == null || !(subsetDelta > 1 && subsetDelta < 2)}">arrow_upward</v-icon>
-      <v-icon large color="bananaYellow" v-bind:class="{hide: variant == null || !(subsetDelta > 0.5 && subsetDelta < 1)}">arrow_downward</v-icon>
-      <v-icon large color="cherryRed" v-bind:class="{hide: variant == null || !(subsetDelta < 0.5)}">arrow_downward</v-icon>
-      <span style="display:inline-block; font-size: 14px">{{ foldEnrichmentInfo }}</span>
+    <v-card-title primary-title style="width: 100%; height: 35px">
+      <v-flex lg12 xl4 style="display:inline-block; padding-right: 10px; font-size: 15px">VARIANT SUMMARY</v-flex>
+      <v-flex lg12 xl8>
+        <div class='form-inline'>
+          <div class='form-group'>
+            <v-icon medium color="limeGreen" v-bind:class="{hide: variantSelected == false || !(subsetDelta > 2)}">arrow_upward</v-icon>
+            <v-icon medium color="slateGray" v-bind:class="{hide: variantSelected == false || !(subsetDelta > 1 && subsetDelta <= 2)}">arrow_upward</v-icon>
+            <v-icon medium color="slateGray" v-bind:class="{hide: variantSelected == false || !(subsetDelta >= 0.5 && subsetDelta < 1)}">arrow_downward</v-icon>
+            <v-icon medium color="cherryRed" v-bind:class="{hide: variantSelected == false || !(subsetDelta < 0.5)}">arrow_downward</v-icon>
+          </div>
+          <div class='form-group'>
+            <v-chip v-bind:class="{hide: variant == null}" v-bind:style="{margin: 0}" small outline close color="cohortDarkBlue"
+              @input="summaryCardVariantDeselect()">
+               <span style="padding-right: 10px; font-size: 14px; text-align:center;" v-bind:class="{hide: geneName == ''}">{{geneName}}</span>
+               <span style="padding-top: 1px; font-size: 12px; padding-right: 4px">{{selectedVariantLocation}}</span>
+            </v-chip>
+          </div>
+        </div>
+      </v-flex>
     </v-card-title>
     <v-container fluid grid-list-md>
       <v-layout row wrap>
@@ -208,7 +215,9 @@
           :siftText="siftText"
           :siftColor="siftColor"
           :polyPhenText="polyPhenText"
-          :polyPhenColor="polyPhenColor">
+          :polyPhenColor="polyPhenColor"
+          :foldEnrichmentInfo="foldEnrichmentInfo"
+          :variantSelected="variantSelected">
         </feature-viz>
         <allele-frequency-viz id="loaded-freq-viz" class="summary-viz" style="padding-top: 20px"
         ref="summaryFrequencyViz"
@@ -220,8 +229,7 @@
         :totalProbandCount="totalProbandCount"
         :totalSubsetCount="totalSubsetCount">
         </allele-frequency-viz>
-
-        <!-- <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
+        <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz" style="padding-top: 20px"
         ref="summaryBarFeatureViz"
         :selectedVariant="variant"
         :probandZygMap="probandZygMap"
@@ -230,7 +238,7 @@
         :affectedSubsetCount="affectedSubsetCount"
         :totalProbandCount="totalProbandCount"
         :totalSubsetCount="totalSubsetCount">
-        </bar-feature-viz> -->
+        </bar-feature-viz>
       </v-layout>
     </v-container>
   </v-card>
@@ -254,7 +262,8 @@ export default {
     variantInfo: null,
     selectedGene: ''
   },
-  data() { return {}
+  data() {
+    return {}
   },
   computed: {
     totalProbandCount: function() {
@@ -282,6 +291,7 @@ export default {
         return Math.round(this.variant.subsetDelta * 10) / 10;
       return 1;
     },
+    // SJG TODO: pass this into featureViz
     foldEnrichmentInfo: function() {
       if (this.variant != null) {
         let delta = this.variant.subsetDelta;
@@ -296,7 +306,7 @@ export default {
         else if (this.variant.totalSubsetCount > 0) return ("EQUAL FREQUENCY");
         else return "PROBANDS ONLY";
       }
-      return "";
+      return "-";
     },
     enrichTextClass: function() {
       if (this.variant != null) {
@@ -460,6 +470,10 @@ export default {
         return 'chr' + this.variant.chrom + ' ' + this.variant.start.toLocaleString() + ' - ' + this.variant.end.toLocaleString();
       }
       return '';
+    },
+    variantSelected: function() {
+      let self = this;
+      return self.variant != null;
     }
   },
   mounted: function() {
@@ -469,7 +483,7 @@ export default {
     summaryCardVariantDeselect: function() {
       var self = this;
       self.$refs.summaryFrequencyViz.clear();
-      self.$refs.summaryBarFeatureViz.clear();
+      //self.$refs.summaryBarFeatureViz.clear();  SJG NOTE: took out bars for now
       self.$emit("summaryCardVariantDeselect");
     }
   }

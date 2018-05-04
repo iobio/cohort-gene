@@ -22,17 +22,19 @@
 </style>
 
 <template>
-<!-- <v-flex xs12 sm12 md12 lg5> -->
 <v-flex xs12>
   <v-layout row>
-      <v-flex xs6 class="subtitle-label">Proband Zygosities</v-flex>
-      <v-flex xs6 class="subtitle-label">Subset Zygosities</v-flex>
-      <!-- <v-flex xs4 class="subtitle-label">Sample Depths</v-flex> -->
+      <v-flex xs12 class="field-label-header" style="text-align:left">Zygosity Counts</v-flex>
     </v-layout>
-    <v-layout row style="padding-left: 5%">
-      <v-flex xs6 id="probandZygBar"></v-flex>
-      <v-flex xs6 id="subsetZygBar"></v-flex>
-      <!-- <v-flex xs4 id="depthBar"></v-flex> -->
+    <v-layout row>
+      <v-flex xs3 class="summary-field-label">Probands:</v-flex>
+      <v-flex xs1 class="summary-field-value">{{blank}}</v-flex>
+      <v-flex xs8 id="probandZygBar" style="padding-bottom:5px"></v-flex>
+    </v-layout>
+    <v-layout row>
+      <v-flex xs3 class="summary-field-label">Subsets:</v-flex>
+      <v-flex xs1 class="summary-field-value">{{blank}}</v-flex>
+      <v-flex xs8 id="subsetZygBar" style="padding-bottom:5px"></v-flex>
     </v-layout>
   </v-flex>
 </template>
@@ -44,7 +46,8 @@ export default {
     return {
       probandZygChart: {},
       subsetZygChart: {},
-      //depthChart: {}
+      //depthChart: {},
+      blank: ''
     }
   },
   props: {

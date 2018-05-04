@@ -283,6 +283,9 @@ export default {
           .on('d3mouseout', function() {
             self.onVariantHoverEnd();
           })
+          .on('d3variantselected', function(selectedVariants) {
+            self.variantZoomSelected();
+          })
           self.setVariantChart();
       },
       updateDouble: function() {
@@ -370,6 +373,16 @@ export default {
       changeVariantColorScheme: function(enrichmentMode, svg) {
         let self = this;
         self.variantChart.switchColorScheme()(enrichmentMode, svg);
+      },
+      displayVariantBrush: function(svg) {
+        let self = this;
+        self.variantChart.displayBrush()(svg);
+      },
+      variantZoomSelected: function(variants) {
+        //self.$emit('variantZoomSelected', variants);
+        debugger;
+        //alert('dispatch rcvd');
+        // SJG TODO: bubble this up to variant card and cohort model, call vcf.iobio.pileup on & assign to variable
       }
     },
     watch: {

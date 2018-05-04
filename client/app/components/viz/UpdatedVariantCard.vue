@@ -191,7 +191,7 @@ export default {
         bottom: 5,
         left: 4
       },
-      variantSymbolHeight: 8,
+      variantSymbolHeight: 10,
       variantSymbolPadding: 2,
       geneVizMargin: {
         top: 0,
@@ -409,6 +409,12 @@ export default {
       // }
       if (self.$refs.subsetVizRef != null) {
         self.$refs.subsetVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.subsetVizRef.name));
+      }
+    },
+    displayVariantBrush: function() {
+      let self = this;
+      if (self.$refs.subsetVizRef != null) {
+        self.$refs.subsetVizRef.displayVariantBrush(self.getVariantSVG(self.$refs.subsetVizRef.name));
       }
     }
   }

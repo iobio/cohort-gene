@@ -32,7 +32,7 @@ TD & SJG updated Apr2018 -->
   <v-content>
     <v-container fluid style="padding-top: 3px">
       <v-layout>
-        <v-flex xs10>
+        <v-flex xs9>
           <updated-variant-card
             v-if="variantModel"
             ref="variantCardRef"
@@ -59,11 +59,15 @@ TD & SJG updated Apr2018 -->
             @knownVariantsFilterChange="onKnownVariantsFilterChange">
           </updated-variant-card>
         </v-flex>
-        <v-flex xs2>
-          <!-- SJG TODO: what info do I need to pass here selected variants and gene start/stop info (see how tony does this in gene)-->
-          <variant-zoom-card
-          >
-          </variant-zoom-card>
+        <v-flex xs3>
+          <!-- <variant-zoom-card
+          style="margin-bottom: 3px; height: 300px"
+          :selectedGene="selectedGene.gene_name"
+          :selectedVariants="selectedVariant"
+          :selectedVariantsInfo="selectedVariantInfo"
+          @displayVariantBrush="displayVariantBrush"
+          ref="variantZoomCard">
+          </variant-zoom-card> -->
           <variant-summary-card
             :selectedGene="selectedGene.gene_name"
             :variant="selectedVariant"
@@ -85,6 +89,7 @@ import GeneCard from '../viz/GeneCard.vue'
 import VariantCard from  '../viz/VariantCard.vue'
 import UpdatedVariantCard from '../viz/UpdatedVariantCard.vue'
 import VariantSummaryCard from '../viz/VariantSummaryCard.vue'
+import VariantZoomCard from '../viz/VariantZoomCard.vue'
 
 // Models
 import GeneModel        from '../../models/GeneModel.js'
@@ -101,6 +106,7 @@ export default {
     Navigation,
     GeneCard,
     VariantSummaryCard,
+    VariantZoomCard,
     VariantCard,
     UpdatedVariantCard
     // SJG TODO: add FeatureMatrixCard, GenesCard
@@ -482,6 +488,12 @@ export default {
     },
     onCopyPasteGenes: function(genesString) {
       this.geneModel.copyPasteGenes(genesString);
+    },
+    displayVariantBrush: function(){
+      let self = this;
+      if (this.doneLoadingData == true) {
+        self.$refs.variantCardRef.displayVariantBrush();
+      }
     },
     onSortGenes: function(sortBy) {
       this.geneModel.sortGenes(sortBy);

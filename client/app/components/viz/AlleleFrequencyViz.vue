@@ -7,31 +7,29 @@
 </style>
 
 <template>
-  <!-- <v-flex xs12 sm12 md6 lg5> -->
   <v-flex xs12>
     <v-layout row>
       <v-flex xs12 class="field-label-header" style="text-align: left">Allele Frequencies</v-flex>
-      <!-- <v-flex xs8></v-flex> -->
     </v-layout>
     <v-layout row>
-       <v-flex xs4 class="summary-field-label">1000G:</v-flex>
-       <v-flex xs4 md1 class="summary-field-value">{{ oneKGenomes }}</v-flex>
-       <v-flex xs4 md7 id="oneKProgress"></v-flex>
+       <v-flex xs3 class="summary-field-label">1000G:</v-flex>
+       <v-flex xs2 class="summary-field-value">{{ oneKGenomes }}</v-flex>
+       <v-flex xs7 id="oneKProgress" style="padding: 0px"></v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs4 class="summary-field-label">ExAC:</v-flex>
-       <v-flex xs4 md1 class="summary-field-value">{{ exAc }}</v-flex>
-       <v-flex xs4 md7 id="exAcProgress"></v-flex>
+       <v-flex xs3 class="summary-field-label">ExAC:</v-flex>
+       <v-flex xs2 class="summary-field-value">{{ exAc }}</v-flex>
+       <v-flex xs7 id="exAcProgress" style="padding: 0px"></v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs4 class="summary-field-label">Proband %:</v-flex>
-       <v-flex xs4 md1 class="summary-field-value">{{ probandDisplay }}</v-flex>
-       <v-flex xs4 md7 id="probandProgress"></v-flex>
+       <v-flex xs3 class="summary-field-label">Proband %:</v-flex>
+       <v-flex xs2 class="summary-field-value">{{ probandDisplay }}</v-flex>
+       <v-flex xs7 id="probandProgress" style="padding: 0px"></v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs4 class="summary-field-label">Subset %:</v-flex>
-       <v-flex xs4 md1 class="summary-field-value">{{ subsetDisplay }}</v-flex>
-       <v-flex xs4 md7 id="subsetProgress"></v-flex>
+       <v-flex xs3 class="summary-field-label">Subset %:</v-flex>
+       <v-flex xs2 class="summary-field-value">{{ subsetDisplay }}</v-flex>
+       <v-flex xs7 id="subsetProgress" style="padding: 0px"></v-flex>
     </v-layout>
   </v-flex>
 </template>

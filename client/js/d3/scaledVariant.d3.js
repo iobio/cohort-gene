@@ -1,8 +1,8 @@
 function scaledVariantD3() {
-   var dispatch = d3.dispatch("d3brush", "d3rendered", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout");
+   var dispatch = d3.dispatch("d3brush", "d3rendered", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout", "d3variantselected");
 
   // dimensions
-  var yAxisWidth = 40;
+  var yAxisWidth = 45;
   var yAxisPadding = 4;
   var margin = {top: 30, right: 0, bottom: 20, left: 110},
       width = 800 - yAxisWidth - yAxisPadding,  // Width of variant display area
@@ -57,6 +57,69 @@ function scaledVariantD3() {
      } else if (d.type.toUpperCase() == 'COMPLEX') {
         return 'diamond';
      }
+  }
+
+  var displayBrush = function(svg) {
+
+    // Create new brush
+    var brush = d3.svg.brush()
+              .x(x)
+              .y(y)
+              .on('brushend', brushEnd)
+              .extent([[0,0],[width, height]]);
+
+
+        container.select('svg').selectAll("g.brush").remove();
+        var theBrush = container.select('svg').selectAll("g.brush").data([0]);
+        theBrush.enter().append("g")
+            .attr("class", "brush")
+            .call(brush)
+            .selectAll("rect")
+            .attr('x', width/2-100)
+            .attr('y', height/2-100)
+            .attr("height", 100)
+            .attr("width", 100);
+
+        // theBrush.selectAll(".resize")
+        //   .append("line")
+        //   .style("visibility",  "visible" )
+        //   .attr("y2", brushHeight);
+        // theBrush.selectAll(".resize.e rect")
+        //   .attr("y0", 0);
+        // theBrush.selectAll(".resize")
+        //   .append("path")
+        //   .style("visibility",  "visible")
+        //   .attr("d", d3.svg.symbol().type("triangle-up").size(20))
+        //   .attr("transform", function(d,i) {
+        //     return i ?  "translate(-4," + (brushHeight/2) + ") rotate(-90)" : "translate(4," + (brushHeight/2) + ") rotate(90)";
+        //   });
+
+
+    // Attach to graph
+    // var g = svg.select("g.group");
+    // g.append('g')
+    //  .attr('class', 'brush')
+    //  .call(brush);
+    //
+    //  g.selectAll('.rect')
+    //   .attr('x', width/2-100)
+    //   .attr('y', height/2-100)
+    //   .attr("height", 100)
+    //   .attr("width", 100);
+
+      // SJG TODO: to trigger initial rendering, can call brush(event) directly
+    //brush(event);
+
+
+      // SJG NOTE: this is not removing crosshairs even after selection rendered
+    // d3.selectAll('.brush>.handle').remove();
+    // // removes crosshair cursor
+    // d3.selectAll('.brush>.overlay').remove();
+  };
+
+  var hideBrush = function(svg) {
+    var brush = svg.select("g.group").select("brush");
+    brush.clear();
   }
 
   var showCircle = function(d, svgContainer, indicateMissingVariant, emphasize) {
@@ -236,8 +299,8 @@ function scaledVariantD3() {
 
     height = totalLayers * 5 * (variantHeight + verticalPadding);    // Scale this to main layers size
     height += (variantHeight + verticalPadding);
-    if (height < 600) height = 600;   // Set a minimum
-    if (height > 750) height = 750;   // Set a maximum
+    if (height < 800) height = 800;   // Set a minimum
+    if (height > 950) height = 950;   // Set a maximum
 
     // Account for the margin when we are showing the xAxis
     if (showXAxis) {
@@ -347,22 +410,6 @@ function scaledVariantD3() {
 
         var symbolSize = symbolScale(minWidth);
 
-
-
-        // Brush
-        // var brush = d3.svg.brush()
-        //   .x(x)
-        //   .on("brushend", function() {
-        //       dispatch.d3brush(brush);
-        //    });
-
-       var brush = d3.svg.brush()
-                  .x(x)
-                  .y(y)
-                  .on('brush', brushMove)
-                  .on('brushend', brushEnd);
-                  //.extent([[0,0],[width, height]]);
-
         // Select the svg element, if it exists.
         var svg = container.selectAll("svg").data([0]);
 
@@ -377,12 +424,6 @@ function scaledVariantD3() {
           .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         var g = svg.select("g.group");
-
-        // Attach brush
-        g.append('g')
-         .attr('class', 'brush')
-         .attr('selection', '')
-         .call(brush);
 
         // The chart dimensions could change after instantiation, so update viewbox dimensions
         // every time we draw the chart.
@@ -420,12 +461,13 @@ function scaledVariantD3() {
 
         // Draw y-axis using axis style class
         svg.append("g").attr("class", "y axis")
-          .attr("transform", "translate(" + [0, 10] + ")")
+          .attr("transform", "translate(" + [0, 5] + ")")
           .call(yAxis)
           .append("text")
           .attr("transform", "rotate(-90)")
-          .attr("dx", "-25em")
-          .attr("dy", "-3em")
+          .attr("dx", "-30em")
+          .attr("dy", "-2.5em")
+          .style('font-size', '14px')
           .style("text-anchor", "middle")
           .text("Fold Enrichment");
 
@@ -469,25 +511,8 @@ function scaledVariantD3() {
             .attr('class', 'track indel')
             .attr('transform', function(d,i) { return "translate(0,0)"});
 
-        // TDS brush stuff
-        // if (showBrush) {
-        //   if (brushHeight == null ) {
-        //     brushHeight = variantHeight;
-        //     brushY = 0;
-        //   } else {
-        //     brushY = 0;
-        //   }
-        //   track.selectAll("g.x.brush").data([0]).enter().append("g")
-        //       .attr("class", "x brush")
-        //       .call(brush)
-        //       .selectAll("rect")
-        //       .attr("y", brushY)
-        //       .attr("height", brushHeight);
-        // }
-
         track.selectAll('.variant').remove();
         trackindel.selectAll('.variant').remove();
-
 
         // snps
         track.selectAll('.variant').data(function(d) {
@@ -650,9 +675,7 @@ function scaledVariantD3() {
               .attr("cy", 0)
               .attr("r", variantHeight + 2)
               .style("opacity", 0);
-
         }
-
 
 
         // add a arrow on the x-axis
@@ -684,15 +707,34 @@ function scaledVariantD3() {
   }
 
   function brushMove() {
-    // SJG TODO: implement
-
-    // Redraw zoom panel
+    // SJG TODO: do I need this at all?
   }
 
   function brushEnd() {
-    // SJG TODO: implement
+    // Get all variants
 
-    // Draw zoom panel
+    // Get x0, x1, y0, y1 coordinates of selection box
+      var extentRect = d3.select('g.brush rect.extent');
+      var xExtent = +extentRect.attr('x');
+      var yExtent = +extentRect.attr('y');
+      extentRect.attr("x", xExtent - 1);
+
+    // Iterate through all variants and if isBrushed, parse out info from dom element
+    // Get position, enrichment, annotation info from each
+    // Put into array
+
+    let selectedVariants = [];
+    dispatch.d3variantselected(selectedVariants);
+  }
+
+  // SJG pulled from http://bl.ocks.org/feyderm/6bdbc74236c27a843db633981ad22c1b
+  function isBrushed(brush_coords, cx, cy) {
+       var x0 = brush_coords[0][0],
+           x1 = brush_coords[1][0],
+           y0 = brush_coords[0][1],
+           y1 = brush_coords[1][1];
+
+      return x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
   }
 
   function tickFormatter (d) {
@@ -958,9 +1000,16 @@ function scaledVariantD3() {
     return chart;
   }
 
+  chart.displayBrush = function(_) {
+    if (!arguments.length) return displayBrush;
+    displayBrush = _;
+    return chart;
+  }
 
   // This adds the "on" methods to our custom exports
   d3.rebind(chart, dispatch, "on");
+
+// SJG TODO: do I need to rebind on button click/reset
 
   return chart;
 }

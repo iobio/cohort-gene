@@ -22,9 +22,9 @@ Vue.use(Vuetify, {
     cohortBlue: '#95b0c6',
     cohortDarkBlue: '#6c94b7',
     cohortNavy: '#516e87',
-    limeGreen: '#00FF00',
+    limeGreen: '#00d60e',
     cherryRed: '#FF000D',
-    bananaYellow: '#F9F49F'
+    slateGray: '#B7B7B7'
   }
 })
 

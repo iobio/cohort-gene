@@ -25,7 +25,8 @@ function geneD3() {
   // dimensions
   var margin = {top: 30, right: 0, bottom: 20, left: 110};
   var geneD3_width = 800,
-      geneD3_height = 400;
+      geneD3_height = 400,
+      yAxisWidth = 39;      // Must match yAxisWidth - yAxisPadding in scaledVariant.d3
 
 
   // scales
@@ -117,6 +118,7 @@ function geneD3() {
 
       svg.enter()
         .append("svg")
+        .style('padding-left', yAxisWidth + 'px')
         .attr("width", geneD3_widthPercent ? geneD3_widthPercent : geneD3_width)
         .attr("height", geneD3_heightPercent ? geneD3_heightPercent : geneD3_height+margin.top+margin.bottom)
 

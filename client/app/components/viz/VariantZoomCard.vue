@@ -1,60 +1,19 @@
 <!-- Component populated with variant details on selection.
      SJG updated Apr2018 -->
 
-<style lang="sass" >
+<style lang="sass">
 </style>
 
 <template>
   <v-card>
     <v-card-title primary-title style="width: 100%; height: 30px">
-      <span style="display:inline-block; padding-right: 10px; font-size: 16px">VARIANT SUMMARY</span>
-      <v-chip v-bind:class="{hide: variant == null}" small outline close color="cohortDarkBlue"
-        @input="summaryCardVariantDeselect()">
-         <span style="padding-right: 12px; font-size: 14px; text-align:center;" v-bind:class="{hide: geneName == ''}">{{geneName}}</span>
-         <span style="padding-top: 1px; font-size: 12px; padding-right: 6px">{{selectedVariantLocation}}</span>
-      </v-chip>
-      <v-icon large color="limeGreen" v-bind:class="{hide: variant == null || !(subsetDelta > 2)}">arrow_upward</v-icon>
-      <v-icon large color="bananaYellow" v-bind:class="{hide: variant == null || !(subsetDelta > 1 && subsetDelta < 2)}">arrow_upward</v-icon>
-      <v-icon large color="bananaYellow" v-bind:class="{hide: variant == null || !(subsetDelta > 0.5 && subsetDelta < 1)}">arrow_downward</v-icon>
-      <v-icon large color="cherryRed" v-bind:class="{hide: variant == null || !(subsetDelta < 0.5)}">arrow_downward</v-icon>
-      <span style="display:inline-block; font-size: 14px">{{ foldEnrichmentInfo }}</span>
+      <span style="display:inline-block; padding-right: 10px; font-size: 16px">VARIANT ZOOM</span>
     </v-card-title>
-    <v-container fluid grid-list-md>
-      <v-layout row wrap>
-        <feature-viz id="loaded-feature-viz" class="summary-viz" style="padding-top: 20px"
-          ref="summaryFeatureViz"
-          :effect="effect"
-          :impactText="impactText"
-          :impactColor="impactColor"
-          :type="variantType"
-          :clinVarText="clinVarText"
-          :clinVarColor="clinVarColor"
-          :siftText="siftText"
-          :siftColor="siftColor"
-          :polyPhenText="polyPhenText"
-          :polyPhenColor="polyPhenColor">
-        </feature-viz>
-        <allele-frequency-viz id="loaded-freq-viz" class="summary-viz" style="padding-top: 20px"
-        ref="summaryFrequencyViz"
-        :selectedVariant="variant"
-        :oneKGenomes="oneKGenomes"
-        :exAc="exAc"
-        :affectedProbandCount="affectedProbandCount"
-        :affectedSubsetCount="affectedSubsetCount"
-        :totalProbandCount="totalProbandCount"
-        :totalSubsetCount="totalSubsetCount">
-        </allele-frequency-viz>
-
-        <!-- <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz"
-        ref="summaryBarFeatureViz"
-        :selectedVariant="variant"
-        :probandZygMap="probandZygMap"
-        :subsetZygMap="subsetZygMap"
-        :affectedProbandCount="affectedProbandCount"
-        :affectedSubsetCount="affectedSubsetCount"
-        :totalProbandCount="totalProbandCount"
-        :totalSubsetCount="totalSubsetCount">
-        </bar-feature-viz> -->
+    <v-container>
+      <v-layout row wrap style="padding-top: 25%; padding-left: 25%">
+        <div class="text-xs-center">
+            <v-btn round ripple outline color="cohortNavy" @click="displayVariantBrush">Click to Select Area</v-btn>
+          </div>
       </v-layout>
     </v-container>
   </v-card>
@@ -62,239 +21,24 @@
 
 
 <script>
-import FeatureViz from "./FeatureViz.vue"
-import AlleleFrequencyViz from "./AlleleFrequencyViz.vue"
-import BarFeatureViz from "./BarFeatureViz.vue"
-
 export default {
-  name: 'variant-summary-card',
+  name: 'variant-zoom-card',
   components: {
-    FeatureViz,
-    AlleleFrequencyViz,
-    BarFeatureViz
   },
   props: {
-    variant: null,
-    variantInfo: null,
+    selectedVariants: null,
+    selectedVariantsInfo: null,
     selectedGene: ''
   },
-  data() { return {}
-  },
+  data() { return {} },
   computed: {
-    totalProbandCount: function() {
-      if (this.variant != null)
-        return this.variant.totalProbandCount;
-      return 0;
-    },
-    totalSubsetCount: function() {
-      if (this.variant != null)
-        return this.variant.totalSubsetCount;
-      return 0;
-    },
-    affectedProbandCount: function() {
-      if (this.variant != null)
-        return this.variant.affectedProbandCount;
-      return 0;
-    },
-    affectedSubsetCount: function() {
-      if (this.variant != null)
-        return this.variant.affectedSubsetCount;
-      return 0;
-    },
-    subsetDelta: function() {
-      if (this.variant != null)
-        return Math.round(this.variant.subsetDelta * 10) / 10;
-      return 1;
-    },
-    foldEnrichmentInfo: function() {
-      if (this.variant != null) {
-        let delta = this.variant.subsetDelta;
-        let adjDelta = this.variant.subsetDelta;
-        if (delta < 1 && delta > 0) {
-          adjDelta = 1/delta;
-        }
-
-        let foldEnrich = Math.round(adjDelta * 10) / 10;
-        if (delta > 1) return (foldEnrich + "x" + " IN SUBSETS");
-        else if (delta < 1) return (foldEnrich + "x" + " IN PROBANDS");
-        else if (this.variant.totalSubsetCount > 0) return ("EQUAL FREQUENCY");
-        else return "PROBANDS ONLY";
-      }
-      return "";
-    },
-    enrichTextClass: function() {
-      if (this.variant != null) {
-        if (this.variant.subsetDelta >= 2) return '.enrichment_subset_UP';
-        else if (this.variant.subsetDelta <= 0.5) return '.enrichment_subset_DOWN';
-      }
-      return "";
-    },
-    // Currently not using these but could be useful in the future...
-    totalCountSelectedTrack: function() {
-      if (this.variant != null) {
-        if (this.variant.name == "HubProbands")
-          return this.totalProbandCount;
-        else if (this.variant.name == "HubSubsetProbands")
-          return this.totalSubsetCount;
-      }
-      return 0;
-    },
-    affectedCountSelectedTrack: function() {
-      if (this.variant != null) {
-        if (this.variant.name == "HubProbands")
-          return this.affectedProbandCount;
-        else if (this.variant.name == "HubSubsetProbands")
-          return this.affectedSubsetCount;
-      }
-      return 0;
-    },
-    effect: function() {
-      if (this.variantInfo != null)
-        return this.variantInfo.vepConsequence;
-      return "-";
-    },
-    impactText: function() {
-      if (this.variantInfo != null)
-      {
-        return this.variantInfo.vepImpact;
-      }
-      return "-";
-    },
-    impactColor: function() {
-      if (this.variantInfo != null && this.variant.vepImpact != null) {
-        var impactLevel = this.variantInfo.vepImpact.toUpperCase();
-        return "impact_" + impactLevel;
-      }
-      return "";
-    },
-    variantType: function() {
-      if (this.variant != null)
-        return this.variant.type;
-      return "";
-    },
-    clinVarText: function() {
-      if (this.variantInfo != null && this.variantInfo.clinvarSig != null)
-        return this.variantInfo.clinvarSig;
-      return "";
-    },
-    clinVarColor: function() {
-      if (this.variant != null && this.variant.clinvar != null) {
-        var clazz = this.variant.clinvar;
-        return "colorby_" + clazz;
-      }
-      return "";
-    },
-    siftText: function() {
-      if (this.variantInfo != null)
-        return this.variantInfo.sift;
-      return "";
-    },
-    siftColor: function() {
-      if (this.variantInfo != null && this.variantInfo.sift != null) {
-        var clazz = this.variantInfo.sift.replace(" ", "_");
-        return "colorby_sift_" + clazz;
-      }
-      return "";
-    },
-    polyPhenText: function() {
-      if (this.variantInfo != null)
-        return this.variantInfo.polyphen;
-      return "";
-    },
-    polyPhenColor: function() {
-      if (this.variantInfo != null) {
-        var phenText = this.variantInfo.polyphen;
-        phenText = phenText.replace(" ", "_");
-        return "colorby_polyphen_" + phenText;
-      }
-      return "";
-    },
-    oneKGenomes: function() {
-      if (this.variant != null && this.variant.af1000G != null)
-        return Math.round(this.variant.af1000G * 100) + "%";
-      return "-";
-    },
-    exAc: function() {
-      if (this.variant != null && this.variant.afExAC != null)
-        return Math.round(this.variant.afExAC * 100) + "%";
-      return "-";
-    },
-    probandZygMap: function() {
-      let map = [];
-      if (this.variant != null) {
-        let zygArr = this.variant.probandZygCounts;
-        map.push({label: "hom ref", value: zygArr[0]})
-        map.push({label: "het", value: zygArr[1]})
-        map.push({label: "hom alt", value: zygArr[2]})
-        map.push({label: "no call", value: zygArr[3]})
-      }
-      else {
-        map.push({label: "hom ref", value: 0})
-        map.push({label: "het", value: 0})
-        map.push({label: "hom alt", value: 0})
-        map.push({label: "no call", value: 0})
-      }
-      return map;
-    },
-    subsetZygMap: function() {
-      let map = [];
-      if (this.variant != null) {
-        let zygArr = this.variant.subsetZygCounts;
-        map.push({label: "hom ref", value: zygArr[0]})
-        map.push({label: "het", value: zygArr[1]})
-        map.push({label: "hom alt", value: zygArr[2]})
-        map.push({label: "no call", value: zygArr[3]})
-      }
-      else {
-        map.push({label: "hom ref", value: 0})
-        map.push({label: "het", value: 0})
-        map.push({label: "hom alt", value: 0})
-        map.push({label: "no call", value: 0})
-      }
-      return map;
-    },
-    statusMap: function() {
-      var map = [];
-      var affectedCount = 0, unaffectedCount = 0;
-
-      if (this.variant != null && this.variant.genotypes != null) {
-        var gtObj = this.variant.genotypes;
-        for (var gt in gtObj) {
-          if (gtObj.hasOwnProperty(gt)) {
-            if (gtObj[gt].zygosity == 'HOM' || gtObj[gt].zygosity == 'HET')
-              affectedCount++;
-            else if (gtObj[gt].zygosity == 'HOMREF') {
-              unaffectedCount++;
-            }
-          }
-        }
-      }
-      map.push({label: "unaff", value: unaffectedCount});
-      map.push({label: "aff", value: affectedCount});
-      return map;
-    },
-    geneName: function() {
-      if (this.variant != null && this.selectedGene != null) {
-        return this.selectedGene;
-      }
-      return '';
-    },
-    selectedVariantLocation: function() {
-      if (this.variant != null) {
-        return 'chr' + this.variant.chrom + ' ' + this.variant.start.toLocaleString() + ' - ' + this.variant.end.toLocaleString();
-      }
-      return '';
-    }
   },
   mounted: function() {
-    let self = this;
   },
   methods: {
-    summaryCardVariantDeselect: function() {
-      var self = this;
-      self.$refs.summaryFrequencyViz.clear();
-      self.$refs.summaryBarFeatureViz.clear();
-      self.$emit("summaryCardVariantDeselect");
+    displayVariantBrush: function() {
+      let self = this;
+      self.$emit("displayVariantBrush");
     }
   }
 }

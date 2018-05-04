@@ -70,7 +70,7 @@ TD & SJG updated Apr2018 -->
     <v-card-title primary-title>
       <v-layout row style="padding-left: 15px; padding-right: 15px">
         <v-flex xs6>
-          <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 10px">VARIANTS</span>
+          <span style="min-width: 200px; max-width: 200px; font-size: 15px; padding-bottom: 10px">VARIANTS</span>
         </v-flex>
         <v-flex xs6>
           <v-container fluid style="padding-left: 70%;" id="impactModeSwitch" v-bind:class="{hide: !displayImpactSwitch}">
