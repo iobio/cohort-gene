@@ -5,7 +5,7 @@
 <template>
   <v-flex xs12>
     <v-layout row>
-      <v-flex xs12 class="field-label-header" style="text-align: left">Enrichment Details</v-flex>
+      <v-flex xs12 class="field-label-header" style="text-align: left; margin-top: 5px">Enrichment Details</v-flex>
     </v-layout>
     <v-layout row>
        <v-flex xs3 class="summary-field-label">Fold Enrichment:</v-flex>

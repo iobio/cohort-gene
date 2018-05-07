@@ -305,6 +305,8 @@ export default {
           adjDelta = 1/delta;
         }
         let foldEnrich = Math.round(adjDelta * 10) / 10;
+
+
         if (delta > 1) return (foldEnrich + "x" + " IN SUBSETS");
         else if (delta < 1) return (foldEnrich + "x" + " IN PROBANDS");
         else if (this.variant.totalSubsetCount > 0) return ("EQUAL FREQUENCY");
