@@ -139,7 +139,7 @@ class VariantModel {
       self.promiseGetUrlsFromHub(self.projectId)
         .then(function(dataSet) {
           t1 = performance.now(); // SJG_TIMING
-          //console.log('It took ' + (t1-t0) + ' ms to get Hub urls');
+          console.log('It took ' + (t1-t0) + ' ms to get Hub urls');
           if (dataSet == null) {
             let currCohorts = self.dataSet.getCohorts();
             if (currCohorts != undefined && currCohorts.length > 0) {
@@ -163,7 +163,7 @@ class VariantModel {
           self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
               .then(function(ids) {
                 t1 = performance.now(); // SJG_TIMING
-                //console.log('It took ' + (t1-t0) + ' ms to get proband IDs'); // SJG_TIMING
+                console.log('It took ' + (t1-t0) + ' ms to get proband IDs'); // SJG_TIMING
                 if (ids == null || ids.length == 0) {
                   let currCohorts = self.dataSet.getCohorts();
                   if (currCohorts != undefined && currCohorts.length > 0) {
@@ -184,7 +184,7 @@ class VariantModel {
                 self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                     .then(function(ids) {
                       t1 = performance.now(); // SJG_TIMING
-                      //console.log('It took ' + (t1-t0) + ' ms to get subset IDs'); // SJG_TIMING
+                      console.log('It took ' + (t1-t0) + ' ms to get subset IDs'); // SJG_TIMING
                       if (ids != null && ids.length > 0) {
                         console.log("Obtained susbset IDs from Hub...");
                         subsetCohort.subsetIds = ids;
@@ -395,30 +395,26 @@ class VariantModel {
      Returns a map of annotated variant data. */
   promiseLoadData(theGene, theTranscript, options) {
     let self = this;
-    let promises = [];
 
     return new Promise(function(resolve, reject) {
       if (self.dataSet == null) {
-        resolve();
-      } else {
+        console.log('Could not load data due to missing dataSet in VariantModel.');
+        reject();
+      }
+      else {
         // Load variants
         self.startGeneProgress(theGene.gene_name);
         self.clearLoadedData();
 
         var dataSetResultMap = null;
-        let p1 = self.promiseLoadVariants(theGene, theTranscript, options)
+        self.promiseLoadVariants(theGene, theTranscript, options)
         .then(function(data) {
           dataSetResultMap = data.resultMap;
           self.setLoadedVariants(data.gene);
-        })
-        promises.push(p1);
-
-        Promise.all(promises)
-        .then(function() {
           resolve(dataSetResultMap);
         })
         .catch(function(error) {
-          console.log('There was a problem loading the data in VariantModel.')
+          console.log('There was a problem calling promiseLoadVariants from promiseLoadData in VariantModel.')
           reject(error);
         })
       }
@@ -438,6 +434,7 @@ class VariantModel {
         resolve(data);
       })
       .catch(function(error) {
+        console.log('There was a problem calling promiseAnnotateVariants from promiseLoadVariants in VariantModel.');
         reject(error);
       })
     })
@@ -452,38 +449,48 @@ class VariantModel {
       var annotatePromises = [];
       var resultMapList = [];
 
-    // Annotate variants for cohort models that have specified IDs
+      // Annotate variants for cohort models that have specified IDs
       if (self.dataSet.getCohorts().length > 0) {
         self.dataSet.getCohorts().forEach(function(cohortModel) {
-          cohortModel.inProgress.loadingVariants = true;
+        cohortModel.inProgress.loadingVariants = true;
 
-          // Only get variants if we have specific samples to look at
-          if (cohortModel.subsetIds.length > 0) {
-            var p = cohortModel.promiseAnnotateVariants(theGene,
-                theTranscript, [cohortModel],
-                false, isBackground, self.keepVariantsCombined)
-              .then(function(resultMap) {
-                cohortModel.inProgress.loadingVariants = false;
-                cohortModel.inProgress.drawingVariants = true;
-                resultMapList.push(resultMap);
-                })
-            annotatePromises.push(p)
-          }
-          else {
+        if (cohortModel.subsetIds.length > 0) {
+          var p = cohortModel.promiseAnnotateVariants(theGene,
+              theTranscript, [cohortModel],
+              false, isBackground, self.keepVariantsCombined)
+
+          // Update status of each cohort as we get the results back
+          .then(function(resultMap) {
             cohortModel.inProgress.loadingVariants = false;
-            cohortModel.noMatchingSamples = true;
-          }
+            cohortModel.inProgress.drawingVariants = true;
+            resultMapList.push(resultMap);
+            })
+          annotatePromises.push(p)
+        }
+        else {
+          cohortModel.inProgress.loadingVariants = false;
+          cohortModel.noMatchingSamples = true;
+        }
         })
       }
+      else {
+        console.log('Could not annotate variants due to missing cohorts associated with dataSet in VariantModel.');
+        reject();
+      }
+
+      // After all cohorts annotated, calculate dataset-relative metrics
       Promise.all(annotatePromises)
         .then(function() {
           let t0 = performance.now(); // SJG_TIMING
-          self.annotateCohortFrequencies(resultMapList);
+          self.annotateDataSetFrequencies(resultMapList);
           let t1 = performance.now(); // SJG_TIMING
-          //console.log('Took ' + (t1-t0) + ' ms to annotate cohort frequencies');  // SJG_TIMING
+          console.log('Took ' + (t1-t0) + ' ms to compute dataset metrics');  // SJG_TIMING
+
           if (self.mergeCohortVariants) {
-            resultMapList = self.combineCohortVariants(resultMapList);
+            // TODO: SJG haven't implemented this yet
+            //resultMapList = self.combineCohortVariants(resultMapList);
           }
+
           self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
           .then(function(data) {
             resolve(data);
@@ -590,44 +597,45 @@ class VariantModel {
       return filteredVariants;
     }
 
+    // Need both proband and subset cohorts going into filterAndPileupVariants
     self.dataSet.getCohorts().forEach(function(cohort) {
-      if (name == null || name == cohort.name) {
-        if (cohort.vcfData && cohort.vcfData.features) {
-          var start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
-          var end   = self.filterModel.regionEnd   ? self.filterModel.regionEnd   : gene.end;
+    if (name == null || name == cohort.name) {
+      if (cohort.vcfData && cohort.vcfData.features) {
+        var start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
+        var end   = self.filterModel.regionEnd   ? self.filterModel.regionEnd   : gene.end;
 
-          // SJG_P2 filtering out all non-enriched variants for now TODO: fix when get handle on bidirectional rendering
-           // if (cohort.getName() == PROBAND_ID)
-           //   cohort.vcfData.features = self.filterProbandsByDelta(cohort.vcfData.features);
+        // SJG_P2 filtering out all non-enriched variants for now TODO: fix when get handle on bidirectional rendering
+         // if (cohort.getName() == PROBAND_ID)
+         //   cohort.vcfData.features = self.filterProbandsByDelta(cohort.vcfData.features);
 
-          t0 = performance.now(); // SJG_TIMING
-          var loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
-          t1 = performance.now(); // SJG_TIMING
-          //console.log('Took ' + (t1-t0) + ' ms to filter and pileup variants'); // SJG_TIMING
-          cohort.loadedVariants = loadedVariants;
+        t0 = performance.now(); // SJG_TIMING
+        var loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
+        t1 = performance.now(); // SJG_TIMING
+        //console.log('Took ' + (t1-t0) + ' ms to filter and pileup variants'); // SJG_TIMING
+        cohort.loadedVariants = loadedVariants;
 
-          var calledVariants = filterAndPileupVariants(cohort, start, end, 'called');
-          cohort.calledVariants = calledVariants;
+        var calledVariants = filterAndPileupVariants(cohort, start, end, 'called');
+        cohort.calledVariants = calledVariants;
 
-          if (cohort.getName() == PROBAND_ID) {
-            var allVariants = $.extend({}, cohort.loadedVariants);
-            allVariants.features = cohort.loadedVariants.features.concat(cohort.calledVariants.features);
-            // TODO: incorporate with featureMatrixModel
-            //self.featureMatrixModel.promiseRankVariants(allVariants);
-          }
-        } else {
-          cohort.loadedVariants = {loadState: {}, features: []};
-          cohort.calledVariants = {loadState: {}, features: []}
+        if (cohort.getName() == PROBAND_ID) {
+          var allVariants = $.extend({}, cohort.loadedVariants);
+          allVariants.features = cohort.loadedVariants.features.concat(cohort.calledVariants.features);
+          // TODO: incorporate with featureMatrixModel
+          //self.featureMatrixModel.promiseRankVariants(allVariants);
         }
+      } else {
+        cohort.loadedVariants = {loadState: {}, features: []};
+        cohort.calledVariants = {loadState: {}, features: []}
       }
+    }
     })
   }
 
-  /* Assigns cohort-relative statistics to each variant.
+  /* Assigns dataset-relative statistics to each variant, from the multiple cohorts composing the dataset.
      Used to populate Summary Card graphs when clicking on a variant. */
-  annotateCohortFrequencies(resultMapList) {
+  annotateDataSetFrequencies(resultMapList) {
     let self = this;
-    if (resultMapList == null || resultMapList.length == 0) return;   // Avoid console output on initial lode call
+    if (resultMapList == null || resultMapList.length == 0) return;   // Avoid console output on initial load call
 
     var probandFeatures = null;
     var subsetFeatures = null;
@@ -646,7 +654,7 @@ class VariantModel {
       (resultMapList[subsetId])[SUBSET_ID].features = subsetFeatures;
     }
     catch(e) {
-      console.log("There was a problem pulling out features from the result map in annotateCohortFrequencies. Unable to assign enrichment colors.");
+      console.log("There was a problem pulling out features from the result map in annotateDataSetFrequencies. Unable to assign enrichment colors.");
     }
   }
 

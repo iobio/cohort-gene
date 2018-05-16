@@ -193,7 +193,7 @@
             <v-icon medium color="cherryRed" v-bind:class="{hide: variantSelected == false || subsetDelta > 0.5}">arrow_downward</v-icon>
           </div>
           <div class='form-group'>
-            <v-chip v-bind:class="{hide: variant == null}" v-bind:style="{margin: 0}" small outline close color="cohortDarkBlue"
+            <v-chip v-bind:class="{hide: variant == null}" v-bind:style="{margin: 0}" small outline color="cohortDarkBlue"
               @input="summaryCardVariantDeselect()">
                <span style="padding-right: 10px; font-size: 14px; text-align:center;" v-bind:class="{hide: geneName == ''}">{{geneName}}</span>
                <span style="padding-top: 1px; font-size: 12px; padding-right: 4px">{{selectedVariantLocation}}</span>

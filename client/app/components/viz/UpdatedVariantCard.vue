@@ -74,7 +74,7 @@ Updated: SJG Apr2018
         </v-flex>
         <v-flex xs6>
           <v-container fluid style="padding-left: 70%; margin-bottom: 0" id="impactModeSwitch" v-bind:class="{hide: !doneLoadingData}">
-            <v-switch :label="`Impact Mode: ${impactModeDisplay(impactMode)}`" v-model="impactMode" hide-details></v-switch>
+            <v-switch label="Impact Mode" v-model="impactMode" hide-details></v-switch>
           </v-container>
         </v-flex>
       </v-layout>
