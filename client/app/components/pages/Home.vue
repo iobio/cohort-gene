@@ -507,21 +507,13 @@ export default {
 
       // Launching from hub if we have a project ID
       if (self.paramProjectId) {
-
-        self.geneModel.addGeneName(self.DEMO_GENE);
-        self.onGeneSelected(self.DEMO_GENE);
-
         localStorage.setItem('hub-iobio-tkn', self.paramTokenType + ' ' + self.paramToken);
         self.variantModel.phenoFilters = self.getHubPhenoFilters();
         self.variantModel.projectId = self.paramProjectId;
         self.variantModel.promiseInitFromHub()
             .then(function() {
-              if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
-                self.promiseLoadData();
-              }
-              else {
-                console.log("Failed to load data because no gene selected");
-              }
+              self.geneModel.addGeneName(self.DEMO_GENE);
+              self.onGeneSelected(self.DEMO_GENE);
           })
           .catch(function() {
             alert("Problem talking to Hub...");
