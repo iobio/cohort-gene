@@ -393,33 +393,37 @@ class VariantModel {
 
   /* Promises to load variants for the selected gene.
      Returns a map of annotated variant data. */
-  promiseLoadData(theGene, theTranscript, options) {
-    let self = this;
+     promiseLoadData(theGene, theTranscript, options) {
+       let self = this;
+       let promises = [];
 
-    return new Promise(function(resolve, reject) {
-      if (self.dataSet == null) {
-        console.log('Could not load data due to missing dataSet in VariantModel.');
-        reject();
-      }
-      else {
-        // Load variants
-        self.startGeneProgress(theGene.gene_name);
-        self.clearLoadedData();
+       return new Promise(function(resolve, reject) {
+         if (self.dataSet == null) {
+           resolve();
+         } else {
+           // Load variants
+           self.startGeneProgress(theGene.gene_name);
+           self.clearLoadedData();
 
-        var dataSetResultMap = null;
-        self.promiseLoadVariants(theGene, theTranscript, options)
-        .then(function(data) {
-          dataSetResultMap = data.resultMap;
-          self.setLoadedVariants(data.gene);
-          resolve(dataSetResultMap);
-        })
-        .catch(function(error) {
-          console.log('There was a problem calling promiseLoadVariants from promiseLoadData in VariantModel.')
-          reject(error);
-        })
-      }
-    })
-  }
+           var dataSetResultMap = null;
+           let p1 = self.promiseLoadVariants(theGene, theTranscript, options)
+           .then(function(data) {
+             dataSetResultMap = data.resultMap;
+             self.setLoadedVariants(data.gene);
+           })
+           promises.push(p1);
+
+           Promise.all(promises)
+           .then(function() {
+             resolve(dataSetResultMap);
+           })
+           .catch(function(error) {
+             console.log('There was a problem loading the data in VariantModel.')
+             reject(error);
+           })
+         }
+       })
+     }
 
   /* Promises to annotate variants and returns a map of annotated variant data. */
   promiseLoadVariants(theGene, theTranscript, options) {
@@ -442,65 +446,55 @@ class VariantModel {
 
   /* Promises to annotate variants in each cohort model.
      Updates cohort loading status as appropriate. */
-  promiseAnnotateVariants(theGene, theTranscript, isBackground, options={}) {
-    let self = this;
+     promiseAnnotateVariants(theGene, theTranscript, isBackground, options={}) {
+       let self = this;
 
-    return new Promise(function(resolve, reject) {
-      var annotatePromises = [];
-      var resultMapList = [];
+       return new Promise(function(resolve, reject) {
+         var annotatePromises = [];
+         var resultMapList = [];
 
-      // Annotate variants for cohort models that have specified IDs
-      if (self.dataSet.getCohorts().length > 0) {
-        self.dataSet.getCohorts().forEach(function(cohortModel) {
-        cohortModel.inProgress.loadingVariants = true;
+       // Annotate variants for cohort models that have specified IDs
+         if (self.dataSet.getCohorts().length > 0) {
+           self.dataSet.getCohorts().forEach(function(cohortModel) {
+             cohortModel.inProgress.loadingVariants = true;
 
-        if (cohortModel.subsetIds.length > 0) {
-          var p = cohortModel.promiseAnnotateVariants(theGene,
-              theTranscript, [cohortModel],
-              false, isBackground, self.keepVariantsCombined)
-
-          // Update status of each cohort as we get the results back
-          .then(function(resultMap) {
-            cohortModel.inProgress.loadingVariants = false;
-            cohortModel.inProgress.drawingVariants = true;
-            resultMapList.push(resultMap);
-            })
-          annotatePromises.push(p)
-        }
-        else {
-          cohortModel.inProgress.loadingVariants = false;
-          cohortModel.noMatchingSamples = true;
-        }
-        })
-      }
-      else {
-        console.log('Could not annotate variants due to missing cohorts associated with dataSet in VariantModel.');
-        reject();
-      }
-
-      // After all cohorts annotated, calculate dataset-relative metrics
-      Promise.all(annotatePromises)
-        .then(function() {
-          let t0 = performance.now(); // SJG_TIMING
-          self.annotateDataSetFrequencies(resultMapList);
-          let t1 = performance.now(); // SJG_TIMING
-          console.log('Took ' + (t1-t0) + ' ms to compute dataset metrics');  // SJG_TIMING
-
-          if (self.mergeCohortVariants) {
-            // TODO: SJG haven't implemented this yet
-            //resultMapList = self.combineCohortVariants(resultMapList);
-          }
-
-          self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
-          .then(function(data) {
-            resolve(data);
-          })
-        })
-        .catch(function(error) {
-          console.log("There was a problem in VariantModel promiseAnnotateVariants: " + error);
-        })
-    });
-  }
+             // Only get variants if we have specific samples to look at
+             if (cohortModel.subsetIds.length > 0) {
+               var p = cohortModel.promiseAnnotateVariants(theGene,
+                   theTranscript, [cohortModel],
+                   false, isBackground, self.keepVariantsCombined)
+                 .then(function(resultMap) {
+                   cohortModel.inProgress.loadingVariants = false;
+                   cohortModel.inProgress.drawingVariants = true;
+                   resultMapList.push(resultMap);
+                   })
+               annotatePromises.push(p)
+             }
+             else {
+               cohortModel.inProgress.loadingVariants = false;
+               cohortModel.noMatchingSamples = true;
+             }
+           })
+         }
+         Promise.all(annotatePromises)
+           .then(function() {
+             let t0 = performance.now(); // SJG_TIMING
+             self.annotateDataSetFrequencies(resultMapList);
+             let t1 = performance.now(); // SJG_TIMING
+             //console.log('Took ' + (t1-t0) + ' ms to annotate cohort frequencies');  // SJG_TIMING
+             if (self.mergeCohortVariants) {
+               resultMapList = self.combineCohortVariants(resultMapList);
+             }
+             self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
+             .then(function(data) {
+               resolve(data);
+             })
+           })
+           .catch(function(error) {
+             console.log("There was a problem in VariantModel promiseAnnotateVariants: " + error);
+           })
+       });
+     }
 
   promiseAnnotateInheritance(geneObject, theTranscript, resultMap, options={isBackground: false, cacheData: true}) {
     let self = this;
