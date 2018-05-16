@@ -139,7 +139,7 @@ class VariantModel {
       self.promiseGetUrlsFromHub(self.projectId)
         .then(function(dataSet) {
           t1 = performance.now(); // SJG_TIMING
-          //console.log('It took ' + (t1-t0) + ' ms to get Hub urls');
+          console.log('It took ' + (t1-t0) + ' ms to get Hub urls');
           if (dataSet == null) {
             let currCohorts = self.dataSet.getCohorts();
             if (currCohorts != undefined && currCohorts.length > 0) {
@@ -163,7 +163,7 @@ class VariantModel {
           self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
               .then(function(ids) {
                 t1 = performance.now(); // SJG_TIMING
-                //console.log('It took ' + (t1-t0) + ' ms to get proband IDs'); // SJG_TIMING
+                console.log('It took ' + (t1-t0) + ' ms to get proband IDs'); // SJG_TIMING
                 if (ids == null || ids.length == 0) {
                   let currCohorts = self.dataSet.getCohorts();
                   if (currCohorts != undefined && currCohorts.length > 0) {
@@ -184,7 +184,7 @@ class VariantModel {
                 self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                     .then(function(ids) {
                       t1 = performance.now(); // SJG_TIMING
-                      //console.log('It took ' + (t1-t0) + ' ms to get subset IDs'); // SJG_TIMING
+                      console.log('It took ' + (t1-t0) + ' ms to get subset IDs'); // SJG_TIMING
                       if (ids != null && ids.length > 0) {
                         console.log("Obtained susbset IDs from Hub...");
                         subsetCohort.subsetIds = ids;
@@ -478,16 +478,18 @@ class VariantModel {
       Promise.all(annotatePromises)
         .then(function() {
           let t0 = performance.now(); // SJG_TIMING
-          self.annotateCohortFrequencies(resultMapList);
+          self.annotateDataSetFrequencies(resultMapList);
           let t1 = performance.now(); // SJG_TIMING
-          //console.log('Took ' + (t1-t0) + ' ms to annotate cohort frequencies');  // SJG_TIMING
+          console.log('Took ' + (t1-t0) + ' ms to annotate data set frequencies');  // SJG_TIMING
           if (self.mergeCohortVariants) {
             resultMapList = self.combineCohortVariants(resultMapList);
           }
-          self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
-          .then(function(data) {
-            resolve(data);
-          })
+          resolve(resultMapList);
+          // SJG_P3 removing clinvar annotation at first on the whole
+          // self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
+          // .then(function(data) {
+          //   resolve(data);
+          // })
         })
         .catch(function(error) {
           console.log("There was a problem in VariantModel promiseAnnotateVariants: " + error);
@@ -625,7 +627,7 @@ class VariantModel {
 
   /* Assigns cohort-relative statistics to each variant.
      Used to populate Summary Card graphs when clicking on a variant. */
-  annotateCohortFrequencies(resultMapList) {
+  annotateDataSetFrequencies(resultMapList) {
     let self = this;
     if (resultMapList == null || resultMapList.length == 0) return;   // Avoid console output on initial lode call
 
@@ -646,7 +648,7 @@ class VariantModel {
       (resultMapList[subsetId])[SUBSET_ID].features = subsetFeatures;
     }
     catch(e) {
-      console.log("There was a problem pulling out features from the result map in annotateCohortFrequencies. Unable to assign enrichment colors.");
+      console.log("There was a problem pulling out features from the result map in annotateDataSetFrequencies. Unable to assign enrichment colors.");
     }
   }
 

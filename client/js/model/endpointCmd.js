@@ -90,7 +90,8 @@ EndpointCmd.prototype.annotateVariants = function(vcfSource, refName, regions, v
   cmd = cmd.pipe(me.IOBIO.vt, ["normalize", "-n", "-r", refFastaFile, '-'], {ssl: me.useSSL})
 
   // if af not retreived from vep, get allele frequencies from 1000G and ExAC in af service
-  cmd = cmd.pipe(me.IOBIO.af, ["-b", me.genomeBuildHelper.getCurrentBuildName()], {ssl: me.useSSL});
+  //SJG_P3 removing for timing tests
+  //cmd = cmd.pipe(me.IOBIO.af, ["-b", me.genomeBuildHelper.getCurrentBuildName()], {ssl: me.useSSL});
 
   // Skip snpEff if RefSeq transcript set or we are just annotating with the vep engine
   if (annotationEngine == 'none') {
@@ -132,17 +133,19 @@ EndpointCmd.prototype.annotateVariants = function(vcfSource, refName, regions, v
     //
     var cacheKey = null;
     var urlParameters = {};
-    if (useServerCache && serverCacheKey.length > 0) {
-        urlParameters.cache = serverCacheKey;
-        urlParameters.partialCache = true;
-        cmd = cmd.pipe("nv-dev-new.iobio.io/vep/", vepArgs, {ssl: me.useSSL, urlparams: urlParameters});
-    } else {
-        cmd = cmd.pipe(me.IOBIO.vep, vepArgs, {ssl: me.useSSL, urlparams: urlParameters});
-    }
+    // SJG_P3: removing for timing tests
+    // if (useServerCache && serverCacheKey.length > 0) {
+    //     urlParameters.cache = serverCacheKey;
+    //     urlParameters.partialCache = true;
+    //     cmd = cmd.pipe("nv-dev-new.iobio.io/vep/", vepArgs, {ssl: me.useSSL, urlparams: urlParameters});
+    // } else {
+    //     cmd = cmd.pipe(me.IOBIO.vep, vepArgs, {ssl: me.useSSL, urlparams: urlParameters});
+    // }
 
   } else if (annotationEngine == 'snpeff') {
       cmd = cmd.pipe(me.IOBIO.snpEff, [], {ssl: me.useSSL});
   }
+
   return cmd;
 
 }

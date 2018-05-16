@@ -725,7 +725,6 @@ var effectCategories = [
 
     var t0 = 0; // SJG_TIMING
     var t1 = 0; // SJG_TIMING
-    t0 = performance.now(); // SJG_TIMING
     var cmd = me.getEndpoint().annotateVariants({'vcfUrl': vcfURL, 'tbiUrl': tbiUrl}, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey);
 
     var annotatedData = "";
@@ -741,7 +740,7 @@ var effectCategories = [
     // We have all of the annotated vcf recs.  Now parse them into vcf objects
     cmd.on('end', function(data) {
       t1 = performance.now(); // SJG_TIMING
-      //console.log('Took ' + (t1-t0) + ' ms to return from iobio services');
+
       var annotatedRecs = annotatedData.split("\n");
       var vcfObjects = [];
       var contigHdrRecFound = false;
@@ -773,10 +772,11 @@ var effectCategories = [
         }
       });
 
+      let n = vcfObjects.length;
+      console.log('Took ' + (t1-t0) + ' ms to return from iobio services with ' + n + ' number of variants');
+
       // Parse the vcf object into a variant object that is visualized by the client.
-      t0 = performance.now(); // SJG_TIMING
       var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined, isSubset);
-      t1 = performance.now(); //SJG_TIMING
       //console.log('Took ' + (t1-t0) + ' ms to parse vcf records');  // SJG_TIMING
       callback(annotatedRecs, results);
     });
@@ -785,6 +785,7 @@ var effectCategories = [
        console.log(error);
     });
 
+    t0 = performance.now(); // SJG_TIMING
     cmd.run();
 
   }
@@ -1546,17 +1547,15 @@ var effectCategories = [
                     'chrom':                    refName,
                     'type':                     annot.typeAnnotated && annot.typeAnnotated != '' ? annot.typeAnnotated : type,
 
-                                                // start.end.length.chromosome.strand.type.ref.alt
+                                                // key = start.end.length.chromosome.strand.type.ref.alt
                     'id':                       (rec.pos + '.' + end + '.' + len + '.' + refName + '.' + geneObject.strand + '.' +
                                                 (annot.typeAnnotated && annot.typeAnnotated != '' ? annot.typeAnnotated : type) + '.' + rec.ref + '.' + alt),
                     'ref':                      rec.ref,
                     'alt':                      alt,
                     'qual':                     rec.qual,
                     'recfilter':                rec.filter.split(";").join("-"),
-
                     'extraAnnot':               hasExtraAnnot,
-                    'samplesWithVarCount':      samplesWithVarCount,  // Number of samples in cohort with variant
-                    'totalSamples':             totalSamples,         // Number of total samples in cohort
+
 
                     // genotype fields
                     //'genotypes':                gtResult.genotypeMap, // SJG NOTE: cause of memory issues
@@ -1564,14 +1563,15 @@ var effectCategories = [
                     'genotype':                 genotype,
                     'genotypeDepth' :           genotype.genotypeDepth,
                     'genotypeFilteredDepth' :   genotype.filteredDepth,
-                    'genotypeAltCount' :        genotype.altCount,
-                    'genotypeRefCount' :        genotype.refCount,
-                    'genotypeAltForwardCount' : genotype.altForwardCount,
-                    'genotypeAltReverseCount' : genotype.altReverseCount,
-                    'genotypeRefForwardCount' : genotype.refForwardCount,
-                    'genotypeRefReverseCount' : genotype.refReverseCount,
-                    'eduGenotype' :             genotype.eduGenotype,
-                    'eduGenotypeReversed':      genotype.eduGenotypeReversed,
+                    // SJG removing for now
+                    //'genotypeAltCount' :        genotype.altCount,
+                    //'genotypeRefCount' :        genotype.refCount,
+                    //'genotypeAltForwardCount' : genotype.altForwardCount,
+                    //'genotypeAltReverseCount' : genotype.altReverseCount,
+                    //'genotypeRefForwardCount' : genotype.refForwardCount,
+                    //'genotypeRefReverseCount' : genotype.refReverseCount,
+                    //'eduGenotype' :             genotype.eduGenotype,
+                    //'eduGenotypeReversed':      genotype.eduGenotypeReversed,
                     'zygosity':                 me._getZygosity(genotype, gtResult, keepVariantsCombined),
                     'phased':                   genotype.phased,
 
