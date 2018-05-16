@@ -741,7 +741,7 @@ var effectCategories = [
     // We have all of the annotated vcf recs.  Now parse them into vcf objects
     cmd.on('end', function(data) {
       t1 = performance.now(); // SJG_TIMING
-      console.log('Took ' + (t1-t0) + ' ms to return from iobio services');
+      //console.log('Took ' + (t1-t0) + ' ms to return from iobio services');
       var annotatedRecs = annotatedData.split("\n");
       var vcfObjects = [];
       var contigHdrRecFound = false;

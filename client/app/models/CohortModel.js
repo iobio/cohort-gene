@@ -25,7 +25,7 @@ class CohortModel {
     this.lastBamAlertify = null;
     this.debugMe = false;
     this.calledVariants = null;
-    this.loadedVariants = null;     // Annotated info per variant
+    this.loadedVariants = null;
     this.coverage = [[]];
 
     // Optional subset IDs
@@ -1173,7 +1173,7 @@ class CohortModel {
       var resultMap = {};
       var promises = [];
       var bookmarkPromises = [];
-
+      // There is only one cohort model in cohortModels here, syntax from TD
       cohortModels.forEach(function(model) {
         var p = model._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript)
          .then(function(vcfData) {
