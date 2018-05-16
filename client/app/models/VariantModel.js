@@ -130,12 +130,14 @@ class VariantModel {
     hubDataSet.addCohort(subsetCohort, SUBSET_ID);
 
     // SJG_TIMING
-    var t0 = 0;
-    var t1 = 0;
+    let t0 = 0;
+    let t1 = 0;
 
     // Retrieve urls from hub
     return new Promise(function(resolve, reject) {
       t0 = performance.now(); // SJG_TIMING
+
+      // Get URLs from Hub
       self.promiseGetUrlsFromHub(self.projectId)
         .then(function(dataSet) {
           t1 = performance.now(); // SJG_TIMING
@@ -159,11 +161,9 @@ class VariantModel {
           var filterObj = {'abc.total_score' : probandFilter};
 
           // Retrieve proband sample IDs from Hub
-          t0 = performance.now(); // SJG_TIMING
-          self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
+          let promises = [];
+          let probandP = self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
               .then(function(ids) {
-                t1 = performance.now(); // SJG_TIMING
-                console.log('It took ' + (t1-t0) + ' ms to get proband IDs'); // SJG_TIMING
                 if (ids == null || ids.length == 0) {
                   let currCohorts = self.dataSet.getCohorts();
                   if (currCohorts != undefined && currCohorts.length > 0) {
@@ -177,43 +177,45 @@ class VariantModel {
                 console.log("Obtained proband IDs from Hub...");
                 probandCohort.subsetIds = ids;
                 probandCohort.subsetPhenotypes.push('n = ' + ids.length);
+              });
+            promises.push(probandP);
 
-                // Retrieve subset sample IDs from Hub
-                self.assignPhenoFilters(subsetCohort, probandFilter);
-                t0 = performance.now();   // SJG_TIMING
-                self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
-                    .then(function(ids) {
-                      t1 = performance.now(); // SJG_TIMING
-                      console.log('It took ' + (t1-t0) + ' ms to get subset IDs'); // SJG_TIMING
-                      if (ids != null && ids.length > 0) {
-                        console.log("Obtained susbset IDs from Hub...");
-                        subsetCohort.subsetIds = ids;
-                        subsetCohort.subsetPhenotypes.splice(0, 0, ('Proband n = ' + probandCohort.subsetIds.length));
-                        subsetCohort.subsetPhenotypes.splice(1, 0, ('Subset n = ' + ids.length));
-
-                        // Start processing data
-                        self.promiseInit()
-                            .then(function() {
-                              // Update loading flags
-                              let currCohorts = self.dataSet.getCohorts();
-                              if (currCohorts != undefined && currCohorts.length > 0) {
-                                  currCohorts.forEach(function(cohort) {
-                                    cohort.inProgress.fetchingHubData = false;
-                                  })
-                                }
-                              resolve();
-                            })
+            // Retrieve subset sample IDs from Hub
+            self.assignPhenoFilters(subsetCohort, probandFilter);
+            let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
+                  .then(function(ids) {
+                    if (ids != null && ids.length > 0) {
+                      console.log("Obtained susbset IDs from Hub...");
+                      subsetCohort.subsetIds = ids;
+                      subsetCohort.subsetPhenotypes.splice(0, 0, ('Proband n = ' + probandCohort.subsetIds.length));
+                      subsetCohort.subsetPhenotypes.splice(1, 0, ('Subset n = ' + ids.length));
+                    }
+                    else {
+                      let currCohorts = self.dataSet.getCohorts();
+                      if (currCohorts != undefined && currCohorts.length > 0) {
+                        currCohorts.forEach(function(cohort) {
+                          cohort.inProgress.fetchingHubData = false;
+                          self.hubIssue = true;
+                          reject();
+                        })
                       }
-                      else {
-                        let currCohorts = self.dataSet.getCohorts();
-                        if (currCohorts != undefined && currCohorts.length > 0) {
+                    }
+                  });
+            promises.push(subsetP);
+
+            // Start processing data after IDs retrieved
+            Promise.all(promises)
+              .then(function() {
+                self.promiseInit()
+                    .then(function() {
+                      // Update loading flags
+                      let currCohorts = self.dataSet.getCohorts();
+                      if (currCohorts != undefined && currCohorts.length > 0) {
                           currCohorts.forEach(function(cohort) {
                             cohort.inProgress.fetchingHubData = false;
-                            self.hubIssue = true;
-                            reject();
                           })
                         }
-                      }
+                      resolve();
                     })
               })
         })
@@ -261,8 +263,11 @@ class VariantModel {
     let self = this;
 
     return new Promise(function(resolve, reject) {
+      let t0 = performance.now();
       self.hubEndpoint.getSamplesForProject(projectId, phenoFilters)
           .done(data => {
+            let t1 = performance.now();
+            console.log('Took ' + (t1-t0) + ' ms to get IDs from Hub');
             resolve(data);
           })
     })
@@ -275,7 +280,7 @@ class VariantModel {
     // Define if parameter mapping overwrote
     if (self.phenoFilters == null) self.phenoFilters = {};
 
-    // Remove affected/unaffected filter if applied - currently breaks Hub retrieval
+    // Remove affected/unaffected filter if applied - currently breaks Hub retrieval AND we're only currently dealing w/ affecteds
     if (self.phenoFilters['affection_status'] != null) {
       var filteredPhenoFilters = {};
       Object.keys(self.phenoFilters).forEach(function(filter) {
