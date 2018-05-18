@@ -1008,15 +1008,17 @@ class CohortModel {
               var theVcfData = data[1];
 
               if (theVcfData != null && theVcfData.features != null && theVcfData.features.length > 0) {
-                // Now update the hgvs notation on the variant
-                var matchingVariants = theVcfData.features.filter(function(aVariant) {
-                  if (aVariant.length > 0) {
+                var matchingVariants = [];
+                theVcfData.features.forEach(function(varsAtPos) {
+                  let matchingVar = varsAtPos.filter(function(aVariant) {
                     var matches =
-                         ( variant.start == aVariant[0].start &&
-                           variant.alt   == aVariant[0].alt &&
-                           variant.ref   == aVariant[0].ref );
+                         ( variant.start == aVariant.start &&
+                           variant.alt   == aVariant.alt &&
+                           variant.ref   == aVariant.ref );
                     return matches;
-                  }
+                  })
+                  if (matchingVar.length > 0)
+                    matchingVariants.push(matchingVar);
                 });
                 if (matchingVariants.length > 0) {
                   var v = matchingVariants[0];
@@ -1255,7 +1257,7 @@ class CohortModel {
                 resultMap[cohortName] = theVcfData;
 
                 if (!isBackground) {
-                 model.vcfData = theVcfData;  // Previously crashing here
+                 model.vcfData = theVcfData;
                 }
                 resolve(resultMap);
               } else {
