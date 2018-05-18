@@ -184,22 +184,10 @@ class VariantModel {
             self.assignPhenoFilters(subsetCohort, probandFilter);
             let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                   .then(function(ids) {
-                    if (ids != null && ids.length > 0) {
-                      console.log("Obtained susbset IDs from Hub...");
-                      subsetCohort.subsetIds = ids;
-                      subsetCohort.subsetPhenotypes.splice(0, 0, ('Proband n = ' + probandCohort.subsetIds.length));
-                      subsetCohort.subsetPhenotypes.splice(1, 0, ('Subset n = ' + ids.length));
-                    }
-                    else {
-                      let currCohorts = self.dataSet.getCohorts();
-                      if (currCohorts != undefined && currCohorts.length > 0) {
-                        currCohorts.forEach(function(cohort) {
-                          cohort.inProgress.fetchingHubData = false;
-                          self.hubIssue = true;
-                          reject();
-                        })
-                      }
-                    }
+                    console.log("Obtained susbset IDs from Hub...");
+                    subsetCohort.subsetIds = ids;
+                    subsetCohort.subsetPhenotypes.splice(0, 0, ('Proband n = ' + probandCohort.subsetIds.length));
+                    subsetCohort.subsetPhenotypes.splice(1, 0, ('Subset n = ' + ids.length));
                   });
             promises.push(subsetP);
 
@@ -462,22 +450,15 @@ class VariantModel {
         self.dataSet.getCohorts().forEach(function(cohortModel) {
           cohortModel.inProgress.loadingVariants = true;
 
-          // Only get variants if we have specific samples to look at
-          if (cohortModel.subsetIds.length > 0) {
-            var p = cohortModel.promiseAnnotateVariants(theGene,
-                theTranscript, [cohortModel],
-                false, isBackground, self.keepVariantsCombined)
-              .then(function(resultMap) {
-                cohortModel.inProgress.loadingVariants = false;
-                cohortModel.inProgress.drawingVariants = true;
-                resultMapList.push(resultMap);
-                })
-            annotatePromises.push(p)
-          }
-          else {
-            cohortModel.inProgress.loadingVariants = false;
-            cohortModel.noMatchingSamples = true;
-          }
+          var p = cohortModel.promiseAnnotateVariants(theGene,
+              theTranscript, [cohortModel],
+              false, isBackground, self.keepVariantsCombined)
+            .then(function(resultMap) {
+              cohortModel.inProgress.loadingVariants = false;
+              cohortModel.inProgress.drawingVariants = true;
+              resultMapList.push(resultMap);
+              })
+          annotatePromises.push(p)
         })
       }
       Promise.all(annotatePromises)
@@ -490,6 +471,7 @@ class VariantModel {
             resultMapList = self.combineCohortVariants(resultMapList);
           }
           resolve(resultMapList);
+          debugger; // what is format of resultMapList?
           // SJG_P3 removing clinvar annotation at first on the whole
           // self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
           // .then(function(data) {

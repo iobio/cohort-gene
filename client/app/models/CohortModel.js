@@ -62,6 +62,7 @@ class CohortModel {
   }
 
   /* Returns sample name. Used in gene.iobio */
+  // SJG TODO: this needs to be the sample names apart of the cohort (aka subset IDs?)
   getSampleName() {
     return this.sampleName;
   }
@@ -930,10 +931,11 @@ class CohortModel {
     });
   }
 
+  // Take in variant, navigate to variant in vcf, annotate, return variant result
   promiseGetVariantExtraAnnotations(theGene, theTranscript, variant, format, getHeader = false, sampleNames) {
     var me = this;
 
-    return new Promise( function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
 
       // Create a gene object with start and end reduced to the variants coordinates.
       var fakeGeneObject = $().extend({}, theGene);
@@ -954,23 +956,27 @@ class CohortModel {
           resolve(variant);
         }
       } else {
-        me._promiseVcfRefName(theGene.chr).then( function() {
+        me._promiseVcfRefName(theGene.chr)
+        .then(function() {
           me.vcf.promiseGetVariants(
              me.getVcfRefName(theGene.chr),
              fakeGeneObject,
-               theTranscript,
-               null,   // regions
-               true,  // is multi-sample
-               me._getSamplesToRetrieve(),
-               me.getAnnotationScheme().toLowerCase(), // annot scheme
-               me.getTranslator().clinvarMap,  // clinvar map
-               me.getGeneModel().geneSource == 'refseq' ? true : false,
-               true,  // hgvs notation
-               true,  // rsid
-               false, // vep af
-               useServerCache // serverside cache
-            ).then( function(data) {
-
+             theTranscript,
+             null,   // regions
+             true,   //isMultiSample (true for cohort)
+             me._getSubsetSamples(),
+             me.getName() == 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
+             me.getTranslator().clinvarMap,
+             me.getGeneModel().geneSource == 'refseq' ? true : false,
+             false,   // hgvs notation
+             false,  // rsid
+             true,   // vep af
+             null,
+             true,   // keepVariantsCombined (true for cohort)
+             me.isSubsetCohort,
+             false   // efficiency mode (aka variant calling only - no annotation)
+            )
+            .then(function(data) {
               var rawVcfRecords = data[0];
               var vcfRecords = rawVcfRecords.filter(function(record) {
                 if (record.indexOf("#") == 0) {
@@ -999,17 +1005,18 @@ class CohortModel {
                 }
               });
 
-
               var theVcfData = data[1];
 
               if (theVcfData != null && theVcfData.features != null && theVcfData.features.length > 0) {
                 // Now update the hgvs notation on the variant
                 var matchingVariants = theVcfData.features.filter(function(aVariant) {
-                  var matches =
-                       ( variant.start == aVariant.start &&
-                         variant.alt   == aVariant.alt &&
-                         variant.ref   == aVariant.ref );
-                  return matches;
+                  if (aVariant.length > 0) {
+                    var matches =
+                         ( variant.start == aVariant[0].start &&
+                           variant.alt   == aVariant[0].alt &&
+                           variant.ref   == aVariant[0].ref );
+                    return matches;
+                  }
                 });
                 if (matchingVariants.length > 0) {
                   var v = matchingVariants[0];
@@ -1017,6 +1024,7 @@ class CohortModel {
                     resolve([v, variant, vcfRecords]);
                   } else if (format && format == 'vcf') {
                     if (vcfRecords) {
+                      // SJG TODO: send in variant to clinvar? what format does this need to be in? SJG_P3
                       resolve([v, variant, vcfRecords]);
                     } else {
                       reject('Cannot find vcf record for variant ' + theGene.gene_name + " " + variant.start + " " + variant.ref + "->" + variant.alt);
@@ -1189,9 +1197,6 @@ class CohortModel {
          promises.push(p);
       })
 
-      var t0 = 0; // SJG_TIMING
-      var t1 = 0; // SJG_TIMING
-
       Promise.all(promises)
       .then(function() {
         if (Object.keys(resultMap).length == cohortModels.length) {
@@ -1202,7 +1207,6 @@ class CohortModel {
           // and annotate them._get
           me._promiseVcfRefName(theGene.chr)
           .then(function() {
-            t0 = performance.now(); // SJG_TIMING
             return me.vcf.promiseGetVariants(
                me.getVcfRefName(theGene.chr),
                theGene,
@@ -1213,17 +1217,16 @@ class CohortModel {
                me.getName() == 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
                me.getTranslator().clinvarMap,
                me.getGeneModel().geneSource == 'refseq' ? true : false,
-               window.isLevelBasic || global_getVariantIdsForGene,  // hgvs notation
-               global_getVariantIdsForGene,  // rsid
-               global_vepAF,    // vep af
+               false,  // hgvs notation
+               false,  // rsid
+               false,    // vep af
                null,
                keepVariantsCombined,
-               me.isSubsetCohort
+               me.isSubsetCohort,
+               true  // efficiency mode (aka variant calling only - no annotation)
               );
           })
           .then(function(data) {
-            t1 = performance.now(); // SJG_TIMING
-            //console.log('Took ' + (t1-t0) + ' ms to perform vcf.promiseGetVariants()'); // SJG_TIMING
             if (data == null) {
               me.inProgress.loadingVariants = false;
               // SJG TODO: throw exception here?
@@ -1556,7 +1559,12 @@ class CohortModel {
       })
     } else {
       samplesToRetrieve.push( {vcfSampleName: "",
-                             sampleName:    me.getSampleName() } );
+                             sampleName: "" } );
+      // Might need this for cohort SJG NOTE
+      // me.subsetIds.forEach(function(sample) {
+      //   samplesToRetrieve.push( {vcfSampleName: "",
+      //                          sampleName: sample } );
+      //})
     }
     return samplesToRetrieve;
   }

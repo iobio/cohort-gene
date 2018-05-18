@@ -608,7 +608,7 @@ var effectCategories = [
       });
   }
 
-  exports.promiseGetVariants = function(refName, geneObject, selectedTranscript, regions, isMultiSample, samplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, keepVariantsCombined = false, isSubset = false) {
+  exports.promiseGetVariants = function(refName, geneObject, selectedTranscript, regions, isMultiSample, samplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, keepVariantsCombined = false, isSubset = false, efficiencyMode = false) {
     var me = this;
 
     return new Promise( function(resolve, reject) {
@@ -635,7 +635,7 @@ var effectCategories = [
             } else {
               reject();
             }
-          }, null, keepVariantsCombined, isSubset);
+          }, null, keepVariantsCombined, isSubset, efficiencyMode);
       } else {
         //me._getLocalStats(refName, geneObject.start, geneObject.end, sampleName);
 
@@ -707,13 +707,10 @@ var effectCategories = [
             errorCallback("_getLocalVariantsImpl() error - " + error);
           }
         });
-
-
-
     });
   }
 
-  exports._getRemoteVariantsImpl = function(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false, isSubset = false) {
+  exports._getRemoteVariantsImpl = function(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false, isSubset = false, efficiencyMode = false) {
     var me = this;
 
     if (regions == null || regions.length == 0) {
@@ -725,7 +722,7 @@ var effectCategories = [
 
     var t0 = 0; // SJG_TIMING
     var t1 = 0; // SJG_TIMING
-    var cmd = me.getEndpoint().annotateVariants({'vcfUrl': vcfURL, 'tbiUrl': tbiUrl}, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey);
+    var cmd = me.getEndpoint().annotateVariants({'vcfUrl': vcfURL, 'tbiUrl': tbiUrl}, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey, efficiencyMode);
 
     var annotatedData = "";
     // Get the results from the iobio command
@@ -776,8 +773,7 @@ var effectCategories = [
       console.log('Took ' + (t1-t0) + ' ms to return from iobio services with ' + n + ' number of variants');
 
       // Parse the vcf object into a variant object that is visualized by the client.
-      var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined, isSubset);
-      //console.log('Took ' + (t1-t0) + ' ms to parse vcf records');  // SJG_TIMING
+      var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined, isSubset, efficiencyMode);
       callback(annotatedRecs, results);
     });
 
@@ -1415,7 +1411,7 @@ var effectCategories = [
 
   }
 
-  exports._parseVcfRecords = function(vcfRecs, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, parseMultiSample, sampleNames, sampleIndex, vepAF, keepVariantsCombined = false, isSubset = false) {
+  exports._parseVcfRecords = function(vcfRecs, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, parseMultiSample, sampleNames, sampleIndex, vepAF, keepVariantsCombined = false, isSubset = false, efficiencyMode) {
 
       var me = this;
       var selectedTranscriptID = utility.stripTranscriptPrefix(selectedTranscript.transcript_id);
@@ -1513,14 +1509,14 @@ var effectCategories = [
 
             }
 
+            // SJG_P3 TODO: think I can take annot and clinvarResult out of here for batch
             var annot = me._parseAnnot(rec, altIdx, isMultiAllelic, geneObject, selectedTranscript, selectedTranscriptID, vepAF);
-
             var clinvarResult = me.parseClinvarInfo(rec.info, clinvarMap);
 
             var gtResult = me._parseGenotypes(rec, alt, altIdx, gtSampleIndices, gtSampleNames);
 
-            let samplesWithVarCount = gtResult.genotypes.filter(gt => (gt.zygosity == "HET" || gt.zygosity == "HOM")).length;
-            let totalSamples = gtResult.genotypes.length;
+            //let samplesWithVarCount = gtResult.genotypes.filter(gt => (gt.zygosity == "HET" || gt.zygosity == "HOM")).length;
+            //et totalSamples = gtResult.genotypes.length;
             var clinvarObject = me._formatClinvarCoordinates(rec, alt);
 
             if (gtResult.keep) {
@@ -1642,7 +1638,9 @@ var effectCategories = [
                   }
 
                   // Annotate cohort-level counts and keep track of in each variant
-                  me._assignCohortInfo(variant, gtResult.genotypeMap, isSubset);
+                  if (efficiencyMode) {
+                    me._assignCohortInfo(variant, gtResult.genotypeMap, isSubset);
+                  }
                   allVariants[i].push(variant);
                 }
               }

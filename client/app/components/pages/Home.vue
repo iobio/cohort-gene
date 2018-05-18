@@ -228,6 +228,7 @@ export default {
       self.initFromUrl();
     },
     function(error) {
+      console.log(error);
       alert("There was a problem contacting our iobio services. Please refresh the application, or contact iobioproject@gmail.com if the problem persists.");
     })
   },
@@ -379,11 +380,13 @@ export default {
     onDataSetVariantClick: function(variant, sourceComponent, cohortKey) {
       let self = this;
       if (variant) {
-        // SJG TODO: take out after debugging
-        let foldEnrich = Math.round(variant.subsetDelta * 10) / 10;
-        console.log(variant.subsetDelta + ', ' + foldEnrich);
-
-        self.selectedVariant = variant;
+        // Send variant in for annotating
+        let cohortModel = self.variantModel.dataSet.getProbandCohort();
+        cohortModel.promiseGetVariantExtraAnnotations(self.selectedGene, self.selectedTranscript, variant, 'vcf')
+          .then(function(updatedVariantObject) {
+            let updatedVariant = updatedVariantObject[0][0];
+            self.selectedVariant = self.combineVariantInfo(variant, updatedVariant);
+          })
         if (sourceComponent == null || self.$refs.variantCardRef != sourceComponent) {
           self.$refs.variantCardRef.showVariantCircle(variant);
         }
@@ -391,6 +394,16 @@ export default {
       else {
           self.deselectVariant();
       }
+    },
+    combineVariantInfo: function(variant, updatedVariant) {
+      updatedVariant.totalProbandCount = variant.totalProbandCount;
+      updatedVariant.totalSubsetCount = variant.totalSubsetCount;
+      updatedVariant.affectedProbandCount = variant.affectedProbandCount;
+      updatedVariant.affectedSubsetCount = variant.affectedSubsetCount;
+      updatedVariant.probandZygCounts = variant.probandZygCounts;
+      updatedVariant.subsetZygCounts = variant.subsetZygCounts;
+      updatedVariant.subsetDelta = variant.subsetDelta;
+      return updatedVariant;
     },
     onDataSetVariantClickEnd: function(sourceComponent) {
       let self = this;
