@@ -35,6 +35,7 @@ class CohortModel {
 
     this.inProgress = {
       'fetchingHubData': false,
+      'verifyingVcfUrl': false,
       'loadingVariants': false,
       'drawingVariants': false
     };
@@ -632,7 +633,6 @@ class CohortModel {
   /* Setup VCF fields */
   init(variantModel) {
     var me = this;
-
     me.vcf = vcfiobio();
     me.vcf.setEndpoint(variantModel.endpoint);
     me.vcf.setGenericAnnotation(variantModel.genericAnnotation);
@@ -756,40 +756,41 @@ class CohortModel {
 
   onVcfUrlEntered(vcfUrl, tbiUrl, callback) {
    var me = this;
-   this.vcfData = null;
+
+   me.vcfData = null;
    var success = true;
-   this.sampleName = null;
+   me.sampleName = null;
 
    if (vcfUrl == null || vcfUrl == '') {
-     this.vcfUrlEntered = false;
+     me.vcfUrlEntered = false;
      success = false;
    } else {
      me.vcfUrlEntered = true;
-       me.vcfFileOpened = false;
-       me.getVcfRefName = null;
-       me.isMultiSample = true;  // SJG changed this to true
+     me.vcfFileOpened = false;
+     me.getVcfRefName = null;
+     me.isMultiSample = true;
 
-       success = this.vcf.openVcfUrl(vcfUrl, tbiUrl, function(success, errorMsg) {
-         if (me.lastVcfAlertify) {
-           me.lastVcfAlertify.dismiss();
-         }
-         if (success) {
+     success = me.vcf.openVcfUrl(vcfUrl, tbiUrl, function(success, errorMsg) {
+       if (me.lastVcfAlertify) {
+         me.lastVcfAlertify.dismiss();
+       }
+       if (success) {
          me.vcfUrlEntered = true;
-           me.vcfFileOpened = false;
-           me.getVcfRefName = null;
-           // Get the sample names from the vcf header
-           me.vcf.getSampleNames( function(sampleNames) {
-             me.isMultiSample = sampleNames && sampleNames.length > 1 ? true : false;
-             callback(success, sampleNames);
-           });
-         } else {
-           me.vcfUrlEntered = false;
-           var msg = "<span style='font-size:18px'>" + errorMsg + "</span><br><span style='font-size:12px'>" + vcfUrl + "</span>";
-           alertify.set('notifier','position', 'top-right');
-           me.lastVcfAlertify = alertify.error(msg, 15);
-           callback(success);
-         }
-       });
+         me.vcfFileOpened = false;
+         me.getVcfRefName = null;
+         // Get the sample names from the vcf header
+         me.vcf.getSampleNames(function(sampleNames) {
+           me.isMultiSample = sampleNames && sampleNames.length > 1 ? true : false;
+           callback(success, sampleNames);
+         });
+       } else {
+         me.vcfUrlEntered = false;
+         var msg = "<span style='font-size:18px'>" + errorMsg + "</span><br><span style='font-size:12px'>" + vcfUrl + "</span>";
+         alertify.set('notifier','position', 'top-right');
+         me.lastVcfAlertify = alertify.error(msg, 15);
+         callback(success);
+       }
+     });
    }
  }
 
@@ -1176,16 +1177,14 @@ class CohortModel {
 
   promiseAnnotateVariants(theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined) {
     var me = this;
-    return new Promise( function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
 
       // First the gene vcf data has been cached, just return
       // it.  (No need to retrieve the variants from the iobio service.)
       var resultMap = {};
       var promises = [];
-      var bookmarkPromises = [];
-      // There is only one cohort model in cohortModels here, syntax from TD
       cohortModels.forEach(function(model) {
-        var p = model._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript)
+        var p = model._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript) // SJG_TIMING NOTE: this only takes ~70 ms
          .then(function(vcfData) {
           if (vcfData != null && vcfData != '') {
             resultMap[model.name] = vcfData;
@@ -1206,9 +1205,11 @@ class CohortModel {
         } else {
           // We don't have the variants for the gene in cache,
           // so call the iobio services to retreive the variants for the gene region
-          // and annotate them._get
-          me._promiseVcfRefName(theGene.chr)
+          // and annotate them
+          let t0 = 0;
+          me._promiseVcfRefName(theGene.chr)  // SJG_TIMING NOTE: this takes ~25ms
           .then(function() {
+            t0 = performance.now();
             return me.vcf.promiseGetVariants(
                me.getVcfRefName(theGene.chr),
                theGene,
@@ -1229,11 +1230,12 @@ class CohortModel {
               );
           })
           .then(function(data) {
+            let t1 = performance.now();
+            console.log('took ' + (t1 - t0) + 'ms to return from vcf.promiseGetVariants');
             if (data == null) {
+              // SJG TODO: pass some sort of exception
               me.inProgress.loadingVariants = false;
-              // SJG TODO: throw exception here?
             }
-            console.log('Obtained annotated data from iobio services...');
             var annotatedRecs = data[0];
             var results = data[1];  // One entry per sample in results
 

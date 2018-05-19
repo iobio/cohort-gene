@@ -97,6 +97,10 @@
         <span class="loader-label">Fetching Data from Hub</span>
         <img src="../../../assets/images/wheel.gif">
       </div>
+      <div class="loader" v-bind:class="{ hide: !model.inProgress.verifyingVcfUrl }" style="display: inline-block;padding-left: 20px; padding-bottom:10px">
+        <span class="loader-label">Verifying Variant Data</span>
+        <img src="../../../assets/images/wheel.gif">
+      </div>
       <div class="loader covloader" v-bind:class="{ hide: !model.inProgress.drawingVariants }" style="display: inline-block;padding-left: 20px; padding-bottom:10px">
         <span class="loader-label">Rendering Variants</span>
         <img src="../../../assets/images/wheel.gif">

@@ -89,15 +89,19 @@
       </v-chip>
     </div>
     <div style="text-align: center;clear: both;">
-      <div class="loader vcfloader" v-bind:class="{ hide: !model.inProgress.loadingVariants }" style="display: inline-block;padding-bottom:10px">
+      <div class="loader vcfloader" v-bind:class="{ hide: !model.inProgress.loadingVariants }" style="display: inline-block; padding-left: 20px; padding-bottom: 10px">
         <span class="loader-label">Annotating Variants</span>
         <img src="../../../assets/images/wheel.gif">
       </div>
-      <div class="loader fbloader" v-bind:class="{ hide: !model.inProgress.fetchingHubData }" style="display: inline-block;padding-left: 20px;adding-bottom:10px">
+      <div class="loader fbloader" v-bind:class="{ hide: !model.inProgress.fetchingHubData }" style="display: inline-block; padding-left: 20px; padding-bottom: 10px">
         <span class="loader-label">Fetching Data from Hub</span>
         <img src="../../../assets/images/wheel.gif">
       </div>
-      <div class="loader covloader" v-bind:class="{ hide: !model.inProgress.drawingVariants }" style="display: inline-block;padding-left: 20px;padding-bottom:10px">
+      <div class="loader covloader" v-bind:class="{ hide: !model.inProgress.loadingVariants }" style="display: inline-block; padding-left: 20px; padding-bottom: 10px">
+        <span class="loader-label">Verifying Vcf Data</span>
+        <img src="../../../assets/images/wheel.gif">
+      </div>
+      <div class="loader covloader" v-bind:class="{ hide: !model.inProgress.drawingVariants }" style="display: inline-block; padding-left: 20px; padding-bottom: 10px">
         <span class="loader-label">Rendering Variants</span>
         <img src="../../../assets/images/wheel.gif">
       </div>

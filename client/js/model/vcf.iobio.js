@@ -979,7 +979,6 @@ var effectCategories = [
 
     var cmd = me.getEndpoint().getVcfHeader(vcfURL, tbiUrl);
 
-
     var headerData = "";
     // Use Results
     cmd.on('data', function(data) {

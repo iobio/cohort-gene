@@ -126,7 +126,6 @@ class VariantModel {
     subsetCohort.isSubsetCohort = true;
     subsetCohort.inProgress.fetchingHubData = true;
     subsetCohort.trackName = 'Cohort Filters';
-    //subsetCohort.subsetPhenotypes.push('Subsets');
     hubDataSet.addCohort(subsetCohort, SUBSET_ID);
 
     // SJG_TIMING
@@ -146,13 +145,12 @@ class VariantModel {
             let currCohorts = self.dataSet.getCohorts();
             if (currCohorts != undefined && currCohorts.length > 0) {
                 currCohorts.forEach(function(cohort) {
-                  cohort.inProgress.fetchingHubData = false;
-                })
+                cohort.inProgress.fetchingHubData = false;
+              })
             }
             self.hubIssue = true;
             reject();
           }
-          console.log("Obtained data routing from Hub...");
           hubDataSet.vcfUrl = dataSet.vcfUrl;
           hubDataSet.tbiUrl = dataSet.tbiUrl;
 
@@ -163,49 +161,35 @@ class VariantModel {
           // Retrieve proband sample IDs from Hub
           let promises = [];
           let probandP = self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
-              .then(function(ids) {
-                if (ids == null || ids.length == 0) {
-                  let currCohorts = self.dataSet.getCohorts();
-                  if (currCohorts != undefined && currCohorts.length > 0) {
-                    currCohorts.forEach(function(cohort) {
-                      cohort.inProgress.fetchingHubData = false;
-                    })
-                    self.hubIssue = true;
-                    reject();
-                  }
-                }
-                console.log("Obtained proband IDs from Hub...");
-                probandCohort.subsetIds = ids;
-                probandCohort.subsetPhenotypes.push('n = ' + ids.length);
-              });
-            promises.push(probandP);
+            .then(function(ids) {
+              probandCohort.subsetIds = ids;
+              probandCohort.subsetPhenotypes.push('n = ' + ids.length);
+            });
+          promises.push(probandP);
 
-            // Retrieve subset sample IDs from Hub
-            self.assignPhenoFilters(subsetCohort, probandFilter);
-            let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
-                  .then(function(ids) {
-                    console.log("Obtained susbset IDs from Hub...");
-                    subsetCohort.subsetIds = ids;
-                    subsetCohort.subsetPhenotypes.splice(0, 0, ('Proband n = ' + probandCohort.subsetIds.length));
-                    subsetCohort.subsetPhenotypes.splice(1, 0, ('Subset n = ' + ids.length));
-                  });
-            promises.push(subsetP);
+          // Retrieve subset sample IDs from Hub
+          self.assignPhenoFilters(subsetCohort, probandFilter);
+          let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
+            .then(function(ids) {
+              subsetCohort.subsetIds = ids;
+            });
+          promises.push(subsetP);
 
-            // Start processing data after IDs retrieved
-            Promise.all(promises)
-              .then(function() {
-                self.promiseInit()
-                    .then(function() {
-                      // Update loading flags
-                      let currCohorts = self.dataSet.getCohorts();
-                      if (currCohorts != undefined && currCohorts.length > 0) {
-                          currCohorts.forEach(function(cohort) {
-                            cohort.inProgress.fetchingHubData = false;
-                          })
-                        }
-                      resolve();
-                    })
-              })
+          // Start processing data after IDs retrieved
+          Promise.all(promises)
+            .then(function() {
+              // Assign chip display numbers
+              subsetCohort.subsetPhenotypes.splice(0, 0, ('Proband n = ' + probandCohort.subsetIds.length));
+              subsetCohort.subsetPhenotypes.splice(1, 0, ('Subset n = ' + subsetCohort.subsetIds.length));
+              // Flip hub flags
+              subsetCohort.inProgress.fetchingHubData = false;
+              probandCohort.inProgress.fetchingHubData = false;
+              // Get variant loading rolling
+              self.promiseInit()
+                .then(function() {
+                  resolve();
+                })
+            })
         })
         .catch(function(error) {
           console.log("There was a problem obtaining data from Hub.");
@@ -334,54 +318,57 @@ class VariantModel {
     return filterObj;
   }
 
-  /* Returns promise to add samples from the urls assigned to this data set. */
+  /* Returns promise to check vcf url and finishes initializing cohort models. */
   promiseInit() {
     let self = this;
 
     return new Promise(function(resolve, reject) {
+      // Finish initializing cohort models
       let cohorts = self.dataSet.getCohorts();
       cohorts.forEach(function(cohort) {
-        self.promiseAddSamples(cohort, self.dataSet.vcfUrl, self.dataSet.tbiUrl)
-          .then(function() {
-            self.inProgress.loadingDataSources = false;
-            self.isLoaded = true;
-            resolve();
-          })
-          .catch(function(error) {
-            console.log("There was a problem initializing in VariantModel " + error);
-            reject(error);
-          })
+        cohort.inProgress.verifyingVcfUrl = true;
+        cohort.init(self);
       })
+
+      // Check vcf url
+      self.promiseAddSamples(cohorts, self.dataSet.vcfUrl, self.dataSet.tbiUrl)
+        .then(function() {
+          cohorts.forEach(function(cohort) {
+            cohort.inProgress.verifyingVcfUrl = false;
+          })
+          self.inProgress.loadingDataSources = false;
+          self.isLoaded = true;
+          resolve();
+        })
+        .catch(function(error) {
+          console.log("There was a problem initializing in VariantModel " + error);
+          reject(error);
+        })
     });
   }
 
-  /* Finishes setting up cohort models, promises to verify the vcf url. */
-  promiseAddSamples(cohortModel, vcfUrl, tbiUrl) {
+  /* Promises to verify the vcf url and adds samples to vcf object. */
+  promiseAddSamples(cohortModels, vcfUrl, tbiUrl) {
     let self = this;
 
-    return new Promise(function(resolve,reject) {
-      var cm = cohortModel;
-      cm.init(self);
-
-      var vcfPromise = null;
-      if (cohortModel.vcf) {
-        vcfPromise = new Promise(function(vcfResolve, vcfReject) {
-          cm.onVcfUrlEntered(vcfUrl, tbiUrl, function() {
-            vcfResolve();
-          })
-        },
-        function(error) {
-          vcfReject(error);
-        });
-      } else {
-        vcfPromise = Promise.resolve();
-      }
-
-      Promise.all([vcfPromise])
-      .then(function() {
-        resolve();
-      })
-    })
+    let aCohort = cohortModels[0];
+    if (aCohort.vcf) {
+      return new Promise(function(vcfResolve, vcfReject) {
+        aCohort.onVcfUrlEntered(vcfUrl, tbiUrl, function() {
+          // Copy over changes done to vcf object to other cohort models
+          for (var i = 1; i < cohortModels.length; i++) {
+            cohortModels[i].vcf = aCohort.vcf;
+          }
+          vcfResolve();
+        })
+      },
+      function(error) {
+        vcfReject(error);
+      });
+    }
+    else {
+      return Promise.resolve();
+    }
   }
 
   /* Promises to load variants for the selected gene.
@@ -449,7 +436,6 @@ class VariantModel {
       if (self.dataSet.getCohorts().length > 0) {
         self.dataSet.getCohorts().forEach(function(cohortModel) {
           cohortModel.inProgress.loadingVariants = true;
-
           var p = cohortModel.promiseAnnotateVariants(theGene,
               theTranscript, [cohortModel],
               false, isBackground, self.keepVariantsCombined)
@@ -463,15 +449,11 @@ class VariantModel {
       }
       Promise.all(annotatePromises)
         .then(function() {
-          let t0 = performance.now(); // SJG_TIMING
-          self.annotateDataSetFrequencies(resultMapList);
-          let t1 = performance.now(); // SJG_TIMING
-          console.log('Took ' + (t1-t0) + ' ms to annotate data set frequencies');  // SJG_TIMING
+          self.annotateDataSetFrequencies(resultMapList); // SJG_TIMING NOTE: takes < 10ms
           if (self.mergeCohortVariants) {
             resultMapList = self.combineCohortVariants(resultMapList);
           }
           resolve(resultMapList);
-          debugger; // what is format of resultMapList?
           // SJG_P3 removing clinvar annotation at first on the whole
           // self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
           // .then(function(data) {

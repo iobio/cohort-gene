@@ -224,7 +224,6 @@ export default {
     .then(function() {
       self.filterModel = new FilterModel(self.variantModel.affectedInfo);
       self.variantModel.filterModel = self.filterModel;
-
       self.initFromUrl();
     },
     function(error) {
@@ -524,12 +523,9 @@ export default {
         self.variantModel.phenoFilters = self.getHubPhenoFilters();
         self.variantModel.projectId = self.paramProjectId;
         self.variantModel.promiseInitFromHub()
-            .then(function() {
-              self.geneModel.addGeneName(self.DEMO_GENE);
-              self.onGeneSelected(self.DEMO_GENE);
-          })
-          .catch(function() {
-            alert("Problem talking to Hub...");
+          .then(function() {
+            self.geneModel.addGeneName(self.DEMO_GENE);
+            self.onGeneSelected(self.DEMO_GENE);
           })
       }
       // Otherwise launching oustide of Hub
