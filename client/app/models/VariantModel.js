@@ -9,13 +9,15 @@ class VariantModel {
       // SJG TODO: add the following data structures?
       // These would have to be populated in vcf.iobio.js?
       // AllVariantMap - contains every variant pulled over from Hub, with key = ?, some arbitrary, unique ID?
-      // ProbandVariants: list of unique IDs corresponding to allvariantmap keys
-      // SubsetVariants: list of unique Ids corresponding to allvariantMap keys
-      // NonSubsetVariants: (probandvariants - subsetvariants)
-      // unaffectedvariants: todo
 
     // Combined cohort collections
     this.combinedFeatures = {};
+
+    // Reference lookups used for pre-loading extra variant annotation
+    this.subsetEnrichedVars = [];
+    this.probandEnrichedVars = [];
+    this.nonEnrichedVars = [];
+    this.probandOnlyVars = [];
 
     // Data props
     this.dataSet = null;
@@ -44,10 +46,14 @@ class VariantModel {
     this.affectedInfo = null;
     this.maxDepth = 0;
     this.keepVariantsCombined = true;       // True for multiple samples to be displayed on single track
+    this.efficiencyMode = true;              // True to only pull back variant locations and not functional impacts
     this.inProgress = { 'loadingDataSources': false };
     this.genesInProgress = [];
     this.hubIssue = false;
     this.iobioServicesIssue = false;
+    this.subsetEnrichmentThreshold = 2.0;
+    this.probandEnrichmentThreshold = 0.5;
+    this.extraAnnotationsLoaded = false;
 
     // Hub-specific props
     this.projectId = '';                    // Hub project ID if we're sourcing data from there
@@ -453,12 +459,16 @@ class VariantModel {
           if (self.mergeCohortVariants) {
             resultMapList = self.combineCohortVariants(resultMapList);
           }
-          resolve(resultMapList);
-          // SJG_P3 removing clinvar annotation at first on the whole
-          // self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
-          // .then(function(data) {
-          //   resolve(data);
-          // })
+          if (!self.efficiencyMode) {
+            debugger; // look at resultMapList
+            self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
+            .then(function(data) {
+              resolve(data);
+            })
+          }
+          else {
+            resolve(resultMapList);
+          }
         })
         .catch(function(error) {
           console.log("There was a problem in VariantModel promiseAnnotateVariants: " + error);
@@ -624,6 +634,8 @@ class VariantModel {
   /* Assigns both a delta value representing subset enrichment, and total sample zygosities, to each variant.
      Used to populate Summary Card information when a variant is clicked on, and for visual variant rendering. */
   assignCrossCohortInfo(probandFeatures, subsetFeatures) {
+    let self = this;
+
     // Put proband features into a lookup
     let probandLookup = {};
     probandFeatures.forEach(function(feature) {
@@ -642,7 +654,7 @@ class VariantModel {
 
       // Assign proband metrics to subset feature
       feature.totalProbandCount = matchingProbandFeature.totalProbandCount;
-      feature.affectedProbandCount = matchingProbandFeature.affectedProbandCount;   // SJG TODO: sometimes this is getting assigned to 0 - why?
+      feature.affectedProbandCount = matchingProbandFeature.affectedProbandCount;
       feature.probandZygCounts = matchingProbandFeature.probandZygCounts;
 
       // Compute delta and assign to both
@@ -652,12 +664,71 @@ class VariantModel {
       feature.subsetDelta = foldEnrichment;
       matchingProbandFeature.subsetDelta = foldEnrichment;
     })
+    // Assign variants to groups based on subset delta
+    self.assignCohortsToEnrichmentGroups(probandFeatures);
+  }
+
+  /* Reference assigns all features in provided parameter to enrichment groups. */
+  assignCohortsToEnrichmentGroups(variants) {
+    let self = this;
+
+    variants.forEach(function(variant) {
+      if (variant.subsetDelta >= self.subsetEnrichmentThreshold) {
+        self.subsetEnrichedVars[variant.id] = variant;
+      }
+      else if (variant.subsetDelta <= self.probandEnrichmentThreshold) {
+        self.probandEnrichedVars[variant.id] = variant;
+      }
+      else if (variant.subsetDelta != 1.0){
+        self.nonEnrichedVars[variant.id] = variant;
+      }
+      else {
+        self.probandOnlyVars[variant.id] = variant;
+      }
+    })
+  }
+
+  /* Returns array of enrichment group variants to which the given variant is apart of.
+     The returned enrichment group will contain the given variant first,
+     followed by variants ordered by decreasing subset delta. */
+  getOrderedEnrichmentGroup(variant) {
+    let self = this;
+
+    let enrichGroup = null;
+    if (self.subsetEnrichedVars[variant.id] != null) {
+      enrichGroup = self.subsetEnrichedVars;
+    }
+    else if (self.probandEnrichedVars[variant.id] != null) {
+      enrichGroup = self.probandEnrichedVars;
+    }
+    else if (self.nonEnrichedVars[variant.id] != null) {
+      enrichGroup = self.nonEnrichedVars;
+    }
+    else {
+      enrichGroup = self.probandOnlyVars;
+    }
+
+    // Transform into an array of values ordered by subset delta (desc)
+    let clickedVar = variant.id;
+    let enrichArr = Object.values(enrichGroup);
+    enrichArr.sort(function(a,b) {
+      return b.subsetDelta - a.subsetDelta;
+    })
+
+    // Put selected variant first in list
+    let i = enrichArr.map(function(e) { return e.id }).indexOf(variant.id);
+    enrichArr.splice(i, 1);
+    enrichArr.splice(0, 0, variant);
+
+    return enrichArr;
   }
 
   filterProbandsByDelta(features) {
+    let self = this;
+
     let filteredProbandFeatures = [];
     features.forEach(function(feature) {
-      if (feature.subsetDelta <= 0.5 || feature.subsetDelta >= 2) {
+      if (feature.subsetDelta <= self.probandEnrichmentThreshold || feature.subsetDelta >= self.subsetEnrichmentThreshold) {
         filteredProbandFeatures.push(feature);
       }
     })
@@ -749,7 +820,7 @@ class VariantModel {
                   if (!vcfData.loadState['clinvar']) {
                     var p = refreshVariantsWithClinvarLookup(vcfData, clinvarLookup);
                     if (!isBackground) {
-                      self.dataSet.getCohort(key).vcfData = vcfData;
+                      self.dataSet.getCohort(cohort).vcfData = vcfData;
                     }
                     //var p = getVariantCard(rel).model._promiseCacheData(vcfData, CacheHelper.VCF_DATA, vcfData.gene.gene_name, vcfData.transcript);
                     refreshPromises.push(p);

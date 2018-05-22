@@ -87,7 +87,6 @@ EndpointCmd.prototype.getVcfDepth = function(vcfUrl, tbiUrl) {
      }
 
      // normalize variants
-
      var refFastaFile = me.genomeBuildHelper.getFastaPath(refName);
      cmd = cmd.pipe(me.IOBIO.vt, ["normalize", "-n", "-r", refFastaFile, '-'], {ssl: me.useSSL})
 
@@ -145,6 +144,40 @@ EndpointCmd.prototype.getVcfDepth = function(vcfUrl, tbiUrl) {
      }
      return cmd;
    }
+
+ EndpointCmd.prototype.normalizeVariants = function(vcfUrl, tbiUrl, refName, regions) {
+   var me = this;
+
+   var refFastaFile = me.genomeBuildHelper.getFastaPath(refName);
+
+   var regionParm = "";
+   regions.forEach(function(region) {
+     if (regionParm.length > 0) {
+       regionParm += " ";
+     }
+     regionParm += region.refName + ":" + region.start + "-" + region.end;
+   })
+
+   var args = ['-h', vcfUrl, regionParm];
+   if (tbiUrl) {
+     args.push(tbiUrl);
+   }
+
+   var contigStr = "";
+   me.getHumanRefNames(refName).split(" ").forEach(function(ref) {
+       contigStr += "##contig=<ID=" + ref + ">\n";
+   })
+   var contigNameFile = new Blob([contigStr])
+
+   var cmd = new iobio.cmd(me.IOBIO.tabix, args, {ssl: me.useSSL})
+                      .pipe(me.IOBIO.bcftools, ['annotate', '-h', contigNameFile, '-'], {ssl: me.useSSL})
+
+   // normalize variants
+   cmd = cmd.pipe(me.IOBIO.vt, ["normalize", "-n", "-r", refFastaFile, '-'], {ssl: me.useSSL})
+
+   return cmd;
+ }
+
 
 EndpointCmd.prototype.getBamCoverage = function(bamSource, refName, regionStart, regionEnd, regions, maxPoints, useServerCache, serverCacheKey) {
   var me = this;

@@ -137,7 +137,6 @@ export default {
       selectedTranscript: {},
       selectedVariant: null,
       doneLoadingData: false,
-      doneInit: false,
       geneRegionStart: null,
       geneRegionEnd: null,
       adjustedVariantStart: null,
@@ -277,11 +276,9 @@ export default {
 
           self.variantModel.promiseLoadData(self.selectedGene,
             self.selectedTranscript,
-            self.filterModel,
             options)
           .then(function(resultMap) {
             self.doneLoadingData = true;
-            self.doneInit = true;
             resolve();
           })
           .catch(function(error) {
@@ -290,6 +287,13 @@ export default {
         } else {
           Promise.resolve();
         }
+      })
+    },
+    promiseLoadAnnotationDetails: function() {
+      let self = this;
+
+      return new Promise(function(resolve, reject) {
+
       })
     },
     onFilesLoaded: function() {
@@ -333,7 +337,6 @@ export default {
           self.selectedTranscript = self.geneModel.getCanonicalTranscript(self.selectedGene);
           self.promiseLoadData()
           .then(function() {
-            self.doneLoadingData = true;
             resolve();
           })
         })
@@ -378,14 +381,41 @@ export default {
     },
     onDataSetVariantClick: function(variant, sourceComponent, cohortKey) {
       let self = this;
+
       if (variant) {
-        // Send variant in for annotating
-        let cohortModel = self.variantModel.dataSet.getProbandCohort();
-        cohortModel.promiseGetVariantExtraAnnotations(self.selectedGene, self.selectedTranscript, variant, 'vcf')
-          .then(function(updatedVariantObject) {
-            let updatedVariant = updatedVariantObject[0][0];
-            self.selectedVariant = self.combineVariantInfo(variant, updatedVariant);
-          })
+        // if we haven't already gotten extra annotation for this variant - how to determine?
+        if (!self.variantModel.extraAnnotationsLoaded) {
+          // Send variant in for annotating
+          let cohortModel = self.variantModel.dataSet.getProbandCohort();
+          let t0 = performance.now();
+
+          // SJG this needs to go through clinvar so better to call from variant model
+          cohortModel.promiseGetVariantExtraAnnotations(self.selectedGene, self.selectedTranscript, variant, 'vcf')
+            .then(function(updatedVariantObject) {
+              let t1 = performance.now();
+              console.log('Getting extra annotation for single variant took ' + (t1 - t0) + ' ms');
+              let updatedVariant = updatedVariantObject[0][0];
+
+              // Wrap variant with appropriate structure to send into existing clinvar method
+              let detailsObj = {};
+              detailsObj['loadState'] = {};
+              detailsObj['features'] = [updatedVariant];
+              let variantObj = {};
+              variantObj['selectedVar'] = detailsObj;
+              let cohortObj = {};
+              cohortObj['Proband'] = variantObj;
+
+              self.variantModel.promiseAnnotateWithClinvar(cohortObj, self.selectedGene, self.selectedTranscript, false)
+                .then(function(variantObj) {
+                  // Unwrap clinvarVariant structure
+                  let clinvarVariant = variantObj['Proband']['selectedVar']['features'][0];
+                  self.selectedVariant = self.combineVariantInfo(variant, clinvarVariant);
+                })
+            })
+        }
+        else {
+          self.selectedVariant = variant;
+        }
         if (sourceComponent == null || self.$refs.variantCardRef != sourceComponent) {
           self.$refs.variantCardRef.showVariantCircle(variant);
         }
