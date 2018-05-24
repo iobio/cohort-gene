@@ -71,6 +71,11 @@ class VariantModel {
     self.simonsIdMap = idMap;
   }
 
+  setAnnotationStatus(status) {
+    let self = this;
+    self.extraAnnotationsLoaded = status;
+  }
+
   /* Sets up cohort and data set models, promises to initalize. */
   promiseInitDemo() {
     let self = this;
@@ -444,7 +449,7 @@ class VariantModel {
           cohortModel.inProgress.loadingVariants = true;
           var p = cohortModel.promiseAnnotateVariants(theGene,
               theTranscript, [cohortModel],
-              false, isBackground, self.keepVariantsCombined)
+              false, isBackground, self.keepVariantsCombined, true)
             .then(function(resultMap) {
               cohortModel.inProgress.loadingVariants = false;
               cohortModel.inProgress.drawingVariants = true;
@@ -459,8 +464,8 @@ class VariantModel {
           if (self.mergeCohortVariants) {
             resultMapList = self.combineCohortVariants(resultMapList);
           }
-          if (!self.efficiencyMode) {
-            debugger; // look at resultMapList
+          let quickLoad = options.efficiencyMode == true;
+          if (!quickLoad) {
             self.promiseAnnotateWithClinvar(resultMapList, theGene, theTranscript, isBackground)
             .then(function(data) {
               resolve(data);
@@ -476,11 +481,100 @@ class VariantModel {
     });
   }
 
+  /* Used in cohort-gene to further annotate variants that have already come back
+     from a single positional annotation round. Options may be used to determine which outside
+     database annotations are called. */
+  promiseFurtherAnnotateVariants(theGene, theTranscript, isBackground, options = {}) {
+    let self = this;
+
+    return new Promise(function(resolve, reject) {
+      // Annotate proband (all) variants
+      let probandCohort = self.dataSet.getProbandCohort();
+      probandCohort.promiseAnnotateVariants(theGene,
+          theTranscript, [probandCohort],
+          false, isBackground, self.keepVariantsCombined, false)
+        .then(function(resultMap) {
+          // Wrap result to play nice with clinvar function
+          let wrappedResultMap = [];
+          wrappedResultMap[0] = resultMap;
+          self.promiseAnnotateWithClinvar(wrappedResultMap, theGene, theTranscript, isBackground)
+            .then(function(data) {
+              resolve(data);
+            })
+        })
+        .catch(function(error) {
+          console.log("There was a problem with VariantModel promiseFurtherAnnotateVariants: " + error);
+        })
+    })
+  }
+
+  /* Takes in a list of fully annotated variants, and appends existing, relative positional information from proband variants to them.
+     Reassigns loadedVariants in proband CohortModel.
+     Sets extraAnnotationsLoaded to true. */
+  combineVariantInfo(updatedVariants) {
+    let self = this;
+
+    // Put updated variants into hash table
+    let updatedLookup = [];
+    updatedVariants.forEach(function(variant) {
+      updatedLookup[variant.id] = variant;
+    })
+    let probandModel = self.dataSet.getProbandCohort();
+
+    // Assign existing variants depending on variant(s) coming in
+    let existingVariants = [];
+    if (updatedVariants.length > 1) {
+      existingVariants = probandModel.loadedVariants.features;
+    }
+    else {
+      // Pull out reference to single variant
+      existingVariants = probandModel.loadedVariants.features.filter(feature => feature.id == updatedVariants[0].id);
+    }
+
+    // Iterate through existing variants, find matching updated variant, transfer info
+    existingVariants.forEach(function(existingVar) {
+      let matchingVar = updatedLookup[existingVar.id];
+      if (matchingVar != null) {
+        // Copy counts and subset delta info
+        existingVar.af = matchingVar.af;
+        existingVar.af1000G = matchingVar.af1000G;
+        existingVar.afExAC = matchingVar.afExAC;
+        existingVar.afgnomAD = matchingVar.afgnomAD;
+
+        existingVar.effect = matchingVar.effect;
+        existingVar.impact = matchingVar.impact;
+
+        existingVar.vepConsequence = matchingVar.vepConsequence;
+        existingVar.vepImpact = matchingVar.vepImpact;
+        existingVar.vepExon = matchingVar.vepExon;
+        existingVar.vepSIFT = matchingVar.vepSIFT;
+        existingVar.sift = matchingVar.sift;
+        existingVar.vepPolyPhen = matchingVar.vepPolyPhen;
+        existingVar.polyphen =  matchingVar.polyphen;
+        existingVar.vepAf = matchingVar.vepAf;
+
+        existingVar.highestImpactSnpeff = matchingVar.highestImpactSnpeff;
+        existingVar.highestImpactVep = matchingVar.highestImpactVep;
+        existingVar.highestSIFT = matchingVar.highestSIFT;
+        existingVar.highestPolyphen = matchingVar.highestPolyphen;
+
+        existingVar.clinVarClinicalSignificance = matchingVar.clinVarClinicalSignificance;
+        existingVar.clinvar = matchingVar.clinvar;
+      }
+    })
+
+    if (updatedVariants.length > 1) {
+      self.extraAnnotationsLoaded = true;
+    }
+    else {
+      return existingVariants[0];
+    }
+  }
+
   promiseAnnotateInheritance(geneObject, theTranscript, resultMap, options={isBackground: false, cacheData: true}) {
     let self = this;
 
     var resolveIt = function(resolve, resultMap, geneObject, theTranscript, options) {
-    // SJG TODO: incorporate assessVariantImpact
       self.promiseCacheCohortVcfData(geneObject, theTranscript, CacheHelper.VCF_DATA, resultMap, options.cacheData)
       .then(function() {
         resolve({'resultMap': resultMap, 'gene': geneObject, 'transcript': theTranscript});
@@ -516,6 +610,8 @@ class VariantModel {
   /* Clears the variant data for each cohort. Falsifies flags used for chip display. */
   clearLoadedData() {
     let self = this;
+
+    self.extraAnnotationsLoaded = false;
     if (self.dataSet != null) {
       self.dataSet.getCohorts().forEach(function(cohort) {
         cohort.loadedVariants = {loadState: {}, features: [], maxPosLevel: 0, maxNegLevel: 0, maxSubLevel: 0, featureWidth: 0};
@@ -561,7 +657,6 @@ class VariantModel {
         return isTarget && !isHomRef && inRegion && passesModelFilter;
       });
 
-      // SJG_P2 NOTE change this depending on double mode
       var pileupObject = model._pileupVariants(filteredVariants.features, start, end);
       filteredVariants.maxPosLevel = pileupObject.maxPosLevel;
       filteredVariants.maxNegLevel = pileupObject.maxNegLevel;
@@ -577,13 +672,9 @@ class VariantModel {
           var start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
           var end   = self.filterModel.regionEnd   ? self.filterModel.regionEnd   : gene.end;
 
-          // SJG_P2 filtering out all non-enriched variants for now TODO: fix when get handle on bidirectional rendering
-           // if (cohort.getName() == PROBAND_ID)
-           //   cohort.vcfData.features = self.filterProbandsByDelta(cohort.vcfData.features);
-
-          t0 = performance.now(); // SJG_TIMING
+          //t0 = performance.now(); // SJG_TIMING
           var loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
-          t1 = performance.now(); // SJG_TIMING
+          //t1 = performance.now(); // SJG_TIMING
           //console.log('Took ' + (t1-t0) + ' ms to filter and pileup variants'); // SJG_TIMING
           cohort.loadedVariants = loadedVariants;
 
@@ -593,8 +684,6 @@ class VariantModel {
           if (cohort.getName() == PROBAND_ID) {
             var allVariants = $.extend({}, cohort.loadedVariants);
             allVariants.features = cohort.loadedVariants.features.concat(cohort.calledVariants.features);
-            // TODO: incorporate with featureMatrixModel
-            //self.featureMatrixModel.promiseRankVariants(allVariants);
           }
         } else {
           cohort.loadedVariants = {loadState: {}, features: []};
@@ -768,7 +857,7 @@ class VariantModel {
       // instead of on a per sample basis
       var uniqueVariants = {};
       var unionVcfData = {features: []}
-      for (var cohort in resultMap) {       // SJG TODO: this is an overly complicated loop that can be simplified if data being pulled back is reformatted
+      for (var cohort in resultMap) {
         for (var key in resultMap[cohort]) {
           if (Object.prototype.hasOwnProperty.call(resultMap[cohort], key)) {
             var vcfData = resultMap[cohort][key];
@@ -820,7 +909,7 @@ class VariantModel {
                   if (!vcfData.loadState['clinvar']) {
                     var p = refreshVariantsWithClinvarLookup(vcfData, clinvarLookup);
                     if (!isBackground) {
-                      self.dataSet.getCohort(cohort).vcfData = vcfData;
+                      self.dataSet.getCohort(key).vcfData = vcfData;
                     }
                     //var p = getVariantCard(rel).model._promiseCacheData(vcfData, CacheHelper.VCF_DATA, vcfData.gene.gene_name, vcfData.transcript);
                     refreshPromises.push(p);

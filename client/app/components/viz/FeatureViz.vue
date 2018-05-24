@@ -18,7 +18,10 @@
     </v-layout>
     <v-layout row>
        <v-flex xs3 class="summary-field-label">Effect:</v-flex>
-       <v-flex xs9 class="summary-field-value">{{ effect }}</v-flex>
+       <v-flex xs9 v-bind:class="{ hide: effect == '-'}" class="summary-field-value">{{ effect }}</v-flex>
+       <div class="loader" v-bind:class="{ hide: effect != '-' }">
+         <img src="../../../assets/images/wheel.gif">
+       </div>
     </v-layout>
     <v-layout row>
        <v-flex xs3 class="summary-field-label">Impact:</v-flex>

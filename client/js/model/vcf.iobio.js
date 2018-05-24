@@ -1145,9 +1145,6 @@ var effectCategories = [
       Promise.all(clinvarPromises).then(function() {
         resolve(theVcfData);
       });
-
-
-
     });
   }
 
@@ -1237,12 +1234,8 @@ var effectCategories = [
 
           }
         });
-
-
         clinvarLoadVariantsFunction(vcfObjects);
-
         resolve();
-
       });
 
       cmd.on('error', function(error) {
@@ -1508,7 +1501,7 @@ var effectCategories = [
 
             }
 
-            // SJG_P3 TODO: think I can take annot and clinvarResult out of here for batch
+            // SJG_P3 TODO: think I can take annot and clinvarResult out of here for batch?
             var annot = me._parseAnnot(rec, altIdx, isMultiAllelic, geneObject, selectedTranscript, selectedTranscriptID, vepAF);
             var clinvarResult = me.parseClinvarInfo(rec.info, clinvarMap);
 
@@ -1558,7 +1551,7 @@ var effectCategories = [
                     'genotype':                 genotype,
                     'genotypeDepth' :           genotype.genotypeDepth,
                     'genotypeFilteredDepth' :   genotype.filteredDepth,
-                    // SJG removing for now
+                    // SJG NOTE removing for now
                     //'genotypeAltCount' :        genotype.altCount,
                     //'genotypeRefCount' :        genotype.refCount,
                     //'genotypeAltForwardCount' : genotype.altForwardCount,
@@ -1586,8 +1579,8 @@ var effectCategories = [
                     'af1000G':                  me._parseAf(altIdx, annot.af1000G),
                     'afExAC':                   me._parseAf(altIdx, annot.afExAC),
                     'afgnomAD':                 vepAF ? annot.vep.af['gnomAD'].AF : '',
-                    'rsid' :                    annot.rs,
-                    'combinedDepth':            annot.combinedDepth,
+                    //'rsid' :                    annot.rs,
+                    //'combinedDepth':            annot.combinedDepth,
 
                     // snpeff
                     'effect':                   annot.snpEff.effects,
@@ -1597,16 +1590,16 @@ var effectCategories = [
                     'vepConsequence':          annot.vep.vepConsequence,
                     'vepImpact':               annot.vep.vepImpact,
                     'vepExon':                 annot.vep.vepExon,
-                    'vepHGVSc':                annot.vep.vepHGVSc,
-                    'vepHGVSp':                annot.vep.vepHGVSp,
-                    'vepAminoAcids':           annot.vep.vepAminoAcids,
-                    'vepVariationIds' :        annot.vep.vepVariationIds,
+                    //'vepHGVSc':                annot.vep.vepHGVSc,
+                    //'vepHGVSp':                annot.vep.vepHGVSp,
+                    //'vepAminoAcids':           annot.vep.vepAminoAcids,
+                    //'vepVariationIds' :        annot.vep.vepVariationIds,
                     'vepSIFT':                 annot.vep.vepSIFT,
                     'sift' :                   annot.vep.sift,
                     'vepPolyPhen':             annot.vep.vepPolyPhen,
                     'polyphen' :               annot.vep.polyphen,
-                    'vepRegs':                 annot.vep.vepRegs,
-                    'regulatory' :             annot.vep.regulatory,
+                    //'vepRegs':                 annot.vep.vepRegs,
+                    //'regulatory' :             annot.vep.regulatory,
                     'vepAf':                   annot.vep.af,
 
                     // generic annots

@@ -272,18 +272,28 @@ export default {
 
       return new Promise(function(resolve, reject) {
         if (self.variantModel.dataSet) {
-          var options = {'getKnownVariants': self.showClinvarVariants};
-
+          var options = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': true};
+          // Load positional information for quick display
           self.variantModel.promiseLoadData(self.selectedGene,
             self.selectedTranscript,
             options)
-          .then(function(resultMap) {
-            self.doneLoadingData = true;
-            resolve();
-          })
-          .catch(function(error) {
-            reject(error);
-          })
+            .then(function() {
+              // Display variants
+              self.doneLoadingData = true;
+              // Load all annotation information
+              self.variantModel.promiseFurtherAnnotateVariants(self.selectedGene,
+              self.selectedTranscript,
+              options)
+              .then(function(resultMap) {
+                // Unwrap result map
+                let resultVars = resultMap[0]['Proband'].features;
+                // Combine variant info
+                self.variantModel.combineVariantInfo(resultVars);
+              })
+            })
+            .catch(function(error) {
+              reject(error);
+            })
         } else {
           Promise.resolve();
         }
@@ -389,7 +399,6 @@ export default {
           let cohortModel = self.variantModel.dataSet.getProbandCohort();
           let t0 = performance.now();
 
-          // SJG this needs to go through clinvar so better to call from variant model
           cohortModel.promiseGetVariantExtraAnnotations(self.selectedGene, self.selectedTranscript, variant, 'vcf')
             .then(function(updatedVariantObject) {
               let t1 = performance.now();
@@ -401,15 +410,15 @@ export default {
               detailsObj['loadState'] = {};
               detailsObj['features'] = [updatedVariant];
               let variantObj = {};
-              variantObj['selectedVar'] = detailsObj;
+              variantObj['Proband'] = detailsObj;
               let cohortObj = {};
-              cohortObj['Proband'] = variantObj;
+              cohortObj[0] = variantObj;
 
               self.variantModel.promiseAnnotateWithClinvar(cohortObj, self.selectedGene, self.selectedTranscript, false)
                 .then(function(variantObj) {
                   // Unwrap clinvarVariant structure
-                  let clinvarVariant = variantObj['Proband']['selectedVar']['features'][0];
-                  self.selectedVariant = self.combineVariantInfo(variant, clinvarVariant);
+                  let clinvarVariant = variantObj[0]['Proband']['features'][0];
+                  self.selectedVariant = self.variantModel.combineVariantInfo([clinvarVariant]);
                 })
             })
         }
@@ -423,16 +432,6 @@ export default {
       else {
           self.deselectVariant();
       }
-    },
-    combineVariantInfo: function(variant, updatedVariant) {
-      updatedVariant.totalProbandCount = variant.totalProbandCount;
-      updatedVariant.totalSubsetCount = variant.totalSubsetCount;
-      updatedVariant.affectedProbandCount = variant.affectedProbandCount;
-      updatedVariant.affectedSubsetCount = variant.affectedSubsetCount;
-      updatedVariant.probandZygCounts = variant.probandZygCounts;
-      updatedVariant.subsetZygCounts = variant.subsetZygCounts;
-      updatedVariant.subsetDelta = variant.subsetDelta;
-      return updatedVariant;
     },
     onDataSetVariantClickEnd: function(sourceComponent) {
       let self = this;

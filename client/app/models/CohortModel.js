@@ -932,157 +932,6 @@ class CohortModel {
     });
   }
 
-  // Take in multiple variants, and get extra annotations for them
-  promiseGetMultipleExtraAnnotations(theGene, theTranscript, variants, format, getHeader = false, sampleNames) {
-    let self = this;
-
-    // Get ref name
-    let refName = self.getVcfRefName(theGene.chr);
-
-    // Trying to get for all variants
-    // Get regions of all supplied variants
-    // let compiledRegions = [];
-    // variants.forEach(function(variant) {
-    //   let region = { 'name': refName, 'start': variant.start, 'end': variant.end };
-    //   compiledRegions.push(region);
-    //})
-    return new Promise(function(resolve, reject) {
-      self.vcf.promiseGetVariants(
-         refName,
-         theGene,             // Gene object
-         theTranscript,
-         null,                // regions
-         true,                //isMultiSample (true for cohort)
-         self._getSubsetSamples(),
-         self.getName() == 'known-variants' ? 'none' : self.getAnnotationScheme().toLowerCase(),
-         self.getTranslator().clinvarMap,
-         self.getGeneModel().geneSource == 'refseq' ? true : false,
-         false,               // hgvs notation
-         false,               // rsid
-         true,                // vep af
-         null,
-         true,                // keepVariantsCombined (true for cohort)
-         self.isSubsetCohort,
-         false                // efficiency mode (aka variant calling only - no annotation)
-        )
-        .then(function(data) {
-          var rawVcfRecords = data[0];
-          var vcfRecords = rawVcfRecords.filter(function(record) {
-            if (record.indexOf("#") == 0) {
-              if (getHeader) {
-                return true;
-              } else {
-                return false;
-              }
-            } else if (record != "") {
-              var fields = record.split("\t");
-              var chrom = fields[0];
-              var start = fields[1];
-              var ref   = fields[3];
-              var alt   = fields[4];
-              var found = false;
-              alt.split(",").forEach(function(theAlt) {
-                if (!found &&
-                  self.getVcfRefName(theGene.chr) == chrom &&
-                  start == variant.start &&
-                  theAlt == variant.alt &&
-                  ref == variant.ref) {
-                  found = true;
-                }
-              })
-              return found;
-            }
-          });
-
-          var theVcfData = data[1];
-
-          if (theVcfData != null && theVcfData.features != null && theVcfData.features.length > 0) {
-            var matchingVariants = [];
-
-            // SJG TODO: have to pull out variant that has been clicked on to find matching one below...
-
-            theVcfData.features.forEach(function(varsAtPos) {
-              let matchingVar = varsAtPos.filter(function(aVariant) {
-                var matches =
-                     ( variant.start == aVariant.start &&
-                       variant.alt   == aVariant.alt &&
-                       variant.ref   == aVariant.ref );
-                return matches;
-              })
-              if (matchingVar.length > 0)
-                matchingVariants.push(matchingVar);
-            });
-            if (matchingVariants.length > 0) {
-              var v = matchingVariants[0];
-              if (format && format == 'csv') {
-                resolve([v, variant, vcfRecords]);
-              } else if (format && format == 'vcf') {
-                if (vcfRecords) {
-                  // SJG TODO: send in variant to clinvar? what format does this need to be in? SJG_P3
-                  resolve([v, variant, vcfRecords]);
-                } else {
-                  reject('Cannot find vcf record for variant ' + theGene.gene_name + " " + variant.start + " " + variant.ref + "->" + variant.alt);
-                }
-              } else {
-                self._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript, cacheHelper)
-                 .then(function(cachedVcfData) {
-                  if (cachedVcfData) {
-                    var theVariants = cachedVcfData.features.filter(function(d) {
-                      if (d.start == v.start &&
-                        d.alt == v.alt &&
-                        d.ref == v.ref) {
-                        return true;
-                      } else {
-                        return false;
-                      }
-                    });
-                    if (theVariants && theVariants.length > 0) {
-                      var theVariant = theVariants[0];
-
-                    // set the hgvs and rsid on the existing variant
-                      theVariant.extraAnnot = true;
-                      theVariant.vepHGVSc = v.vepHGVSc;
-                      theVariant.vepHGVSp = v.vepHGVSp;
-                      theVariant.vepVariationIds = v.vepVariationIds;
-
-                      // re-cache the data
-                      self._promiseCacheData(cachedVcfData, CacheHelper.VCF_DATA, theGene.gene_name, theTranscript)
-                       .then(function() {
-                        // return the annotated variant
-                      resolve(theVariant);
-                       }, function(error) {
-                        var msg = "Problem caching data in CohortModel.promiseGetVariantExtraAnnotations(): " + error;
-                        console.log(msg);
-                        reject(msg);
-                       });
-
-                    } else {
-                      var msg = "Cannot find corresponding variant to update HGVS notation for variant " + v.chrom + " " + v.start + " " + v.ref + "->" + v .alt;
-                      console.log(msg);
-                      reject(msg);
-                    }
-                  } else {
-                    var msg = "Unable to update gene vcfData cache with updated HGVS notation for variant " + v.chrom + " " + v.start + " " + v.ref + "->" + v.alt;
-                    console.log(msg);
-                    reject(msg);
-                  }
-                 })
-              }
-            } else {
-              reject('Cannot find vcf record for variant ' + theGene.gene_name + " " + variant.start + " " + variant.ref + "->" + variant.alt);
-            }
-          } else {
-            var msg = "Empty results returned from CohortModel.promiseGetVariantExtraAnnotations() for variant " + variant.chrom + " " + variant.start + " " + variant.ref + "->" + variant.alt;
-            console.log(msg);
-            if (format == 'csv' || format == 'vcf') {
-              resolve([variant, variant, []]);
-            }
-            reject(msg);
-          }
-      });
-    })
-  }
-
   // Take in variant, navigate to variant in vcf, annotate, return variant result
   promiseGetVariantExtraAnnotations(theGene, theTranscript, variant, format, getHeader = false, sampleNames) {
     var me = this;
@@ -1325,7 +1174,7 @@ class CohortModel {
     });
   }
 
-  promiseAnnotateVariants(theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined) {
+  promiseAnnotateVariants(theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, efficiencyMode = false) {
     var me = this;
     return new Promise(function(resolve, reject) {
 
@@ -1376,7 +1225,7 @@ class CohortModel {
                null,
                keepVariantsCombined,
                me.isSubsetCohort,
-               true  // efficiency mode (aka variant calling only - no annotation)
+               efficiencyMode
               );
           })
           .then(function(data) {
