@@ -72,6 +72,8 @@ TD & SJG updated Apr2018 -->
             :selectedGene="selectedGene.gene_name"
             :variant="selectedVariant"
             :variantInfo="selectedVariantInfo"
+            :loadingExtraAnnotations="loadingExtraAnnotations"
+            :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations"
             @summaryCardVariantDeselect="deselectVariant"
             ref="variantSummaryCardRef">
           </variant-summary-card>
@@ -137,6 +139,8 @@ export default {
       selectedTranscript: {},
       selectedVariant: null,
       doneLoadingData: false,
+      loadingExtraAnnotations: false,
+      loadingExtraClinvarAnnotations: false,
       geneRegionStart: null,
       geneRegionEnd: null,
       adjustedVariantStart: null,
@@ -159,7 +163,7 @@ export default {
       showClinvarVariants: false,
       activeBookmarksDrawer: null,
 
-      DEMO_GENE: 'POGZ'   // SJG TODO: get rid of this outside of demo
+      DEMO_GENE: 'BRCA1'   // SJG TODO: get rid of this outside of demo
     }
   },
   computed: {
@@ -393,8 +397,17 @@ export default {
       let self = this;
 
       if (variant) {
-        // if we haven't already gotten extra annotation for this variant - how to determine?
+        // Circle selected variant
+        if (sourceComponent == null || self.$refs.variantCardRef != sourceComponent) {
+          self.$refs.variantCardRef.showVariantCircle(variant);
+        }
+        // Query service for single variant annotation if we don't have details yet
         if (!self.variantModel.extraAnnotationsLoaded) {
+          // Turn on flag for summary card loading icons
+          self.deselectVariant(true);
+          self.loadingExtraAnnotations = true;
+          self.loadingExtraClinvarAnnotations = true;
+
           // Send variant in for annotating
           let cohortModel = self.variantModel.dataSet.getProbandCohort();
           let t0 = performance.now();
@@ -404,6 +417,9 @@ export default {
               let t1 = performance.now();
               console.log('Getting extra annotation for single variant took ' + (t1 - t0) + ' ms');
               let updatedVariant = updatedVariantObject[0][0];
+              // Display variant info once we have it
+              self.loadingExtraAnnotations = false;
+              self.selectedVariant = self.variantModel.combineVariantInfo([updatedVariant]);
 
               // Wrap variant with appropriate structure to send into existing clinvar method
               let detailsObj = {};
@@ -416,17 +432,17 @@ export default {
 
               self.variantModel.promiseAnnotateWithClinvar(cohortObj, self.selectedGene, self.selectedTranscript, false)
                 .then(function(variantObj) {
+                  let t1 = performance.now();
+                  console.log('Getting extra annotation for single variant WITH CLINVAR took ' + (t1 - t0) + ' ms');
                   // Unwrap clinvarVariant structure
                   let clinvarVariant = variantObj[0]['Proband']['features'][0];
+                  self.loadingExtraClinvarAnnotations = false;
                   self.selectedVariant = self.variantModel.combineVariantInfo([clinvarVariant]);
                 })
             })
         }
         else {
           self.selectedVariant = variant;
-        }
-        if (sourceComponent == null || self.$refs.variantCardRef != sourceComponent) {
-          self.$refs.variantCardRef.showVariantCircle(variant);
         }
       }
       else {
@@ -449,10 +465,10 @@ export default {
         self.$refs.variantCardRef.hideVariantCircle();
       }
     },
-    deselectVariant: function() {
+    deselectVariant: function(keepVariantCircle = false) {
       let self = this;
       self.selectedVariant = null;
-      if (self.$refs.variantCardRef) {
+      if (!keepVariantCircle && self.$refs.variantCardRef) {
         self.$refs.variantCardRef.hideVariantCircle();
       }
     },

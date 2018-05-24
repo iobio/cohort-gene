@@ -81,11 +81,11 @@ Updated: SJG Apr2018
       <div style="width:100%; height: 783px">
         <updated-variant-viz
           v-if="(showVariantViz && subsetCohort != null && probandCohort != null)"
-          ref="subsetVizRef"
-          :id="subsetCohort.getName()"
-          :model="subsetCohort"
+          ref="probandVizRef"
+          :id="probandCohort.getName()"
+          :model="probandCohort"
           :data="probandCohort.loadedVariants"
-          :title="subsetCohort.trackName"
+          :title="probandCohort.trackName"
           :phenotypes="subsetCohort.subsetPhenotypes"
           :regionStart="regionStart"
           :regionEnd="regionEnd"
@@ -339,9 +339,10 @@ export default {
     },
     showVariantCircle: function(variant) {
       let self = this;
-      if (self.showVariantViz && self.$refs.subsetVizRef != null) {
-        self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
-      }
+      // if (self.showVariantViz && self.$refs.subsetVizRef != null) {
+      //   self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
+      // }
+      debugger;
       if (self.showVariantViz && self.$refs.probandVizRef != null) {
         self.$refs.probandVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.probandVizRef.name), true);
       }

@@ -13,22 +13,34 @@
     </v-layout>
     <v-layout row>
        <v-flex xs3 class="summary-field-label">1000G:</v-flex>
-       <v-flex xs2 class="summary-field-value">{{ oneKGenomes }}</v-flex>
+       <v-flex xs2 v-bind:class="{ hide: loadingExtraAnnotations == true }" class="summary-field-value">{{ oneKGenomes }}</v-flex>
+       <v-flex xs2 class="loader" v-bind:class="{ hide: loadingExtraAnnotations == false }">
+         <img src="../../../assets/images/wheel.gif">
+       </v-flex>
        <v-flex xs7 id="oneKProgress" style="padding: 0px"></v-flex>
     </v-layout>
     <v-layout row>
        <v-flex xs3 class="summary-field-label">ExAC:</v-flex>
-       <v-flex xs2 class="summary-field-value">{{ exAc }}</v-flex>
+       <v-flex xs2 v-bind:class="{ hide: loadingExtraAnnotations == true }" class="summary-field-value">{{ exAc }}</v-flex>
+       <v-flex xs2 class="loader" v-bind:class="{ hide: loadingExtraAnnotations == false }">
+         <img src="../../../assets/images/wheel.gif">
+       </v-flex>
        <v-flex xs7 id="exAcProgress" style="padding: 0px"></v-flex>
     </v-layout>
     <v-layout row>
        <v-flex xs3 class="summary-field-label">Proband %:</v-flex>
-       <v-flex xs2 class="summary-field-value">{{ probandDisplay }}</v-flex>
+       <v-flex xs2 v-bind:class="{ hide: loadingExtraAnnotations == true }" class="summary-field-value">{{ probandDisplay }}</v-flex>
+       <v-flex xs2 class="loader" v-bind:class="{ hide: loadingExtraAnnotations == false }">
+         <img src="../../../assets/images/wheel.gif">
+       </v-flex>
        <v-flex xs7 id="probandProgress" style="padding: 0px"></v-flex>
     </v-layout>
     <v-layout row>
        <v-flex xs3 class="summary-field-label">Subset %:</v-flex>
-       <v-flex xs2 class="summary-field-value">{{ subsetDisplay }}</v-flex>
+       <v-flex xs2 v-bind:class="{ hide: loadingExtraAnnotations == true }" class="summary-field-value">{{ subsetDisplay }}</v-flex>
+       <v-flex xs2 class="loader" v-bind:class="{ hide: loadingExtraAnnotations == false }">
+         <img src="../../../assets/images/wheel.gif">
+       </v-flex>
        <v-flex xs7 id="subsetProgress" style="padding: 0px"></v-flex>
     </v-layout>
   </v-flex>
@@ -73,6 +85,10 @@ export default {
     totalSubsetCount: {
       default: 0,
       type: Number
+    },
+    loadingExtraAnnotations: {
+      default: false,
+      type: Boolean
     }
   },
   created: function() {},

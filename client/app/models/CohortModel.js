@@ -936,6 +936,9 @@ class CohortModel {
   promiseGetVariantExtraAnnotations(theGene, theTranscript, variant, format, getHeader = false, sampleNames) {
     var me = this;
 
+    // SJG_TIMING
+    //var t0 = 0;
+
     return new Promise(function(resolve, reject) {
 
       // Create a gene object with start and end reduced to the variants coordinates.
@@ -959,6 +962,7 @@ class CohortModel {
       } else {
         me._promiseVcfRefName(theGene.chr)
         .then(function() {
+          //t0 = performance.now(); // SJG_TIMING
           me.vcf.promiseGetVariants(
              me.getVcfRefName(theGene.chr),
              fakeGeneObject,
@@ -978,6 +982,8 @@ class CohortModel {
              false   // efficiency mode (aka variant calling only - no annotation)
             )
             .then(function(data) {
+              //var t1 = performance.now(); // SJG_TIMING
+              //console.log("Loading single variant anno took: " + (t1 - t0) + ' ms'); SJG_TIMING
               var rawVcfRecords = data[0];
               var vcfRecords = rawVcfRecords.filter(function(record) {
                 if (record.indexOf("#") == 0) {
@@ -1205,10 +1211,10 @@ class CohortModel {
           // We don't have the variants for the gene in cache,
           // so call the iobio services to retreive the variants for the gene region
           // and annotate them
-          let t0 = 0;
+          //let t0 = 0; // SJG_TIMING
           me._promiseVcfRefName(theGene.chr)  // SJG_TIMING NOTE: this takes ~25ms
           .then(function() {
-            t0 = performance.now();
+            //t0 = performance.now(); // SJG_TIMING
             return me.vcf.promiseGetVariants(
                me.getVcfRefName(theGene.chr),
                theGene,
@@ -1229,8 +1235,8 @@ class CohortModel {
               );
           })
           .then(function(data) {
-            let t1 = performance.now();
-            console.log('took ' + (t1 - t0) + 'ms to return from vcf.promiseGetVariants');
+            //let t1 = performance.now(); // SJG_TIMING
+            //console.log('took ' + (t1 - t0) + 'ms to return from vcf.promiseGetVariants'); // SJG_TIMING
             if (data == null) {
               // SJG TODO: pass some sort of exception
               me.inProgress.loadingVariants = false;
@@ -1817,7 +1823,6 @@ class CohortModel {
     // Load the clinvar info for the variants loaded from the vcf
     var sortedFeatures = theVcfData.features.sort(CohortModel.orderVariantsByPosition);
     loadClinvarProperties(sortedFeatures);
-
   }
 
   _refreshVariantsWithClinvarVCFRecs(theVcfData, clinvarVariants) {

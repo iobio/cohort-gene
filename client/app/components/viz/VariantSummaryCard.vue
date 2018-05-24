@@ -217,7 +217,9 @@
           :polyPhenText="polyPhenText"
           :polyPhenColor="polyPhenColor"
           :foldEnrichmentInfo="foldEnrichmentInfo"
-          :variantSelected="variantSelected">
+          :variantSelected="variantSelected"
+          :loadingExtraAnnotations="loadingExtraAnnotations"
+          :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations">
         </feature-viz>
         <allele-frequency-viz id="loaded-freq-viz" class="summary-viz" style="padding-top: 10px"
         ref="summaryFrequencyViz"
@@ -227,7 +229,8 @@
         :affectedProbandCount="affectedProbandCount"
         :affectedSubsetCount="affectedSubsetCount"
         :totalProbandCount="totalProbandCount"
-        :totalSubsetCount="totalSubsetCount">
+        :totalSubsetCount="totalSubsetCount"
+        :loadingExtraAnnotations="loadingExtraAnnotations">
         </allele-frequency-viz>
         <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz" style="padding-top: 10px"
         ref="summaryBarFeatureViz"
@@ -260,7 +263,9 @@ export default {
   props: {
     variant: null,
     variantInfo: null,
-    selectedGene: ''
+    selectedGene: '',
+    loadingExtraAnnotations: false,
+    loadingExtraClinvarAnnotations: false
   },
   data() {
     return {}

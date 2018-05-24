@@ -140,18 +140,18 @@ class VariantModel {
     hubDataSet.addCohort(subsetCohort, SUBSET_ID);
 
     // SJG_TIMING
-    let t0 = 0;
-    let t1 = 0;
+    //let t0 = 0;
+    //let t1 = 0;
 
     // Retrieve urls from hub
     return new Promise(function(resolve, reject) {
-      t0 = performance.now(); // SJG_TIMING
+      //t0 = performance.now(); // SJG_TIMING
 
       // Get URLs from Hub
       self.promiseGetUrlsFromHub(self.projectId)
         .then(function(dataSet) {
-          t1 = performance.now(); // SJG_TIMING
-          console.log('It took ' + (t1-t0) + ' ms to get Hub urls');
+          //t1 = performance.now(); // SJG_TIMING
+          //console.log('It took ' + (t1-t0) + ' ms to get Hub urls');
           if (dataSet == null) {
             let currCohorts = self.dataSet.getCohorts();
             if (currCohorts != undefined && currCohorts.length > 0) {
@@ -628,8 +628,8 @@ class VariantModel {
 
   /* Filters out homozygous ref variants for each cohort. Initializes pileup rendering of variants. */
   setLoadedVariants(gene, name=null) {
-    var t0 = 0; // SJG_TIMING
-    var t1 = 0; // SJG_TIMING
+    //var t0 = 0; // SJG_TIMING
+    //var t1 = 0; // SJG_TIMING
     let self = this;
 
     var filterAndPileupVariants = function(model, start, end, target='loaded') {
@@ -985,6 +985,7 @@ class VariantModel {
   }
 
   /* Assigns classes to each variant to control visual display in the DOM. */
+  // SJG NOTE: can get rid of isSubset flag if stay with single variant track
   classifyByImpactEnrichment(d, annotationScheme, isSubset) {
     let self = this;
     var impacts = "";
@@ -1000,11 +1001,11 @@ class VariantModel {
     var subsetEnrichment = d.subsetDelta;
     var roundedSubset = Math.round(d.subsetDelta * 10) / 10;
 
-    if (roundedSubset >= 2.0 && isSubset) {
+    if (roundedSubset >= 2.0) {
       enrichment = "eUP";
       enrichColor = "enrichment_subset_UP";
     }
-    else if (subsetEnrichment <= 0.5 && isSubset) {
+    else if (subsetEnrichment <= 0.5) {
       enrichment = "eDOWN";
       enrichColor = "enrichment_subset_DOWN";
     }
