@@ -15,14 +15,14 @@ var HUB_SUBSET_NAME = "HubSubsetProbands";
 //
 var DEV_IOBIO                 = "nv-dev-new.iobio.io/";
 var STAGE_IOBIO               = "nv-purple.iobio.io/";
-var PROD_IOBIO                = "nv-blue.iobio.io/";
+var PROD_IOBIO                = "nv-prod.iobio.io/";
 var CURRENT_IOBIO             = PROD_IOBIO;
 var iobio_services            = isOffline              ? serverInstance : CURRENT_IOBIO;
 var iobio_http_services       = (useSSL ? "https://" : "http://") + (isOffline ? serverInstance : CURRENT_IOBIO);
 
-// Hub servicess
-var HUB_ENV                   = "development";
-var hub_api                   = { development: "http://localhost:3000/apiv1", production: "https://staging.frameshift.io/apiv1" };
+// Hub services
+var HUB_ENV                   = "production";
+var hub_api                   = { development: "http://localhost:3000/apiv1", production: "https://hub.sfari.org/apiv1" };
 
 // http services
 var geneInfoServer            = iobio_http_services + "geneinfo/";

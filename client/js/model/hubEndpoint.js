@@ -1,20 +1,45 @@
-function HubEndpoint(source) {
+function HubEndpoint(source, projectId) {
   this.api = decodeURIComponent(source) + '/apiv1';
+  this.oauth_api = decodeURIComponent(source);
+  this.projectId = projectId;
+  this.client_id = 'u3oRvGom';
 }
 
+// Used when coming from Oauth reauthorize
+HubEndpoint.prototype.assignParameters = function(source, projectId) {
+  let self = this;
+  self.api = decodeURIComponent(source) + '/apiv1';
+  self.oauth_api = decodeURIComponent(source);
+  self.projectId = projectId;
+}
+
+/* First call to Hub from client to get files.
+   If token expires, will prompt user to renew. */
 HubEndpoint.prototype.getFilesForProject = function(project_uuid) {
   let self = this;
   var key = localStorage.getItem('hub-iobio-tkn');
 
-  var call =  $.ajax({
+  let fileQuery = $.ajax({
     url: self.api + '/projects/' + project_uuid + '/files',
     type: 'GET',
-    contentType: 'application/json*',
+    contentType: 'application/json',
     headers: {
-      'Authorization': localStorage.getItem('hub-iobio-tkn')
+      Authorization: localStorage.getItem('hub-iobio-tkn')
     }
+  }).fail(function(xhr,status,error) {
+    // Strip of # to comply with Vue/Oauth mixture
+    let curr_uri = window.location.href;
+    let hash_index = curr_uri.indexOf('#');
+    let stripped_href = curr_uri.substring(0, (hash_index-1));
+    stripped_href += curr_uri.substring(hash_index + 2);
+    let redirect_uri = encodeURIComponent(stripped_href);
+    let oauthLink = `${self.oauth_api}/oauth/authorization?response_type=token&client_id=${self.client_id}&redirect_uri=${redirect_uri}`;
+
+    $('#warning-authorize')
+      .append('Your access to hub.iobio has expired. Please click <a href='+oauthLink+'>here</a> to renew your access.')
+      .css('display', 'block');
   });
-  return call;
+  return fileQuery;
 }
 
 HubEndpoint.prototype.getProject = function(project_uuid) {
@@ -62,5 +87,15 @@ HubEndpoint.prototype.getSignedUrlForFile = function(file) {
     headers: {
       'Authorization': localStorage.getItem('hub-iobio-tkn')
     }
+  });
+}
+
+HubEndpoint.prototype.requestAuthorization = function() {
+  let link = $.ajax({
+    url: '/refreshAuthorization',
+    type: 'GET',
+    contentType: 'text/html'
+  }).fail(function(xhr,status,error) {
+    alert('Could not complete reauthorization request. Please relaunch app from Hub.');
   });
 }

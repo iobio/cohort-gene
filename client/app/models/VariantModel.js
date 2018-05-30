@@ -5,7 +5,7 @@
 
 class VariantModel {
   constructor(endpoint, genericAnnotation, translator, geneModel,
-    cacheHelper, genomeBuildHelper, hubEndpoint) {
+    cacheHelper, genomeBuildHelper) {
       // SJG TODO: add the following data structures?
       // These would have to be populated in vcf.iobio.js?
       // AllVariantMap - contains every variant pulled over from Hub, with key = ?, some arbitrary, unique ID?
@@ -30,7 +30,7 @@ class VariantModel {
 
     // Single helper classes
     this.endpoint = endpoint;
-    this.hubEndpoint = hubEndpoint;
+    this.hubEndpoint = {};
     this.genericAnnotation = genericAnnotation;
     this.translator = translator;
     this.geneModel = geneModel;
@@ -113,7 +113,7 @@ class VariantModel {
   /* Sets up cohort and data set models.
      Retrieves urls and sample IDs from Hub, then promises to initialize.
      Assumes a project ID has been mapped and assigned to this model. */
-  promiseInitFromHub() {
+  promiseInitFromHub(hubEndpoint, projectId, phenoFilters) {
     let self = this;
     // Set status
     self.isLoaded = false;
@@ -139,9 +139,10 @@ class VariantModel {
     subsetCohort.trackName = 'Cohort Filters';
     hubDataSet.addCohort(subsetCohort, SUBSET_ID);
 
-    // SJG_TIMING
-    //let t0 = 0;
-    //let t1 = 0;
+    // Initialize hub endpoint
+    self.hubEndpoint = hubEndpoint;
+    self.projectId = projectId;
+    self.phenoFilters = phenoFilters;
 
     // Retrieve urls from hub
     return new Promise(function(resolve, reject) {

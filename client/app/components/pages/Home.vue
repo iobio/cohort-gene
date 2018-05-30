@@ -30,6 +30,7 @@ TD & SJG updated Apr2018 -->
     @on-files-loaded="onFilesLoaded"
   ></navigation>
   <v-content>
+    <div id="warning-authorize" class="warning-authorize"></div>
     <v-container fluid style="padding-top: 3px">
       <v-layout>
         <v-flex xs9>
@@ -163,7 +164,7 @@ export default {
       showClinvarVariants: false,
       activeBookmarksDrawer: null,
 
-      DEMO_GENE: 'BRCA1'   // SJG TODO: get rid of this outside of demo
+      DEMO_GENE: 'BRCA2'   // SJG TODO: get rid of this outside of demo
     }
   },
   computed: {
@@ -205,15 +206,12 @@ export default {
         self.genomeBuildHelper,
         utility.getHumanRefNames);
 
-      let hubEndpoint = new HubEndpoint(self.paramSource);
-
       self.variantModel = new VariantModel(endpoint,
         genericAnnotation,
         translator,
         self.geneModel,
         self.cacheHelper,
-        self.genomeBuildHelper,
-        hubEndpoint);
+        self.genomeBuildHelper);
 
       self.variantModel.setIdMap(self.simonsIdMap);
       self.inProgress = self.variantModel.inProgress;
@@ -562,20 +560,37 @@ export default {
     initFromUrl: function() {
       let self = this;
 
-      // Launching from hub if we have a project ID
+      // Initial launch coming from hub
       if (self.paramProjectId) {
-        localStorage.setItem('hub-iobio-tkn', self.paramTokenType + ' ' + self.paramToken);
-        self.variantModel.phenoFilters = self.getHubPhenoFilters();
-        self.variantModel.projectId = self.paramProjectId;
-        self.variantModel.promiseInitFromHub()
+        let source = null;
+        let projectId = 0;
+        let phenoFilters = null;
+
+        // Coming from initial hub launch
+        if (self.paramProjectId !== '0') {
+          source = self.paramSource;
+          projectId = self.paramProjectId;
+          phenoFilters = self.getHubPhenoFilters();
+        }
+        // Coming from reauth request to hub
+        else if (self.paramProjectId === '0') {
+          let queryParams = Qs.parse(window.location.search.substring(1)); // if query params before the fragment
+          Object.assign(queryParams, self.$route.query);
+          source = queryParams.source;
+          projectId = queryParams.project_uuid;
+          phenoFilters = queryParams.filter;
+        }
+        // Assign hub endpoint info to variant model and get the ball rolling
+        let hubEndpoint = new HubEndpoint(source);
+        self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters)
           .then(function() {
             self.geneModel.addGeneName(self.DEMO_GENE);
             self.onGeneSelected(self.DEMO_GENE);
           })
       }
       // Otherwise launching oustide of Hub
-      // SJG TODO: incorporate stand-alone loading - right now just loading platinum demo
       else {
+        // TODO: IMPLEMENT - give choice of cloud upload or local
         self.geneModel.addGeneName(self.DEMO_GENE);
         self.onGeneSelected(self.DEMO_GENE);
         self.variantModel.promiseInitDemo()
