@@ -1,5 +1,5 @@
 <!-- Main application page holding all cards.
-TD & SJG updated Apr2018 -->
+TD & SJG updated Jun2018 -->
 
 <style lang="sass">
 @import ../../../assets/sass/variables

@@ -629,10 +629,16 @@ var effectCategories = [
 
       if (sourceType == SOURCE_TYPE_URL) {
         me._getRemoteVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
-          function(annotatedData, results) {
-            if (annotatedData && results) {
-              resolve([annotatedData, results]);
-            } else {
+          // SJG NOTE: not doing anything with annotated data, so removing for now
+          // function(annotatedData, results) {
+          //   if (annotatedData && results) {
+          //     resolve([annotatedData, results]);
+          //   }
+            function(results) {
+              if (results) {
+                resolve(results);
+              }
+             else {
               reject();
             }
           }, null, keepVariantsCombined, isSubset, efficiencyMode);
@@ -738,7 +744,7 @@ var effectCategories = [
     cmd.on('end', function(data) {
       t1 = performance.now(); // SJG_TIMING
 
-      var annotatedRecs = annotatedData.split("\n");
+      let annotatedRecs = annotatedData.split("\n");
       var vcfObjects = [];
       var contigHdrRecFound = false;
 
@@ -774,7 +780,10 @@ var effectCategories = [
 
       // Parse the vcf object into a variant object that is visualized by the client.
       var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined, isSubset, efficiencyMode);
-      callback(annotatedRecs, results);
+      // SJG NOTE: not doing anything w/ annotatedRecs so not keeping them to free up memory
+      // Each annotatedRec has gx field which is a lot!
+      //callback(annotatedRecs, results);
+      callback(results);
     });
 
     cmd.on('error', function(error) {
@@ -1509,7 +1518,7 @@ var effectCategories = [
 
             //let samplesWithVarCount = gtResult.genotypes.filter(gt => (gt.zygosity == "HET" || gt.zygosity == "HOM")).length;
             //et totalSamples = gtResult.genotypes.length;
-            var clinvarObject = me._formatClinvarCoordinates(rec, alt);
+            //var clinvarObject = me._formatClinvarCoordinates(rec, alt);
 
             if (gtResult.keep) {
 
@@ -1527,7 +1536,7 @@ var effectCategories = [
                   var variant = {
                     'start':                    +rec.pos,
                     'end':                      +end,
-                    'len':                      +len,   // Length of variant? Per BP?
+                    'len':                      +len,
                     'level':                    +0,
                     'subLevel':                 +0,
                     'adjustedLevel':            +1.0,
@@ -1551,7 +1560,6 @@ var effectCategories = [
                     'genotype':                 genotype,
                     'genotypeDepth' :           genotype.genotypeDepth,
                     'genotypeFilteredDepth' :   genotype.filteredDepth,
-                    // SJG NOTE removing for now
                     //'genotypeAltCount' :        genotype.altCount,
                     //'genotypeRefCount' :        genotype.refCount,
                     //'genotypeAltForwardCount' : genotype.altForwardCount,
@@ -1561,16 +1569,16 @@ var effectCategories = [
                     //'eduGenotype' :             genotype.eduGenotype,
                     //'eduGenotypeReversed':      genotype.eduGenotypeReversed,
                     'zygosity':                 me._getZygosity(genotype, gtResult, keepVariantsCombined),
-                    'phased':                   genotype.phased,
+                    //'phased':                   genotype.phased,
 
                     // fields to init to 'empty'
-                    'consensus':                rec.consensus,
-                    'inheritance':              '',
+                    //'consensus':                rec.consensus,
+                    //'inheritance':              '',
 
                     // clinvar coords
-                    'clinvarStart':            clinvarObject.clinvarStart,
-                    'clinvarRef':              clinvarObject.clinvarRef,
-                    'clinvarAlt':              clinvarObject.clinvarAlt,
+                    //'clinvarStart':            clinvarObject.clinvarStart,
+                    //'clinvarRef':              clinvarObject.clinvarRef,
+                    //'clinvarAlt':              clinvarObject.clinvarAlt,
 
                     //
                     // annot fields
@@ -1660,7 +1668,7 @@ var effectCategories = [
           'start':              +geneObject.start,
           'end':                +geneObject.end,
           'strand':             geneObject.strand,
-          'transcript':         selectedTranscript,
+          //'transcript':         selectedTranscript,
           'variantRegionStart': variantRegionStart,
           'loadState':          {},
           'features':           allVariants,

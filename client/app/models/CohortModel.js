@@ -984,36 +984,38 @@ class CohortModel {
             .then(function(data) {
               //var t1 = performance.now(); // SJG_TIMING
               //console.log("Loading single variant anno took: " + (t1 - t0) + ' ms'); SJG_TIMING
-              var rawVcfRecords = data[0];
-              var vcfRecords = rawVcfRecords.filter(function(record) {
-                if (record.indexOf("#") == 0) {
-                  if (getHeader) {
-                    return true;
-                  } else {
-                    return false;
-                  }
-                } else if (record != "") {
-                  var fields = record.split("\t");
-                  var chrom = fields[0];
-                  var start = fields[1];
-                  var ref   = fields[3];
-                  var alt   = fields[4];
-                  var found = false;
-                  alt.split(",").forEach(function(theAlt) {
-                    if (!found &&
-                      me.getVcfRefName(theGene.chr) == chrom &&
-                      start == variant.start &&
-                      theAlt == variant.alt &&
-                      ref == variant.ref) {
-                      found = true;
-                    }
-                  })
-                  return found;
-                }
-              });
 
-              var theVcfData = data[1];
+              // SJG NOTE: removing for now, not using
+              // var rawVcfRecords = data[0];
+              // var vcfRecords = rawVcfRecords.filter(function(record) {
+              //   if (record.indexOf("#") == 0) {
+              //     if (getHeader) {
+              //       return true;
+              //     } else {
+              //       return false;
+              //     }
+              //   } else if (record != "") {
+              //     var fields = record.split("\t");
+              //     var chrom = fields[0];
+              //     var start = fields[1];
+              //     var ref   = fields[3];
+              //     var alt   = fields[4];
+              //     var found = false;
+              //     alt.split(",").forEach(function(theAlt) {
+              //       if (!found &&
+              //         me.getVcfRefName(theGene.chr) == chrom &&
+              //         start == variant.start &&
+              //         theAlt == variant.alt &&
+              //         ref == variant.ref) {
+              //         found = true;
+              //       }
+              //     })
+              //     return found;
+              //   }
+              // });
 
+              //var theVcfData = data[1];
+              var theVcfData = data;
               if (theVcfData != null && theVcfData.features != null && theVcfData.features.length > 0) {
                 var matchingVariants = [];
                 theVcfData.features.forEach(function(varsAtPos) {
@@ -1030,13 +1032,15 @@ class CohortModel {
                 if (matchingVariants.length > 0) {
                   var v = matchingVariants[0];
                   if (format && format == 'csv') {
-                    resolve([v, variant, vcfRecords]);
+                    //resolve([v, variant, vcfRecords]);
+                    resolve([v, variant]);
                   } else if (format && format == 'vcf') {
-                    if (vcfRecords) {
-                      resolve([v, variant, vcfRecords]);
-                    } else {
-                      reject('Cannot find vcf record for variant ' + theGene.gene_name + " " + variant.start + " " + variant.ref + "->" + variant.alt);
-                    }
+                    resolve([v, variant]);
+                    //if (vcfRecords) {
+                      //resolve([v, variant, vcfRecords]);
+                    // } else {
+                    //   reject('Cannot find vcf record for variant ' + theGene.gene_name + " " + variant.start + " " + variant.ref + "->" + variant.alt);
+                    // }
                   } else {
                     me._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript, cacheHelper)
                      .then(function(cachedVcfData) {
@@ -1112,7 +1116,7 @@ class CohortModel {
         // Get the coords for variants of high or moder impact
         return me._promiseGetData(CacheHelper.VCF_DATA, theGeneObject.gene_name, theTranscript)
        })
-       .then( function(theVcfData) {
+       .then(function(theVcfData) {
 
         var regions   = theVcfData.features.filter(function(variant) {
           if (variant.fbCalled == 'Y')  {
@@ -1241,8 +1245,11 @@ class CohortModel {
               // SJG TODO: pass some sort of exception
               me.inProgress.loadingVariants = false;
             }
-            var annotatedRecs = data[0];
-            var results = data[1];  // One entry per sample in results
+            // SJG NOTE: taking out for now to improve space
+
+            //var annotatedRecs = data[0];
+            //var results = data[1];  // One entry per sample in results
+            var results = data;
 
             if (results) {
               if (keepVariantsCombined) {
@@ -2462,10 +2469,11 @@ class CohortModel {
              me.getAnnotationScheme().toLowerCase(),
              me.getTranslator().clinvarMap,
              me.getGeneModel().geneSource == 'refseq' ? true : false)
-          .then( function(data) {
+          .then(function(data) {
+            debugger;
             if (data != null && data.features != null) {
-              var annotatedRecs = data[0];
-                me.vcfData = data[1];
+              //var annotatedRecs = data[0];
+              me.vcfData = data;
 
               me.vcfData.features = me.vcfData.features.sort(CohortModel.orderVariantsByPosition);
               me.vcfData.features.forEach( function(feature) {

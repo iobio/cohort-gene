@@ -505,6 +505,7 @@ class VariantModel {
         })
         .catch(function(error) {
           console.log("There was a problem with VariantModel promiseFurtherAnnotateVariants: " + error);
+          reject();
         })
     })
   }
