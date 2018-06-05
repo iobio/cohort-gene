@@ -2,7 +2,7 @@ function HubEndpoint(source, projectId) {
   this.api = decodeURIComponent(source) + '/apiv1';
   this.oauth_api = decodeURIComponent(source);
   this.projectId = projectId;
-  this.client_id = 'u3oRvGom';
+  this.client_id = 'HkWNVjYK';
 }
 
 // Used when coming from Oauth reauthorize

@@ -1027,19 +1027,6 @@ class VariantModel {
         effects += " " + key;
       }
     }
-    // var impactList =  (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_FILTER]);
-    // for (var key in impactList) {
-    //   impacts += " " + key;
-    // }
-    // var colorImpactList =  (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_COLOR]);
-    // for (var key in colorImpactList) {
-    //   colorimpacts += " " + 'impact_'+key;
-    //   toggleImpact += " " + 'i' + key;
-    // }
-    // if (colorimpacts == "") {
-    //   colorimpacts = "impact_none";
-    //   toggleImpact += "iNONE";
-    // }
     for (var key in d.sift) {
       sift += " " + key;
     }
