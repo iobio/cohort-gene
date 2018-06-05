@@ -770,6 +770,7 @@ class CohortModel {
      me.getVcfRefName = null;
      me.isMultiSample = true;
 
+     // SJG not providing a callback fxn
      success = me.vcf.openVcfUrl(vcfUrl, tbiUrl, function(success, errorMsg) {
        if (me.lastVcfAlertify) {
          me.lastVcfAlertify.dismiss();

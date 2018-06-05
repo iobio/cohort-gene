@@ -73,7 +73,7 @@ Updated: SJG Apr2018
           <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 0">VARIANTS</span>
         </v-flex>
         <v-flex xs6>
-          <v-container fluid style="padding-left: 70%; margin-bottom: 0" id="impactModeSwitch" v-bind:class="{hide: !doneLoadingData}">
+          <v-container fluid style="padding-left: 63%; margin-bottom: 0" id="impactModeSwitch" v-bind:class="{hide: !doneLoadingExtras}">
             <v-switch :label="`Impact Mode: ${impactModeDisplay(impactMode)}`" v-model="impactMode" hide-details></v-switch>
           </v-container>
         </v-flex>
@@ -175,6 +175,7 @@ export default {
     showGeneViz: true,
     geneVizShowXAxis: null,
     doneLoadingData: false,
+    doneLoadingExtras: false
   },
   data() {
     let self = this;
@@ -342,7 +343,6 @@ export default {
       // if (self.showVariantViz && self.$refs.subsetVizRef != null) {
       //   self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
       // }
-      debugger;
       if (self.showVariantViz && self.$refs.probandVizRef != null) {
         self.$refs.probandVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.probandVizRef.name), true);
       }
@@ -405,12 +405,12 @@ export default {
     switchColorScheme: function() {
       let self = this;
 
-      // if (self.$refs.probandVizRef != null) {
-      //   self.$refs.probandVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.probandVizRef.name));
-      // }
-      if (self.$refs.subsetVizRef != null) {
-        self.$refs.subsetVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.subsetVizRef.name));
+      if (self.$refs.probandVizRef != null) {
+        self.$refs.probandVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.probandVizRef.name));
       }
+      // if (self.$refs.subsetVizRef != null) {
+      //   self.$refs.subsetVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.subsetVizRef.name));
+      // }
     },
     displayVariantBrush: function() {
       let self = this;

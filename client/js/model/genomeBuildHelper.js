@@ -7,8 +7,8 @@ function GenomeBuildHelper() {
   this.buildNameToBuild = {};
 
   // Constants (SJG should these be static?)
-  this.DEFAULT_SPECIES = "Human";
-  this.DEFAULT_BUILD   = "GRCh37";
+  this.DEFAULT_SPECIES                       = "Human";
+  this.DEFAULT_BUILD                         = "GRCh37";
   this.ALIAS_UCSC                            = "UCSC";
   this.ALIAS_REFSEQ_ASSEMBLY_ACCESSION_RANGE = "REFSEQ ASSEMBLY ACCESSION RANGE";
   this.RESOURCE_CLINVAR_VCF_S3      = "CLINVAR VCF S3";
@@ -30,8 +30,8 @@ GenomeBuildHelper.prototype.promiseInit = function(options) {
     $.ajax({
           url: genomeBuildServer,
           jsonp: "callback",
-      type: "GET",
-      dataType: "jsonp",
+          type: "GET",
+          dataType: "jsonp",
           error: function( xhr, status, errorThrown ) {
               console.log( "Error: " + errorThrown );
               console.log( "Status: " + status );

@@ -6,9 +6,6 @@
 class VariantModel {
   constructor(endpoint, genericAnnotation, translator, geneModel,
     cacheHelper, genomeBuildHelper) {
-      // SJG TODO: add the following data structures?
-      // These would have to be populated in vcf.iobio.js?
-      // AllVariantMap - contains every variant pulled over from Hub, with key = ?, some arbitrary, unique ID?
 
     // Combined cohort collections
     this.combinedFeatures = {};
@@ -39,7 +36,7 @@ class VariantModel {
     this.filterModel = null;
     this.featureMatrixModel = null;
 
-    // Settings/ state props
+    // Settings/state props
     this.annotationScheme = 'vep';
     this.isLoaded = false;
     this.maxAlleleCount = null;
@@ -144,15 +141,11 @@ class VariantModel {
     self.projectId = projectId;
     self.phenoFilters = phenoFilters;
 
-    // Retrieve urls from hub
     return new Promise(function(resolve, reject) {
-      //t0 = performance.now(); // SJG_TIMING
 
       // Get URLs from Hub
       self.promiseGetUrlsFromHub(self.projectId)
         .then(function(dataSet) {
-          //t1 = performance.now(); // SJG_TIMING
-          //console.log('It took ' + (t1-t0) + ' ms to get Hub urls');
           if (dataSet == null) {
             let currCohorts = self.dataSet.getCohorts();
             if (currCohorts != undefined && currCohorts.length > 0) {
@@ -161,12 +154,12 @@ class VariantModel {
               })
             }
             self.hubIssue = true;
-            reject();
+            reject('Issue fetching urls from Hub');
           }
           hubDataSet.vcfUrl = dataSet.vcfUrl;
           hubDataSet.tbiUrl = dataSet.tbiUrl;
 
-          // Format filter to send to Hub to get all proband IDs
+          // Format filter to send to Hub to get all proband IDs (using 'abc total score' for now)
           var probandFilter = self.getProbandPhenoFilter();
           var filterObj = {'abc.total_score' : probandFilter};
 
@@ -174,13 +167,17 @@ class VariantModel {
           let promises = [];
           let probandP = self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
             .then(function(ids) {
+              // Stop process if we don't have any probands
+              if (ids.length === 0) {
+                reject('No samples found for proband filtering from Hub');
+              }
               probandCohort.subsetIds = ids;
               probandCohort.subsetPhenotypes.push('n = ' + ids.length);
             });
           promises.push(probandP);
 
           // Retrieve subset sample IDs from Hub
-          self.assignPhenoFilters(subsetCohort, probandFilter);
+          self.appendSubsetPhenoFilters(subsetCohort, probandFilter);
           let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
             .then(function(ids) {
               subsetCohort.subsetIds = ids;
@@ -190,7 +187,7 @@ class VariantModel {
           // Start processing data after IDs retrieved
           Promise.all(promises)
             .then(function() {
-              // Assign chip display numbers
+              // Assign chip display numbers (on left side)
               subsetCohort.subsetPhenotypes.splice(0, 0, ('Proband n = ' + probandCohort.subsetIds.length));
               subsetCohort.subsetPhenotypes.splice(1, 0, ('Subset n = ' + subsetCohort.subsetIds.length));
               // Flip hub flags
@@ -198,9 +195,9 @@ class VariantModel {
               probandCohort.inProgress.fetchingHubData = false;
               // Get variant loading rolling
               self.promiseInit()
-                .then(function() {
-                  resolve();
-                })
+              .then(function() {
+                resolve();
+              })
             })
         })
         .catch(function(error) {
@@ -258,7 +255,7 @@ class VariantModel {
   }
 
   /* Adds properly formatted phenotype filters to the supplied cohort model. */
-  assignPhenoFilters(subsetCohort, probandFilter) {
+  appendSubsetPhenoFilters(subsetCohort, probandFilter) {
     let self = this;
 
     // Define if parameter mapping overwrote
@@ -342,12 +339,16 @@ class VariantModel {
         cohort.init(self);
       })
 
-      // Check vcf url
-      self.promiseAddSamples(cohorts, self.dataSet.vcfUrl, self.dataSet.tbiUrl)
-        .then(function() {
-          cohorts.forEach(function(cohort) {
-            cohort.inProgress.verifyingVcfUrl = false;
-          })
+      // Check vcf url and add samples
+      let firstCohort = cohorts[0];
+      self.promiseAddSamples(firstCohort, self.dataSet.vcfUrl, self.dataSet.tbiUrl)
+        .then(function(aCohort) {
+          // Copy over retrieved sample info and flip status flags
+          for (var i = 1; i < cohorts.length; i++) {
+            let currCohort = cohorts[i];
+            currCohort.vcf = aCohort.vcf;
+            currCohort.inProgress.verifyingVcfUrl = false;
+          }
           self.inProgress.loadingDataSources = false;
           self.isLoaded = true;
           resolve();
@@ -360,26 +361,21 @@ class VariantModel {
   }
 
   /* Promises to verify the vcf url and adds samples to vcf object. */
-  promiseAddSamples(cohortModels, vcfUrl, tbiUrl) {
+  promiseAddSamples(aCohort, vcfUrl, tbiUrl) {
     let self = this;
-
-    let aCohort = cohortModels[0];
     if (aCohort.vcf) {
-      return new Promise(function(vcfResolve, vcfReject) {
+      return new Promise(function(resolve, reject) {
         aCohort.onVcfUrlEntered(vcfUrl, tbiUrl, function() {
-          // Copy over changes done to vcf object to other cohort models
-          for (var i = 1; i < cohortModels.length; i++) {
-            cohortModels[i].vcf = aCohort.vcf;
-          }
-          vcfResolve();
+          aCohort.inProgress.verifyingVcfUrl = false;
+          resolve(aCohort);
         })
       },
       function(error) {
-        vcfReject(error);
+        reject(error);
       });
     }
     else {
-      return Promise.resolve();
+      return Promise.reject('No vcf data to open in promiseAddSamples');
     }
   }
 
@@ -988,8 +984,7 @@ class VariantModel {
 
   /* Assigns classes to each variant to control visual display in the DOM. */
   // SJG NOTE: can get rid of isSubset flag if stay with single variant track
-  classifyByImpactEnrichment(d, annotationScheme, isSubset) {
-    let self = this;
+  classifyByEnrichment(d, annotationScheme, isSubset) {
     var impacts = "";
     var toggleImpact = "";  // Grouping classes, added & removed based on impact mode
     var colorimpacts = "";  // Color classes, constant
@@ -1032,19 +1027,19 @@ class VariantModel {
         effects += " " + key;
       }
     }
-    var impactList =  (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_FILTER]);
-    for (var key in impactList) {
-      impacts += " " + key;
-    }
-    var colorImpactList =  (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_COLOR]);
-    for (var key in colorImpactList) {
-      colorimpacts += " " + 'impact_'+key;
-      toggleImpact += " " + 'i' + key;
-    }
-    if (colorimpacts == "") {
-      colorimpacts = "impact_none";
-      toggleImpact += "iNONE";
-    }
+    // var impactList =  (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_FILTER]);
+    // for (var key in impactList) {
+    //   impacts += " " + key;
+    // }
+    // var colorImpactList =  (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_COLOR]);
+    // for (var key in colorImpactList) {
+    //   colorimpacts += " " + 'impact_'+key;
+    //   toggleImpact += " " + 'i' + key;
+    // }
+    // if (colorimpacts == "") {
+    //   colorimpacts = "impact_none";
+    //   toggleImpact += "iNONE";
+    // }
     for (var key in d.sift) {
       sift += " " + key;
     }
@@ -1057,7 +1052,34 @@ class VariantModel {
 
     return  'variant ' + d.type.toLowerCase()  + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "")
             + ' ua_' + d.ua + ' '  + sift + ' ' + polyphen + ' ' + regulatory +  ' ' + + ' ' + d.clinvar + ' ' + impacts + ' ' + effects +
-            ' ' + d.consensus + ' ' + colorimpacts + ' ' + toggleImpact + ' ' + enrichment + ' ' + enrichColor;
+            ' ' + d.consensus + ' ' + enrichment + ' ' + enrichColor;
+  }
+
+  getVepImpactClass(domVar, annotationScheme) {
+    // Pull variant out of lookup
+    let self = this;
+    let varId = domVar.id;
+    let variant = self.subsetEnrichedVars[varId];
+    if (variant == null) variant = self.probandEnrichedVars[varId];
+    if (variant == null) variant = self.nonEnrichedVars[varId];
+    if (variant == null) variant = self.probandOnlyVars[varId];
+    if (variant == null) return '';
+
+    var toggleImpact = "";  // Grouping classes, added & removed based on impact mode
+    var colorimpacts = "";  // Color classes, constant
+    let impactObj = variant.vepImpact;
+    let vepImpact = '';
+    if (impactObj['LOW'] != null) vepImpact = 'LOW';
+    if (impactObj['MODIFIER'] != null) vepImpact = 'MODIFIER';
+    if (impactObj['MODERATE'] != null) vepImpact = 'MODERATE';
+    if (impactObj['HIGH'] != null) vepImpact = 'HIGH';
+    if (vepImpact !== '') {
+      toggleImpact += " " + 'i' + vepImpact;
+    }
+    else {
+      toggleImpact += "iNONE";
+    }
+    return toggleImpact;
   }
 
   classifyByClinvar(d) {

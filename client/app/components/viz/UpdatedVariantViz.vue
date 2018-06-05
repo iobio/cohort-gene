@@ -375,16 +375,13 @@ export default {
         this.variantChart.showFlaggedVariant(container, variant);
       },
       changeVariantColorScheme: function(enrichmentMode, svg) {
-        let self = this;
-        self.variantChart.switchColorScheme()(enrichmentMode, svg);
+        this.variantChart.switchColorScheme()(enrichmentMode, svg);
       },
       displayVariantBrush: function(svg) {
-        let self = this;
-        self.variantChart.displayBrush()(svg);
+        this.variantChart.displayBrush()(svg);
       },
       variantZoomSelected: function(variants) {
         //self.$emit('variantZoomSelected', variants);
-        debugger;
         //alert('dispatch rcvd');
         // SJG TODO: bubble this up to variant card and cohort model, call vcf.iobio.pileup on & assign to variable
       }

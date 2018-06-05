@@ -39,7 +39,7 @@ TD & SJG updated Jun2018 -->
             ref="variantCardRef"
             :dataSetModel="variantModel.dataSet"
             :annotationScheme="variantModel.annotationScheme"
-            :classifyVariantSymbolFunc="variantModel.classifyByImpactEnrichment"
+            :classifyVariantSymbolFunc="variantModel.classifyByEnrichment"
             :variantTooltip="variantTooltip"
             :selectedGene="selectedGene"
             :selectedTranscript="selectedTranscript"
@@ -51,6 +51,7 @@ TD & SJG updated Jun2018 -->
             :showVariantViz="true"
             :geneVizShowXAxis="true"
             :doneLoadingData="doneLoadingData"
+            :doneLoadingExtras="doneLoadingExtras"
             :doubleMode="true"
             @dataSetVariantClick="onDataSetVariantClick"
             @dataSetVariantClickEnd="onDataSetVariantClickEnd"
@@ -140,6 +141,7 @@ export default {
       selectedTranscript: {},
       selectedVariant: null,
       doneLoadingData: false,
+      doneLoadingExtras: false,
       loadingExtraAnnotations: false,
       loadingExtraClinvarAnnotations: false,
       geneRegionStart: null,
@@ -225,7 +227,8 @@ export default {
     .then(function() {
       self.filterModel = new FilterModel(self.variantModel.affectedInfo);
       self.variantModel.filterModel = self.filterModel;
-      self.initFromUrl();
+      // TODO: prompt for gene selection
+      self.determineSourceAndInit();
     },
     function(error) {
       console.log(error);
@@ -280,17 +283,15 @@ export default {
             self.selectedTranscript,
             options)
             .then(function() {
-              // Display variants
-              self.doneLoadingData = true;
-              // Load all annotation information
+              self.doneLoadingData = true;  // Display variants
               self.variantModel.promiseFurtherAnnotateVariants(self.selectedGene,
               self.selectedTranscript,
               options)
               .then(function(resultMap) {
-                // Unwrap result map
-                let resultVars = resultMap[0]['Proband'].features;
-                // Combine variant info
+                let resultVars = resultMap[0]['Proband'].features;  // Unwrap result map
                 self.variantModel.combineVariantInfo(resultVars);
+                self.updateClasses();
+                self.doneLoadingExtras = true;
               })
             })
             .catch(function(error) {
@@ -299,6 +300,13 @@ export default {
         } else {
           Promise.resolve();
         }
+      })
+    },
+    updateClasses: function() {
+      let self = this;
+      $('.variant').each(function(i, v) {
+        let impactClass = self.variantModel.getVepImpactClass(v, 'vep');
+        $(v).addClass(impactClass);
       })
     },
     promiseLoadAnnotationDetails: function() {
@@ -325,8 +333,10 @@ export default {
     onGeneSelected: function(geneName) {
       var self = this;
       self.deselectVariant();
+      self.promiseClearCache();   // Force refresh to avoid memory crashes
       self.promiseLoadGene(geneName);
       self.doneLoadingData = false;
+      self.doneLoadingExtras = false;
     },
     promiseLoadGene: function(geneName) {
       let self = this;
@@ -557,30 +567,23 @@ export default {
     onSortGenes: function(sortBy) {
       this.geneModel.sortGenes(sortBy);
     },
-    initFromUrl: function() {
+    determineSourceAndInit: function() {
       let self = this;
+      let source = self.paramSource;
+      let projectId = self.paramProjectId;
+      let phenoFilters = self.getHubPhenoFilters();
 
-      // Initial launch coming from hub
-      if (self.paramProjectId) {
-        let source = null;
-        let projectId = 0;
-        let phenoFilters = null;
+      // If we can't map project id with Vue Router, may be coming from Hub OAuth
+      if (projectId === '0') {
+        let queryParams = Qs.parse(window.location.search.substring(1)); // if query params before the fragment
+        Object.assign(queryParams, self.$route.query);
+        source = queryParams.source;
+        projectId = queryParams.project_uuid;
+        phenoFilters = queryParams.filter;
+      }
 
-        // Coming from initial hub launch
-        if (self.paramProjectId !== '0') {
-          source = self.paramSource;
-          projectId = self.paramProjectId;
-          phenoFilters = self.getHubPhenoFilters();
-        }
-        // Coming from reauth request to hub
-        else if (self.paramProjectId === '0') {
-          let queryParams = Qs.parse(window.location.search.substring(1)); // if query params before the fragment
-          Object.assign(queryParams, self.$route.query);
-          source = queryParams.source;
-          projectId = queryParams.project_uuid;
-          phenoFilters = queryParams.filter;
-        }
-        // Assign hub endpoint info to variant model and get the ball rolling
+      // If we have a project ID here, coming from Hub launch
+      if (projectId !== '0') {
         let hubEndpoint = new HubEndpoint(source);
         self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters)
           .then(function() {
@@ -588,9 +591,10 @@ export default {
             self.onGeneSelected(self.DEMO_GENE);
           })
       }
-      // Otherwise launching oustide of Hub
+      // Otherwise launching stand alone
       else {
-        // TODO: IMPLEMENT - give choice of cloud upload or local
+        // TODO: initialize file/url loader
+        // NOTE: loading demo for now
         self.geneModel.addGeneName(self.DEMO_GENE);
         self.onGeneSelected(self.DEMO_GENE);
         self.variantModel.promiseInitDemo()

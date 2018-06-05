@@ -519,6 +519,7 @@ function scaledVariantD3() {
           return d['features'].filter( function(d) { return d.type.toUpperCase() == 'SNP' || d.type.toUpperCase() == 'MNP'; }) ;
         }).enter().append('rect')
             .attr('class', function(d) { return chart.clazz()(d); })
+            .attr('id', function(d) {return d.id;})
             .attr('rx', borderRadius)
             .attr('ry', borderRadius)
             .attr('x', function(d) {
@@ -549,6 +550,7 @@ function scaledVariantD3() {
                        .size(symbolSize)();
             })
             .attr('class', function(d) { return chart.clazz()(d); })
+            .attr('id', function(d) {return d.id;})
             .attr("transform", function(d) {
               var xCoord = x(d.start) + 2;
               var yCoord = showTransition ? 0 : y(d.adjustedLevel) + 3;
