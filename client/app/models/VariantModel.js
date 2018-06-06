@@ -110,7 +110,7 @@ class VariantModel {
   /* Sets up cohort and data set models.
      Retrieves urls and sample IDs from Hub, then promises to initialize.
      Assumes a project ID has been mapped and assigned to this model. */
-  promiseInitFromHub(hubEndpoint, projectId, phenoFilters) {
+  promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch) {
     let self = this;
     // Set status
     self.isLoaded = false;
@@ -144,7 +144,7 @@ class VariantModel {
     return new Promise(function(resolve, reject) {
 
       // Get URLs from Hub
-      self.promiseGetUrlsFromHub(self.projectId)
+      self.promiseGetUrlsFromHub(self.projectId, initialLaunch)
         .then(function(dataSet) {
           if (dataSet == null) {
             let currCohorts = self.dataSet.getCohorts();
@@ -209,7 +209,7 @@ class VariantModel {
   }
 
   /* Wrapper to retrieve vcf & tbi urls from Hub. */
-  promiseGetUrlsFromHub(projectId) {
+  promiseGetUrlsFromHub(projectId, initialLaunch) {
     let self = this;
 
     return new Promise(function(resolve, reject) {
@@ -217,7 +217,7 @@ class VariantModel {
           tbiUrl = '';
       var vcf = null,
           tbi = null;
-      self.hubEndpoint.getFilesForProject(projectId).done(data => {
+      self.hubEndpoint.getFilesForProject(projectId, initialLaunch).done(data => {
         vcf = data.data.filter(f => f.type == 'vcf')[0];
         tbi = data.data.filter(f => f.type == 'tbi')[0];
         self.hubEndpoint.getSignedUrlForFile(vcf).done(urlData => {

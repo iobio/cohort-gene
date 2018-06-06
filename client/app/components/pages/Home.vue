@@ -585,7 +585,8 @@ export default {
       // If we have a project ID here, coming from Hub launch
       if (projectId !== '0') {
         let hubEndpoint = new HubEndpoint(source);
-        self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters)
+        let initialLaunch = !(self.paramProjectId === '0');
+        self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch)
           .then(function() {
             self.geneModel.addGeneName(self.DEMO_GENE);
             self.onGeneSelected(self.DEMO_GENE);

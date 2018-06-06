@@ -1,7 +1,6 @@
-function HubEndpoint(source, projectId) {
+function HubEndpoint(source) {
   this.api = decodeURIComponent(source) + '/apiv1';
   this.oauth_api = decodeURIComponent(source);
-  this.projectId = projectId;
   this.client_id = 'HkWNVjYK';
 }
 
@@ -15,7 +14,7 @@ HubEndpoint.prototype.assignParameters = function(source, projectId) {
 
 /* First call to Hub from client to get files.
    If token expires, will prompt user to renew. */
-HubEndpoint.prototype.getFilesForProject = function(project_uuid) {
+HubEndpoint.prototype.getFilesForProject = function(project_uuid, initialLaunch) {
   let self = this;
   var key = localStorage.getItem('hub-iobio-tkn');
 
@@ -27,12 +26,19 @@ HubEndpoint.prototype.getFilesForProject = function(project_uuid) {
       Authorization: localStorage.getItem('hub-iobio-tkn')
     }
   }).fail(function(xhr,status,error) {
-    // Strip of # to comply with Vue/Oauth mixture
     let curr_uri = window.location.href;
-    let hash_index = curr_uri.indexOf('#');
-    let stripped_href = curr_uri.substring(0, (hash_index-1));
-    stripped_href += curr_uri.substring(hash_index + 2);
-    let redirect_uri = encodeURIComponent(stripped_href);
+    let redirect_uri = '';
+    // Strip of # to comply with Vue/Oauth mixture if initial token expiration
+    if (initialLaunch) {
+      let hash_index = curr_uri.indexOf('#');
+      let stripped_href = curr_uri.substring(0, (hash_index-1));
+      stripped_href += curr_uri.substring(hash_index + 2);
+      redirect_uri = encodeURIComponent(stripped_href);
+    }
+    // On subsequent token refresh no # to parse out
+    else {
+      redirect_uri = encodeURIComponent(curr_uri);
+    }
     let oauthLink = `${self.oauth_api}/oauth/authorization?response_type=token&client_id=${self.client_id}&redirect_uri=${redirect_uri}`;
 
     $('#warning-authorize')
