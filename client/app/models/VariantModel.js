@@ -420,7 +420,8 @@ class VariantModel {
     return new Promise(function(resolve, reject) {
       self.promiseAnnotateVariants(theGene, theTranscript, false, options)
       .then(function(resultMap) {
-        return self.promiseAnnotateInheritance(theGene, theTranscript, resultMap, {isBackground: false, cacheData: true})
+        // SJG Q4 NOTE: changed default to not cache vcf data
+        return self.promiseAnnotateInheritance(theGene, theTranscript, resultMap, {isBackground: false, cacheData: false})
       })
       .then(function(data) {
         resolve(data);
@@ -633,7 +634,6 @@ class VariantModel {
     var filterAndPileupVariants = function(model, start, end, target='loaded') {
       var filteredVariants = $.extend({}, model.vcfData);
       filteredVariants.features = model.vcfData.features.filter(function(feature) {
-
         var isTarget = false;
         if (target == 'loaded' && (!feature.fbCalled || feature.fbCalled != 'Y')) {
           isTarget = true;
@@ -714,7 +714,7 @@ class VariantModel {
       (resultMapList[subsetId])[SUBSET_ID].features = subsetFeatures;
     }
     catch(e) {
-      console.log("There was a problem pulling out features from the result map in annotateDataSetFrequencies. Unable to assign enrichment colors.");
+      console.log("There was a problem pulling out features from the result map in annotateDataSetFrequencies. Unable to assign enrichment colors: " + e);
     }
   }
 
@@ -733,6 +733,10 @@ class VariantModel {
     subsetFeatures.forEach(function(feature) {
       // Get corresponding proband feature
       let matchingProbandFeature = probandLookup[feature.id];
+
+      if (matchingProbandFeature == null) {
+        console.log('Could not find subset feature in proband feature lookup');
+      }
 
       // Assign subset metrics to cohort feature
       matchingProbandFeature.totalSubsetCount = feature.totalSubsetCount;

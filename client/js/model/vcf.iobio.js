@@ -726,74 +726,107 @@ var effectCategories = [
 
     var serverCacheKey = me._getServerCacheKey(vcfURL, annotationEngine, refName, geneObject, vcfSampleNames, {refseq: isRefSeq, hgvs: hgvsNotation, rsid: getRsId});
 
-    var t0 = 0; // SJG_TIMING
-    var t1 = 0; // SJG_TIMING
     var cmd = me.getEndpoint().annotateVariants({'vcfUrl': vcfURL, 'tbiUrl': tbiUrl}, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey, efficiencyMode);
 
-    var annotatedData = "";
+    // Accumulation vars
+    var remainingBuffer = '';
+    var allResults = null;
+    var annotatedData = '';
+
     // Get the results from the iobio command
     cmd.on('data', function(data) {
-      // SJG TODO: need to filter stream for large variants - remove modifier vep impact ones??
-         if (data == undefined) {
-            return;
-         }
+       if (data != undefined) {
          annotatedData += data;
+
+         // Append any partial lines from last stream piece
+         let combinedData = remainingBuffer + data;
+         remainingBuffer = '';
+
+         // Pull out full lines
+         let lastLineDelim = combinedData.lastIndexOf("\n");
+         let fullLines = combinedData.substring(0, lastLineDelim);
+         let splitLines = fullLines.split("\n");
+
+         // Keep any partial lines for next buffer flow
+         if (lastLineDelim < (combinedData.length - 1)) {
+           remainingBuffer = combinedData.substring(lastLineDelim + 1);
+         }
+
+         // Process full lines
+         splitLines.forEach(function(line) {
+
+           /****** TESTING ******/
+           // let lineLength = line.split('\t').length;
+           // if (lineLength < 523 && lineLength > 1 && line.charAt(0) !== '#' && !isSubset) {
+           //   // We have a partial line
+           //   debugger;
+           // }
+
+           if (line.charAt(0) == '#') {
+             me._parseHeaderForInfoFields(line);
+           }
+           else if (line.length > 0) {
+             let result = me._processVcfLine(line, refName, geneObject, selectedTranscript, clinvarMap, hgvsNotation, getRsId, isMultiSample, sampleNamesToGenotype, vepAF, keepVariantsCombined, isSubset, efficiencyMode);
+             if (allResults != null) {
+
+               // if (result.features[0][0] == null) { // Why is this sometimes null????
+               //   debugger;
+               // }
+               // else {
+               if (result.features.length > 1) {
+                 let test = 'test';
+                 debugger;
+               }
+               allResults.features[0].push(result.features[0][0]);
+               //}
+             }
+             else {
+               allResults = result;
+             }
+           }
+         })
+       }
     });
 
     // We have all of the annotated vcf recs.  Now parse them into vcf objects
     cmd.on('end', function(data) {
-      t1 = performance.now(); // SJG_TIMING
-
-      let annotatedRecs = annotatedData.split("\n");
-      var vcfObjects = [];
-      var contigHdrRecFound = false;
-
-      annotatedRecs.forEach(function(record) {
-        if (record.charAt(0) == "#") {
-          me._parseHeaderForInfoFields(record);
-
-        } else {
-          // Parse the vcf record into its fields
-          var fields = record.split('\t');
-          var pos    = fields[1];
-          var id     = fields[2];
-          var ref    = fields[3];
-          var alt    = fields[4];
-          var qual   = fields[5];
-          var filter = fields[6];
-          var info   = fields[7];
-          var format = fields[8];
-          var genotypes = [];
-          for (var i = 9; i < fields.length; i++) {
-            genotypes.push(fields[i]);
-          }
-
-          // Turn vcf record into a JSON object and add it to an array
-          var vcfObject = {'pos': pos, 'id': 'id', 'ref': ref, 'alt': alt,
-                           'qual': qual, 'filter': filter, 'info': info, 'format':format, 'genotypes': genotypes};
-          vcfObjects.push(vcfObject);
-        }
-      });
-
-      let n = vcfObjects.length;
-      console.log('Took ' + (t1-t0) + ' ms to return from iobio services with ' + n + ' number of variants');
-
-      // Parse the vcf object into a variant object that is visualized by the client.
-      var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined, isSubset, efficiencyMode);
-      // SJG NOTE: not doing anything w/ annotatedRecs so not keeping them to free up memory
-      // Each annotatedRec has gx field which is a lot!
-      //callback(annotatedRecs, results);
-      callback(results);
+      debugger;
+      let dataLines = annotatedData.split('\n').filter(line => line.charAt(0) !== '#');
+      callback(allResults);
     });
-
     cmd.on('error', function(error) {
        console.log(error);
     });
-
-    t0 = performance.now(); // SJG_TIMING
     cmd.run();
-
   }
+
+  /* PIECEMEAL parses raw vcf line into vcfObject and then sends to _parseVcfRecords
+     Returns results piecemeal. */
+  exports._processVcfLine = function(line, refName, geneObject, selectedTranscript, clinvarMap, hgvsNotation, getRsId, isMultiSample, sampleNamesToGenotype, vepAF, keepVariantsCombined, isSubset, efficiencyMode) {
+    let me = this;
+
+    // Parse the vcf record into its fields
+    var fields = line.split('\t');
+    var pos    = fields[1];
+    var id     = fields[2];
+    var ref    = fields[3];
+    var alt    = fields[4];
+    var qual   = fields[5];
+    var filter = fields[6];
+    var info   = fields[7];
+    var format = fields[8];
+    var genotypes = [];
+    for (var i = 9; i < fields.length; i++) {
+      genotypes.push(fields[i]);
+    }
+
+    // Turn vcf record into a JSON object and add it to an array
+    var vcfObject = {'pos': pos, 'id': 'id', 'ref': ref, 'alt': alt,
+                     'qual': qual, 'filter': filter, 'info': info, 'format':format, 'genotypes': genotypes};
+    // Parse record and return it
+    return me._parseVcfRecords([vcfObject], refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined, isSubset, efficiencyMode);
+  }
+
 
   /* Filters out any MODIFIER or LOW impact variants from given results object
      SJG was using to avoid memory problems - can remove after final resolution */
@@ -1412,6 +1445,7 @@ var effectCategories = [
 
   }
 
+  /* Returns a single result object for the given vcfRecs. */
   exports._parseVcfRecords = function(vcfRecs, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, parseMultiSample, sampleNames, sampleIndex, vepAF, keepVariantsCombined = false, isSubset = false, efficiencyMode) {
 
       var me = this;
@@ -1507,13 +1541,10 @@ var effectCategories = [
                 len = rec.ref.length - alt.length;
               }
               end = +rec.pos + len;
-
             }
 
-            // SJG_P3 TODO: think I can take annot and clinvarResult out of here for batch?
             var annot = me._parseAnnot(rec, altIdx, isMultiAllelic, geneObject, selectedTranscript, selectedTranscriptID, vepAF);
             var clinvarResult = me.parseClinvarInfo(rec.info, clinvarMap);
-
             var gtResult = me._parseGenotypes(rec, alt, altIdx, gtSampleIndices, gtSampleNames);
 
             //let samplesWithVarCount = gtResult.genotypes.filter(gt => (gt.zygosity == "HET" || gt.zygosity == "HOM")).length;
@@ -1544,9 +1575,9 @@ var effectCategories = [
                     'chrom':                    refName,
                     'type':                     annot.typeAnnotated && annot.typeAnnotated != '' ? annot.typeAnnotated : type,
 
-                                                // key = start.end.length.chromosome.strand.type.ref.alt
-                    'id':                       (rec.pos + '.' + end + '.' + len + '.' + refName + '.' + geneObject.strand + '.' +
-                                                (annot.typeAnnotated && annot.typeAnnotated != '' ? annot.typeAnnotated : type) + '.' + rec.ref + '.' + alt),
+                                                // Took out len and alt and end and type
+                                                // key = start.chromosome.strand.ref.alt
+                    'id':                       (rec.pos + '.' + refName + '.' + geneObject.strand + '.' + rec.ref + '.' + rec.alt),
                     'ref':                      rec.ref,
                     'alt':                      alt,
                     'qual':                     rec.qual,
@@ -1644,14 +1675,11 @@ var effectCategories = [
                   allVariants[i].push(variant);
                 }
               }
-
               if (rec.pos < variantRegionStart) {
                 variantRegionStart = rec.pos;
               }
             }
-
             altIdx++;
-
           });
         }
       });

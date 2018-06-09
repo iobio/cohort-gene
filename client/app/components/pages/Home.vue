@@ -189,6 +189,7 @@ export default {
       return self.promiseInitCache();
     })
     .then(function() {
+      // SJG NOTE: not doing anything currently? Not marking stale sessions currently
       return self.cacheHelper.promiseClearStaleCache();
     })
     .then(function() {
@@ -240,10 +241,10 @@ export default {
       let self = this;
       return new Promise(function(resolve, reject) {
         self.cacheHelper = new CacheHelper();
-        self.cacheHelper.on("geneAnalyzed", function(geneName) {
-          self.$refs.genesCardRef.determineFlaggedGenes();
-          self.$refs.navRef.onShowFlaggedVariants();
-        })
+        // self.cacheHelper.on("geneAnalyzed", function(geneName) {
+        //   self.$refs.genesCardRef.determineFlaggedGenes();
+        //   self.$refs.navRef.onShowFlaggedVariants();
+        // })
         globalCacheHelper = self.cacheHelper;
         self.cacheHelper.promiseInit()
          .then(function() {
