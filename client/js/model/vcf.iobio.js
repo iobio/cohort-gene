@@ -731,13 +731,10 @@ var effectCategories = [
     // Accumulation vars
     var remainingBuffer = '';
     var allResults = null;
-    var annotatedData = '';
 
     // Get the results from the iobio command
     cmd.on('data', function(data) {
        if (data != undefined) {
-         annotatedData += data;
-
          // Append any partial lines from last stream piece
          let combinedData = remainingBuffer + data;
          remainingBuffer = '';
@@ -754,31 +751,13 @@ var effectCategories = [
 
          // Process full lines
          splitLines.forEach(function(line) {
-
-           /****** TESTING ******/
-           // let lineLength = line.split('\t').length;
-           // if (lineLength < 523 && lineLength > 1 && line.charAt(0) !== '#' && !isSubset) {
-           //   // We have a partial line
-           //   debugger;
-           // }
-
            if (line.charAt(0) == '#') {
              me._parseHeaderForInfoFields(line);
            }
            else if (line.length > 0) {
              let result = me._processVcfLine(line, refName, geneObject, selectedTranscript, clinvarMap, hgvsNotation, getRsId, isMultiSample, sampleNamesToGenotype, vepAF, keepVariantsCombined, isSubset, efficiencyMode);
              if (allResults != null) {
-
-               // if (result.features[0][0] == null) { // Why is this sometimes null????
-               //   debugger;
-               // }
-               // else {
-               if (result.features.length > 1) {
-                 let test = 'test';
-                 debugger;
-               }
                allResults.features[0].push(result.features[0][0]);
-               //}
              }
              else {
                allResults = result;
@@ -790,13 +769,15 @@ var effectCategories = [
 
     // We have all of the annotated vcf recs.  Now parse them into vcf objects
     cmd.on('end', function(data) {
-      debugger;
-      let dataLines = annotatedData.split('\n').filter(line => line.charAt(0) !== '#');
+      // SJG TODO: left off here, perpetuate the single annotations through callback and beyond so that drawing will be piecemeal
+      var t1 = performance.now();
+      console.log('Annotating ' + allResults.features[0].length + ' variants took ' + (t1 - t0) + ' ms');
       callback(allResults);
     });
     cmd.on('error', function(error) {
        console.log(error);
     });
+    var t0 = performance.now();
     cmd.run();
   }
 

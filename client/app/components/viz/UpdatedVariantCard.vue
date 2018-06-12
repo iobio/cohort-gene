@@ -105,32 +105,6 @@ Updated: SJG Apr2018
           @variantHoverEnd="onVariantHoverEnd"
           @trackRendered="switchColorScheme">
         </updated-variant-viz>
-        <!-- <updated-variant-viz
-          v-if="(showVariantViz && probandCohort != null)"
-          ref="probandVizRef"
-          :id="probandCohort.getName()"
-          :model="probandCohort"
-          :data="probandCohort.loadedVariants"
-          :title="probandCohort.trackName"
-          :phenotypes="probandCohort.subsetPhenotypes"
-          :regionStart="regionStart"
-          :regionEnd="regionEnd"
-          :annotationScheme="annotationScheme"
-          :width="width"
-          :margin="variantVizMargin"
-          :variantHeight="variantSymbolHeight"
-          :variantPadding="variantSymbolPadding"
-          :showBrush="false"
-          :showXAxis="true"
-          :classifySymbolFunc="classifyVariantSymbolFunc"
-          :impactMode="impactMode"
-          :doneLoadingData="doneLoadingData"
-          :frequencyDisplayMode="false"
-          @variantClick="onVariantClick"
-          @variantHover="onVariantHover"
-          @variantHoverEnd="onVariantHoverEnd"
-          @trackRendered="switchColorScheme">
-        </updated-variant-viz> -->
         <gene-viz id="gene-viz"
           v-bind:class="{ hide: !showGeneViz }"
           :data="[selectedTranscript]"
@@ -220,11 +194,6 @@ export default {
       let self = this;
       if (self.dataSetModel)
         return self.dataSetModel.getSubsetCohort();
-    },
-    cohorts: function() {
-      let self = this;
-      if (self.dataSetModel)
-        return self.dataSetModel.getCohorts();
     }
   },
   watch: {

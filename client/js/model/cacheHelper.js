@@ -1197,7 +1197,7 @@ CacheHelper.prototype.promiseGetAllKeys = function() {
 
 }
 
-// Console log of cache contents; filterObj can be blank
+// SJG Q4 TODO Console log of cache contents; filterObj can be blank
 CacheHelper.prototype.logCacheContents = function(filterObject, showData=false) {
   var me = this;
   me.promiseGetKeys()

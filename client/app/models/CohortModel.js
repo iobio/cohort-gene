@@ -17,7 +17,6 @@ class CohortModel {
     this.bamFileOpened = false;
     this.getBamRefName = null;
 
-    this.sampleName = '';
     this.trackName = '';            // Displays in italics before chips
     this.isGeneratedSampleName = false;
     this.vcfRefNamesMap = {};
@@ -49,7 +48,6 @@ class CohortModel {
     this.isProbandCohort = false;
     this.isSubsetCohort = false;
     this.isUnaffectedCohort = false;
-    //this.useUpdatedPileup = false;      // SJG this is for testing, get rid of after final design decision
   }
 
   /* Returns descriptive name depending on the ID flags.
@@ -92,20 +90,15 @@ class CohortModel {
     return this.getVariantModel().simonsIdMap;
   }
 
-  /* Returns compound name. */
-  getSampleIdentifier(theSampleName) {
-    var id = theSampleName;
-  }
-
   /* Sets sample name. */
   setSampleName(sampleName) {
     this.sampleName = sampleName;
   }
 
   promiseSetLoadState(theVcfData, taskName) {
-    var me = this;
+    let me = this;
 
-    var resolveIt = function(resolve, theVcfData) {
+    let resolveIt = function(resolve, theVcfData) {
       if (theVcfData != null) {
         if (theVcfData.loadState == null) {
           theVcfData.loadState = {};
@@ -124,7 +117,7 @@ class CohortModel {
           resolveIt(resolve, data.vcfData);
          },
          function(error) {
-          var msg = "A problem occurred in CohortModel.promiseSetLoadState(): " + error;
+          let msg = "A problem occurred in CohortModel.promiseSetLoadState(): " + error;
           console.log(msg);
           reject(msg);
          })
@@ -184,8 +177,8 @@ class CohortModel {
   }
 
   promiseGetVcfData(geneObject, selectedTranscript, whenEmptyUseFbData=true) {
-    var me = this;
-    var dataKind = CacheHelper.VCF_DATA;
+    let me = this;
+    let dataKind = CacheHelper.VCF_DATA;
     return new Promise(function(resolve, reject) {
       if (geneObject == null) {
         reject("Empty geneObject in CohortModel.promiseGetVcfData()");
@@ -262,7 +255,7 @@ class CohortModel {
   }
 
   promiseGetFbData(geneObject, selectedTranscript, reconstiteFromVcfData=false) {
-    var me = this;
+    let me = this;
     return new Promise(function(resolve, reject) {
       me._promiseGetData(CacheHelper.FB_DATA, geneObject.gene_name, selectedTranscript)
        .then(function(theFbData) {
@@ -309,15 +302,15 @@ class CohortModel {
   }
 
   reconstituteFbData(theVcfData) {
-    var me = this;
-    var theFbData = $.extend({}, theVcfData);
+    let me = this;
+    let theFbData = $.extend({}, theVcfData);
     theFbData.features = [];
     theFbData.loadState = {clinvar: true, coverage: true, inheritance: true};
     // Add the unique freebayes variants to vcf data to include
     // in feature matrix
     theVcfData.features.forEach( function(v) {
       if (v.hasOwnProperty('fbCalled') && v.fbCalled == 'Y') {
-        var variantObject = $.extend({}, v);
+        let variantObject = $.extend({}, v);
           theFbData.features.push(variantObject);
           variantObject.source = v;
       }
@@ -326,13 +319,13 @@ class CohortModel {
   }
 
   promiseGetKnownVariants(geneObject, transcript, binLength) {
-    var me = this;
+    let me = this;
     return new Promise( function(resolve, reject) {
-      var refName = me._stripRefName(geneObject.chr);
+      let refName = me._stripRefName(geneObject.chr);
       me.vcf.promiseGetKnownVariants(refName, geneObject, transcript, binLength)
               .then(function(results) {
                 resolve(results);
-                /* SJG TODO: currently not being called - artifact fr
+                /* SJG TODO: currently not being called - artifact from gene?
                 if (transcript) {
               var exonBins = me.binKnownVariantsByExons(geneObject, transcript, binLength, results);
               resolve(exonBins);
@@ -347,8 +340,8 @@ class CohortModel {
     })
   }
 
-  binKnownVariantsByExons(geneObject, transcript, binLength, results) {
-    var exonBins = [];
+  /*binKnownVariantsByExons(geneObject, transcript, binLength, results) {
+    let exonBins = [];
     transcript.features.filter(function(feature) {
       return feature.feature_type.toUpperCase() == 'CDS' || feature.feature_type.toUpperCase() == 'CDS';
     }).forEach(function(exon) {
@@ -365,8 +358,9 @@ class CohortModel {
       exonBins.push(exonBin);
     })
     return exonBins;
-  }
+  }*/
 
+  /*
   promiseGetGeneCoverage(geneObject, transcript) {
     var me = this;
 
@@ -453,63 +447,63 @@ class CohortModel {
       })
     }
     return geneCoverageObjects;
-  }
+  }*/
 
   promiseGetCachedGeneCoverage(geneObject, selectedTranscript) {
     let self = this;
     return self._promiseGetData(CacheHelper.GENE_COVERAGE_DATA, geneObject.gene_name, selectedTranscript, cacheHelper);
   }
 
-  setGeneCoverageForGene(geneCoverage, geneObject, transcript) {
-    let self = this;
-    geneObject = geneObject ? geneObject : window.gene;
-    transcript = transcript ? transcript : window.selectedTranscript;
-    self._promiseCacheData(geneCoverage, CacheHelper.GENE_COVERAGE_DATA, geneObject.gene_name, transcript);
-  }
+  // setGeneCoverageForGene(geneCoverage, geneObject, transcript) {
+  //   let self = this;
+  //   geneObject = geneObject ? geneObject : window.gene;
+  //   transcript = transcript ? transcript : window.selectedTranscript;
+  //   self._promiseCacheData(geneCoverage, CacheHelper.GENE_COVERAGE_DATA, geneObject.gene_name, transcript);
+  // }
 
   promiseGetDangerSummary(geneName) {
     let self = this;
     return self._promiseGetData(CacheHelper.DANGER_SUMMARY_DATA, geneName, null, cacheHelper);
   }
 
-  promiseGetVariantCount(data) {
-    var me = this;
-
-    var resolveIt = function(resolve, theVcfData) {
-      var loadedVariantCount = 0;
-      if (theVcfData && theVcfData.features) {
-        theVcfData.features.forEach(function(variant) {
-          if (variant.fbCalled == 'Y') {
-
-          } else if (variant.zygosity && variant.zygosity.toLowerCase() == "homref") {
-
-          } else {
-            loadedVariantCount++;
-          }
-        });
-      }
-      resolve(loadedVariantCount);
-
-    }
-    return new Promise(function(resolve, reject) {
-      var theVcfData = null;
-      if (data != null && data.features != null) {
-        resolveIt(resolve, data);
-      } else {
-        me.promiseGetVcfData(window.gene, window.selectedTranscript)
-         .then(function(theData) {
-          theVcfData = theData.vcfData;
-          resolveIt(resolve, theData.vcfData);
-         },
-         function(error) {
-          var msg = "Problem in CohortModel.promiseGetVariantCount(): " + error;
-          console.log(msg);
-          reject(msg);
-         })
-      }
-    })
-
-  }
+  // promiseGetVariantCount(data) {
+  //   var me = this;
+  //
+  //   var resolveIt = function(resolve, theVcfData) {
+  //     var loadedVariantCount = 0;
+  //     if (theVcfData && theVcfData.features) {
+  //       theVcfData.features.forEach(function(variant) {
+  //         if (variant.fbCalled == 'Y') {
+  //
+  //         } else if (variant.zygosity && variant.zygosity.toLowerCase() == "homref") {
+  //
+  //         } else {
+  //           loadedVariantCount++;
+  //         }
+  //       });
+  //     }
+  //     resolve(loadedVariantCount);
+  //
+  //   }
+  //   return new Promise(function(resolve, reject) {
+  //     var theVcfData = null;
+  //     if (data != null && data.features != null) {
+  //       resolveIt(resolve, data);
+  //     } else {
+  //       me.promiseGetVcfData(window.gene, window.selectedTranscript)
+  //        .then(function(theData) {
+  //         theVcfData = theData.vcfData;
+  //         resolveIt(resolve, theData.vcfData);
+  //        },
+  //        function(error) {
+  //         var msg = "Problem in CohortModel.promiseGetVariantCount(): " + error;
+  //         console.log(msg);
+  //         reject(msg);
+  //        })
+  //     }
+  //   })
+  //
+  // }
 
   promiseSummarizeDanger(geneName, theVcfData, options, geneCoverageAll, filterModel) {
     var me = this;
@@ -538,97 +532,97 @@ class CohortModel {
     })
   }
 
-  filterBamDataByRegion(coverage, regionStart, regionEnd) {
-    return coverage.filter(function(d) {
-      return (d[0] >= regionStart && d[0] <= regionEnd);
-    });
-  }
-
-  reduceBamData(coverageData, numberOfPoints) {
-    var factor = d3.round(coverageData.length / numberOfPoints);
-    var xValue = function(d) { return d[0]; };
-    var yValue = function(d) { return d[1]; };
-    return this.bam.reducePoints(coverageData, factor, xValue, yValue);
-  }
+  // filterBamDataByRegion(coverage, regionStart, regionEnd) {
+  //   return coverage.filter(function(d) {
+  //     return (d[0] >= regionStart && d[0] <= regionEnd);
+  //   });
+  // }
+  //
+  // reduceBamData(coverageData, numberOfPoints) {
+  //   var factor = d3.round(coverageData.length / numberOfPoints);
+  //   var xValue = function(d) { return d[0]; };
+  //   var yValue = function(d) { return d[1]; };
+  //   return this.bam.reducePoints(coverageData, factor, xValue, yValue);
+  // }
 
   setLoadedVariants(theVcfData) {
     this.vcfData = theVcfData;
   }
 
-  setCalledVariants(theFbData, cache=false) {
-    let self = this;
-    self.fbData = theFbData;
-    if (cache) {
-      self._promiseCacheData(theFbData, CacheHelper.FB_DATA, window.gene.gene_name, window.selectedTranscript);
-    }
-  }
+  // setCalledVariants(theFbData, cache=false) {
+  //   let self = this;
+  //   self.fbData = theFbData;
+  //   if (cache) {
+  //     self._promiseCacheData(theFbData, CacheHelper.FB_DATA, window.gene.gene_name, window.selectedTranscript);
+  //   }
+  // }
+  //
+  // promiseGetCalledVariantCount() {
+  //   var me = this;
+  //   return new Promise(function(resolve, reject) {
+  //     me.promiseGetFbData(window.gene, window.selectedTranscript, true)
+  //      .then(function(data) {
+  //       var theFbData = data.fbData;
+  //       if (theFbData && theFbData.features ) {
+  //         var count = theFbData.features
+  //          .filter(function(d) {
+  //           // Filter homozygous reference for proband only
+  //           if (d.zygosity && d.zygosity.toLowerCase() == 'homref') {
+  //             return false;
+  //           }
+  //           return true;
+  //          }).length;
+  //          resolve(count);
+  //       } else {
+  //         resolve(0);
+  //       }
+  //      },
+  //      function(error) {
+  //       var msg = "Problem in getCalledVariantCount(): " + error;
+  //       console.log(msg);
+  //       reject(msg);
+  //      });
+  //   })
+  // }
 
-  promiseGetCalledVariantCount() {
-    var me = this;
-    return new Promise(function(resolve, reject) {
-      me.promiseGetFbData(window.gene, window.selectedTranscript, true)
-       .then(function(data) {
-        var theFbData = data.fbData;
-        if (theFbData && theFbData.features ) {
-          var count = theFbData.features
-           .filter(function(d) {
-            // Filter homozygous reference for proband only
-            if (d.zygosity && d.zygosity.toLowerCase() == 'homref') {
-              return false;
-            }
-            return true;
-           }).length;
-           resolve(count);
-        } else {
-          resolve(0);
-        }
-       },
-       function(error) {
-        var msg = "Problem in getCalledVariantCount(): " + error;
-        console.log(msg);
-        reject(msg);
-       });
-    })
-  }
-
-  promiseHasCalledVariants() {
-    var me = this;
-    return new Promise(function(resolve,reject) {
-      if (me.fbData != null ) {
-        resolve(me.fbData != null && me.fbData.features != null && me.fbData.features.length > 0);
-      } else {
-        me.promiseGetFbData(window.gene, window.selectedTranscript, true)
-         .then(function(data) {
-          resolve(data.fbData != null && data.fbData.features != null && data.fbData.features.length > 0);
-         },
-         function(error) {
-          var msg = "Problem in CohortModel.promiseHasCalledVariants(): " + error;
-          console.log(msg);
-          reject(msg);
-         })
-      }
-    })
-  }
-
-  promiseVariantsHaveBeenCalled() {
-    var me = this;
-    return new Promise(function(resolve, reject) {
-      if (me.fbData) {
-        resolve(true);
-      } else {
-        me.promiseGetFbData(window.gene, window.selectedTranscript, true)
-         .then(function(data) {
-          resolve(data.fbData != null);
-         },
-         function(error) {
-          var msg = "Problem in CohortModel.promiseVariantsHaveBeenCalled(): " + error;
-          console.log(msg);
-          reject(msg);
-         });
-      }
-    })
-
-  }
+  // promiseHasCalledVariants() {
+  //   var me = this;
+  //   return new Promise(function(resolve,reject) {
+  //     if (me.fbData != null ) {
+  //       resolve(me.fbData != null && me.fbData.features != null && me.fbData.features.length > 0);
+  //     } else {
+  //       me.promiseGetFbData(window.gene, window.selectedTranscript, true)
+  //        .then(function(data) {
+  //         resolve(data.fbData != null && data.fbData.features != null && data.fbData.features.length > 0);
+  //        },
+  //        function(error) {
+  //         var msg = "Problem in CohortModel.promiseHasCalledVariants(): " + error;
+  //         console.log(msg);
+  //         reject(msg);
+  //        })
+  //     }
+  //   })
+  // }
+  //
+  // promiseVariantsHaveBeenCalled() {
+  //   var me = this;
+  //   return new Promise(function(resolve, reject) {
+  //     if (me.fbData) {
+  //       resolve(true);
+  //     } else {
+  //       me.promiseGetFbData(window.gene, window.selectedTranscript, true)
+  //        .then(function(data) {
+  //         resolve(data.fbData != null);
+  //        },
+  //        function(error) {
+  //         var msg = "Problem in CohortModel.promiseVariantsHaveBeenCalled(): " + error;
+  //         console.log(msg);
+  //         reject(msg);
+  //        });
+  //     }
+  //   })
+  //
+  // }
 
   /* Setup VCF fields */
   init(variantModel) {
@@ -639,120 +633,120 @@ class CohortModel {
     me.vcf.setGenomeBuildHelper(variantModel.genomeBuildHelper);
   };
 
-  promiseBamFilesSelected(event) {
-    var me = this;
-    return new Promise(function(resolve, reject) {
-      me.bamData = null;
-      me.fbData = null;
-      me.bam = new Bam();
-      me.bam.openBamFile(event, function(success, message) {
-        if (me.lastBamAlertify) {
-          me.lastBamAlertify.dismiss();
-        }
-        if (success) {
-          me.bamFileOpened = true;
-          me.getBamRefName = me._stripRefName;
-          resolve(me.bam.bamFile.name);
-        } else {
-          if (me.lastBamAlertify) {
-            me.lastBamAlertify.dismiss();
-          }
-          var msg = "<span style='font-size:18px'>" + message + "</span>";
-              alertify.set('notifier','position', 'top-right');
-          me.lastBamAlertify = alertify.error(msg, 15);
+  // promiseBamFilesSelected(event) {
+  //   var me = this;
+  //   return new Promise(function(resolve, reject) {
+  //     me.bamData = null;
+  //     me.fbData = null;
+  //     me.bam = new Bam();
+  //     me.bam.openBamFile(event, function(success, message) {
+  //       if (me.lastBamAlertify) {
+  //         me.lastBamAlertify.dismiss();
+  //       }
+  //       if (success) {
+  //         me.bamFileOpened = true;
+  //         me.getBamRefName = me._stripRefName;
+  //         resolve(me.bam.bamFile.name);
+  //       } else {
+  //         if (me.lastBamAlertify) {
+  //           me.lastBamAlertify.dismiss();
+  //         }
+  //         var msg = "<span style='font-size:18px'>" + message + "</span>";
+  //             alertify.set('notifier','position', 'top-right');
+  //         me.lastBamAlertify = alertify.error(msg, 15);
+  //
+  //         reject(message);
+  //       }
+  //     });
+  //   });
+  // }
+  //
+  // onBamUrlEntered(bamUrl, baiUrl, callback) {
+  //   var me = this;
+  //   this.bamData = null;
+  //   this.fbData = null;
+  //
+  //   if (bamUrl == null || bamUrl.trim() == "") {
+  //     this.bamUrlEntered = false;
+  //     this.bam = null;
+  //   } else {
+  //     this.bamUrlEntered = true;
+  //     this.bam = new Bam(this.cohort.endpoint, bamUrl, baiUrl);
+  //     this.bam.checkBamUrl(bamUrl, baiUrl, function(success, errorMsg) {
+  //       if (me.lastBamAlertify) {
+  //         me.lastBamAlertify.dismiss();
+  //       }
+  //       if (!success) {
+  //         this.bamUrlEntered = false;
+  //         this.bam = null;
+  //         var msg = "<span style='font-size:18px'>" + errorMsg + "</span><br><span style='font-size:12px'>" + bamUrl + "</span>";
+  //             alertify.set('notifier','position', 'top-right');
+  //         me.lastBamAlertify = alertify.error(msg, 15);
+  //       }
+  //       if(callback) {
+  //         callback(success);
+  //       }
+  //     });
+  //   }
+  //     this.getBamRefName = this._stripRefName;
+  // }
 
-          reject(message);
-        }
-      });
-    });
-  }
-
-  onBamUrlEntered(bamUrl, baiUrl, callback) {
-    var me = this;
-    this.bamData = null;
-    this.fbData = null;
-
-    if (bamUrl == null || bamUrl.trim() == "") {
-      this.bamUrlEntered = false;
-      this.bam = null;
-    } else {
-      this.bamUrlEntered = true;
-      this.bam = new Bam(this.cohort.endpoint, bamUrl, baiUrl);
-      this.bam.checkBamUrl(bamUrl, baiUrl, function(success, errorMsg) {
-        if (me.lastBamAlertify) {
-          me.lastBamAlertify.dismiss();
-        }
-        if (!success) {
-          this.bamUrlEntered = false;
-          this.bam = null;
-          var msg = "<span style='font-size:18px'>" + errorMsg + "</span><br><span style='font-size:12px'>" + bamUrl + "</span>";
-              alertify.set('notifier','position', 'top-right');
-          me.lastBamAlertify = alertify.error(msg, 15);
-        }
-        if(callback) {
-          callback(success);
-        }
-      });
-    }
-      this.getBamRefName = this._stripRefName;
-  }
-
-  promiseVcfFilesSelected(event) {
-    var me = this;
-
-    return new Promise( function(resolve, reject) {
-      me.sampleName = null;
-      me.vcfData = null;
-      me.vcf.openVcfFile( event,
-        function(success, message) {
-          if (me.lastVcfAlertify) {
-            me.lastVcfAlertify.dismiss();
-          }
-          if (success) {
-            me.vcfFileOpened = true;
-            me.vcfUrlEntered = false;
-            me.getVcfRefName = null;
-            me.isMultiSample = false;
-
-            // Get the sample names from the vcf header
-              me.vcf.getSampleNames( function(sampleNames) {
-                me.isMultiSample = sampleNames && sampleNames.length > 1 ? true : false;
-                resolve({'fileName': me.vcf.getVcfFile().name, 'sampleNames': sampleNames});
-              });
-          } else {
-            var msg = "<span style='font-size:18px'>" + message + "</span>";
-              alertify.set('notifier','position', 'top-right');
-              me.lastVcfAlertify = alertify.error(msg, 15);
-
-            reject(message);
-          }
-        }
-      );
-    });
-  }
-
-  clearVcf(cardIndex) {
-
-    this.vcfData = null;
-    this.vcfUrlEntered = false;
-    this.vcfFileOpened = false;
-    this.sampleName = null;
-    window.utility.removeUrl('sample'+ cardIndex);
-    window.utility.removeUrl('vcf' + cardIndex);
-    window.utility.removeUrl('name'+ cardIndex);
-    this.vcf.clear();
-  }
-
-  clearBam(cardIndex) {
-
-    this.bamData = null;
-    this.bamUrlEntered = false;
-    this.bamFileOpened = false;
-    window.utility.removeUrl('bam' + cardIndex);
-    if (this.bam) {
-      this.bam.clear();
-    }
-  }
+  // promiseVcfFilesSelected(event) {
+  //   var me = this;
+  //
+  //   return new Promise( function(resolve, reject) {
+  //     me.sampleName = null;
+  //     me.vcfData = null;
+  //     me.vcf.openVcfFile( event,
+  //       function(success, message) {
+  //         if (me.lastVcfAlertify) {
+  //           me.lastVcfAlertify.dismiss();
+  //         }
+  //         if (success) {
+  //           me.vcfFileOpened = true;
+  //           me.vcfUrlEntered = false;
+  //           me.getVcfRefName = null;
+  //           me.isMultiSample = false;
+  //
+  //           // Get the sample names from the vcf header
+  //             me.vcf.getSampleNames( function(sampleNames) {
+  //               me.isMultiSample = sampleNames && sampleNames.length > 1 ? true : false;
+  //               resolve({'fileName': me.vcf.getVcfFile().name, 'sampleNames': sampleNames});
+  //             });
+  //         } else {
+  //           var msg = "<span style='font-size:18px'>" + message + "</span>";
+  //             alertify.set('notifier','position', 'top-right');
+  //             me.lastVcfAlertify = alertify.error(msg, 15);
+  //
+  //           reject(message);
+  //         }
+  //       }
+  //     );
+  //   });
+  // }
+  //
+  // clearVcf(cardIndex) {
+  //
+  //   this.vcfData = null;
+  //   this.vcfUrlEntered = false;
+  //   this.vcfFileOpened = false;
+  //   this.sampleName = null;
+  //   window.utility.removeUrl('sample'+ cardIndex);
+  //   window.utility.removeUrl('vcf' + cardIndex);
+  //   window.utility.removeUrl('name'+ cardIndex);
+  //   this.vcf.clear();
+  // }
+  //
+  // clearBam(cardIndex) {
+  //
+  //   this.bamData = null;
+  //   this.bamUrlEntered = false;
+  //   this.bamFileOpened = false;
+  //   window.utility.removeUrl('bam' + cardIndex);
+  //   if (this.bam) {
+  //     this.bam.clear();
+  //   }
+  // }
 
   onVcfUrlEntered(vcfUrl, tbiUrl, callback) {
    var me = this;
@@ -796,8 +790,8 @@ class CohortModel {
  }
 
   _promiseVcfRefName(ref) {
-    var me = this;
-    var theRef = ref != null ? ref : window.gene.chr;
+    let me = this;
+    let theRef = ref != null ? ref : window.gene.chr;
     return new Promise( function(resolve, reject) {
 
       if (me.getVcfRefName != null) {
@@ -860,33 +854,33 @@ class CohortModel {
     return strippedName;
   }
 
-  promiseGetMatchingVariant(variant) {
-    var me = this;
-    return new Promise(function(resolve, reject) {
-      var theVcfData = me.promiseGetVcfData(window.gene, window.selectedTranscript)
-       .then(function(data) {
-        var theVcfData = data.vcfData;
-        var matchingVariant = null;
-        if (theVcfData && theVcfData.features) {
-          theVcfData.features.forEach(function(v) {
-            if (v.start == variant.start
-                && v.end == variant.end
-                && v.ref == variant.ref
-                && v.alt == variant.alt
-                && v.type.toLowerCase() == variant.type.toLowerCase()) {
-              matchingVariant = v;
-            }
-          });
-        }
-        resolve(matchingVariant);
-       },
-       function(error) {
-        var msg = "A problem occurred in CohortModel.promiseGetMatchingVariant(): " + error;
-        console.log(msg);
-        reject(msg);
-       })
-    });
-  }
+  // promiseGetMatchingVariant(variant) {
+  //   var me = this;
+  //   return new Promise(function(resolve, reject) {
+  //     var theVcfData = me.promiseGetVcfData(window.gene, window.selectedTranscript)
+  //      .then(function(data) {
+  //       var theVcfData = data.vcfData;
+  //       var matchingVariant = null;
+  //       if (theVcfData && theVcfData.features) {
+  //         theVcfData.features.forEach(function(v) {
+  //           if (v.start == variant.start
+  //               && v.end == variant.end
+  //               && v.ref == variant.ref
+  //               && v.alt == variant.alt
+  //               && v.type.toLowerCase() == variant.type.toLowerCase()) {
+  //             matchingVariant = v;
+  //           }
+  //         });
+  //       }
+  //       resolve(matchingVariant);
+  //      },
+  //      function(error) {
+  //       var msg = "A problem occurred in CohortModel.promiseGetMatchingVariant(): " + error;
+  //       console.log(msg);
+  //       reject(msg);
+  //      })
+  //   });
+  // }
 
   /*
   * A gene has been selected. Clear out the model's state
@@ -899,39 +893,39 @@ class CohortModel {
     this.bamData = null;
   }
 
-  promiseAnnotated(theVcfData) {
-    var me = this;
-    return new Promise( function(resolve, reject) {
-      if (theVcfData != null &&
-        theVcfData.features != null &&
-        theVcfData.loadState != null &&
-         //(dataCard.mode == 'single' || theVcfData.loadState['inheritance'] == true) &&
-        theVcfData.loadState['clinvar'] == true ) {
-
-        resolve();
-
-      } else {
-        reject();
-      }
-    });
-  }
-
-  promiseAnnotatedAndCoverage(theVcfData) {
-    var me = this;
-    return new Promise( function(resolve, reject) {
-      if (theVcfData != null &&
-        theVcfData.features != null &&
-        theVcfData.loadState != null &&
-         (dataCard.mode == 'single' || theVcfData.loadState['inheritance'] == true) &&
-        theVcfData.loadState['clinvar'] == true  &&
-        (!me.isBamLoaded() || theVcfData.loadState['coverage'] == true)) {
-        resolve();
-
-      } else {
-        reject();
-      }
-    });
-  }
+  // promiseAnnotated(theVcfData) {
+  //   var me = this;
+  //   return new Promise( function(resolve, reject) {
+  //     if (theVcfData != null &&
+  //       theVcfData.features != null &&
+  //       theVcfData.loadState != null &&
+  //        //(dataCard.mode == 'single' || theVcfData.loadState['inheritance'] == true) &&
+  //       theVcfData.loadState['clinvar'] == true ) {
+  //
+  //       resolve();
+  //
+  //     } else {
+  //       reject();
+  //     }
+  //   });
+  // }
+  //
+  // promiseAnnotatedAndCoverage(theVcfData) {
+  //   var me = this;
+  //   return new Promise( function(resolve, reject) {
+  //     if (theVcfData != null &&
+  //       theVcfData.features != null &&
+  //       theVcfData.loadState != null &&
+  //        (dataCard.mode == 'single' || theVcfData.loadState['inheritance'] == true) &&
+  //       theVcfData.loadState['clinvar'] == true  &&
+  //       (!me.isBamLoaded() || theVcfData.loadState['coverage'] == true)) {
+  //       resolve();
+  //
+  //     } else {
+  //       reject();
+  //     }
+  //   });
+  // }
 
   // Take in variant, navigate to variant in vcf, annotate, return variant result
   promiseGetVariantExtraAnnotations(theGene, theTranscript, variant, format, getHeader = false, sampleNames) {
@@ -970,7 +964,7 @@ class CohortModel {
              theTranscript,
              null,   // regions
              true,   //isMultiSample (true for cohort)
-             me._getSubsetSamples(),
+             me.getFormattedSampleIds(),
              me.getName() == 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
              me.getTranslator().clinvarMap,
              me.getGeneModel().geneSource == 'refseq' ? true : false,
@@ -1191,28 +1185,28 @@ class CohortModel {
 
       // First the gene vcf data has been cached, just return
       // it.  (No need to retrieve the variants from the iobio service.)
-      var resultMap = {};
-      var promises = [];
-      cohortModels.forEach(function(model) {
-        var p = model._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript) // SJG_TIMING NOTE: this only takes ~70 ms
-         .then(function(vcfData) {
-          if (vcfData != null && vcfData != '') {
-            resultMap[model.name] = vcfData;
+      //let resultMap = {};
+      // var promises = [];
+      // cohortModels.forEach(function(model) {
+      //   var p = model._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript) // SJG_TIMING NOTE: this only takes ~70 ms
+      //    .then(function(vcfData) {
+      //     if (vcfData != null && vcfData != '') {
+      //       resultMap[model.name] = vcfData;
+      //
+      //       if (!isBackground) {
+      //         model.vcfData = vcfData;
+      //         model.fbData = me.reconstituteFbData(vcfData);
+      //       }
+      //     }
+      //    })
+      //    promises.push(p);
+      // })
 
-            if (!isBackground) {
-              model.vcfData = vcfData;
-              model.fbData = me.reconstituteFbData(vcfData);
-            }
-          }
-         })
-         promises.push(p);
-      })
-
-      Promise.all(promises)
-      .then(function() {
-        if (Object.keys(resultMap).length == cohortModels.length) {
-          resolve(resultMap);
-        } else {
+      //Promise.all(promises)
+      //.then(function() {
+      //   if (Object.keys(resultMap).length == cohortModels.length) {
+      //     resolve(resultMap);
+      //   } else {
           // We don't have the variants for the gene in cache,
           // so call the iobio services to retreive the variants for the gene region
           // and annotate them
@@ -1226,7 +1220,7 @@ class CohortModel {
                theTranscript,
                null,   // regions
                isMultiSample,
-               me._getSubsetSamples(),
+               me.getFormattedSampleIds(),
                me.getName() == 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
                me.getTranslator().clinvarMap,
                me.getGeneModel().geneSource == 'refseq' ? true : false,
@@ -1276,25 +1270,25 @@ class CohortModel {
                 }
                 resolve(resultMap);
               } else {
-                var error = "ERROR - cannot locate gene object to match with vcf data " + data.ref + " " + data.start + "-" + data.end;
+                let error = "ERROR - cannot locate gene object to match with vcf data " + data.ref + " " + data.start + "-" + data.end;
                 console.log(error);
                 reject(error);
               }
             } else {
-              var error = "ERROR - empty vcf results for " + theGene.gene_name;;
+              let error = "ERROR - empty vcf results for " + theGene.gene_name;
               console.log(error);
               reject(error);
             }
           },
           function(error) {
-            reject("missing reference")
+            reject("missing reference: " + error);
           });
-        }
-      },
-      function(error) {
-        reject(error);
-      });
-    });
+        });
+    //   },
+    //   function(error) {
+    //     reject(error);
+    //   });
+    // });
   }
 
   _combineUniqueFeatures(results) {
@@ -1532,20 +1526,12 @@ class CohortModel {
     self.getCacheHelper().promiseRemoveCacheItem(dataKind, key);
   }
 
-  _getSubsetSamples() {
+  getFormattedSampleIds() {
     let self = this;
     var subsetSamples = [];
 
-    var idMap = self.getSimonsIdMap();
-
     self.subsetIds.forEach(function (sample) {
-      if (idMap != null) {
-        var vcfId = idMap[sample.id];
-        subsetSamples.push( {vcfSampleName: vcfId, sampleName: vcfId} );
-      }
-      else {
-        subsetSamples.push( {vcfSampleName: sample, sampleName: sample} );
-      }
+      subsetSamples.push( {vcfSampleName: sample, sampleName: sample} );
     })
     return subsetSamples;
   }
@@ -2512,7 +2498,7 @@ class CohortModel {
   }
 
   _promiseGetData(dataKind, geneName, transcript) {
-    var me = this;
+    let me = this;
     return new Promise(function(resolve, reject) {
       if (geneName == null) {
         var msg = "CohortModel._promiseGetData(): empty gene name";
