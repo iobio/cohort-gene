@@ -158,7 +158,7 @@ class VariantModel {
 
                     // Format filter to send to Hub to get all proband IDs (using 'abc total score' for now)
                     var probandFilter = self.getProbandPhenoFilter();
-                    var filterObj = {'affection_status': probandFilter};
+                    var filterObj = {'affected_status': probandFilter};
 
                     // Retrieve proband sample IDs from Hub
                     let promises = [];
@@ -312,7 +312,7 @@ class VariantModel {
         var self = this;
 
         // Affected/Unaffected filter
-        if (filter == 'affection_status') {
+        if (filter == 'affected_status') {
             if (boundsArr[0] == 'Affected') {
                 return 'Affected';
             }
