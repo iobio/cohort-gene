@@ -2457,7 +2457,6 @@ class CohortModel {
              me.getTranslator().clinvarMap,
              me.getGeneModel().geneSource == 'refseq' ? true : false)
           .then(function(data) {
-            debugger;
             if (data != null && data.features != null) {
               //var annotatedRecs = data[0];
               me.vcfData = data;

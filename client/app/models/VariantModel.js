@@ -169,7 +169,7 @@ class VariantModel {
                                 reject('No samples found for proband filtering from Hub');
                             }
                             // Coming from SSC data set
-                            if (!ids[0].startsWith('SSC')) {
+                            if (!((ids[0].id).startsWith('SSC'))) {
                                 probandCohort.subsetIds = self.convertSimonsIds(ids);
                             }
                             // Coming from SPARK
@@ -184,7 +184,7 @@ class VariantModel {
                     self.appendSubsetPhenoFilters(subsetCohort, probandFilter);
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                         .then(function (ids) {
-                            if (ids.length > 0 && !ids[0].startsWith('SSC')) {
+                            if (ids.length > 0 && !((ids[0].id).startsWith('SSC'))) {
                                 subsetCohort.subsetIds = self.convertSimonsIds(ids);
                             }
                             else {
