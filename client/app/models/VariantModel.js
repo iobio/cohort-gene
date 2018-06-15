@@ -275,36 +275,20 @@ class VariantModel {
         // Define if parameter mapping overwrote
         if (self.phenoFilters == null) self.phenoFilters = {};
 
-        // NOTE: trying to get rid of this to incorporate SPARK
-        // Remove affected/unaffected filter if applied - currently breaks Hub retrieval AND we're only currently dealing w/ affecteds
-        // if (self.phenoFilters['affection_status'] != null) {
-        //     var filteredPhenoFilters = {};
-        //     Object.keys(self.phenoFilters).forEach(function (filter) {
-        //         if (filter != 'affection_status')
-        //             filteredPhenoFilters[filter] = self.phenoFilters[filter];
-        //     })
-        //     self.phenoFilters = filteredPhenoFilters;
-        // }
-
-        // Flag to add proband filter
-        var hasAbcTotalScore = false;
-
         // Pull out filter terms passed from Hub and format for display
         if (Object.keys(self.phenoFilters).length > 0) {
             Object.keys(self.phenoFilters).forEach(function (filter) {
                 if (self.phenoFilters[filter] != null && self.phenoFilters[filter].data != null) {
-                    //if (filter == 'abc.total_score') hasAbcTotalScore = true;
-                    subsetCohort.subsetPhenotypes.push(
-                        self.formatPhenotypeFilterDisplay(filter, self.phenoFilters[filter].data));
+                    subsetCohort.subsetPhenotypes.push(self.formatPhenotypeFilterDisplay(filter, self.phenoFilters[filter].data));
                 }
             })
         }
 
-        // If we aren't filtering on abc total score already, add a proband filter
+        // If we aren't filtering on affected status already, add a proband filter
         // Add this after setting up subsetPhenotype array to preserve 'Probands' chip displaying first
-        // if (!hasAbcTotalScore) {
-        //     self.phenoFilters['abc.total_score'] = probandFilter;
-        // }
+        if (self.phenoFilters['affected_status'] == null) {
+            self.phenoFilters['affected_status'] = probandFilter;
+        }
     }
 
     /* Only handles affected pie chart filter, and histogram filters */
