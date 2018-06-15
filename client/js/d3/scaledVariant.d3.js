@@ -207,6 +207,11 @@ function scaledVariantD3() {
     }
   }
 
+  var clearVariants = function(svgContainer) {
+      svgContainer.remove();
+  }
+
+
   var switchColorScheme = function(enrichmentMode, svgContainer) {
     let variants = svgContainer.selectAll(".variant");
     let highVars = variants.filter(".iHIGH");
@@ -1001,6 +1006,12 @@ function scaledVariantD3() {
     switchColorScheme = _;
     return chart;
   }
+
+    chart.clearVariants = function(_) {
+        if (!arguments.length) return clearVariants;
+        clearVariants = _;
+        return chart;
+    }
 
   chart.displayBrush = function(_) {
     if (!arguments.length) return displayBrush;

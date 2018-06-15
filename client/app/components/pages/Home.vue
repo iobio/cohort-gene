@@ -347,6 +347,7 @@ TD & SJG updated Jun2018 -->
                 if (self.variantModel == null || self.variantModel.dataSetModel == null) {
                     return;
                 }
+                dataSetModel.wipeVariantData();
                 let cohortModels = self.variantModel.dataSetModel.getCohorts();
                 cohortModels.forEach((model) => {
                     model.wipeGeneData();

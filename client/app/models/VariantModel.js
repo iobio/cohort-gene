@@ -158,12 +158,13 @@ class VariantModel {
 
                     // Format filter to send to Hub to get all proband IDs (using 'abc total score' for now)
                     var probandFilter = self.getProbandPhenoFilter();
-                    var filterObj = {'abc.total_score': probandFilter};
+                    var filterObj = {'affection_status': probandFilter};
 
                     // Retrieve proband sample IDs from Hub
                     let promises = [];
                     let probandP = self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
                         .then(function (ids) {
+                            debugger;
                             // Stop process if we don't have any probands
                             if (ids.length === 0) {
                                 reject('No samples found for proband filtering from Hub');
@@ -274,15 +275,16 @@ class VariantModel {
         // Define if parameter mapping overwrote
         if (self.phenoFilters == null) self.phenoFilters = {};
 
+        // NOTE: trying to get rid of this to incorporate SPARK
         // Remove affected/unaffected filter if applied - currently breaks Hub retrieval AND we're only currently dealing w/ affecteds
-        if (self.phenoFilters['affection_status'] != null) {
-            var filteredPhenoFilters = {};
-            Object.keys(self.phenoFilters).forEach(function (filter) {
-                if (filter != 'affection_status')
-                    filteredPhenoFilters[filter] = self.phenoFilters[filter];
-            })
-            self.phenoFilters = filteredPhenoFilters;
-        }
+        // if (self.phenoFilters['affection_status'] != null) {
+        //     var filteredPhenoFilters = {};
+        //     Object.keys(self.phenoFilters).forEach(function (filter) {
+        //         if (filter != 'affection_status')
+        //             filteredPhenoFilters[filter] = self.phenoFilters[filter];
+        //     })
+        //     self.phenoFilters = filteredPhenoFilters;
+        // }
 
         // Flag to add proband filter
         var hasAbcTotalScore = false;
@@ -291,7 +293,7 @@ class VariantModel {
         if (Object.keys(self.phenoFilters).length > 0) {
             Object.keys(self.phenoFilters).forEach(function (filter) {
                 if (self.phenoFilters[filter] != null && self.phenoFilters[filter].data != null) {
-                    if (filter == 'abc.total_score') hasAbcTotalScore = true;
+                    //if (filter == 'abc.total_score') hasAbcTotalScore = true;
                     subsetCohort.subsetPhenotypes.push(
                         self.formatPhenotypeFilterDisplay(filter, self.phenoFilters[filter].data));
                 }
@@ -300,9 +302,9 @@ class VariantModel {
 
         // If we aren't filtering on abc total score already, add a proband filter
         // Add this after setting up subsetPhenotype array to preserve 'Probands' chip displaying first
-        if (!hasAbcTotalScore) {
-            self.phenoFilters['abc.total_score'] = probandFilter;
-        }
+        // if (!hasAbcTotalScore) {
+        //     self.phenoFilters['abc.total_score'] = probandFilter;
+        // }
     }
 
     /* Only handles affected pie chart filter, and histogram filters */
@@ -338,8 +340,8 @@ class VariantModel {
     /* Returns a properly formatted filter object  to retrieve all probands from Hub */
     getProbandPhenoFilter() {
         let filterObj = {
-            'chartType': "histogram",
-            'data': ["1", "150"]
+            'chartType': "pie",
+            'data': ["Affected"]
         };
         return filterObj;
     }

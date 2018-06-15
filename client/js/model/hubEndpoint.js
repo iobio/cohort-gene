@@ -79,6 +79,7 @@ HubEndpoint.prototype.getSamplesForProject = function(project_uuid, sampleFilter
       'Authorization': authToken
     }
   }).then(function(response) {
+    debugger;
     return response.data;
   });
 }
