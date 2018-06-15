@@ -164,12 +164,18 @@ class VariantModel {
                     let promises = [];
                     let probandP = self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
                         .then(function (ids) {
-                            debugger;
                             // Stop process if we don't have any probands
                             if (ids.length === 0) {
                                 reject('No samples found for proband filtering from Hub');
                             }
-                            probandCohort.subsetIds = self.convertSimonsIds(ids);
+                            // Coming from SSC data set
+                            if (!ids[0].startsWith('SSC')) {
+                                probandCohort.subsetIds = self.convertSimonsIds(ids);
+                            }
+                            // Coming from SPARK
+                            else {
+                                probandCohort.substeIds = ids;
+                            }
                             probandCohort.subsetPhenotypes.push('n = ' + ids.length);
                         });
                     promises.push(probandP);
@@ -178,7 +184,12 @@ class VariantModel {
                     self.appendSubsetPhenoFilters(subsetCohort, probandFilter);
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                         .then(function (ids) {
-                            subsetCohort.subsetIds = self.convertSimonsIds(ids);
+                            if (ids.length > 0 && !ids[0].startsWith('SSC')) {
+                                subsetCohort.subsetIds = self.convertSimonsIds(ids);
+                            }
+                            else {
+                                subsetCohort.subsetIds = ids;
+                            }
                         });
                     promises.push(subsetP);
 
