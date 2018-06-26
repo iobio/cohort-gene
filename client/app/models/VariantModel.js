@@ -145,7 +145,7 @@ class VariantModel {
                 .then(function (dataSet) {
                     if (dataSet == null) {
                         let currCohorts = self.dataSet.getCohorts();
-                        if (currCohorts != undefined && currCohorts.length > 0) {
+                        if (currCohorts != null && currCohorts.length > 0) {
                             currCohorts.forEach(function (cohort) {
                                 cohort.inProgress.fetchingHubData = false;
                             })
@@ -157,8 +157,8 @@ class VariantModel {
                     hubDataSet.tbiUrl = dataSet.tbiUrl;
 
                     // Format filter to send to Hub to get all proband IDs (using 'abc total score' for now)
-                    var probandFilter = self.getProbandPhenoFilter();
-                    var filterObj = {'affected_status': probandFilter};
+                    let probandFilter = self.getProbandPhenoFilter();
+                    let filterObj = {'affected_status': probandFilter};
 
                     // Retrieve proband sample IDs from Hub
                     let promises = [];
@@ -179,6 +179,20 @@ class VariantModel {
                             probandCohort.subsetPhenotypes.push('n = ' + ids.length);
                         });
                     promises.push(probandP);
+
+                    // Remove unaffected filter if it exists for now
+                    if (self.phenoFilters != null) {
+                        let affStatusFilter = self.phenoFilters['affected_status'];
+                        if (affStatusFilter != null && affStatusFilter.data === 'Unaffected') {
+                            // See if unaffected and remove
+                            let filteredPhenoFilters = {};
+                            Object.keys(self.phenoFilters).forEach(function(filter) {
+                                if (filter !== 'affected_status')
+                                    filteredPhenoFilters[filter] = self.phenoFilters[filter];
+                            })
+                            self.phenoFilters = filteredPhenoFilters;
+                        }
+                    }
 
                     // Retrieve subset sample IDs from Hub
                     self.appendSubsetPhenoFilters(subsetCohort, probandFilter);
@@ -743,6 +757,7 @@ class VariantModel {
 
             // Update features with enrichment info
             self.assignCrossCohortInfo(probandFeatures, subsetFeatures);
+            // sjg todo
 
             // Do proband only features have subset total numbers? YES
             (resultMapList[probandId])[PROBAND_ID].features = probandFeatures;
@@ -784,9 +799,9 @@ class VariantModel {
             feature.probandZygCounts = matchingProbandFeature.probandZygCounts;
 
             // Compute delta and assign to both
-            let subsetPercentage = feature.totalSubsetCount == 0 ? 0 : feature.affectedSubsetCount / feature.totalSubsetCount * 100;  // Can be 0
+            let subsetPercentage = feature.totalSubsetCount === 0 ? 0 : feature.affectedSubsetCount / feature.totalSubsetCount * 100;  // Can be 0
             let probandPercentage = feature.affectedProbandCount / feature.totalProbandCount * 100; // Can never be 0
-            let foldEnrichment = subsetPercentage == 0 ? 1 : subsetPercentage / probandPercentage;
+            let foldEnrichment = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
             feature.subsetDelta = foldEnrichment;
             matchingProbandFeature.subsetDelta = foldEnrichment;
         })
@@ -805,7 +820,7 @@ class VariantModel {
             else if (variant.subsetDelta <= self.probandEnrichmentThreshold) {
                 self.probandEnrichedVars[variant.id] = variant;
             }
-            else if (variant.subsetDelta != 1.0) {
+            else if (variant.subsetDelta !== 1) {
                 self.nonEnrichedVars[variant.id] = variant;
             }
             else {

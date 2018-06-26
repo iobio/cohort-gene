@@ -965,9 +965,9 @@ class CohortModel {
              null,   // regions
              true,   //isMultiSample (true for cohort)
              me.getFormattedSampleIds(),
-             me.getName() == 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
+             me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
              me.getTranslator().clinvarMap,
-             me.getGeneModel().geneSource == 'refseq' ? true : false,
+             me.getGeneModel().geneSource === 'refseq' ? true : false,
              false,   // hgvs notation
              false,  // rsid
              true,   // vep af
@@ -1016,9 +1016,9 @@ class CohortModel {
                 theVcfData.features.forEach(function(varsAtPos) {
                   let matchingVar = varsAtPos.filter(function(aVariant) {
                     var matches =
-                         ( variant.start == aVariant.start &&
-                           variant.alt   == aVariant.alt &&
-                           variant.ref   == aVariant.ref );
+                         ( variant.start === aVariant.start &&
+                           variant.alt   === aVariant.alt &&
+                           variant.ref   === aVariant.ref );
                     return matches;
                   })
                   if (matchingVar.length > 0)

@@ -611,6 +611,8 @@ var effectCategories = [
   exports.promiseGetVariants = function(refName, geneObject, selectedTranscript, regions, isMultiSample, samplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, keepVariantsCombined = false, isSubset = false, efficiencyMode = false) {
     var me = this;
 
+    // SJG_1x: I think this single promise needs to go away and a promise must be created for each individual callback the comes back from data stream
+      // OR we can call next step promise straight from here if we can scope it here
     return new Promise( function(resolve, reject) {
 
       var vcfSampleNames = samplesToRetrieve.filter(function(sample) {
@@ -634,7 +636,7 @@ var effectCategories = [
           //   if (annotatedData && results) {
           //     resolve([annotatedData, results]);
           //   }
-            function(results) {
+            function(results) { // SJG_1x: this is callback - resolving promise
               if (results) {
                 resolve(results);
               }
@@ -730,11 +732,11 @@ var effectCategories = [
 
     // Accumulation vars
     var remainingBuffer = '';
-    var allResults = null;
+    var allResults = null;  // SJG_1x: get rid of this for single drawing
 
     // Get the results from the iobio command
     cmd.on('data', function(data) {
-       if (data != undefined) {
+       if (data != null) {
          // Append any partial lines from last stream piece
          let combinedData = remainingBuffer + data;
          remainingBuffer = '';
@@ -751,13 +753,15 @@ var effectCategories = [
 
          // Process full lines
          splitLines.forEach(function(line) {
-           if (line.charAt(0) == '#') {
+           if (line.charAt(0) === '#') {
              me._parseHeaderForInfoFields(line);
            }
            else if (line.length > 0) {
              let result = me._processVcfLine(line, refName, geneObject, selectedTranscript, clinvarMap, hgvsNotation, getRsId, isMultiSample, sampleNamesToGenotype, vepAF, keepVariantsCombined, isSubset, efficiencyMode);
              if (allResults != null) {
+                 // SJG_1x: get rid of this for single drawing
                allResults.features[0].push(result.features[0][0]);
+                 // SJG_1x: promise callback here? - this must be async
              }
              else {
                allResults = result;
@@ -772,6 +776,8 @@ var effectCategories = [
       // SJG TODO: left off here, perpetuate the single annotations through callback and beyond so that drawing will be piecemeal
       var t1 = performance.now();
       console.log('Annotating ' + allResults.features[0].length + ' variants took ' + (t1 - t0) + ' ms');
+        // SJG_1x: instead of calling back on all results, process any remaining data - do I need to look at remaining buffer here too?
+        // Only callback here if we need to
       callback(allResults);
     });
     cmd.on('error', function(error) {
@@ -2848,9 +2854,9 @@ exports._getHighestScore = function(theObject, cullFunction, theTranscriptId) {
       variant.subLevel = ySubPos;
 
       // Push variant onto stack at each horizontal position (some variants occupy +1 width)
-      for (var i = 0; i < variant.len + posUnitsForEachVariant; i++) {
-        var relXpos = (variant.start - regionStart) + i;
-        var stack = posLevels[relXpos + '.' + variant.level] || [];
+      for (let i = 0; i < variant.len + posUnitsForEachVariant; i++) {
+        let relXpos = (variant.start - regionStart) + i;
+        let stack = posLevels[relXpos + '.' + variant.level] || [];
         stack[variant.subLevel] = true;
         posLevels[relXpos + '.' + variant.level] = stack;
 
@@ -2868,7 +2874,7 @@ exports._getHighestScore = function(theObject, cullFunction, theTranscriptId) {
       let overlapFactor = inversionFactor * verticalSpreadFactor * variant.subLevel;
       inversionFactor *= -1;                    // Alternate direction we're stacking in
 
-      if (variant.subsetDelta != 1) {
+      if (variant.subsetDelta !== 1) {
         let antiScaleFactor = variant.level < 1.1 ? 0 : 1 / Math.log2(variant.level);
         let scaledOverlap = antiScaleFactor * overlapFactor;
         variant.adjustedLevel = variant.level;
