@@ -120,15 +120,19 @@ TD & SJG updated Jun2018 -->
                 default: '0',
                 type: String
             },
-            paramTokenType: {
-                default: '',
-                type: String
-            },
-            paramToken: {
-                default: '',
-                type: String
-            },
+            // paramTokenType: {
+            //     default: '',
+            //     type: String
+            // },
+            // paramToken: {
+            //     default: '',
+            //     type: String
+            // },
             paramSource: {
+                default: '',
+                type: String
+            },
+            paramGene: {
                 default: '',
                 type: String
             }
@@ -586,6 +590,7 @@ TD & SJG updated Jun2018 -->
                 let self = this;
                 let source = self.paramSource;
                 let projectId = self.paramProjectId;
+                let selectedGene = self.paramGene;
                 let phenoFilters = self.getHubPhenoFilters();
 
                 // If we can't map project id with Vue Router, may be coming from Hub OAuth
@@ -594,6 +599,7 @@ TD & SJG updated Jun2018 -->
                     Object.assign(queryParams, self.$route.query);
                     source = queryParams.source;
                     projectId = queryParams.project_uuid;
+                    selectedGene = queryParams.gene;
                     phenoFilters = queryParams.filter;
                 }
 
@@ -603,8 +609,13 @@ TD & SJG updated Jun2018 -->
                     let initialLaunch = !(self.paramProjectId === '0');
                     self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch)
                         .then(function () {
-                            self.geneModel.addGeneName(self.DEMO_GENE);
-                            self.onGeneSelected(self.DEMO_GENE);
+                            let loadGene = self.DEMO_GENE;
+                            if (selectedGene === '' || selectedGene == null) {
+                                alert('Could not obtain selected gene from Hub. Initializing with demo gene.');
+                                selectedGene = loadGene;
+                            }
+                            self.geneModel.addGeneName(selectedGene);
+                            self.onGeneSelected(selectedGene);
                         })
                 }
                 // Otherwise launching stand alone

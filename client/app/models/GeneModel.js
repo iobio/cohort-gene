@@ -615,7 +615,9 @@ class GeneModel {
             me.geneObjects[theGeneObject.gene_name] = theGeneObject;
             resolve(theGeneObject);
           } else {
-          console.log("Gene model for " + geneName + " not found.  Empty results returned from " + url);
+            // SJG NOTE: put this in here for now - coming from Hub gene name model entry without autocomplete
+            alert("Could not find information for " + geneName + ". Please enter a different gene.");
+            console.log("Gene model for " + geneName + " not found.  Empty results returned from " + url);
             reject("Gene model for " + geneName + " not found.");
           }
         },

@@ -684,15 +684,15 @@ class VariantModel {
             var filteredVariants = $.extend({}, model.vcfData);
             filteredVariants.features = model.vcfData.features.filter(function (feature) {
                 var isTarget = false;
-                if (target == 'loaded' && (!feature.fbCalled || feature.fbCalled != 'Y')) {
+                if (target === 'loaded' && (!feature.fbCalled || feature.fbCalled !== 'Y')) {
                     isTarget = true;
-                } else if (target == 'called' && feature.fbCalled && feature.fbCalled == 'Y') {
+                } else if (target === 'called' && feature.fbCalled && feature.fbCalled === 'Y') {
                     isTarget = true;
                 }
 
                 var isHomRef = feature.zygosity == null
-                    || feature.zygosity.toUpperCase() == "HOMREF"
-                    || feature.zygosity.toUpperCase() == "NONE"
+                    || feature.zygosity.toUpperCase() === "HOMREF"
+                    || feature.zygosity.toUpperCase() === "NONE"
                     || feature.zygosity == "";
 
                 var inRegion = true;
