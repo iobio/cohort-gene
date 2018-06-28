@@ -436,7 +436,7 @@ TD & SJG updated Jun2018 -->
                         self.loadingExtraClinvarAnnotations = true;
 
                         // Send variant in for annotating
-                        let cohortModel = self.variantModel.dataSet.getProbandCohort();
+                        let cohortModel = self.variantModel.dataSet.getSubsetCohort();
                         let t0 = performance.now();
 
                         cohortModel.promiseGetVariantExtraAnnotations(self.selectedGene, self.selectedTranscript, variant, 'vcf')

@@ -244,9 +244,6 @@ class VariantModel {
             let simonsId = self.simonsIdMap[idObj.id];
             convertedIds.push(simonsId);
         })
-        // SJG TODO: remove after testing nonsense IDs
-        convertedIds.push('SCTEST702');
-        convertedIds.push('SCTESTX');
         return convertedIds;
     }
 
