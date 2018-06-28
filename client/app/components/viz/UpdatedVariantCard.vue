@@ -83,10 +83,10 @@ Updated: SJG Apr2018
             <div style="width:100%; height: 783px">
                 <updated-variant-viz
                         v-if="(showVariantViz && subsetCohort != null && probandCohort != null)"
-                        ref="probandVizRef"
-                        :id="probandCohort.getName()"
-                        :model="probandCohort"
-                        :data="probandCohort.loadedVariants"
+                        ref="subsetVizRef"
+                        :id="subsetCohort.getName()"
+                        :model="subsetCohort"
+                        :data="subsetCohort.loadedVariants"
                         :title="probandCohort.trackName"
                         :phenotypes="subsetCohort.subsetPhenotypes"
                         :regionStart="regionStart"
@@ -315,21 +315,21 @@ Updated: SJG Apr2018
             },
             showVariantCircle: function (variant) {
                 let self = this;
-                // if (self.showVariantViz && self.$refs.subsetVizRef != null) {
-                //   self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
-                // }
-                if (self.showVariantViz && self.$refs.probandVizRef != null) {
-                    self.$refs.probandVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.probandVizRef.name), true);
+                if (self.showVariantViz && self.$refs.subsetVizRef != null) {
+                  self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
                 }
+                // if (self.showVariantViz && self.$refs.probandVizRef != null) {
+                //     self.$refs.probandVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.probandVizRef.name), true);
+                // }
             },
             hideVariantCircle: function (variant) {
                 let self = this;
                 if (self.showVariantViz && self.$refs.subsetVizRef != null) {
                     self.$refs.subsetVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.subsetVizRef.name));
                 }
-                if (self.showVariantViz && self.$refs.probandVizRef != null) {
-                    self.$refs.probandVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.probandVizRef.name));
-                }
+                // if (self.showVariantViz && self.$refs.probandVizRef != null) {
+                //     self.$refs.probandVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.probandVizRef.name));
+                // }
             },
             getVariantSVG: function (vizTrackName) {
                 var svg = d3.select(this.$el).select('#' + vizTrackName + ' > svg');
@@ -380,17 +380,17 @@ Updated: SJG Apr2018
             switchColorScheme: function () {
                 let self = this;
 
-                if (self.$refs.probandVizRef != null) {
-                    self.$refs.probandVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.probandVizRef.name));
-                }
-                // if (self.$refs.subsetVizRef != null) {
-                //   self.$refs.subsetVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.subsetVizRef.name));
+                // if (self.$refs.probandVizRef != null) {
+                //     self.$refs.probandVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.probandVizRef.name));
                 // }
+                if (self.$refs.subsetVizRef != null) {
+                  self.$refs.subsetVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.subsetVizRef.name));
+                }
             },
             clearVariants: function () {
                 let self = this;
-                if (self.$refs.probandVizRef != null) {
-                    self.$refs.probandVizRef.clearVariants(self.getVariantSVG(self.$refs.probandVizRef.name));
+                if (self.$refs.subsetVizRef != null) {
+                    self.$refs.subsetVizRef.clearVariants(self.getVariantSVG(self.$refs.subsetVizRef.name));
                 }
             },
             displayVariantBrush: function () {

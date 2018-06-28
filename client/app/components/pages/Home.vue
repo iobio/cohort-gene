@@ -295,7 +295,7 @@ TD & SJG updated Jun2018 -->
                                     self.selectedTranscript,
                                     options)
                                     .then(function (resultMap) {
-                                        let resultVars = resultMap[0]['Proband'].features;  // Unwrap result map
+                                        let resultVars = resultMap[0]['Subset'].features;  // Unwrap result map
                                         self.variantModel.combineVariantInfo(resultVars);
                                         self.updateClasses();
                                         self.doneLoadingExtras = true;
@@ -453,7 +453,7 @@ TD & SJG updated Jun2018 -->
                                 detailsObj['loadState'] = {};
                                 detailsObj['features'] = [updatedVariant];
                                 let variantObj = {};
-                                variantObj['Proband'] = detailsObj;
+                                variantObj['Subset'] = detailsObj;
                                 let cohortObj = {};
                                 cohortObj[0] = variantObj;
 
@@ -462,7 +462,7 @@ TD & SJG updated Jun2018 -->
                                         let t1 = performance.now();
                                         console.log('Getting extra annotation for single variant WITH CLINVAR took ' + (t1 - t0) + ' ms');
                                         // Unwrap clinvarVariant structure
-                                        let clinvarVariant = variantObj[0]['Proband']['features'][0];
+                                        let clinvarVariant = variantObj[0]['Subset']['features'][0];
                                         self.loadingExtraClinvarAnnotations = false;
                                         self.selectedVariant = self.variantModel.combineVariantInfo([clinvarVariant]);
                                     })
