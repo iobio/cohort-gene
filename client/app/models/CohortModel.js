@@ -1630,6 +1630,9 @@ class CohortModel {
         var featureWidth = 4;
         var posToPixelFactor = Math.round((end - start) / width);
         var widthFactor = featureWidth + (4);
+        if (posToPixelFactor > 1000) {
+            widthFactor /= 2;
+        }
 
         var levelObj = null;
         var maxSubLevel = 0;
@@ -1646,39 +1649,38 @@ class CohortModel {
         // else {
         //   maxPosLevel = this.vcf.pileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor);
         // }
-        if (maxPosLevel > 30 && maxNegLevel < -30) {
-            for (var i = 1; i < posToPixelFactor; i++) {
-                // TODO:  Devise a more sensible approach to setting the min width.  We want the
-                // widest width possible without increasing the levels beyond 30.
-                if (i > 4) {
-                    featureWidth = 1;
-                } else if (i > 3) {
-                    featureWidth = 2;
-                } else if (i > 2) {
-                    featureWidth = 3;
-                } else {
-                    featureWidth = 4;
-                }
-
-                features.forEach(function (v) {
-                    v.level = 0;
-                });
-                var factor = posToPixelFactor / (i * 2);
-                if (self.isSubsetCohort) {
-                    levelObj = me.vcf.pileupVcfRecords(theFeatures, start, factor, featureWidth + 1, true);
-                    maxSubLevel = levelObj.maxSubLevel;
-                    maxPosLevel = levelObj.maxPosLevel;
-                    maxNegLevel = levelObj.maxNegLevel;
-                }
-                else {
-                    maxPosLevel = this.vcf.pileupVcfRecords(theFeatures, start, factor, featureWidth + 1);
-                }
-                if (maxPosLevel <= 50 && maxNegLevel >= -50) {
-                    i = posToPixelFactor;
-                    break;
-                }
-            }
-        }
+        // SJG TODO: figure out what this does and comment back in
+        // if (maxPosLevel > 30 && maxNegLevel < -30) {
+        //     for (var i = 1; i < posToPixelFactor; i++) {
+        //         if (i > 4) {
+        //             featureWidth = 1;
+        //         } else if (i > 3) {
+        //             featureWidth = 2;
+        //         } else if (i > 2) {
+        //             featureWidth = 3;
+        //         } else {
+        //             featureWidth = 4;
+        //         }
+        //
+        //         features.forEach(function (v) {
+        //             v.level = 0;
+        //         });
+        //         var factor = posToPixelFactor / (i * 2);
+        //         if (self.isSubsetCohort) {
+        //             levelObj = me.vcf.updatedPileupVcfRecords(theFeatures, start, factor, featureWidth + 1, true);
+        //             maxSubLevel = levelObj.maxSubLevel;
+        //             maxPosLevel = levelObj.maxPosLevel;
+        //             maxNegLevel = levelObj.maxNegLevel;
+        //         }
+        //         else {
+        //             maxPosLevel = this.vcf.updatedPileupVcfRecords(theFeatures, start, factor, featureWidth + 1);
+        //         }
+        //         if (maxPosLevel <= 50 && maxNegLevel >= -50) {
+        //             i = posToPixelFactor;
+        //             break;
+        //         }
+        //     }
+        // }
         return {
             'maxSubLevel': maxSubLevel,
             'maxPosLevel': maxPosLevel,

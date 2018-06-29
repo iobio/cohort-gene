@@ -718,22 +718,22 @@ vcfiobio = function module() {
             regions.push({'name': refName, 'start': geneObject.start, 'end': geneObject.end});
         }
 
-        var serverCacheKey = me._getServerCacheKey(vcfURL, annotationEngine, refName, geneObject, vcfSampleNames, {
+        let serverCacheKey = me._getServerCacheKey(vcfURL, annotationEngine, refName, geneObject, vcfSampleNames, {
             refseq: isRefSeq,
             hgvs: hgvsNotation,
             rsid: getRsId
         });
 
-        var cmd = me.getEndpoint().annotateVariants({
+        let cmd = me.getEndpoint().annotateVariants({
             'vcfUrl': vcfURL,
             'tbiUrl': tbiUrl
         }, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey, efficiencyMode);
 
         // Accumulation vars
         let remainingBuffer = '';
-        var subsetResults = null;  // SJG_1x: get rid of this for single drawing
-        var featureCount = 0;
-        var probandCountsLookup = {};
+        let subsetResults = null;  // SJG_1x: get rid of this for single drawing
+        let featureCount = 0;
+        let probandCountsLookup = {};
 
         // Get the results from the iobio command
         cmd.on('data', function (data) {
@@ -766,9 +766,7 @@ vcfiobio = function module() {
                         }
                         else {
                             if (subsetResults != null) {
-                                // SJG_1x: get rid of this for single drawing
                                 subsetResults.features[0].push(result.features[0][0]);
-                                // SJG_1x: promise callback here? - this must be async
                             }
                             else {
                                 subsetResults = result;
@@ -787,9 +785,9 @@ vcfiobio = function module() {
             // For subset, will return populated variant map - for probands, will return only counts map
             callback([subsetResults, probandCountsLookup]);
         });
-        // cmd.on('error', function (error) {
-        //     console.log(error);
-        // });
+        cmd.on('error', function (error) {
+            console.log(error);
+        });
         let t0 = performance.now();
         cmd.run();
     }
@@ -828,7 +826,7 @@ vcfiobio = function module() {
      SJG was using to avoid memory problems - can remove after final resolution */
     exports._filterVcfRecordsByVep = function (results) {
         var filteredFeatures = [];
-        if (results.features == null || results.features.length == 0 || results.features[0].length == 0) return results;
+        if (results.features == null || results.features.length === 0 || results.features[0].length === 0) return results;
 
         var featureArr = results.features[0];
         for (var i in featureArr) {
@@ -1239,8 +1237,6 @@ vcfiobio = function module() {
                 if (data == undefined) {
                     return;
                 }
-
-                // TODO: potentially check for currently selected gene vs gene scoped in promise - get rid of any data associated w/
 
                 clinvarData += data;
             });
@@ -2809,15 +2805,15 @@ vcfiobio = function module() {
         widthFactor = widthFactor ? widthFactor : 1;
         // Variant's can overlap each over.  Set a field called variant.level which determines
         // how to stack the variants vertically in these cases.
-        var posLevels = {};
+        var posLevels = {};                                                 // Collection of vertical stack for every X coordinate
         var maxLevel = 0;
-        var posUnitsForEachVariant = posToPixelFactor * widthFactor;
+        var posUnitsForEachVariant = posToPixelFactor * widthFactor;        // This is i sub X
         variants.forEach(function (variant) {
 
             // get next available vertical spot starting at level 0
-            var startIdx = (variant.start - regionStart);// + i;
-            var posLevel = 0;
-            var stackAtStart = posLevels[startIdx];
+            var startIdx = (variant.start - regionStart);// + i;            // This is major X
+            var posLevel = 0;                                               // This is major Y?
+            var stackAtStart = posLevels[startIdx];                         // This is stack of taken Y levels for each major X
             if (stackAtStart) {
                 for (var k = 0; k <= stackAtStart.length; k++) {
                     if (stackAtStart[k] == undefined) {
@@ -2831,7 +2827,7 @@ vcfiobio = function module() {
             variant.level = posLevel;
 
             // Now set new level for each positions comprised of this variant.
-            for (var i = 0; i < variant.len + posUnitsForEachVariant; i++) {
+            for (var i = 0; i < variant.len + posUnitsForEachVariant; i++) {        // For each i sub X horizontal position
                 var idx = (variant.start - regionStart) + i;
                 var stack = posLevels[idx] || [];
                 stack[variant.level] = true;
@@ -2848,76 +2844,80 @@ vcfiobio = function module() {
 
     exports.updatedPileupVcfRecords = function (variants, regionStart, posToPixelFactor, widthFactor) {
         widthFactor = widthFactor ? widthFactor : 1;
-        // Variant's can overlap each over.  Set a field called variant.level which determines
-        // how to stack the variants vertically in these cases.
-        var posLevels = {};   // SJG TODO: this is going to be slow b/c keying w/ strings - turn into 2d array w/ x and y coordinates?
-        var posUnitsForEachVariant = posToPixelFactor * widthFactor;
+        let xYstack = {};
+        let xPerVariant = posToPixelFactor * widthFactor;    // The adjusted width of the variant
 
-        var maxSubLevel = 1;      // The sub-space composing the height of individual posLevels
-        var maxPosLevel = 1;      // The max subset delta value, rounded to two decimal places (ex: 15.87)
-        var minPosLevel = 1;      // The min subset delta value, rounded to two decimal places (ex: 0.37)
-        var inversionFactor = 1;  // The direction to stack overlapping variants in (+1 = up, -1 = down)
+        let maxYminor = 1;      // The sub-space composing the height of individual posLevels
+        let maxYmajor = 1;      // The max subset delta value, rounded to two decimal places (ex: 15.87)
+        let minYmajor = 1;      // The min subset delta value, rounded to two decimal places (ex: 0.37)
+        let inversionFactor = 1;  // The direction to stack overlapping variants in (+1 = up, -1 = down)
+
 
         variants.forEach(function (variant) {
             // Horizontal coordinate
-            var xPos = (variant.start - regionStart);
+            let xMajor = (variant.start - regionStart);
 
             // Vertical starting coordinate based on subset delta value
-            var yPos = Math.trunc(variant.subsetDelta * 100) / 100;
+            let yMajor = Math.trunc(variant.subsetDelta * 100) / 100;
 
             // Keep track of extrema
-            if (yPos > maxPosLevel) maxPosLevel = yPos;
-            else if (yPos < minPosLevel) minPosLevel = yPos;
+            if (yMajor > maxYmajor) maxYmajor = yMajor;
+            else if (yMajor < minYmajor) minYmajor = yMajor;
 
-            // Vertical precision coordinate based on stacking
-            var ySubPos = 0;
+            // Number of variants at this (xMajor, yMajor) position
+            let yMinor = xYstack[xMajor + '.' + yMajor];
 
-            // Stack of variants at this horizontal coordinate
-            var stackAtStart = posLevels[xPos + '.' + yPos];
-
-            // If we already have a stack here, iterate through number of variants in stack, and find next vertical sub-position to stack at
-            if (stackAtStart) {
-                for (var k = 0; k <= stackAtStart.length; k++) {
-                    if (stackAtStart[k] == undefined) {
-                        ySubPos = k;
-                        break;
-                    }
-                }
+            // If don't have any variants at this position, create dictionary entry
+            if (yMinor == null) {
+                xYstack[xMajor + '.' + yMajor] = 0;
+            }
+            // Otherwise, increment value
+            else {
+                yMinor++;
+                xYstack[xMajor + '.' + yMajor] = yMinor;
             }
 
+
             // Set variant levels
-            variant.level = yPos;
-            variant.subLevel = ySubPos;
+            variant.level = yMajor;
+            variant.adjustedLevel = yMajor; // this can be changed below
+            variant.subLevel = yMinor;
 
-            // Push variant onto stack at each horizontal position (some variants occupy +1 width)
-            for (let i = 0; i < variant.len + posUnitsForEachVariant; i++) {
-                let relXpos = (variant.start - regionStart) + i;
-                let stack = posLevels[relXpos + '.' + variant.level] || [];
-                stack[variant.subLevel] = true;
-                posLevels[relXpos + '.' + variant.level] = stack;
 
-                // Capture the max level of the entire region.
-                if (stack.length - 1 > maxSubLevel) {
-                    maxSubLevel = stack.length - 1;
+            // Iterate through variant sub-X positions and adjust y position (some variants occupy +1 width)
+            for (let xMinor = 0; xMinor < variant.len + xPerVariant; xMinor++) {
+                // Horizontal sub-coordinate
+                let subXpos = (variant.start - regionStart) + xMinor;
+
+                // Number of variants at this (xMinor, yMajor) position
+                yMinor = xYstack[subXpos + '.' + variant.level];
+
+                // If don't have any variants at this position, create dictionary entry
+                if (yMinor == null) {
+                    xYstack[subXpos + '.' + variant.length] = 0;
+                }
+                // Otherwise, increment value
+                else {
+                    yMinor++;
+                    xYstack[subXpos + '.' + variant.length] = yMinor;
                 }
             }
         });
 
         // Spread out variants that are overlapping vertically
-        // SJG TODO: leaving in for now but not using ATM
-        variants.forEach(function (variant) {
-            let verticalSpreadFactor = 0.1;           // Deduced by trial and error
-            let overlapFactor = inversionFactor * verticalSpreadFactor * variant.subLevel;
-            inversionFactor *= -1;                    // Alternate direction we're stacking in
+        // variants.forEach(function (variant) {
+        //     //let verticalSpreadFactor = 0.1;           // Deduced by trial and error
+        //     //let overlapFactor = inversionFactor * verticalSpreadFactor * variant.subLevel;
+        //     inversionFactor *= -1;                    // Alternate direction we're stacking in
+        //
+        //     if (variant.subsetDelta !== 1) {
+        //         // let antiScaleFactor = variant.level < 1.1 ? 0 : 1 / Math.log2(variant.level);
+        //         // let scaledOverlap = antiScaleFactor * overlapFactor;
+        //         variant.adjustedLevel = variant.level;
+        //     }
+        // });
 
-            if (variant.subsetDelta !== 1) {
-                let antiScaleFactor = variant.level < 1.1 ? 0 : 1 / Math.log2(variant.level);
-                let scaledOverlap = antiScaleFactor * overlapFactor;
-                variant.adjustedLevel = variant.level;
-            }
-        })
-
-        return {'maxPosLevel': maxPosLevel, 'maxNegLevel': minPosLevel, 'maxSubLevel': maxSubLevel};
+        return {'maxPosLevel': maxYmajor, 'maxNegLevel': minYmajor, 'maxSubLevel': maxYminor};
     }
 
 

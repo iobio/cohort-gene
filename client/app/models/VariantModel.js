@@ -723,8 +723,11 @@ class VariantModel {
             return filteredVariants;
         }
 
-        self.dataSet.getCohorts().forEach(function (cohort) {
-            if (name == null || name == cohort.name) {
+        // SJG TODO: clean this up
+        // SJG NOTE: don't want to do this for all cohorts - just the one we're displaying (aka subset)
+        //self.dataSet.getCohorts().forEach(function (cohort) {
+            let cohort = self.dataSet.getSubsetCohort();
+            if (name == null || name === cohort.name) {
                 if (cohort.vcfData && cohort.vcfData.features) {
                     var start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
                     var end = self.filterModel.regionEnd ? self.filterModel.regionEnd : gene.end;
@@ -735,19 +738,20 @@ class VariantModel {
                     //console.log('Took ' + (t1-t0) + ' ms to filter and pileup variants'); // SJG_TIMING
                     cohort.loadedVariants = loadedVariants;
 
-                    var calledVariants = filterAndPileupVariants(cohort, start, end, 'called');
-                    cohort.calledVariants = calledVariants;
+                    // var calledVariants = filterAndPileupVariants(cohort, start, end, 'called');
+                    // cohort.calledVariants = calledVariants;
 
-                    if (cohort.getName() == PROBAND_ID) {
-                        var allVariants = $.extend({}, cohort.loadedVariants);
-                        allVariants.features = cohort.loadedVariants.features.concat(cohort.calledVariants.features);
-                    }
-                } else {
-                    cohort.loadedVariants = {loadState: {}, features: []};
-                    cohort.calledVariants = {loadState: {}, features: []}
+                    //if (cohort.getName() == PROBAND_ID) {
+                    //     var allVariants = $.extend({}, cohort.loadedVariants);
+                    //     allVariants.features = cohort.loadedVariants.features.concat(cohort.calledVariants.features);
+                    //}
+                    //} else {
+                    //cohort.loadedVariants = {loadState: {}, features: []};
+                    //cohort.calledVariants = {loadState: {}, features: []}
+                    //}
                 }
             }
-        })
+        //})
     }
 
     /* Assigns cohort-relative statistics to each variant.
