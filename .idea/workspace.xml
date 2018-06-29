@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="17d38fed-e0f5-492f-b455-1d8321fb2586" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/app/models/CohortModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/models/CohortModel.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/app/models/VariantModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/models/VariantModel.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/js/model/vcf.iobio.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/js/model/vcf.iobio.js" afterDir="false" />
-    </list>
+    <list default="true" id="17d38fed-e0f5-492f-b455-1d8321fb2586" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/client/dist/" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -85,8 +80,8 @@
       <file leaf-file-name="vcf.iobio.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client/js/model/vcf.iobio.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1163">
-              <caret line="788" column="31" lean-forward="true" selection-start-line="788" selection-start-column="31" selection-end-line="788" selection-end-column="31" />
+            <state relative-caret-position="612">
+              <caret line="791" column="18" lean-forward="true" selection-start-line="791" selection-start-column="18" selection-end-line="791" selection-end-column="18" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
@@ -301,12 +296,12 @@
       <workItem from="1528841807095" duration="19634000" />
       <workItem from="1529339130241" duration="4311000" />
       <workItem from="1530030235867" duration="502000" />
-      <workItem from="1530032811220" duration="43852000" />
+      <workItem from="1530032811220" duration="44180000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="69325000" />
+    <option name="totallyTimeSpent" value="69653000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1905" height="976" extended-state="0" />
@@ -714,8 +709,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/client/js/model/vcf.iobio.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1163">
-          <caret line="788" column="31" lean-forward="true" selection-start-line="788" selection-start-column="31" selection-end-line="788" selection-end-column="31" />
+        <state relative-caret-position="612">
+          <caret line="791" column="18" lean-forward="true" selection-start-line="791" selection-start-column="18" selection-end-line="791" selection-end-column="18" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
