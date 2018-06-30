@@ -62,14 +62,14 @@ TD & SJG updated Jun2018 -->
                         </updated-variant-card>
                     </v-flex>
                     <v-flex xs3 style="margin-left: 3px">
-                        <!-- <variant-zoom-card
+                        <variant-zoom-card
                         style="margin-bottom: 3px; height: 300px"
                         :selectedGene="selectedGene.gene_name"
                         :selectedVariants="selectedVariant"
                         :selectedVariantsInfo="selectedVariantInfo"
                         @displayVariantBrush="displayVariantBrush"
                         ref="variantZoomCard">
-                        </variant-zoom-card> -->
+                        </variant-zoom-card>
                         <variant-summary-card
                                 :selectedGene="selectedGene.gene_name"
                                 :variant="selectedVariant"
