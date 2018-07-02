@@ -68,16 +68,24 @@ Updated: SJG Apr2018
 <template>
     <v-card tile id="variant-card" class="app-card">
         <v-card-title primary-title>
-            <v-layout row style="padding-left: 15px; padding-right: 15px;">
+            <v-layout align-left>
                 <v-flex xs6>
                     <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 0">VARIANTS</span>
                 </v-flex>
-                <v-flex xs6>
-                    <v-container fluid style="padding-left: 63%; margin-bottom: 0" id="impactModeSwitch"
-                                 v-bind:class="{hide: !doneLoadingExtras}">
-                        <v-switch :label="`Impact Mode: ${impactModeDisplay(impactMode)}`" v-model="impactMode"
-                                  hide-details></v-switch>
-                    </v-container>
+            </v-layout>
+            <v-layout text-xs-right>
+                <v-flex>
+                    <v-menu v-bind:class="{hide: !doneLoadingData}">
+                        <v-btn outline round slot="activator" color="cohortDarkBlue" style="margin: 0; font-size: 12px">Display Options</v-btn>
+                        <v-list>
+                            <v-list-tile @click="toggleZoomMode">
+                                <v-list-tile-title>{{zoomModeText}}</v-list-tile-title>
+                            </v-list-tile>
+                            <v-list-tile v-bind:class="{hide: !doneLoadingExtras}" @click="toggleDisplayMode">
+                                <v-list-tile-title>{{displayModeText}}</v-list-tile-title>
+                            </v-list-tile>
+                        </v-list>
+                    </v-menu>
                 </v-flex>
             </v-layout>
             <div style="width:100%; height: 783px">
@@ -103,6 +111,7 @@ Updated: SJG Apr2018
                         :doneLoadingData="doneLoadingData"
                         :frequencyDisplayMode="true"
                         @variantClick="onVariantClick"
+                        @variantZoom="onVariantZoomSelected"
                         @variantHover="onVariantHover"
                         @variantHoverEnd="onVariantHoverEnd"
                         @trackRendered="switchColorScheme"
@@ -182,6 +191,7 @@ Updated: SJG Apr2018
                 geneVizCdsHeight: 12,
                 coveragePoint: null,
                 impactMode: false,
+                zoomMode: false,
                 enrichmentColorLegend: {}
             }
         },
@@ -198,6 +208,14 @@ Updated: SJG Apr2018
                 let self = this;
                 if (self.dataSetModel)
                     return self.dataSetModel.getSubsetCohort();
+            },
+            displayModeText: function () {
+                if (this.impactMode) return 'Switch to Enrichment Mode';
+                else return 'Switch to Impact Mode';
+            },
+            zoomModeText: function () {
+                if (this.zoomMode) return 'Exit Zoom';
+                else return 'Zoom';
             }
         },
         watch: {
@@ -222,12 +240,20 @@ Updated: SJG Apr2018
                     });
                 this.enrichmentColorLegend();
             },
-            impactModeDisplay: function (mode) {
-                if (mode) return 'ON';
-                else return 'OFF';
+            toggleDisplayMode: function () {
+                this.impactMode = !this.impactMode;
+            },
+            toggleZoomMode: function () {
+                this.zoomMode = !this.zoomMode;
+                if (this.zoomMode) {
+                    this.displayVariantBrush();
+                }
+                else {
+                    this.hideVariantBrush();
+                }
             },
             depthVizYTickFormat: function (val) {
-                if (val == 0) {
+                if (val === 0) {
                     return "";
                 } else {
                     return val + "x";
@@ -240,6 +266,9 @@ Updated: SJG Apr2018
                     this.showVariantCircle(variant);
                 }
                 this.$emit('dataSetVariantClick', variant, this, cohortKey);
+            },
+            onVariantZoomSelected: function(selectedVariants) {
+              // TODO: Need access to pileup - do I have that here?
             },
             onVariantHover: function (variant, cohortKey, showTooltip = true) {
                 if (this.selectedVariant == null) {
@@ -316,7 +345,7 @@ Updated: SJG Apr2018
             showVariantCircle: function (variant) {
                 let self = this;
                 if (self.showVariantViz && self.$refs.subsetVizRef != null) {
-                  self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
+                    self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
                 }
                 // if (self.showVariantViz && self.$refs.probandVizRef != null) {
                 //     self.$refs.probandVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.probandVizRef.name), true);
@@ -384,7 +413,7 @@ Updated: SJG Apr2018
                 //     self.$refs.probandVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.probandVizRef.name));
                 // }
                 if (self.$refs.subsetVizRef != null) {
-                  self.$refs.subsetVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.subsetVizRef.name));
+                    self.$refs.subsetVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.subsetVizRef.name));
                 }
             },
             clearVariants: function () {
@@ -396,7 +425,13 @@ Updated: SJG Apr2018
             displayVariantBrush: function () {
                 let self = this;
                 if (self.$refs.subsetVizRef != null) {
-                    self.$refs.subsetVizRef.displayVariantBrush(self.getVariantSVG(self.$refs.subsetVizRef.name));
+                    self.$refs.subsetVizRef.displayVariantBrush(self.impactMode);
+                }
+            },
+            hideVariantBrush: function () {
+                let self = this;
+                if (self.$refs.subsetVizRef != null) {
+                    self.$refs.subsetVizRef.hideVariantBrush(self.impactMode);
                 }
             }
         }

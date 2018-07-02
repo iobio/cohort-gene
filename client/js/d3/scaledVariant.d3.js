@@ -1,5 +1,5 @@
 function scaledVariantD3() {
-    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout", "d3variantselected");
+    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout", "d3variantsselected");
 
     // dimensions
     var yAxisWidth = 45;
@@ -36,7 +36,9 @@ function scaledVariantD3() {
         lowestWidth = 3,      // SJG NOTE: pretty sure this isn't used to size variants or stack them
         dividerLevel = null,
         container = null,
-        clazz = null;
+        clazz = null,
+        selectedVariants = [],
+        impactMode = false;
 
     //  options
     var defaults = {};
@@ -58,7 +60,7 @@ function scaledVariantD3() {
         }
     }
 
-    var displayBrush = function (svg) {
+    let displayBrush = function() {
 
         // Remove any old brush
         container.select('svg').selectAll("g.y.brush").remove();
@@ -67,17 +69,17 @@ function scaledVariantD3() {
         let brush = d3.svg.brush()
             .y(y)
             // Show resize arrows
-            .on('brush', function() {
+            .on('brush', function () {
                 container.selectAll("svg").selectAll(".g.y.brush .resize line")
                     .style("visibility", "visible");
                 container.selectAll("svg").selectAll(".g.y.brush .resize path")
                     .style("visibility", "visible");
             })
-            .on('brushend', function() {
+            .on('brushend', function () {
                 let extentRect = d3.select("g.brush rect.extent");
                 let yExtent = +extentRect.attr("y");
 
-                extentRect.attr("y", yExtent - 1);  // TODO: what is this doing?
+                extentRect.attr("y", yExtent - 1);
 
                 // Hide resize arrows if not a real area
                 if (brush.empty()) {
@@ -87,23 +89,23 @@ function scaledVariantD3() {
                         .style("visibility", "hidden");
                 }
 
+                // Switch back any variants selected from last time
+                if (selectedVariants.length > 0) {
+                    switchSelectedColorScheme(false, impactMode);
+                }
+
                 // Get variants encompassed by brush box
                 let yBottom = yExtent;
                 let yTop = +(yExtent + (+extentRect.attr("height")));
-                let selectedVars = container.select('svg').selectAll(".variant").filter(function (variant) {
+                selectedVariants = container.select('svg').selectAll(".variant").filter(function (variant) {
                     // Check to see if variant y coordinate b/w box top and bottom
                     return y(variant.adjustedLevel) <= yTop && y(variant.adjustedLevel) >= yBottom;
                 });
 
-                // todo: How do I apply a class here? need dom element, not object
-                selectedVars.classed('enrichment_subset_UP', false);
-                selectedVars.classed('zoom_selected', true);
+                // Change coloring on selected variants
+                switchSelectedColorScheme(true, impactMode);
 
-                // selectedVars.each(function(variant) {
-                //     d3.select(variant).attr('class', 'selected');
-                // });
-
-                dispatch.d3brush(brush, selectedVars);
+                dispatch.d3variantsselected(selectedVariants);
             });
 
         // Set area for selection
@@ -120,7 +122,7 @@ function scaledVariantD3() {
         // Draw resize arrows
         theBrush.selectAll(".resize")
             .append("line")
-            .style("visibility", "visible" )
+            .style("visibility", "visible")
             .attr("y2", height);
         theBrush.selectAll(".resize.e rect")
             .attr("y0", 0);
@@ -128,16 +130,23 @@ function scaledVariantD3() {
             .append("path")
             .style("visibility", "visible")
             .attr("d", d3.svg.symbol().type("triangle-up").size(30))
-            .attr("transform", function(d,i) {
-                return i ?  "translate(" + (width + 1) + ",0) rotate(-90)" : "translate(" + (width + 1) + ",0) rotate(-90)";
+            .attr("transform", function (d, i) {
+                return i ? "translate(" + (width + 1) + ",0) rotate(-90)" : "translate(" + (width + 1) + ",0) rotate(-90)";
             });
     };
 
 
-    var hideBrush = function (svg) {
-        var brush = svg.select("g.group").select("brush");
-        brush.clear();
-    }
+    let hideBrush = function() {
+        // Get rid of brushing area
+        let brush = container.select('svg').selectAll("g.y.brush");
+        brush.remove();
+
+        // Change coloring back
+        switchSelectedColorScheme(false, impactMode);
+
+        // Reset variants
+        selectedVariants = [];
+    };
 
     var showCircle = function (d, svgContainer, indicateMissingVariant, emphasize) {
         // Find the matching variant
@@ -228,22 +237,84 @@ function scaledVariantD3() {
         svgContainer.remove();
     }
 
+    let switchSelectedColorScheme = function (zoomMode, impactMode) {
+        if (zoomMode) {
+            // Remove impact or enrichment coloring
+            if (impactMode) {
+                selectedVariants.classed('impact_HIGH', false);
+                selectedVariants.classed('impact_MODERATE', false);
+                selectedVariants.classed('impact_MODIFIER', false);
+                selectedVariants.classed('impact_LOW', false);
+                selectedVariants.classed('impact_none', false);
+            }
+            else {
+                selectedVariants.classed('enrichment_subset_UP', false);
+                selectedVariants.classed('enrichment_subset_DOWN', false);
+                selectedVariants.classed('enrichment_LOW', false);
+                selectedVariants.classed('enrichment_NA', false);
+            }
+            // Turn on selected coloring
+            selectedVariants.classed('zoom_selected', true);
+        }
 
-    var switchColorScheme = function (enrichmentMode, svgContainer) {
+        else if (impactMode) {
+            // Turn off selected coloring
+            selectedVariants.classed('zoom_selected', false);
+
+            // Turn impact coloring back on
+            let highVars = selectedVariants.filter(".iHIGH");
+            highVars.classed('impact_HIGH', true);
+            let moderateVars = selectedVariants.filter(".iMODERATE");
+            moderateVars.classed('impact_MODERATE', true);
+            let modifierVars = selectedVariants.filter(".iMODIFIER");
+            modifierVars.classed('impact_MODIFIER', true);
+            let lowVars = selectedVariants.filter(".iLOW");
+            lowVars.classed('impact_LOW', true);
+            let noVars = selectedVariants.filter(".iNONE");
+            noVars.classed('impact_none', true);
+        }
+        else {
+            // Turn off selected coloring
+            selectedVariants.classed('zoom_selected', false);
+
+            // Turn enrichment coloring back on
+            let enrichUp = selectedVariants.filter(".eUP");
+            enrichUp.classed('enrichment_subset_UP', true);
+            let enrichDown = selectedVariants.filter(".eDOWN");
+            enrichDown.classed('enrichment_subset_DOWN', true);
+            let enrichLow = selectedVariants.filter(".eLOW");
+            enrichLow.classed('enrichment_LOW', true);
+            let enrichNotApplic = selectedVariants.filter(".eNA");
+            enrichNotApplic.classed('enrichment_NA', true);
+        }
+    };
+
+    let switchColorScheme = function (enrichmentMode, svgContainer) {
+        impactMode = !enrichmentMode;
         let variants = svgContainer.selectAll(".variant");
-        let highVars = variants.filter(".iHIGH");
-        let moderateVars = variants.filter(".iMODERATE");
-        let modifierVars = variants.filter(".iMODIFIER");
-        let lowVars = variants.filter(".iLOW");
-        let noVars = variants.filter(".iNONE");
+        let varsToSwitch = variants;
+        if (selectedVariants.length > 0) {
+            let selectedIds = {};
+            selectedVariants[0].forEach(function (v) {
+                selectedIds[v.id] = true;
+            });
+            varsToSwitch = variants.filter(function (v) {
+                return selectedIds[v.id] == null;
+            })
+        }
 
-        let enrichUp = variants.filter(".eUP");
-        let enrichDown = variants.filter(".eDOWN");
-        let enrichLow = variants.filter(".eLOW");
-        let enrichNotApplic = variants.filter(".eNA");
+        let highVars = varsToSwitch.filter(".iHIGH");
+        let moderateVars = varsToSwitch.filter(".iMODERATE");
+        let modifierVars = varsToSwitch.filter(".iMODIFIER");
+        let lowVars = varsToSwitch.filter(".iLOW");
+        let noVars = varsToSwitch.filter(".iNONE");
+
+        let enrichUp = varsToSwitch.filter(".eUP");
+        let enrichDown = varsToSwitch.filter(".eDOWN");
+        let enrichLow = varsToSwitch.filter(".eLOW");
+        let enrichNotApplic = varsToSwitch.filter(".eNA");
 
         if (enrichmentMode) {
-
             // Remove impact color scheme
             highVars.classed({
                 'impact_HIGH': false
@@ -307,7 +378,7 @@ function scaledVariantD3() {
                 'impact_none': true
             });
         }
-    }
+    };
 
     function chart(selection, options) {
         // merge options and defaults
@@ -811,7 +882,7 @@ function scaledVariantD3() {
 
         return chart;
 
-    }
+    };
 
     chart.removeFlaggedVariant = function (svg, variant) {
         // Find the matching variant
@@ -828,7 +899,7 @@ function scaledVariantD3() {
         if (!matchingVariant) {
             return;
         }
-    }
+    };
 
     chart.margin = function (_) {
         if (!arguments.length) return margin;
@@ -912,115 +983,127 @@ function scaledVariantD3() {
         if (!arguments.length) return xTickFormat;
         xTickFormat = _;
         return chart;
-    }
+    };
 
     chart.showBrush = function (_) {
         if (!arguments.length) return showBrush;
         showBrush = _;
         return chart;
-    }
+    };
 
     chart.verticalLayers = function (_) {
         if (!arguments.length) return verticalLayers;
         verticalLayers = _;
         return chart;
-    }
+    };
 
     chart.posVertLayers = function (_) {
         if (!arguments.length) return posVertLayers;
         posVertLayers = _;
         return chart;
-    }
+    };
 
     chart.negVertLayers = function (_) {
         if (!arguments.length) return negVertLayers;
         negVertLayers = _;
         return chart;
-    }
+    };
 
     chart.levelRange = function (_) {
         if (!arguments.length) return levelRange;
         levelRange = _;
         return chart;
-    }
+    };
 
     chart.maxSubLevel = function (_) {
         if (!arguments.length) return maxSubLevel;
         maxSubLevel = _;
         return chart;
-    }
+    };
 
     chart.verticalPadding = function (_) {
         if (!arguments.length) return verticalPadding;
         verticalPadding = _;
         return chart;
-    }
+    };
 
     chart.showTransition = function (_) {
         if (!arguments.length) return showTransition;
         showTransition = _;
         return chart;
-    }
+    };
 
     chart.clazz = function (_) {
         if (!arguments.length) return clazz;
         clazz = _;
         return chart;
-    }
+    };
 
     chart.lowestWidth = function (_) {
         if (!arguments.length) return lowestWidth;
         lowestWidth = _;
         return chart;
-    }
+    };
 
     chart.dividerLevel = function (_) {
         if (!arguments.length) return dividerLevel;
         dividerLevel = _;
         return chart;
-    }
+    };
 
     chart.tooltipHTML = function (_) {
         if (!arguments.length) return tooltipHTML;
         tooltipHTML = _;
         return chart;
-    }
+    };
 
     chart.showCircle = function (_) {
         if (!arguments.length) return showCircle;
         showCircle = _;
         return chart;
-    }
+    };
 
     chart.hideCircle = function (_) {
         if (!arguments.length) return hideCircle;
         hideCircle = _;
         return chart;
-    }
+    };
 
     chart.highlightVariant = function (_) {
         if (!arguments.length) return highlightVariant;
         highlightVariant = _;
         return chart;
-    }
+    };
 
     chart.switchColorScheme = function (_) {
         if (!arguments.length) return switchColorScheme;
         switchColorScheme = _;
         return chart;
-    }
+    };
 
     chart.clearVariants = function (_) {
         if (!arguments.length) return clearVariants;
         clearVariants = _;
         return chart;
-    }
+    };
 
     chart.displayBrush = function (_) {
         if (!arguments.length) return displayBrush;
         displayBrush = _;
         return chart;
-    }
+    };
+
+    chart.hideBrush = function (_) {
+        if (!arguments.length) return hideBrush;
+        hideBrush = _;
+        return chart;
+    };
+
+    chart.impactMode = function (_) {
+        if (!arguments.length) return impactMode;
+        impactMode = _;
+        return chart;
+    };
 
     // This adds the "on" methods to our custom exports
     d3.rebind(chart, dispatch, "on");

@@ -293,8 +293,8 @@
                     .on('d3mouseout', function () {
                         self.onVariantHoverEnd();
                     })
-                    .on('d3variantselected', function (selectedVariants) {
-                        self.variantZoomSelected();
+                    .on('d3variantsselected', function (selectedVariants) {
+                        self.onVariantZoomSelected(selectedVariants);
                     })
                 self.setVariantChart();
             },
@@ -336,11 +336,6 @@
                     self.variantChart(selection);
                 }
             },
-            clearExisting: function () {
-                if (this.data != null && this.variantChart != null) {    // We already have a chart from before
-                     this.variantChart.clearData()();
-                }
-            },
             update: function () {
                 let self = this;
                 self.model.inProgress.drawingVariants = false;
@@ -369,6 +364,10 @@
                 let cohortKey = self.name;
                 self.$emit("variantClick", variant, cohortKey);
             },
+            onVariantZoomSelected: function (selectedVariants) {
+                let self = this;
+                self.$emit('variantZoom', selectedVariants);
+            },
             onVariantHover: function (variant) {
                 let self = this;
                 //var cohortKey = self.name;
@@ -396,21 +395,17 @@
             changeVariantColorScheme: function (enrichmentMode, svg) {
                 this.variantChart.switchColorScheme()(enrichmentMode, svg);
             },
-            displayVariantBrush: function (svg) {
-                this.variantChart.displayBrush()(svg);
+            displayVariantBrush: function () {
+                this.variantChart.displayBrush()();
+            },
+            hideVariantBrush: function () {
+                this.variantChart.hideBrush()();
             },
             clearVariants: function(svg) {
                 this.variantChart.clearVariants()(svg);
-            },
-            variantZoomSelected: function (variants) {
-                //self.$emit('variantZoomSelected', variants);
-                //alert('dispatch rcvd');
-                // SJG TODO: bubble this up to variant card and cohort model, call vcf.iobio.pileup on & assign to variable
             }
         },
         watch: {
-            // SJG TODO: left off at thinking about reducing the amount of data passed in Vue properties - can we do something about data here?
-            // Also compare to TDS gene vue implementation
             data: function () {
                 let self = this;
                 if (self.frequencyDisplayMode) {

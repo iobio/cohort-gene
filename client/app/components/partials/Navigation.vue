@@ -25,7 +25,7 @@
     <div>
         <v-toolbar fixed app :clipped-left="clipped" dark prominent>
 
-            <!-- <v-toolbar-side-icon @click.stop="leftDrawer = !leftDrawer"> -->
+             <v-toolbar-side-icon @click.stop="leftDrawer = !leftDrawer">
             </v-toolbar-side-icon>
 
             <v-toolbar-title style="margin-right: 0px" v-text="title"></v-toolbar-title>
