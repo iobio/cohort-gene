@@ -76,7 +76,9 @@ Updated: SJG Apr2018
             <v-layout text-xs-right>
                 <v-flex>
                     <v-menu v-bind:class="{hide: !doneLoadingData}">
-                        <v-btn outline round slot="activator" color="cohortDarkBlue" style="margin: 0; font-size: 12px">Display Options</v-btn>
+                        <v-btn outline round slot="activator" color="cohortDarkBlue" style="margin: 0; font-size: 12px">
+                            Display Options
+                        </v-btn>
                         <v-list>
                             <v-list-tile @click="toggleZoomMode">
                                 <v-list-tile-title>{{zoomModeText}}</v-list-tile-title>
@@ -111,7 +113,8 @@ Updated: SJG Apr2018
                         :doneLoadingData="doneLoadingData"
                         :frequencyDisplayMode="true"
                         @variantClick="onVariantClick"
-                        @variantZoom="onVariantZoomSelected"
+                        @variantZoom="onVariantZoom"
+                        @variantZoomEnd="onVariantZoomEnd"
                         @variantHover="onVariantHover"
                         @variantHoverEnd="onVariantHoverEnd"
                         @trackRendered="switchColorScheme"
@@ -131,6 +134,9 @@ Updated: SJG Apr2018
                           :showBrush="false"
                           :featureClass="getExonClass">
                 </gene-viz>
+                <zoom-modal-viz id="zoom-viz"
+                :displayZoom="showZoomModal">
+                </zoom-modal-viz>
             </div>
         </v-card-title>
     </v-card>
@@ -139,13 +145,15 @@ Updated: SJG Apr2018
     import UpdatedVariantViz from './UpdatedVariantViz.vue'
     import VariantViz from './VariantViz.vue'
     import GeneViz from './GeneViz.vue'
+    import ZoomModalViz from './ZoomModalViz.vue'
 
     export default {
         name: 'updated-variant-card',
         components: {
             VariantViz,
             UpdatedVariantViz,
-            GeneViz
+            GeneViz,
+            ZoomModalViz
         },
         props: {
             dataSetModel: null,
@@ -192,6 +200,7 @@ Updated: SJG Apr2018
                 coveragePoint: null,
                 impactMode: false,
                 zoomMode: false,
+                showZoomModal: false,
                 enrichmentColorLegend: {}
             }
         },
@@ -267,8 +276,16 @@ Updated: SJG Apr2018
                 }
                 this.$emit('dataSetVariantClick', variant, this, cohortKey);
             },
-            onVariantZoomSelected: function(selectedVariants) {
-              // TODO: Need access to pileup - do I have that here?
+            onVariantZoom: function (selectedVariants) {
+                this.showZoomModal = true;
+                // TODO: pull variant model out of dataset model
+                // Send in selectedVariants to normal pileup method
+
+                // What to do with pileup return?
+
+                // Need a scrollable, movable modal - one that is the width of the variant card
+
+
             },
             onVariantHover: function (variant, cohortKey, showTooltip = true) {
                 if (this.selectedVariant == null) {

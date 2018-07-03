@@ -93,7 +93,7 @@ TD & SJG updated Jun2018 -->
     import VariantCard from '../viz/VariantCard.vue'
     import UpdatedVariantCard from '../viz/UpdatedVariantCard.vue'
     import VariantSummaryCard from '../viz/VariantSummaryCard.vue'
-    import VariantZoomCard from '../viz/VariantZoomCard.vue'
+    import VariantZoomCard from '../viz/ZoomModalViz.vue'
 
     // Models
     import GeneModel from '../../models/GeneModel.js'
@@ -340,8 +340,8 @@ TD & SJG updated Jun2018 -->
             onGeneSelected: function (geneName) {
                 let self = this;
                 self.deselectVariant();
+                // SJG TODO: remove any zoom selections
                 self.wipeModels();
-                //self.promiseClearCache(); // SJG Q4
                 self.promiseLoadGene(geneName);
                 self.doneLoadingData = false;
                 self.doneLoadingExtras = false;
