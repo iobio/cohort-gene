@@ -1,5 +1,4 @@
-<!-- Component populated with variant details on selection.
-     SJG updated Apr2018 -->
+<!-- SJG updated Jul2018 -->
 
 <style lang="css">
     .modal-mask {
@@ -43,6 +42,15 @@
         float: right;
     }
 
+    /*
+     * The following styles are auto-applied to elements with
+     * transition="modal" when their visibility is toggled
+     * by Vue.js.
+     *
+     * You can easily play with the modal transition by editing
+     * these styles.
+     */
+
     .modal-enter {
         opacity: 0;
     }
@@ -58,21 +66,49 @@
     }
 </style>
 
-<template>
-    <v-layout row justify-center>
-        <v-dialog v-model="displayZoom" width="600px">
-            <v-card>
-                <v-card-title>
-                    <span class="headline">Variants</span>
-                </v-card-title>
+<!--<v-dialog v-model="insideLock" width="600px">-->
+<!--<v-card>-->
+<!--<v-card-title>-->
+<!--<span class="headline">Variants</span>-->
+<!--</v-card-title>-->
 
-                <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn color="green darken-1" flat="flat" @click="displayZoom = false">Close</v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog>
-    </v-layout>
+<!--<v-card-actions>-->
+<!--<v-spacer></v-spacer>-->
+<!--<v-btn color="cohortNavy" flat="flat" @click="resetModal">Close</v-btn>-->
+<!--</v-card-actions>-->
+<!--</v-card>-->
+<!--</v-dialog>-->
+
+<template>
+    <transition name="modal">
+        <div class="modal-mask">
+            <div class="modal-wrapper">
+                <div class="modal-container">
+
+                    <div class="modal-header">
+                        <slot name="header">
+                            default header
+                        </slot>
+                    </div>
+
+                    <div class="modal-body">
+                        <slot name="body">
+                            default body
+                        </slot>
+                    </div>
+
+                    <div class="modal-footer">
+                        <slot name="footer">
+                            default footer
+                            <button class="modal-default-button" @click="resetModal">
+                                OK
+                            </button>
+                        </slot>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
 </template>
 
 
@@ -81,17 +117,29 @@
         name: 'zoom-modal-viz',
         components: {},
         props: {
-            displayZoom: false,
-            //selectedVariants: null
+            //outsideLock: false
         },
         data() {
             return {
+                //insideLock: false
             }
         },
-        computed: {},
         mounted: function () {
+            //this.insideLock = this.outsideLock;
         },
-        methods: {}
+        created: function () {
+            //this.insideLock = this.outsideLock;
+        },
+        methods: {
+            resetModal: function () {
+                this.$emit('closeModal');
+            }
+        },
+        watch: {
+            // outsideLock: function () {
+            //     this.insideLock = this.outsideLock;
+            // }
+        }
     }
 
 </script>

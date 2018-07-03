@@ -134,9 +134,12 @@ Updated: SJG Apr2018
                           :showBrush="false"
                           :featureClass="getExonClass">
                 </gene-viz>
-                <zoom-modal-viz id="zoom-viz"
-                :displayZoom="showZoomModal">
-                </zoom-modal-viz>
+                <keep-alive>
+                    <zoom-modal-viz v-if="showZoomModal"
+                                    id="zoom-viz"
+                                    @closeModal="closeModal">
+                    </zoom-modal-viz>
+                </keep-alive>
             </div>
         </v-card-title>
     </v-card>
@@ -277,15 +280,18 @@ Updated: SJG Apr2018
                 this.$emit('dataSetVariantClick', variant, this, cohortKey);
             },
             onVariantZoom: function (selectedVariants) {
-                this.showZoomModal = true;
+                let self = this;
+                self.showZoomModal = true;
+
                 // TODO: pull variant model out of dataset model
                 // Send in selectedVariants to normal pileup method
 
                 // What to do with pileup return?
 
                 // Need a scrollable, movable modal - one that is the width of the variant card
-
-
+            },
+            onVariantZoomEnd: function () {
+                // SJG TODO: do I need this?
             },
             onVariantHover: function (variant, cohortKey, showTooltip = true) {
                 if (this.selectedVariant == null) {
@@ -305,7 +311,7 @@ Updated: SJG Apr2018
             },
             showVariantTooltip: function (variant, cohortKey, lock) {
                 let self = this;
-                if (cohortKey == null || cohortKey == '') {
+                if (cohortKey == null || cohortKey === '') {
                     console.log("error in showVariantTooltip: cohort key is blank");
                     return;
                 }
@@ -450,6 +456,10 @@ Updated: SJG Apr2018
                 if (self.$refs.subsetVizRef != null) {
                     self.$refs.subsetVizRef.hideVariantBrush(self.impactMode);
                 }
+            },
+            closeModal: function() {
+                let self = this;
+                self.showZoomModal = false;
             }
         }
     }
