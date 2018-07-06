@@ -458,7 +458,7 @@ function scaledVariantD3() {
                 // for each level. For a single nucleotide variant, what is
                 // the standard width we would like to show given the minimum
                 // distance between all variants.
-                minWidth = 6;
+                let minWidth = 6;
 
                 for (var l = 0; l < totalLayers; l += 0.1) {  // We'll never be below 0
                     // For each row in array (per variant set; only one variant set)
@@ -504,7 +504,7 @@ function scaledVariantD3() {
                 // works if the variant can be 1 pixel width, but we really want
                 // to signify a square for snps.  For now, try out
                 // a rectangle with a min width of 3.
-                minWidth = Math.max(minWidth, lowestWidth);
+                //minWidth = Math.max(minWidth, lowestWidth);
 
                 // TODO:  Need to review this code!!!  Added for exhibit
                 minWidth = variantHeight;
@@ -629,7 +629,7 @@ function scaledVariantD3() {
                 // snps
                 track.selectAll('.variant').data(function (d) {
                     return d['features'].filter(function (d) {
-                        return d.type.toUpperCase() == 'SNP' || d.type.toUpperCase() == 'MNP';
+                        return d.type.toUpperCase() === 'SNP' || d.type.toUpperCase() === 'MNP';
                     });
                 }).enter().append('rect')
                     .attr('class', function (d) {

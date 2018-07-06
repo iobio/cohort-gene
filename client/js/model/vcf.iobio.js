@@ -2904,7 +2904,7 @@ vcfiobio = function module() {
             }
         });
 
-        // Spread out variants that are overlapping vertically
+        // Spread out variants that are overlapping vertically - TODO: not using for now
         // variants.forEach(function (variant) {
         //     //let verticalSpreadFactor = 0.1;           // Deduced by trial and error
         //     //let overlapFactor = inversionFactor * verticalSpreadFactor * variant.subLevel;

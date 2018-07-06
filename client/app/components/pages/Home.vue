@@ -40,6 +40,7 @@ TD & SJG updated Jun2018 -->
                                 :dataSetModel="variantModel.dataSet"
                                 :annotationScheme="variantModel.annotationScheme"
                                 :classifyVariantSymbolFunc="variantModel.classifyByEnrichment"
+                                :classifyZoomSymbolFunc="variantModel.classifyByImpact"
                                 :variantTooltip="variantTooltip"
                                 :selectedGene="selectedGene"
                                 :selectedTranscript="selectedTranscript"
@@ -333,11 +334,11 @@ TD & SJG updated Jun2018 -->
             onGeneSelected: function (geneName) {
                 let self = this;
                 self.deselectVariant();
-                // SJG TODO: remove any zoom selections
                 self.wipeModels();
                 self.promiseLoadGene(geneName);
                 self.doneLoadingData = false;
                 self.doneLoadingExtras = false;
+                self.$refs.variantCardRef.clearZoom();
             },
             wipeModels: function () {
                 let self = this;

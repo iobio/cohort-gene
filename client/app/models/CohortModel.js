@@ -1629,9 +1629,9 @@ class CohortModel {
             v.level = 0;
         });
 
-        let featureWidth = me.isEduMode || me.isBasicMode ? me.globalApp.eduModeVariantSize : 4;
+        let featureWidth = 4;
         let posToPixelFactor = Math.round((end - start) / width);
-        let widthFactor = featureWidth + ( me.isEduMode || me.isBasicMode ? me.globalApp.eduModeVariantSize * 2 : 4);
+        let widthFactor = featureWidth + (4);
         let maxLevel = this.vcf.pileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor);
         if ( maxLevel > 30) {
             for(let i = 1; i < posToPixelFactor; i++) {

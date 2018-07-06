@@ -2,7 +2,7 @@ function variantD3() {
     var dispatch = d3.dispatch("d3brush", "d3rendered", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout");
 
     // dimensions
-    var margin = {top: 0, right: 0, bottom: 0, left: 0},
+    var margin = {top: 0, right: 2, bottom: 0, left: 2},
         width = 800,
         height = 250;
     // scales
@@ -224,11 +224,11 @@ function variantD3() {
                         // For each variant.  Calculate the distance on the screen
                         // between the 2 variants.
                         for (var i = 0; i < d.features.length - 1; i++) {
-                            if (d.features[i].level == l) {
+                            if (d.features[i].level === l) {
                                 // find the next feature at the same level
                                 var nextPos = null;
                                 for (var next = i+1; next < d.features.length; next++) {
-                                    if (d.features[next].level == l) {
+                                    if (d.features[next].level === l) {
                                         nextPos = next;
                                         break;
                                     }
@@ -260,10 +260,10 @@ function variantD3() {
                 // works if the variant can be 1 pixel width, but we really want
                 // to signify a square for snps.  For now, try out
                 // a rectangle with a min width of 3.
-                minWidth = Math.max(minWidth, lowestWidth);
+                //minWidth = Math.max(minWidth, lowestWidth);
 
                 // TODO:  Need to review this code!!!  Added for exhibit
-                //minWidth = variantHeight;
+                minWidth = variantHeight;
 
                 var symbolScaleCircle = d3.scale.ordinal()
                     .domain([3,4,5,6,7,8,10,12,14,16])
@@ -306,12 +306,11 @@ function variantD3() {
 
                 // The chart dimensions could change after instantiation, so update viewbox dimensions
                 // every time we draw the chart.
-                // d3.select(this).selectAll("svg")
-                //     .filter(function() {
-                //         return this.parentNode === container.node();
-                //     })
-                //     .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom));
-
+                d3.select(this).selectAll("svg")
+                    .filter(function() {
+                        return this.parentNode === container.node();
+                    })
+                    .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom));
 
 
                 // Add grouping for flagged variants
@@ -454,89 +453,89 @@ function variantD3() {
                 trackindel.exit().remove();
 
                 // update
-                // if (showTransition) {
-                //     var interval = 1000 / data[0].features.length;
-                //
-                //     track.transition()
-                //         .duration(1000)
-                //         .attr('transform', function(d,i) { return "translate(0," + y(i+1) + ")"});
-                //
-                //
-                //     track.selectAll('.variant.snp, .variant.mnp').sort(function(a,b){ return parseInt(a.start) - parseInt(b.start)})
-                //         .transition()
-                //         .duration(1000)
-                //         .delay(function(d, i) { return i * interval; })
-                //         .ease("bounce")
-                //         .attr('x', function(d) {
-                //             return d3.round(x(d.start) - (minWidth/2) + (minWidth/4));
-                //         })
-                //         .attr('width', function(d) {
-                //             // TODO:  Need to review!!
-                //             //                return Math.max(Math.round(x(d.end) - x(d.start)), minWidth);
-                //             return variantHeight;
-                //         })
-                //         .attr('y', function(d) {
-                //             return height - ((d.level + 1) * (variantHeight + verticalPadding));
-                //         })
-                //         .attr('height', function(d) {
-                //             return variantHeight;
-                //         });
-                //
-                //     trackindel.selectAll('.variant.del')
-                //         .transition()
-                //         .duration(1000)
-                //         .delay(function(d, i) { return i * interval; })
-                //         .ease("bounce")
-                //         .attr("d", function(d,i) {
-                //             return d3.svg
-                //                 .symbol()
-                //                 .type(getSymbol(d,i))
-                //                 .size(symbolSize)();
-                //         })
-                //         .attr("transform", function(d) {
-                //             var xCoord = x(d.start) + 2;
-                //             var yCoord = height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
-                //             var tx = "translate(" + xCoord +  "," + yCoord + ")";
-                //             return tx;
-                //         });
-                //
-                //     trackindel.selectAll('.variant.ins')
-                //         .transition()
-                //         .duration(1000)
-                //         .delay(function(d, i) { return i * interval; })
-                //         .ease("bounce")
-                //         .attr("d", function(d,i) {
-                //             return d3.svg
-                //                 .symbol()
-                //                 .type(getSymbol(d,i))
-                //                 .size(symbolSizeCircle)();
-                //         })
-                //         .attr("transform", function(d) {
-                //             var xCoord = x(d.start) + 2;
-                //             var yCoord = height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
-                //             var tx = "translate(" + xCoord + "," + yCoord + ")";
-                //             return tx;
-                //         });
-                //
-                //     trackindel.selectAll('.variant.complex')
-                //         .transition()
-                //         .duration(1000)
-                //         .delay(function(d, i) { return i * interval; })
-                //         .attr("d", function(d,i) {
-                //             return d3.svg
-                //                 .symbol()
-                //                 .type(getSymbol(d,i))
-                //                 .size(symbolSize)();
-                //         })
-                //         .attr("transform", function(d) {
-                //             var xCoord = x(d.start) + 2;
-                //             var yCoord = height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
-                //             var tx = "translate(" + xCoord + "," + yCoord + ")";
-                //             return tx;
-                //         });
-                //
-                //
-                // }
+                if (showTransition) {
+                    var interval = 1000 / data[0].features.length;
+
+                    track.transition()
+                        .duration(1000)
+                        .attr('transform', function(d,i) { return "translate(0," + y(i+1) + ")"});
+
+
+                    track.selectAll('.variant.snp, .variant.mnp').sort(function(a,b){ return parseInt(a.start) - parseInt(b.start)})
+                        .transition()
+                        .duration(1000)
+                        .delay(function(d, i) { return i * interval; })
+                        .ease("bounce")
+                        .attr('x', function(d) {
+                            return d3.round(x(d.start) - (minWidth/2) + (minWidth/4));
+                        })
+                        .attr('width', function(d) {
+                            // TODO:  Need to review!!
+                            //                return Math.max(Math.round(x(d.end) - x(d.start)), minWidth);
+                            return variantHeight;
+                        })
+                        .attr('y', function(d) {
+                            return height - ((d.level + 1) * (variantHeight + verticalPadding));
+                        })
+                        .attr('height', function(d) {
+                            return variantHeight;
+                        });
+
+                    trackindel.selectAll('.variant.del')
+                        .transition()
+                        .duration(1000)
+                        .delay(function(d, i) { return i * interval; })
+                        .ease("bounce")
+                        .attr("d", function(d,i) {
+                            return d3.svg
+                                .symbol()
+                                .type(getSymbol(d,i))
+                                .size(symbolSize)();
+                        })
+                        .attr("transform", function(d) {
+                            var xCoord = x(d.start) + 2;
+                            var yCoord = height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
+                            var tx = "translate(" + xCoord +  "," + yCoord + ")";
+                            return tx;
+                        });
+
+                    trackindel.selectAll('.variant.ins')
+                        .transition()
+                        .duration(1000)
+                        .delay(function(d, i) { return i * interval; })
+                        .ease("bounce")
+                        .attr("d", function(d,i) {
+                            return d3.svg
+                                .symbol()
+                                .type(getSymbol(d,i))
+                                .size(symbolSizeCircle)();
+                        })
+                        .attr("transform", function(d) {
+                            var xCoord = x(d.start) + 2;
+                            var yCoord = height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
+                            var tx = "translate(" + xCoord + "," + yCoord + ")";
+                            return tx;
+                        });
+
+                    trackindel.selectAll('.variant.complex')
+                        .transition()
+                        .duration(1000)
+                        .delay(function(d, i) { return i * interval; })
+                        .attr("d", function(d,i) {
+                            return d3.svg
+                                .symbol()
+                                .type(getSymbol(d,i))
+                                .size(symbolSize)();
+                        })
+                        .attr("transform", function(d) {
+                            var xCoord = x(d.start) + 2;
+                            var yCoord = height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
+                            var tx = "translate(" + xCoord + "," + yCoord + ")";
+                            return tx;
+                        });
+
+
+                }
 
 
 

@@ -114,7 +114,6 @@ Updated: SJG Apr2018
                         :frequencyDisplayMode="true"
                         @variantClick="onVariantClick"
                         @variantZoom="onVariantZoom"
-                        @variantZoomEnd="onVariantZoomEnd"
                         @variantHover="onVariantHover"
                         @variantHoverEnd="onVariantHoverEnd"
                         @trackRendered="switchColorScheme"
@@ -145,11 +144,11 @@ Updated: SJG Apr2018
                             :regionStart="regionStart"
                             :regionEnd="regionEnd"
                             :annotationScheme="annotationScheme"
-                            :margin="zoomVizMargin"
+                            :margin="variantVizMargin"
                             :variantHeight="variantSymbolHeight"
                             :variantPadding="variantSymbolPadding"
                             :showXAxis="true"
-                            :classifySymbolFunc="classifyVariantSymbolFunc"
+                            :classifySymbolFunc="classifyZoomSymbolFunc"
                             :doneLoadingData="doneLoadingData"
                             @variantClick="onVariantClick"
                             @closeModal="closeModal">
@@ -176,6 +175,7 @@ Updated: SJG Apr2018
             dataSetModel: null,
             annotationScheme: null,
             classifyVariantSymbolFunc: null,
+            classifyZoomSymbolFunc: null,
             variantTooltip: null,
             selectedGene: {},
             selectedTranscript: {},
@@ -203,12 +203,6 @@ Updated: SJG Apr2018
                     right: 2,
                     bottom: 5,
                     left: 4
-                },
-                zoomVizMargin: {
-                    top: 0,
-                    right: 0,
-                    bottom: 0,
-                    left: 0
                 },
                 variantSymbolHeight: 10,
                 variantSymbolPadding: 2,
@@ -320,8 +314,8 @@ Updated: SJG Apr2018
                 self.$emit('zoomModeStart', selectedVarIds);
                 self.hideVariantCircle();
             },
-            onVariantZoomEnd: function () {
-                // SJG TODO: do I need this?
+            clearZoom: function () {
+                this.hideVariantBrush();
             },
             onVariantHover: function (variant, cohortKey, showTooltip = true) {
                 if (this.selectedVariant == null) {

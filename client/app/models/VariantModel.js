@@ -257,16 +257,16 @@ class VariantModel {
             var vcf = null,
                 tbi = null;
             self.hubEndpoint.getFilesForProject(projectId, initialLaunch).done(data => {
-                vcf = data.data.filter(f => f.type == 'vcf')[0];
-                tbi = data.data.filter(f => f.type == 'tbi')[0];
+                vcf = data.data.filter(f => f.type === 'vcf')[0];
+                tbi = data.data.filter(f => f.type === 'tbi')[0];
                 self.hubEndpoint.getSignedUrlForFile(vcf).done(urlData => {
                     vcfUrl = urlData.url;
-                    if (vcfUrl == null || vcfUrl.length == 0) {
+                    if (vcfUrl == null || vcfUrl.length === 0) {
                         reject("Empty vcf url returned from hub.");
                     }
                     self.hubEndpoint.getSignedUrlForFile(tbi).done(urlData => {
                         tbiUrl = urlData.url;
-                        if (tbiUrl == null || tbiUrl.length == 0) {
+                        if (tbiUrl == null || tbiUrl.length === 0) {
                             reject("Empty tbi url returned from hub.");
                         }
                         else {
@@ -321,11 +321,11 @@ class VariantModel {
         var self = this;
 
         // Affected/Unaffected filter
-        if (filter == 'affected_status') {
-            if (boundsArr[0] == 'Affected') {
+        if (filter === 'affected_status') {
+            if (boundsArr[0] === 'Affected') {
                 return 'Affected';
             }
-            else if (boundsArr[0] == 'Unaffected') {
+            else if (boundsArr[0] === 'Unaffected') {
                 return 'Unaffected';
             }
         }
@@ -1138,7 +1138,48 @@ class VariantModel {
     }
 
     classifyByImpact(d, annotationScheme) {
+        let self = this;
+        var impacts = "";
+        var colorimpacts = "";
+        var effects = "";
+        var sift = "";
+        var polyphen = "";
+        var regulatory = "";
 
+        var effectList = (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.effect : d.vepConsequence);
+        for (var key in effectList) {
+            if (annotationScheme.toLowerCase() == 'vep' && key.indexOf("&") > 0) {
+                var tokens = key.split("&");
+                tokens.forEach( function(token) {
+                    effects += " " + token;
+
+                });
+            } else {
+                effects += " " + key;
+            }
+        }
+        var impactList =  (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[self.globalApp.impactFieldToFilter]);
+        for (var key in impactList) {
+            impacts += " " + key;
+        }
+        var colorImpactList =  (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.impact : d[self.globalApp.impactFieldToColor]);
+        for (var key in colorImpactList) {
+            colorimpacts += " " + 'impact_'+key;
+        }
+        if (colorimpacts == "") {
+            colorimpacts = "impact_none";
+        }
+        for (var key in d.sift) {
+            sift += " " + key;
+        }
+        for (var key in d.polyphen) {
+            polyphen += " " + key;
+        }
+        for (var key in d.regulatory) {
+            regulatory += " " + key;
+        }
+
+        return  'variant ' + d.type.toLowerCase()  + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' '  + sift + ' ' + polyphen + ' ' + regulatory +  ' ' + + ' ' + d.clinvar + ' ' + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts;
     }
 
     getVepImpactClass(domVar, annotationScheme) {

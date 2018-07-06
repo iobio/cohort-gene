@@ -42,8 +42,8 @@
     .close-button {
         padding-left: 0;
         padding-right: 0;
-        margin-left: 0;
-        margin-right: 0;
+        margin-left: 2px;
+        margin-right: 2px;
         margin-top: 2px;
         margin-bottom: 2px;
     }
