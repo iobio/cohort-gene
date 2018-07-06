@@ -210,7 +210,7 @@
                 if (self.data == null) return false;
                 if (self.data.features == null) return false;
                 if (self.data.features.length === 0) {
-                    var loading = self.model.inProgress.loadingVariants || self.model.inProgress.drawingVariants || self.model.inProgress.fetchingHubData;
+                    let loading = self.model.inProgress.loadingVariants || self.model.inProgress.drawingVariants || self.model.inProgress.fetchingHubData;
                     if (!loading && self.doneLoadingData) return true;
                 }
                 return false;
@@ -229,7 +229,7 @@
         },
         methods: {
             draw: function () {
-                var self = this;
+                let self = this;
                 this.variantChart = scaledVariantD3()
                     .width(this.width)
                     .clazz(function (variant) {
@@ -260,7 +260,6 @@
                     .on('d3variantsselected', function (selectedVarIds, xStart, yStart, drawBelow, graphWidth) {
                         self.onVariantZoomSelected(selectedVarIds, xStart, yStart, drawBelow, graphWidth);
                     });
-                //self.setVariantChart();
             },
             update: function () {
                 let self = this;

@@ -49,7 +49,12 @@
     }
 
     .modal-body {
-        margin: 20px 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        padding-left: 0;
+        padding-right: 0;
+        margin-top: 0;
+        margin-bottom: 0;
     }
 
     .modal-default-button {
@@ -104,10 +109,14 @@
                             </v-container>
                         </slot>
                     </div>
-
-                    <div class="modal-body">
+                    <div>
                         <slot name="body">
                             <div class="selected-variant-viz"></div>
+                        </slot>
+                    </div>
+                    <div>
+                        <slot name="footer">
+                            <!--TODO: how to hide this-->
                         </slot>
                     </div>
                 </div>
@@ -198,10 +207,11 @@
                 this.$emit('closeModal');
             },
             draw: function () {
-                this.variantChart =  variantD3()
-                    .width(this.width)
+                let self = this;
+                this.selectionVarChart = variantD3()
+                    .width(this.modalWidth)
                     .clazz(function(variant) {
-                        return this.classifySymbolFunc(variant, this.annotationScheme, this.model.getName());
+                        return self.classifySymbolFunc(variant, self.annotationScheme, self.model.getName());
                     })
                     .margin(this.margin)
                     .showXAxis(this.showXAxis)
@@ -214,18 +224,18 @@
                     .regionStart(this.regionStart)
                     .regionEnd(this.regionEnd)
                     .on("d3rendered", function() {
-                        self.$emit("trackRendered");
+                        //self.$emit("trackRendered");
                     })
                     .on('d3click', function(variant) {
                         self.onVariantClick(variant);
                     })
                     .on('d3mouseover', function(variant) {
-                        self.onVariantHover(variant);
+                        //self.onVariantHover(variant);
                     })
                     .on('d3mouseout', function() {
-                        self.onVariantHoverEnd();
+                        //self.onVariantHoverEnd();
                     });
-                this.setVariantChart();
+                //this.setVariantChart();
             },
             update: function () {
                 let self = this;
@@ -237,32 +247,35 @@
                             return d.level;
                         });
                     }
-                    self.variantChart.verticalLayers(self.data.maxPosLevel);
-                    self.variantChart.lowestWidth(self.data.featureWidth);
+                    self.selectionVarChart.verticalLayers(self.data.maxLevel);
+                    self.selectionVarChart.lowestWidth(self.data.featureWidth);
                     if (self.data.features == null || self.data.features.length === 0) {
-                        self.variantChart.showXAxis(false);
+                        self.selectionVarChart.showXAxis(false);
                     } else {
-                        self.variantChart.showXAxis(self.showXAxis);
+                        self.selectionVarChart.showXAxis(self.showXAxis);
                     }
-                    self.variantChart.regionStart(self.regionStart);
-                    self.variantChart.regionEnd(self.regionEnd);
-                    let selection = d3.select(self.$el).datum([self.data]);
-                    self.variantChart(selection);
+                    self.selectionVarChart.regionStart(self.regionStart);
+                    self.selectionVarChart.regionEnd(self.regionEnd);
+
+                    // Data needs to bind to modal, not root element
+                    // TODO: problem is that zoom viz has not been rendered yet
+                    let selection = d3.select('.selected-variant-viz').datum([self.data]);
+                    self.selectionVarChart(selection);
                 }
             },
             onVariantClick: function (variant) {
                 let self = this;
                 let cohortKey = self.name;
-                self.$emit("variantClick", variant, cohortKey);
+                //self.$emit("variantClick", variant, cohortKey);
             },
             showVariantCircle: function (variant, container, lock) {
-                this.variantChart.showCircle()(variant,
+                this.selectionVarChart.showCircle()(variant,
                     container,
                     variant.fbCalled && variant.fbCalled === 'Y',
                     lock);
             },
             hideVariantCircle: function (container) {
-                this.variantChart.hideCircle()(container);
+                this.selectionVarChart.hideCircle()(container);
             },
             setVariantChart: function () {
                 this.$emit('updateVariantChart', this.model);
@@ -271,17 +284,7 @@
         mounted: function() {
             let self = this;
             self.draw();
-        },
-        created: function() {
-            let self = this;
             self.update();
-        },
-        watch: {
-            data: function () {
-                let self = this;
-                self.update();
-                console.log("Drawing selected variants...");
-            }
         }
     }
 

@@ -135,23 +135,24 @@ Updated: SJG Apr2018
                           :featureClass="getExonClass">
                 </gene-viz>
                 <zoom-modal-viz id="zoom-viz"
-                                v-if="showZoomModal"
-                                :modalWidth="zoomWidth"
-                                :modalXStart="zoomX"
-                                :id="subsetCohort.getName()"
-                                :model="subsetCohort"
-                                :data="subsetCohort.selectedVariants"
-                                :regionStart="regionStart"
-                                :regionEnd="regionEnd"
-                                :annotationScheme="annotationScheme"
-                                :margin="variantVizMargin"
-                                :variantHeight="variantSymbolHeight"
-                                :variantPadding="variantSymbolPadding"
-                                :showXAxis="true"
-                                :classifySymbolFunc="classifyVariantSymbolFunc"
-                                :doneLoadingData="doneLoadingData"
-                                @variantClick="onVariantClick"
-                                @closeModal="closeModal">
+                            v-if="showZoomModal"
+                            ref="zoomVizRef"
+                            :modalWidth="zoomWidth"
+                            :modalXStart="zoomX"
+                            :id="subsetCohort.getName()"
+                            :model="subsetCohort"
+                            :data="subsetCohort.selectedVariants"
+                            :regionStart="regionStart"
+                            :regionEnd="regionEnd"
+                            :annotationScheme="annotationScheme"
+                            :margin="zoomVizMargin"
+                            :variantHeight="variantSymbolHeight"
+                            :variantPadding="variantSymbolPadding"
+                            :showXAxis="true"
+                            :classifySymbolFunc="classifyVariantSymbolFunc"
+                            :doneLoadingData="doneLoadingData"
+                            @variantClick="onVariantClick"
+                            @closeModal="closeModal">
                 </zoom-modal-viz>
             </div>
         </v-card-title>
@@ -202,6 +203,12 @@ Updated: SJG Apr2018
                     right: 2,
                     bottom: 5,
                     left: 4
+                },
+                zoomVizMargin: {
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    left: 0
                 },
                 variantSymbolHeight: 10,
                 variantSymbolPadding: 2,
@@ -302,17 +309,16 @@ Updated: SJG Apr2018
             onVariantZoom: function (selectedVarIds, xStart, yStart, drawBelow, graphWidth) {
                 let self = this;
 
-                // Start pileup of selected variants
-                self.$emit('zoomModeStart', selectedVarIds);
-                self.hideVariantCircle();
-
                 // Set modal properties to be utilized on creation
                 self.zoomWidth = +graphWidth;
                 self.zoomX = +xStart;
-                // TODO: incorporate draw above/below
 
                 // Render zoom modal
                 self.showZoomModal = true;
+
+                // Start pileup of selected variants
+                self.$emit('zoomModeStart', selectedVarIds);
+                self.hideVariantCircle();
             },
             onVariantZoomEnd: function () {
                 // SJG TODO: do I need this?

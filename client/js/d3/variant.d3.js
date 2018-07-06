@@ -2,9 +2,9 @@ function variantD3() {
     var dispatch = d3.dispatch("d3brush", "d3rendered", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout");
 
     // dimensions
-    var margin = {top: 30, right: 0, bottom: 20, left: 110},
+    var margin = {top: 0, right: 0, bottom: 0, left: 0},
         width = 800,
-        height = 100;
+        height = 250;
     // scales
     var x = d3.scale.linear(),
         y = d3.scale.linear();
@@ -43,11 +43,11 @@ function variantD3() {
 
 
     function getSymbol(d,i) {
-        if (d.type.toUpperCase() == 'DEL') {
+        if (d.type.toUpperCase() === 'DEL') {
             return 'triangle-up';
-        } else if (d.type.toUpperCase() == 'INS') {
+        } else if (d.type.toUpperCase() === 'INS') {
             return  'circle';
-        } else if (d.type.toUpperCase() == 'COMPLEX') {
+        } else if (d.type.toUpperCase() === 'COMPLEX') {
             return 'diamond';
         }
     }
@@ -56,13 +56,13 @@ function variantD3() {
         // Find the matching variant
         var matchingVariant = null;
         svgContainer.selectAll(".variant").each( function (variant,i) {
-            if (d.start == variant.start
-                && d.end == variant.end
-                && d.ref == variant.ref
-                && d.alt == variant.alt
-                && d.type.toLowerCase() == variant.type.toLowerCase()) {
+            if (d.start === variant.start
+                && d.end === variant.end
+                && d.ref === variant.ref
+                && d.alt === variant.alt
+                && d.type.toLowerCase() === variant.type.toLowerCase()) {
 
-                if (variant.zygosity != null && variant.zygosity.toLowerCase() == 'homref') {
+                if (variant.zygosity != null && variant.zygosity.toLowerCase() === 'homref') {
                     // we want to show an "x" for homozygous reference variants
                     // instead of a circle
                 } else {
@@ -263,7 +263,7 @@ function variantD3() {
                 minWidth = Math.max(minWidth, lowestWidth);
 
                 // TODO:  Need to review this code!!!  Added for exhibit
-                minWidth = variantHeight;
+                //minWidth = variantHeight;
 
                 var symbolScaleCircle = d3.scale.ordinal()
                     .domain([3,4,5,6,7,8,10,12,14,16])
@@ -306,11 +306,11 @@ function variantD3() {
 
                 // The chart dimensions could change after instantiation, so update viewbox dimensions
                 // every time we draw the chart.
-                d3.select(this).selectAll("svg")
-                    .filter(function() {
-                        return this.parentNode === container.node();
-                    })
-                    .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom));
+                // d3.select(this).selectAll("svg")
+                //     .filter(function() {
+                //         return this.parentNode === container.node();
+                //     })
+                //     .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom));
 
 
 
@@ -389,7 +389,7 @@ function variantD3() {
 
                 // snps
                 track.selectAll('.variant').data(function(d) {
-                    return d['features'].filter( function(d) { return d.type.toUpperCase() == 'SNP' || d.type.toUpperCase() == 'MNP'; }) ;
+                    return d['features'].filter( function(d) { return d.type.toUpperCase() === 'SNP' || d.type.toUpperCase() === 'MNP'; }) ;
                 }).enter().append('rect')
                     .attr('class', function(d) { return chart.clazz()(d); })
                     .attr('rx', borderRadius)
@@ -410,9 +410,9 @@ function variantD3() {
                 // insertions and deletions
                 trackindel.selectAll('.variant').data(function(d) {
                     var indels = d['features'].filter( function(d){
-                        return d.type.toUpperCase() == 'DEL'
-                            || d.type.toUpperCase() == 'INS'
-                            || d.type.toUpperCase() == 'COMPLEX';
+                        return d.type.toUpperCase() === 'DEL'
+                            || d.type.toUpperCase() === 'INS'
+                            || d.type.toUpperCase() === 'COMPLEX';
                     });
                     return indels;
                 }).enter().append('path')
@@ -454,89 +454,89 @@ function variantD3() {
                 trackindel.exit().remove();
 
                 // update
-                if (showTransition) {
-                    var interval = 1000 / data[0].features.length;
-
-                    track.transition()
-                        .duration(1000)
-                        .attr('transform', function(d,i) { return "translate(0," + y(i+1) + ")"});
-
-
-                    track.selectAll('.variant.snp, .variant.mnp').sort(function(a,b){ return parseInt(a.start) - parseInt(b.start)})
-                        .transition()
-                        .duration(1000)
-                        .delay(function(d, i) { return i * interval; })
-                        .ease("bounce")
-                        .attr('x', function(d) {
-                            return d3.round(x(d.start) - (minWidth/2) + (minWidth/4));
-                        })
-                        .attr('width', function(d) {
-                            // TODO:  Need to review!!
-                            //                return Math.max(Math.round(x(d.end) - x(d.start)), minWidth);
-                            return variantHeight;
-                        })
-                        .attr('y', function(d) {
-                            return height - ((d.level + 1) * (variantHeight + verticalPadding));
-                        })
-                        .attr('height', function(d) {
-                            return variantHeight;
-                        });
-
-                    trackindel.selectAll('.variant.del')
-                        .transition()
-                        .duration(1000)
-                        .delay(function(d, i) { return i * interval; })
-                        .ease("bounce")
-                        .attr("d", function(d,i) {
-                            return d3.svg
-                                .symbol()
-                                .type(getSymbol(d,i))
-                                .size(symbolSize)();
-                        })
-                        .attr("transform", function(d) {
-                            var xCoord = x(d.start) + 2;
-                            var yCoord = height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
-                            var tx = "translate(" + xCoord +  "," + yCoord + ")";
-                            return tx;
-                        });
-
-                    trackindel.selectAll('.variant.ins')
-                        .transition()
-                        .duration(1000)
-                        .delay(function(d, i) { return i * interval; })
-                        .ease("bounce")
-                        .attr("d", function(d,i) {
-                            return d3.svg
-                                .symbol()
-                                .type(getSymbol(d,i))
-                                .size(symbolSizeCircle)();
-                        })
-                        .attr("transform", function(d) {
-                            var xCoord = x(d.start) + 2;
-                            var yCoord = height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
-                            var tx = "translate(" + xCoord + "," + yCoord + ")";
-                            return tx;
-                        });
-
-                    trackindel.selectAll('.variant.complex')
-                        .transition()
-                        .duration(1000)
-                        .delay(function(d, i) { return i * interval; })
-                        .attr("d", function(d,i) {
-                            return d3.svg
-                                .symbol()
-                                .type(getSymbol(d,i))
-                                .size(symbolSize)();
-                        })
-                        .attr("transform", function(d) {
-                            var xCoord = x(d.start) + 2;
-                            var yCoord = height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
-                            var tx = "translate(" + xCoord + "," + yCoord + ")";
-                            return tx;
-                        });
-
-
-                }
+                // if (showTransition) {
+                //     var interval = 1000 / data[0].features.length;
+                //
+                //     track.transition()
+                //         .duration(1000)
+                //         .attr('transform', function(d,i) { return "translate(0," + y(i+1) + ")"});
+                //
+                //
+                //     track.selectAll('.variant.snp, .variant.mnp').sort(function(a,b){ return parseInt(a.start) - parseInt(b.start)})
+                //         .transition()
+                //         .duration(1000)
+                //         .delay(function(d, i) { return i * interval; })
+                //         .ease("bounce")
+                //         .attr('x', function(d) {
+                //             return d3.round(x(d.start) - (minWidth/2) + (minWidth/4));
+                //         })
+                //         .attr('width', function(d) {
+                //             // TODO:  Need to review!!
+                //             //                return Math.max(Math.round(x(d.end) - x(d.start)), minWidth);
+                //             return variantHeight;
+                //         })
+                //         .attr('y', function(d) {
+                //             return height - ((d.level + 1) * (variantHeight + verticalPadding));
+                //         })
+                //         .attr('height', function(d) {
+                //             return variantHeight;
+                //         });
+                //
+                //     trackindel.selectAll('.variant.del')
+                //         .transition()
+                //         .duration(1000)
+                //         .delay(function(d, i) { return i * interval; })
+                //         .ease("bounce")
+                //         .attr("d", function(d,i) {
+                //             return d3.svg
+                //                 .symbol()
+                //                 .type(getSymbol(d,i))
+                //                 .size(symbolSize)();
+                //         })
+                //         .attr("transform", function(d) {
+                //             var xCoord = x(d.start) + 2;
+                //             var yCoord = height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
+                //             var tx = "translate(" + xCoord +  "," + yCoord + ")";
+                //             return tx;
+                //         });
+                //
+                //     trackindel.selectAll('.variant.ins')
+                //         .transition()
+                //         .duration(1000)
+                //         .delay(function(d, i) { return i * interval; })
+                //         .ease("bounce")
+                //         .attr("d", function(d,i) {
+                //             return d3.svg
+                //                 .symbol()
+                //                 .type(getSymbol(d,i))
+                //                 .size(symbolSizeCircle)();
+                //         })
+                //         .attr("transform", function(d) {
+                //             var xCoord = x(d.start) + 2;
+                //             var yCoord = height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
+                //             var tx = "translate(" + xCoord + "," + yCoord + ")";
+                //             return tx;
+                //         });
+                //
+                //     trackindel.selectAll('.variant.complex')
+                //         .transition()
+                //         .duration(1000)
+                //         .delay(function(d, i) { return i * interval; })
+                //         .attr("d", function(d,i) {
+                //             return d3.svg
+                //                 .symbol()
+                //                 .type(getSymbol(d,i))
+                //                 .size(symbolSize)();
+                //         })
+                //         .attr("transform", function(d) {
+                //             var xCoord = x(d.start) + 2;
+                //             var yCoord = height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
+                //             var tx = "translate(" + xCoord + "," + yCoord + ")";
+                //             return tx;
+                //         });
+                //
+                //
+                // }
 
 
 
@@ -554,54 +554,48 @@ function variantD3() {
 
 
                 // add a circle and arrows for 'hover' event and 'pinned' event
-                ['hover', 'pinned'].forEach(function(clazz) {
-                    var circleClazz = '.' + clazz + '.circle';
-                    if (svg.selectAll(circleClazz).empty()) {
-                        svg.selectAll(circleClazz).data([0])
-                            .enter().append('circle')
-                            .attr("class", clazz + " circle")
-                            .attr("cx", 0)
-                            .attr("cy", 0)
-                            .attr("r", variantHeight + 2)
-                            .style("opacity", 0);
-                    }
-
-                    var arrowClazz = 'g.' + clazz + '.arrow';
-                    if (svg.selectAll(arrowClazz).empty()) {
-                        //svg.selectAll("g.arrow").remove();
-                        var garrow = svg.selectAll(arrowClazz).data([0])
-                            .enter().append("g")
-                            .attr("class", clazz + " arrow")
-                            .attr("transform", "translate(1,0)");
-
-                        garrow.append('line')
-                            .attr("class", "arrow arrow-line")
-                            .attr("x1", variantHeight + 2)
-                            .attr("x2", -2)
-                            .attr("y1", variantHeight + 2)
-                            .attr("y2", 0)
-                            .style("opacity", 0);
-                        garrow.append('line')
-                            .attr("class", "arrow arrow-line")
-                            .attr("x1", variantHeight + 2)
-                            .attr("x2", -2)
-                            .attr("y1", 0)
-                            .attr("y2", variantHeight + 2)
-                            .style("opacity", 0);
-                    }
-                })
+                // ['hover', 'pinned'].forEach(function(clazz) {
+                //     var circleClazz = '.' + clazz + '.circle';
+                //     if (svg.selectAll(circleClazz).empty()) {
+                //         svg.selectAll(circleClazz).data([0])
+                //             .enter().append('circle')
+                //             .attr("class", clazz + " circle")
+                //             .attr("cx", 0)
+                //             .attr("cy", 0)
+                //             .attr("r", variantHeight + 2)
+                //             .style("opacity", 0);
+                //     }
+                //
+                //     var arrowClazz = 'g.' + clazz + '.arrow';
+                //     if (svg.selectAll(arrowClazz).empty()) {
+                //         //svg.selectAll("g.arrow").remove();
+                //         var garrow = svg.selectAll(arrowClazz).data([0])
+                //             .enter().append("g")
+                //             .attr("class", clazz + " arrow")
+                //             .attr("transform", "translate(1,0)");
+                //
+                //         garrow.append('line')
+                //             .attr("class", "arrow arrow-line")
+                //             .attr("x1", variantHeight + 2)
+                //             .attr("x2", -2)
+                //             .attr("y1", variantHeight + 2)
+                //             .attr("y2", 0)
+                //             .style("opacity", 0);
+                //         garrow.append('line')
+                //             .attr("class", "arrow arrow-line")
+                //             .attr("x1", variantHeight + 2)
+                //             .attr("x2", -2)
+                //             .attr("y1", 0)
+                //             .attr("y2", variantHeight + 2)
+                //             .style("opacity", 0);
+                //     }
+                // })
 
 
 
 
                 dispatch.d3rendered();
-
-
-
             }
-
-
-
         });
 
     }
@@ -611,11 +605,11 @@ function variantD3() {
         // Find the matching variant
         var matchingVariant = null;
         svg.selectAll(".variant").each( function (d,i) {
-            if (d.start == variant.start
-                && d.end == variant.end
-                && d.ref == variant.ref
-                && d.alt == variant.alt
-                && d.type.toLowerCase() == variant.type.toLowerCase()) {
+            if (d.start === variant.start
+                && d.end === variant.end
+                && d.ref === variant.ref
+                && d.alt === variant.alt
+                && d.type.toLowerCase() === variant.type.toLowerCase()) {
                 matchingVariant = d;
             }
         });

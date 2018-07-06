@@ -51,11 +51,11 @@ function scaledVariantD3() {
 
 
     function getSymbol(d, i) {
-        if (d.type.toUpperCase() == 'DEL') {
+        if (d.type.toUpperCase() === 'DEL') {
             return 'triangle-up';
-        } else if (d.type.toUpperCase() == 'INS') {
+        } else if (d.type.toUpperCase() === 'INS') {
             return 'circle';
-        } else if (d.type.toUpperCase() == 'COMPLEX') {
+        } else if (d.type.toUpperCase() === 'COMPLEX') {
             return 'diamond';
         }
     }
@@ -100,8 +100,13 @@ function scaledVariantD3() {
                 let selectedVarIds = [];
                 selectedVariants = container.select('svg').selectAll(".variant").filter(function (variant) {
                     // Check to see if variant y coordinate b/w box top and bottom
-                    selectedVarIds.push(variant.id);
-                    return y(variant.adjustedLevel) <= yTop && y(variant.adjustedLevel) >= yBottom;
+                    if (y(variant.adjustedLevel) <= yTop && y(variant.adjustedLevel) >= yBottom) {
+                        selectedVarIds.push(variant.id);
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
                 });
 
                 // Change coloring on selected variants

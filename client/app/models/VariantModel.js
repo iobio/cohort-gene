@@ -712,7 +712,7 @@ class VariantModel {
                 return isTarget && !isHomRef && inRegion && passesModelFilter;
             });
 
-            let pileupObject = model._pileupVariants(filteredVariants.features, start, end);
+            let pileupObject = model._enrichmentPileupVariants(filteredVariants.features, start, end);
             filteredVariants.maxPosLevel = pileupObject.maxPosLevel;
             filteredVariants.maxNegLevel = pileupObject.maxNegLevel;
             filteredVariants.maxSubLevel = pileupObject.maxSubLevel;
@@ -730,74 +730,6 @@ class VariantModel {
             }
         }
     }
-
-    // TDS original method
-    // setLoadedVariants(gene, relationship=null) {
-    //     let self = this;
-    //
-    //
-    //     var filterAndPileupVariants = function(model, start, end, target='loaded') {
-    //         var filteredVariants = $.extend({}, model.vcfData);
-    //         filteredVariants.features = model.vcfData.features.filter( function(feature) {
-    //
-    //             var isTarget = false;
-    //             if (target == 'loaded' && (!feature.fbCalled || feature.fbCalled != 'Y')) {
-    //                 isTarget = true;
-    //             } else if (target == 'called' && feature.fbCalled && feature.fbCalled == 'Y') {
-    //                 isTarget = true;
-    //             }
-    //
-    //             var isHomRef = feature.zygosity == null
-    //                 || feature.zygosity.toUpperCase() == "HOMREF"
-    //                 || feature.zygosity.toUpperCase() == "NONE"
-    //                 || feature.zygosity == "";
-    //
-    //             var inRegion = true;
-    //             if (self.filterModel.regionStart && self.filterModel.regionEnd) {
-    //                 inRegion = feature.start >= self.filterModel.regionStart && feature.start <= self.filterModel.regionEnd;
-    //             }
-    //
-    //             var passesModelFilter = self.filterModel.passesModelFilter(model.relationship, feature);
-    //
-    //             return isTarget && !isHomRef && inRegion && passesModelFilter;
-    //         });
-    //
-    //         var pileupObject = model._pileupVariants(filteredVariants.features, start, end);
-    //         filteredVariants.maxLevel = pileupObject.maxLevel + 1;
-    //         filteredVariants.featureWidth = pileupObject.featureWidth;
-    //
-    //         return filteredVariants;
-    //     }
-    //
-    //
-    //     self.sampleModels.forEach(function(model) {
-    //         if (relationship == null || relationship == model.relationship) {
-    //             if (model.vcfData && model.vcfData.features) {
-    //
-    //                 var start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
-    //                 var end   = self.filterModel.regionEnd   ? self.filterModel.regionEnd   : gene.end;
-    //
-    //                 var loadedVariants = filterAndPileupVariants(model, start, end, 'loaded');
-    //                 model.loadedVariants = loadedVariants;
-    //
-    //                 var calledVariants = filterAndPileupVariants(model, start, end, 'called');
-    //                 model.calledVariants = calledVariants;
-    //
-    //                 if (model.getRelationship() == 'proband') {
-    //                     var allVariants = $.extend({}, model.loadedVariants);
-    //                     allVariants.features = model.loadedVariants.features.concat(model.calledVariants.features);
-    //                     self.featureMatrixModel.promiseRankVariants(allVariants);
-    //                 }
-    //
-    //             } else {
-    //                 model.loadedVariants = {loadState: {}, features: []};
-    //                 model.calledVariants = {loadState: {}, features: []}
-    //             }
-    //
-    //         }
-    //     })
-    // }
-
 
     setSelectedVariants(gene, selectedVarIds) {
         let self = this;
@@ -822,7 +754,7 @@ class VariantModel {
         };
 
         let cohort = self.dataSet.getSubsetCohort();
-        if (name == null || name === cohort.name) {
+        if (cohort != null) {
             if (cohort.vcfData && cohort.vcfData.features) {
                 let start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
                 let end = self.filterModel.regionEnd ? self.filterModel.regionEnd : gene.end;
@@ -1203,6 +1135,10 @@ class VariantModel {
         return 'variant ' + d.type.toLowerCase() + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "")
             + ' ua_' + d.ua + ' ' + sift + ' ' + polyphen + ' ' + regulatory + ' ' + +' ' + d.clinvar + ' ' + impacts + ' ' + effects +
             ' ' + d.consensus + ' ' + enrichment + ' ' + enrichColor;
+    }
+
+    classifyByImpact(d, annotationScheme) {
+
     }
 
     getVepImpactClass(domVar, annotationScheme) {
