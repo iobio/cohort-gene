@@ -25,6 +25,7 @@ class CohortModel {
         this.debugMe = false;
         this.calledVariants = null;
         this.loadedVariants = null;
+        this.selectedVariants = null;   // Selected in zoom panel
         this.coverage = [[]];
 
         // Optional subset IDs

@@ -134,12 +134,25 @@ Updated: SJG Apr2018
                           :showBrush="false"
                           :featureClass="getExonClass">
                 </gene-viz>
-                <keep-alive>
-                    <zoom-modal-viz v-if="showZoomModal"
-                                    id="zoom-viz"
-                                    @closeModal="closeModal">
-                    </zoom-modal-viz>
-                </keep-alive>
+                <zoom-modal-viz id="zoom-viz"
+                                v-if="showZoomModal"
+                                :modalWidth="zoomWidth"
+                                :modalXStart="zoomX"
+                                :id="subsetCohort.getName()"
+                                :model="subsetCohort"
+                                :data="subsetCohort.selectedVariants"
+                                :regionStart="regionStart"
+                                :regionEnd="regionEnd"
+                                :annotationScheme="annotationScheme"
+                                :margin="variantVizMargin"
+                                :variantHeight="variantSymbolHeight"
+                                :variantPadding="variantSymbolPadding"
+                                :showXAxis="true"
+                                :classifySymbolFunc="classifyVariantSymbolFunc"
+                                :doneLoadingData="doneLoadingData"
+                                @variantClick="onVariantClick"
+                                @closeModal="closeModal">
+                </zoom-modal-viz>
             </div>
         </v-card-title>
     </v-card>
@@ -192,6 +205,9 @@ Updated: SJG Apr2018
                 },
                 variantSymbolHeight: 10,
                 variantSymbolPadding: 2,
+                variantChartWidth: 0,
+                variantChartX: 0,
+                variantChartY: 0,
                 geneVizMargin: {
                     top: 0,
                     right: 2,
@@ -204,6 +220,10 @@ Updated: SJG Apr2018
                 impactMode: false,
                 zoomMode: false,
                 showZoomModal: false,
+                zoomWidth: +100,
+                zoomX: 0,
+                zoomY: 0,
+                zoomDrawUp: false,
                 enrichmentColorLegend: {}
             }
         },
@@ -279,16 +299,20 @@ Updated: SJG Apr2018
                 }
                 this.$emit('dataSetVariantClick', variant, this, cohortKey);
             },
-            onVariantZoom: function (selectedVariants) {
+            onVariantZoom: function (selectedVarIds, xStart, yStart, drawBelow, graphWidth) {
                 let self = this;
+
+                // Start pileup of selected variants
+                self.$emit('zoomModeStart', selectedVarIds);
+                self.hideVariantCircle();
+
+                // Set modal properties to be utilized on creation
+                self.zoomWidth = +graphWidth;
+                self.zoomX = +xStart;
+                // TODO: incorporate draw above/below
+
+                // Render zoom modal
                 self.showZoomModal = true;
-
-                // TODO: pull variant model out of dataset model
-                // Send in selectedVariants to normal pileup method
-
-                // What to do with pileup return?
-
-                // Need a scrollable, movable modal - one that is the width of the variant card
             },
             onVariantZoomEnd: function () {
                 // SJG TODO: do I need this?
@@ -370,18 +394,12 @@ Updated: SJG Apr2018
                 if (self.showVariantViz && self.$refs.subsetVizRef != null) {
                     self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
                 }
-                // if (self.showVariantViz && self.$refs.probandVizRef != null) {
-                //     self.$refs.probandVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.probandVizRef.name), true);
-                // }
             },
-            hideVariantCircle: function (variant) {
+            hideVariantCircle: function () {
                 let self = this;
                 if (self.showVariantViz && self.$refs.subsetVizRef != null) {
                     self.$refs.subsetVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.subsetVizRef.name));
                 }
-                // if (self.showVariantViz && self.$refs.probandVizRef != null) {
-                //     self.$refs.probandVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.probandVizRef.name));
-                // }
             },
             getVariantSVG: function (vizTrackName) {
                 var svg = d3.select(this.$el).select('#' + vizTrackName + ' > svg');
@@ -457,7 +475,7 @@ Updated: SJG Apr2018
                     self.$refs.subsetVizRef.hideVariantBrush(self.impactMode);
                 }
             },
-            closeModal: function() {
+            closeModal: function () {
                 let self = this;
                 self.showZoomModal = false;
             }

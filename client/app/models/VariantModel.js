@@ -186,7 +186,7 @@ class VariantModel {
                         if (affStatusFilter != null && affStatusFilter.data === 'Unaffected') {
                             // See if unaffected and remove
                             let filteredPhenoFilters = {};
-                            Object.keys(self.phenoFilters).forEach(function(filter) {
+                            Object.keys(self.phenoFilters).forEach(function (filter) {
                                 if (filter !== 'affected_status')
                                     filteredPhenoFilters[filter] = self.phenoFilters[filter];
                             })
@@ -686,72 +686,149 @@ class VariantModel {
 
     /* Filters out homozygous ref variants for each cohort. Initializes pileup rendering of variants. */
     setLoadedVariants(gene, name = null) {
-        //var t0 = 0; // SJG_TIMING
-        //var t1 = 0; // SJG_TIMING
         let self = this;
 
-        var filterAndPileupVariants = function (model, start, end, target = 'loaded') {
-            var filteredVariants = $.extend({}, model.vcfData);
+        let filterAndPileupVariants = function (model, start, end, target = 'loaded') {
+            let filteredVariants = $.extend({}, model.vcfData);
             filteredVariants.features = model.vcfData.features.filter(function (feature) {
-                var isTarget = false;
+                let isTarget = false;
                 if (target === 'loaded' && (!feature.fbCalled || feature.fbCalled !== 'Y')) {
                     isTarget = true;
                 } else if (target === 'called' && feature.fbCalled && feature.fbCalled === 'Y') {
                     isTarget = true;
                 }
 
-                var isHomRef = feature.zygosity == null
+                let isHomRef = feature.zygosity == null
                     || feature.zygosity.toUpperCase() === "HOMREF"
                     || feature.zygosity.toUpperCase() === "NONE"
                     || feature.zygosity === "";
 
-                var inRegion = true;
+                let inRegion = true;
                 if (self.filterModel.regionStart && self.filterModel.regionEnd) {
                     inRegion = feature.start >= self.filterModel.regionStart && feature.start <= self.filterModel.regionEnd;
                 }
-                var passesModelFilter = self.filterModel.passesModelFilter(model.name, feature);
+                let passesModelFilter = self.filterModel.passesModelFilter(model.name, feature);
 
                 return isTarget && !isHomRef && inRegion && passesModelFilter;
             });
 
-            var pileupObject = model._pileupVariants(filteredVariants.features, start, end);
+            let pileupObject = model._pileupVariants(filteredVariants.features, start, end);
             filteredVariants.maxPosLevel = pileupObject.maxPosLevel;
             filteredVariants.maxNegLevel = pileupObject.maxNegLevel;
             filteredVariants.maxSubLevel = pileupObject.maxSubLevel;
             filteredVariants.featureWidth = pileupObject.featureWidth;
 
             return filteredVariants;
-        }
+        };
 
-        // SJG TODO: clean this up
-        // SJG NOTE: don't want to do this for all cohorts - just the one we're displaying (aka subset)
-        //self.dataSet.getCohorts().forEach(function (cohort) {
-            let cohort = self.dataSet.getSubsetCohort();
-            if (name == null || name === cohort.name) {
-                if (cohort.vcfData && cohort.vcfData.features) {
-                    var start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
-                    var end = self.filterModel.regionEnd ? self.filterModel.regionEnd : gene.end;
-
-                    //t0 = performance.now(); // SJG_TIMING
-                    var loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
-                    //t1 = performance.now(); // SJG_TIMING
-                    //console.log('Took ' + (t1-t0) + ' ms to filter and pileup variants'); // SJG_TIMING
-                    cohort.loadedVariants = loadedVariants;
-
-                    // var calledVariants = filterAndPileupVariants(cohort, start, end, 'called');
-                    // cohort.calledVariants = calledVariants;
-
-                    //if (cohort.getName() == PROBAND_ID) {
-                    //     var allVariants = $.extend({}, cohort.loadedVariants);
-                    //     allVariants.features = cohort.loadedVariants.features.concat(cohort.calledVariants.features);
-                    //}
-                    //} else {
-                    //cohort.loadedVariants = {loadState: {}, features: []};
-                    //cohort.calledVariants = {loadState: {}, features: []}
-                    //}
-                }
+        let cohort = self.dataSet.getSubsetCohort();
+        if (name == null || name === cohort.name) {
+            if (cohort.vcfData && cohort.vcfData.features) {
+                let start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
+                let end = self.filterModel.regionEnd ? self.filterModel.regionEnd : gene.end;
+                cohort.loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
             }
-        //})
+        }
+    }
+
+    // TDS original method
+    // setLoadedVariants(gene, relationship=null) {
+    //     let self = this;
+    //
+    //
+    //     var filterAndPileupVariants = function(model, start, end, target='loaded') {
+    //         var filteredVariants = $.extend({}, model.vcfData);
+    //         filteredVariants.features = model.vcfData.features.filter( function(feature) {
+    //
+    //             var isTarget = false;
+    //             if (target == 'loaded' && (!feature.fbCalled || feature.fbCalled != 'Y')) {
+    //                 isTarget = true;
+    //             } else if (target == 'called' && feature.fbCalled && feature.fbCalled == 'Y') {
+    //                 isTarget = true;
+    //             }
+    //
+    //             var isHomRef = feature.zygosity == null
+    //                 || feature.zygosity.toUpperCase() == "HOMREF"
+    //                 || feature.zygosity.toUpperCase() == "NONE"
+    //                 || feature.zygosity == "";
+    //
+    //             var inRegion = true;
+    //             if (self.filterModel.regionStart && self.filterModel.regionEnd) {
+    //                 inRegion = feature.start >= self.filterModel.regionStart && feature.start <= self.filterModel.regionEnd;
+    //             }
+    //
+    //             var passesModelFilter = self.filterModel.passesModelFilter(model.relationship, feature);
+    //
+    //             return isTarget && !isHomRef && inRegion && passesModelFilter;
+    //         });
+    //
+    //         var pileupObject = model._pileupVariants(filteredVariants.features, start, end);
+    //         filteredVariants.maxLevel = pileupObject.maxLevel + 1;
+    //         filteredVariants.featureWidth = pileupObject.featureWidth;
+    //
+    //         return filteredVariants;
+    //     }
+    //
+    //
+    //     self.sampleModels.forEach(function(model) {
+    //         if (relationship == null || relationship == model.relationship) {
+    //             if (model.vcfData && model.vcfData.features) {
+    //
+    //                 var start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
+    //                 var end   = self.filterModel.regionEnd   ? self.filterModel.regionEnd   : gene.end;
+    //
+    //                 var loadedVariants = filterAndPileupVariants(model, start, end, 'loaded');
+    //                 model.loadedVariants = loadedVariants;
+    //
+    //                 var calledVariants = filterAndPileupVariants(model, start, end, 'called');
+    //                 model.calledVariants = calledVariants;
+    //
+    //                 if (model.getRelationship() == 'proband') {
+    //                     var allVariants = $.extend({}, model.loadedVariants);
+    //                     allVariants.features = model.loadedVariants.features.concat(model.calledVariants.features);
+    //                     self.featureMatrixModel.promiseRankVariants(allVariants);
+    //                 }
+    //
+    //             } else {
+    //                 model.loadedVariants = {loadState: {}, features: []};
+    //                 model.calledVariants = {loadState: {}, features: []}
+    //             }
+    //
+    //         }
+    //     })
+    // }
+
+
+    setSelectedVariants(gene, selectedVarIds) {
+        let self = this;
+
+        // Populate lookup
+        let selectedVarLookup = {};
+        selectedVarIds.forEach((varId) => {
+            selectedVarLookup[varId] = true;
+        });
+
+        let filterAndPileupVariants = function (model, start, end, target = 'selected') {
+            let filteredVariants = $.extend({}, model.vcfData);
+            filteredVariants.features = model.vcfData.features.filter(function (feature) {
+                return selectedVarLookup[feature.id];
+            });
+
+            let pileupObject = model._pileupVariants(filteredVariants.features, start, end);
+            filteredVariants.maxLevel = pileupObject.maxLevel + 1;
+            filteredVariants.featureWidth = pileupObject.featureWidth;
+
+            return filteredVariants;
+        };
+
+        let cohort = self.dataSet.getSubsetCohort();
+        if (name == null || name === cohort.name) {
+            if (cohort.vcfData && cohort.vcfData.features) {
+                let start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
+                let end = self.filterModel.regionEnd ? self.filterModel.regionEnd : gene.end;
+                cohort.selectedVariants = filterAndPileupVariants(cohort, start, end, 'selected');
+            }
+        }
     }
 
     /* Assigns cohort-relative statistics to each variant.
@@ -760,29 +837,7 @@ class VariantModel {
         let self = this;
 
         if (subsetFeatures == null || subsetFeatures.length === 0) return;    // Avoid console output on initial load
-
         self.assignCrossCohortInfo(probandCountsMap, subsetFeatures);
-
-
-        // todo: old, can get rid of
-        // let probandFeatures = null;
-        // let subsetFeatures = null;
-        // try {
-        //     // Pull out features
-        //     let probandId = (resultMapList[0])[PROBAND_ID] == undefined ? 1 : 0;
-        //     let subsetId = probandId == 0 ? 1 : 0;
-        //     probandFeatures = (resultMapList[probandId])[PROBAND_ID].features;
-        //     subsetFeatures = (resultMapList[subsetId])[SUBSET_ID].features;
-        //
-        //     // Update features with enrichment info
-        //     let updatedProbandFeatures = self.assignCrossCohortInfo(probandFeatures, subsetFeatures);
-        //
-        //     (resultMapList[probandId])[PROBAND_ID].features = updatedProbandFeatures;
-        //     //(resultMapList[subsetId])[SUBSET_ID].features = subsetFeatures;
-        // }
-        // catch (e) {
-        //     console.log("There was a problem pulling out features from the result map in annotateDataSetFrequencies. Unable to assign enrichment colors: " + e);
-        // }
     }
 
     assignCrossCohortInfo(probandCountsMap, subsetFeatures) {

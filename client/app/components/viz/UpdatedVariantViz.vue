@@ -225,46 +225,10 @@
         mounted: function () {
             let self = this;
             self.name = self.model.getName();
-            if (self.frequencyDisplayMode) {
-                self.drawDouble();
-            }
-            else {
-                self.draw();
-            }
+            self.draw();
         },
         methods: {
             draw: function () {
-                var self = this;
-                self.variantChart = variantD3()
-                    .width(self.width)
-                    .clazz(function (variant) {
-                        return self.classifySymbolFunc(variant, self.annotationScheme, self.name, self.model.isSubsetCohort);
-                    })
-                    .margin(self.margin)
-                    .showXAxis(self.showXAxis)
-                    .xTickFormat(self.xTickFormat)
-                    .variantHeight(self.variantHeight)
-                    .verticalPadding(self.variantPadding)
-                    .showBrush(self.showBrush)
-                    .showTransition(self.showTransition)
-                    .tooltipHTML(self.tooltipHTML)
-                    .regionStart(self.regionStart)
-                    .regionEnd(self.regionEnd)
-                    .on("d3rendered", function () {
-                        self.$emit("trackRendered");
-                    })
-                    .on('d3click', function (variant) {
-                        self.onVariantClick(variant);
-                    })
-                    .on('d3mouseover', function (variant) {
-                        self.onVariantHover(variant);
-                    })
-                    .on('d3mouseout', function () {
-                        self.onVariantHoverEnd();
-                    })
-                self.setVariantChart();
-            },
-            drawDouble: function () {
                 var self = this;
                 this.variantChart = scaledVariantD3()
                     .width(this.width)
@@ -293,12 +257,12 @@
                     .on('d3mouseout', function () {
                         self.onVariantHoverEnd();
                     })
-                    .on('d3variantsselected', function (selectedVariants) {
-                        self.onVariantZoomSelected(selectedVariants);
-                    })
-                self.setVariantChart();
+                    .on('d3variantsselected', function (selectedVarIds, xStart, yStart, drawBelow, graphWidth) {
+                        self.onVariantZoomSelected(selectedVarIds, xStart, yStart, drawBelow, graphWidth);
+                    });
+                //self.setVariantChart();
             },
-            updateDouble: function () {
+            update: function () {
                 let self = this;
                 self.model.inProgress.drawingVariants = false;
 
@@ -336,37 +300,14 @@
                     self.variantChart(selection);
                 }
             },
-            update: function () {
-                let self = this;
-                self.model.inProgress.drawingVariants = false;
-                if (self.data) {
-                    // Set the vertical layer count so that the height of the chart can be recalculated
-                    if (self.data.maxLevel == null) {
-                        self.data.maxLevel = d3.max(self.data.features, function (d) {
-                            return d.level;
-                        });
-                    }
-                    self.variantChart.verticalLayers(self.data.maxPosLevel);
-                    self.variantChart.lowestWidth(self.data.featureWidth);
-                    if (self.data.features == null || self.data.features.length === 0) {
-                        self.variantChart.showXAxis(false);
-                    } else {
-                        self.variantChart.showXAxis(self.showXAxis);
-                    }
-                    self.variantChart.regionStart(self.regionStart);
-                    self.variantChart.regionEnd(self.regionEnd);
-                    let selection = d3.select(self.$el).datum([self.data]);
-                    self.variantChart(selection);
-                }
-            },
             onVariantClick: function (variant) {
                 let self = this;
                 let cohortKey = self.name;
                 self.$emit("variantClick", variant, cohortKey);
             },
-            onVariantZoomSelected: function (selectedVariants) {
+            onVariantZoomSelected: function (selectedVarIds, xStart, yStart, drawBelow, graphWidth) {
                 let self = this;
-                self.$emit('variantZoom', selectedVariants);
+                self.$emit('variantZoom', selectedVarIds, xStart, yStart, drawBelow, graphWidth);
             },
             onVariantHover: function (variant) {
                 let self = this;
@@ -407,14 +348,10 @@
         },
         watch: {
             data: function () {
-                let self = this;
-                if (self.frequencyDisplayMode) {
-                    self.$emit('clearVariants');
-                    self.updateDouble();
-                }
-                else {
-                    self.update();
-                }
+            let self = this;
+                self.$emit('clearVariants');
+                self.update();
+
                 console.log("Drawing variants...");
             }
         }

@@ -97,15 +97,27 @@ function scaledVariantD3() {
                 // Get variants encompassed by brush box
                 let yBottom = yExtent;
                 let yTop = +(yExtent + (+extentRect.attr("height")));
+                let selectedVarIds = [];
                 selectedVariants = container.select('svg').selectAll(".variant").filter(function (variant) {
                     // Check to see if variant y coordinate b/w box top and bottom
+                    selectedVarIds.push(variant.id);
                     return y(variant.adjustedLevel) <= yTop && y(variant.adjustedLevel) >= yBottom;
                 });
 
                 // Change coloring on selected variants
                 switchSelectedColorScheme(true, impactMode);
 
-                dispatch.d3variantsselected(selectedVariants);
+                // Get position info to send into modal
+                let graphDimensions = container.select('svg').select('g.group').node().getBoundingClientRect();
+                let zoomBoxDimensions = extentRect.node().getBoundingClientRect();
+                // Compare height of zoom to graph to determine drawing box above or below selection
+                let drawBelow = false;
+                let yStart = yBottom;
+                if (zoomBoxDimensions.height < (graphDimensions.height/2)) {
+                    drawBelow = true;
+                    yStart = yTop;
+                }
+                dispatch.d3variantsselected(selectedVarIds, (zoomBoxDimensions.x-1), yStart, drawBelow, (zoomBoxDimensions.width+1));
             });
 
         // Set area for selection
@@ -1107,8 +1119,6 @@ function scaledVariantD3() {
 
     // This adds the "on" methods to our custom exports
     d3.rebind(chart, dispatch, "on");
-
-// SJG TODO: do I need to rebind on button click/reset
 
     return chart;
 }

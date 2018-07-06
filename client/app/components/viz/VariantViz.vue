@@ -273,7 +273,7 @@ export default {
           }
           self.variantChart.verticalLayers(self.data.maxLevel);
           self.variantChart.lowestWidth(self.data.featureWidth);
-          if (self.data.features == null || self.data.features.length == 0) {
+          if (self.data.features == null || self.data.features.length === 0) {
             self.variantChart.showXAxis(false);
           } else {
             self.variantChart.showXAxis(self.showXAxis);
@@ -303,7 +303,7 @@ export default {
       showVariantCircle: function(variant, container, lock) {
         this.variantChart.showCircle()(variant,
           container,
-          variant.fbCalled && variant.fbCalled == 'Y' ? false : true,
+          variant.fbCalled && variant.fbCalled === 'Y' ? false : true,
           lock);
       },
       hideVariantCircle: function(container) {

@@ -58,18 +58,11 @@ TD & SJG updated Jun2018 -->
                                 @dataSetVariantHover="onDataSetVariantHover"
                                 @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
                                 @knownVariantsVizChange="onKnownVariantsVizChange"
-                                @knownVariantsFilterChange="onKnownVariantsFilterChange">
+                                @knownVariantsFilterChange="onKnownVariantsFilterChange"
+                                @zoomModeStart="startZoomMode">
                         </updated-variant-card>
                     </v-flex>
                     <v-flex xs3 style="margin-left: 3px">
-                        <!--<variant-zoom-card-->
-                        <!--style="margin-bottom: 3px; height: 300px"-->
-                        <!--:selectedGene="selectedGene.gene_name"-->
-                        <!--:selectedVariants="selectedVariant"-->
-                        <!--:selectedVariantsInfo="selectedVariantInfo"-->
-                        <!--@displayVariantBrush="displayVariantBrush"-->
-                        <!--ref="variantZoomCard">-->
-                        <!--</variant-zoom-card>-->
                         <variant-summary-card
                                 :selectedGene="selectedGene.gene_name"
                                 :variant="selectedVariant"
@@ -346,7 +339,7 @@ TD & SJG updated Jun2018 -->
                 self.doneLoadingData = false;
                 self.doneLoadingExtras = false;
             },
-            wipeModels: function() {
+            wipeModels: function () {
                 let self = this;
                 if (self.variantModel == null || self.variantModel.dataSetModel == null) {
                     return;
@@ -497,6 +490,17 @@ TD & SJG updated Jun2018 -->
                 self.selectedVariant = null;
                 if (!keepVariantCircle && self.$refs.variantCardRef) {
                     self.$refs.variantCardRef.hideVariantCircle();
+                }
+            },
+            startZoomMode: function(selectedVarIds) {
+                let self = this;
+
+                // Pileup selection
+                self.variantModel.setSelectedVariants(self.selectedGene, selectedVarIds);
+
+                // Clear data out of summary card
+                if (self.$refs.variantSummaryCardRef) {
+                    self.$refs.variantSummaryCardRef.summaryCardVariantDeselect();
                 }
             },
             showVariantExtraAnnots: function (sourceComponent, variant, cohortKey) {

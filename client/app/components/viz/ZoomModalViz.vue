@@ -8,7 +8,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, .5);
+        /*background-color: rgba(0, 0, 0, .5);*/
         display: table;
         transition: opacity .3s ease;
     }
@@ -19,19 +19,33 @@
     }
 
     .modal-container {
-        width: 300px;
-        margin: 0px auto;
-        padding: 20px 30px;
         background-color: #fff;
-        border-radius: 2px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
+        border: double 1px;
+        box-shadow: 2px 4px rgba(0, 0, 0, .2);
         transition: all .3s ease;
-        font-family: Helvetica, Arial, sans-serif;
     }
 
-    .modal-header h3 {
-        margin-top: 0;
-        color: #42b983;
+    .modal-header {
+        padding-top: 0;
+        padding-bottom: 0;
+        padding-right: 0;
+        color: #fff;
+        background-color: #95b0c6;
+    }
+
+    .modal-title {
+        font-family: Quicksand;
+        font-size: 16px;
+        padding-top: 5px;
+    }
+
+    .close-button {
+        padding-left: 0;
+        padding-right: 0;
+        margin-left: 0;
+        margin-right: 0;
+        margin-top: 2px;
+        margin-bottom: 2px;
     }
 
     .modal-body {
@@ -66,43 +80,34 @@
     }
 </style>
 
-<!--<v-dialog v-model="insideLock" width="600px">-->
-<!--<v-card>-->
-<!--<v-card-title>-->
-<!--<span class="headline">Variants</span>-->
-<!--</v-card-title>-->
-
-<!--<v-card-actions>-->
-<!--<v-spacer></v-spacer>-->
-<!--<v-btn color="cohortNavy" flat="flat" @click="resetModal">Close</v-btn>-->
-<!--</v-card-actions>-->
-<!--</v-card>-->
-<!--</v-dialog>-->
-
 <template>
     <transition name="modal">
         <div class="modal-mask">
             <div class="modal-wrapper">
-                <div class="modal-container">
-
+                <div class="modal-container" v-bind:style="{ width: modalWidth + 'px', height: '250px', marginLeft: modalXStart + 'px'}">
                     <div class="modal-header">
                         <slot name="header">
-                            default header
+                            <v-container style="margin-bottom: 0;">
+                                <v-layout>
+                                    <v-flex xs6>
+                                        <div class="modal-title">
+                                            Selected Variants
+                                        </div>
+                                    </v-flex>
+                                    <v-flex xs6 text-xs-right>
+                                        <v-btn class="close-button" icon
+                                               @click="resetModal">
+                                            <v-icon color="white">clear</v-icon>
+                                        </v-btn>
+                                    </v-flex>
+                                </v-layout>
+                            </v-container>
                         </slot>
                     </div>
 
                     <div class="modal-body">
                         <slot name="body">
-                            default body
-                        </slot>
-                    </div>
-
-                    <div class="modal-footer">
-                        <slot name="footer">
-                            default footer
-                            <button class="modal-default-button" @click="resetModal">
-                                OK
-                            </button>
+                            <div class="selected-variant-viz"></div>
                         </slot>
                     </div>
                 </div>
@@ -117,28 +122,166 @@
         name: 'zoom-modal-viz',
         components: {},
         props: {
-            //outsideLock: false
+            modalWidth: {
+                default: 100,
+                type: Number
+            },
+            modalXStart: {
+                default: 0,
+                type: Number
+            },
+            modalYStart: {
+                default: 0,
+                type: Number
+            },
+            data: {},
+            model: {},
+            annotationScheme: {
+                default: 'vep',
+                type: String
+            },
+            regionStart: {
+                default: 0,
+                type: Number
+            },
+            regionEnd: {
+                default: 0,
+                type: Number
+            },
+            variantHeight: {
+                default: 8,
+                type: Number
+            },
+            variantPadding: {
+                default: 2,
+                type: Number
+            },
+            margin: {
+                type: Object,
+                default: function () {
+                    return {top: 10, bottom: 10, left: 10, right: 10}
+                }
+            },
+            showXAxis: {
+                type: Boolean,
+                default: true
+            },
+            showTransition: {
+                type: Boolean,
+                default: false
+            },
+            xTickFormat: {
+                type: Function,
+                default: function (d, i) {
+                    return "";
+                }
+            },
+            tooltipHTML: {
+                type: Function,
+                default: function (d, i) {
+                    return "";
+                }
+            },
+            classifySymbolFunc: null,
+            doneLoadingData: {
+                type: Boolean,
+                default: false
+            }
         },
         data() {
             return {
-                //insideLock: false
+                selectionVarChart: {}
             }
-        },
-        mounted: function () {
-            //this.insideLock = this.outsideLock;
-        },
-        created: function () {
-            //this.insideLock = this.outsideLock;
         },
         methods: {
             resetModal: function () {
                 this.$emit('closeModal');
+            },
+            draw: function () {
+                this.variantChart =  variantD3()
+                    .width(this.width)
+                    .clazz(function(variant) {
+                        return this.classifySymbolFunc(variant, this.annotationScheme, this.model.getName());
+                    })
+                    .margin(this.margin)
+                    .showXAxis(this.showXAxis)
+                    .xTickFormat(this.xTickFormat)
+                    .variantHeight(this.variantHeight)
+                    .verticalPadding(this.variantPadding)
+                    .showBrush(false)
+                    .showTransition(this.showTransition)
+                    .tooltipHTML(this.tooltipHTML)
+                    .regionStart(this.regionStart)
+                    .regionEnd(this.regionEnd)
+                    .on("d3rendered", function() {
+                        self.$emit("trackRendered");
+                    })
+                    .on('d3click', function(variant) {
+                        self.onVariantClick(variant);
+                    })
+                    .on('d3mouseover', function(variant) {
+                        self.onVariantHover(variant);
+                    })
+                    .on('d3mouseout', function() {
+                        self.onVariantHoverEnd();
+                    });
+                this.setVariantChart();
+            },
+            update: function () {
+                let self = this;
+                //self.model.inProgress.drawingVariants = false;
+                if (self.data) {
+                    // Set the vertical layer count so that the height of the chart can be recalculated
+                    if (self.data.maxLevel == null) {
+                        self.data.maxLevel = d3.max(self.data.features, function (d) {
+                            return d.level;
+                        });
+                    }
+                    self.variantChart.verticalLayers(self.data.maxPosLevel);
+                    self.variantChart.lowestWidth(self.data.featureWidth);
+                    if (self.data.features == null || self.data.features.length === 0) {
+                        self.variantChart.showXAxis(false);
+                    } else {
+                        self.variantChart.showXAxis(self.showXAxis);
+                    }
+                    self.variantChart.regionStart(self.regionStart);
+                    self.variantChart.regionEnd(self.regionEnd);
+                    let selection = d3.select(self.$el).datum([self.data]);
+                    self.variantChart(selection);
+                }
+            },
+            onVariantClick: function (variant) {
+                let self = this;
+                let cohortKey = self.name;
+                self.$emit("variantClick", variant, cohortKey);
+            },
+            showVariantCircle: function (variant, container, lock) {
+                this.variantChart.showCircle()(variant,
+                    container,
+                    variant.fbCalled && variant.fbCalled === 'Y',
+                    lock);
+            },
+            hideVariantCircle: function (container) {
+                this.variantChart.hideCircle()(container);
+            },
+            setVariantChart: function () {
+                this.$emit('updateVariantChart', this.model);
             }
         },
+        mounted: function() {
+            let self = this;
+            self.draw();
+        },
+        created: function() {
+            let self = this;
+            self.update();
+        },
         watch: {
-            // outsideLock: function () {
-            //     this.insideLock = this.outsideLock;
-            // }
+            data: function () {
+                let self = this;
+                self.update();
+                console.log("Drawing selected variants...");
+            }
         }
     }
 
