@@ -109,20 +109,23 @@ function scaledVariantD3() {
                     }
                 });
 
-                // Change coloring on selected variants
-                switchSelectedColorScheme(true, impactMode);
+                // Only show modal if we've captured variants in our selection box
+                if (selectedVarIds.length > 0) {
+                    // Change coloring on selected variants
+                    switchSelectedColorScheme(true, impactMode);
 
-                // Get position info to send into modal
-                let graphDimensions = container.select('svg').select('g.group').node().getBoundingClientRect();
-                let zoomBoxDimensions = extentRect.node().getBoundingClientRect();
-                // Compare height of zoom to graph to determine drawing box above or below selection
-                let drawBelow = false;
-                let yStart = yBottom;
-                if (zoomBoxDimensions.height < (graphDimensions.height/2)) {
-                    drawBelow = true;
-                    yStart = yTop;
+                    // Get position info to send into modal
+                    let graphDimensions = container.select('svg').select('g.group').node().getBoundingClientRect();
+                    let zoomBoxDimensions = extentRect.node().getBoundingClientRect();
+                    // Compare height of zoom to graph to determine drawing box above or below selection
+                    let drawBelow = false;
+                    let yStart = yBottom;
+                    if (zoomBoxDimensions.height < (graphDimensions.height/2)) {
+                        drawBelow = true;
+                        yStart = yTop;
+                    }
+                    dispatch.d3variantsselected(selectedVarIds, (zoomBoxDimensions.x-1), yStart, drawBelow, (zoomBoxDimensions.width+1));
                 }
-                dispatch.d3variantsselected(selectedVarIds, (zoomBoxDimensions.x-1), yStart, drawBelow, (zoomBoxDimensions.width+1));
             });
 
         // Set area for selection
