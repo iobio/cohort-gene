@@ -316,6 +316,7 @@ Updated: SJG Apr2018
             },
             clearZoom: function () {
                 this.hideVariantBrush();
+                this.zoomMode = false;
             },
             onVariantHover: function (variant, cohortKey, showTooltip = true) {
                 if (this.selectedVariant == null) {

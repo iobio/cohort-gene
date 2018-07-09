@@ -137,7 +137,7 @@ function scaledVariantD3() {
             .call(brush)
             .selectAll("rect")
             .attr('x', 0)
-            .attr("width", width);
+            .attr("width", width + yAxisPadding);
 
         // Draw resize arrows
         theBrush.selectAll(".resize")
