@@ -75,6 +75,8 @@ Updated: SJG Apr2018
             </v-layout>
             <v-layout text-xs-right>
                 <v-flex>
+                    <v-chip v-bind:class="{hide: !zoomMode}" style="margin: 0; font-size: 12px"
+                            @input="toggleZoomMode" close small outline color="cohortPeriwinkle">Zoom Mode: On</v-chip>
                     <v-menu v-bind:class="{hide: !doneLoadingData}">
                         <v-btn outline round slot="activator" color="cohortDarkBlue" style="margin: 0; font-size: 12px">
                             Display Options
@@ -229,9 +231,6 @@ Updated: SJG Apr2018
             }
         },
         computed: {
-            depthVizHeight: function () {
-                this.showDepthViz ? 0 : 60;
-            },
             probandCohort: function () {
                 let self = this;
                 if (self.dataSetModel)
@@ -261,6 +260,7 @@ Updated: SJG Apr2018
                 self.impactMode = false;
                 self.doneLoadingData = false;
             }
+
         },
         created: function () {
             this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
