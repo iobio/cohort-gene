@@ -23,6 +23,8 @@
         border: double 1px;
         box-shadow: 2px 4px rgba(0, 0, 0, .2);
         transition: all .3s ease;
+        max-height: 235px;
+        overflow-y: hidden
     }
 
     .modal-header {
@@ -49,12 +51,9 @@
     }
 
     .modal-body {
-        padding-top: 0;
-        padding-bottom: 0;
-        padding-left: 0;
-        padding-right: 0;
-        margin-top: 0;
-        margin-bottom: 0;
+        overflow-y: scroll !important;
+        max-height: 200px;
+        padding: 0;
     }
 
     .modal-default-button {
@@ -89,7 +88,7 @@
     <transition name="modal">
         <div class="modal-mask">
             <div class="modal-wrapper">
-                <div class="modal-container" v-bind:style="{ width: modalWidth + 'px', height: '250px', marginLeft: modalXStart + 'px'}">
+                <div class="modal-container" v-bind:style="{ width: modalWidth + 'px', marginLeft: modalXStart + 'px'}">
                     <div class="modal-header">
                         <slot name="header">
                             <v-container style="margin-bottom: 0;">
@@ -109,7 +108,7 @@
                             </v-container>
                         </slot>
                     </div>
-                    <div>
+                    <div class="modal-body">
                         <slot name="body">
                             <div class="selected-variant-viz"></div>
                         </slot>
