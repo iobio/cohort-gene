@@ -2850,15 +2850,18 @@ vcfiobio = function module() {
         let maxYminor = 1;      // The sub-space composing the height of individual posLevels
         let maxYmajor = 1;      // The max subset delta value, rounded to two decimal places (ex: 15.87)
         let minYmajor = 1;      // The min subset delta value, rounded to two decimal places (ex: 0.37)
-        let inversionFactor = 1;  // The direction to stack overlapping variants in (+1 = up, -1 = down)
-
 
         variants.forEach(function (variant) {
             // Horizontal coordinate
             let xMajor = (variant.start - regionStart);
 
+            // If subset delta below 0 (enriched in proband), flip up to draw like Manhattan plot
+            let adjustedDelta = variant.subsetDelta;
+            if (adjustedDelta < 1.0) {
+                adjustedDelta = 1.0 / adjustedDelta;
+            }
             // Vertical starting coordinate based on subset delta value
-            let yMajor = Math.trunc(variant.subsetDelta * 100) / 100;
+            let yMajor = Math.trunc(adjustedDelta * 100) / 100;
 
             // Keep track of extrema
             if (yMajor > maxYmajor) maxYmajor = yMajor;

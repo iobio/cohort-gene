@@ -454,7 +454,7 @@ function scaledVariantD3() {
                 x.range([0, width - margin.left - margin.right]);
 
                 // Update the y-scale.
-                y.domain([(bottomLayer - (Math.round(bottomLayer * 10) / 30)), (topLayer + (Math.round(topLayer * 10) / 20))]);   // Pad space above and below by 5% and 3.3% respectively
+                y.domain([(bottomLayer - (Math.round(bottomLayer * 10) / 80)), (topLayer + (Math.round(topLayer * 10) / 20))]);   // Pad space above and below by 5% and 3.3% respectively
                 y.range([innerHeight, 0]);
 
                 // Find out the smallest width interval between variants on the x-axis
@@ -463,26 +463,26 @@ function scaledVariantD3() {
                 // distance between all variants.
                 let minWidth = 6;
 
-                for (var l = 0; l < totalLayers; l += 0.1) {  // We'll never be below 0
+                for (let l = 0; l < totalLayers; l += 0.1) {  // We'll never be below 0
                     // For each row in array (per variant set; only one variant set)
-                    var minInterval = null;
+                    let minInterval = null;
                     data.forEach(function (d) {
                         // For each variant.  Calculate the distance on the screen
                         // between the 2 variants.
-                        for (var i = 0; i < d.features.length - 1; i++) {
+                        for (let i = 0; i < d.features.length - 1; i++) {
                             let currAdjLevel = Math.round(d.features[i].adjustedLevel * 10) / 10;
-                            if (currAdjLevel == l) {
+                            if (currAdjLevel === l) {
                                 // find the next feature at the same level
                                 var nextPos = null;
-                                for (var next = i + 1; next < d.features.length; next++) {
+                                for (let next = i + 1; next < d.features.length; next++) {
                                     let nextAdjLevel = Math.round(d.features[next].adjustedLevel * 10) / 10;
-                                    if (nextAdjLevel == l) {
+                                    if (nextAdjLevel === l) {
                                         nextPos = next;
                                         break;
                                     }
                                 }
                                 if (nextPos) {
-                                    var interval = Math.round(x(d.features[nextPos].start) - x(d.features[i].end));
+                                    let interval = Math.round(x(d.features[nextPos].start) - x(d.features[i].end));
                                     interval = Math.max(interval, 1);
                                     if (minInterval == null || interval < minInterval) {
                                         minInterval = interval;

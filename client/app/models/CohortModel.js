@@ -1677,21 +1677,12 @@ class CohortModel {
             widthFactor /= 2;
         }
 
-        let levelObj = null;
-        let maxSubLevel = 0;
-        let maxPosLevel = 0;
-        let maxNegLevel = 0;
-
         // Want to do this for both proband/subset now
-        //if (me.useUpdatedPileup) {
-        levelObj = me.vcf.updatedPileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, true);
-        maxSubLevel = levelObj.maxSubLevel;
-        maxPosLevel = levelObj.maxPosLevel;
-        maxNegLevel = levelObj.maxNegLevel;
-        // }
-        // else {
-        //   maxPosLevel = this.vcf.pileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor);
-        // }
+        let levelObj = me.vcf.updatedPileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, true);
+        let maxSubLevel = levelObj.maxSubLevel;
+        let maxPosLevel = levelObj.maxPosLevel;
+        let maxNegLevel = levelObj.maxNegLevel;
+
         // SJG TODO: figure out what this does and comment back in
         // if (maxPosLevel > 30 && maxNegLevel < -30) {
         //     for (var i = 1; i < posToPixelFactor; i++) {

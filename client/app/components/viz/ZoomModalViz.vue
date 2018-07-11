@@ -53,7 +53,7 @@
 
     .modal-body {
         overflow-y: scroll !important;
-        max-height: 200px;
+        max-height: 300px;
         padding: 0;
     }
 
