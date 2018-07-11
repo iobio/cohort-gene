@@ -24,7 +24,8 @@
         box-shadow: 2px 4px rgba(0, 0, 0, .2);
         transition: all .3s ease;
         max-height: 235px;
-        overflow-y: hidden
+        overflow-y: hidden;
+        position: relative;
     }
 
     .modal-header {
@@ -234,11 +235,9 @@
                     .on('d3mouseout', function() {
                         //self.onVariantHoverEnd();
                     });
-                //this.setVariantChart();
             },
             update: function () {
                 let self = this;
-                //self.model.inProgress.drawingVariants = false;
                 if (self.data) {
                     // Set the vertical layer count so that the height of the chart can be recalculated
                     if (self.data.maxLevel == null) {
@@ -257,7 +256,6 @@
                     self.selectionVarChart.regionEnd(self.regionEnd);
 
                     // Data needs to bind to modal, not root element
-                    // TODO: problem is that zoom viz has not been rendered yet
                     let selection = d3.select('.selected-variant-viz').datum([self.data]);
                     self.selectionVarChart(selection);
                 }
@@ -265,9 +263,10 @@
             onVariantClick: function (variant) {
                 let self = this;
                 let cohortKey = self.name;
-                //self.$emit("variantClick", variant, cohortKey);
+                self.$emit("variantClick", variant, cohortKey);
             },
             showVariantCircle: function (variant, container, lock) {
+                console.log('getting here');
                 this.selectionVarChart.showCircle()(variant,
                     container,
                     variant.fbCalled && variant.fbCalled === 'Y',
@@ -284,6 +283,7 @@
             let self = this;
             self.draw();
             self.update();
+            // TODO: make draggable
         }
     }
 

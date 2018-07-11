@@ -2,7 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="17d38fed-e0f5-492f-b455-1d8321fb2586" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/app/components/viz/UpdatedVariantCard.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/viz/UpdatedVariantCard.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/dist/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/dist/build.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/js/d3/variant.d3.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/js/d3/variant.d3.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/client/dist/" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -17,11 +22,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="ZoomModalViz.vue" pinned="false" current-in-tab="true">
+      <file leaf-file-name="ZoomModalViz.vue" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="427">
-              <caret line="54" column="23" selection-start-line="54" selection-start-column="23" selection-end-line="54" selection-end-column="23" />
+            <state relative-caret-position="1780">
+              <caret line="149" column="28" lean-forward="true" selection-start-line="149" selection-start-column="28" selection-end-line="149" selection-end-column="28" />
               <folding>
                 <element signature="n#style#0;n#v-container#0;n#slot#0;n#div#0;n#div#0;n#div#0;n#div#0;n#transition#0;n#template#0;n#!!top" expanded="true" />
               </folding>
@@ -29,11 +34,20 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="variant.d3.js" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/client/js/d3/variant.d3.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="503">
+              <caret line="589" column="19" selection-start-line="589" selection-start-column="19" selection-end-line="589" selection-end-column="19" />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="Home.vue" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/app/components/pages/Home.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="276">
-              <caret line="333" column="23" selection-start-line="333" selection-start-column="14" selection-end-line="333" selection-end-column="23" />
+            <state relative-caret-position="1981">
+              <caret line="340" column="51" selection-start-line="340" selection-start-column="51" selection-end-line="340" selection-end-column="51" />
             </state>
           </provider>
         </entry>
@@ -53,8 +67,8 @@
       <file leaf-file-name="UpdatedVariantCard.vue" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/app/components/viz/UpdatedVariantCard.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="766">
-              <caret line="91" column="29" lean-forward="true" selection-start-line="91" selection-start-column="29" selection-end-line="91" selection-end-column="29" />
+            <state relative-caret-position="481">
+              <caret line="407" column="66" selection-start-line="407" selection-start-column="66" selection-end-line="407" selection-end-column="66" />
               <folding>
                 <element signature="n#style#0;n#span#0;n#v-flex#0;n#v-layout#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#v-chip#0;n#v-flex#0;n#v-layout#1;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
@@ -64,20 +78,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="routes.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/client/app/routes.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="160">
-              <caret line="25" column="34" lean-forward="true" selection-start-line="25" selection-start-column="34" selection-end-line="25" selection-end-column="34" />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="UpdatedVariantViz.vue" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/app/components/viz/UpdatedVariantViz.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="478">
-              <caret line="337" column="19" selection-start-line="337" selection-start-column="19" selection-end-line="337" selection-end-column="19" />
+            <state relative-caret-position="3645">
+              <caret line="304" column="63" lean-forward="true" selection-start-line="304" selection-start-column="63" selection-end-line="304" selection-end-column="63" />
               <folding>
                 <element signature="n#style#0;n#v-chip#0;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
               </folding>
@@ -85,20 +90,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="variant.d3.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/client/js/d3/variant.d3.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="192">
-              <caret line="12" column="17" lean-forward="true" selection-start-line="12" selection-start-column="17" selection-end-line="12" selection-end-column="17" />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="scaledVariant.d3.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2224">
-              <caret line="139" column="47" selection-start-line="139" selection-start-column="47" selection-end-line="139" selection-end-column="47" />
+            <state relative-caret-position="233">
+              <caret line="807" column="42" selection-start-line="807" selection-start-column="35" selection-end-line="807" selection-end-column="42" />
             </state>
           </provider>
         </entry>
@@ -119,26 +115,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>xAXIS</find>
-      <find>y</find>
-      <find>y.range</find>
-      <find>getimpactco</find>
-      <find>getimpact</find>
-      <find>enrichment</find>
-      <find>classifyZoomSymbolFunc</find>
-      <find>classifyVariantSymbolFunc</find>
-      <find>globalApp</find>
-      <find>impactfield</find>
-      <find>variantzoom</find>
-      <find>showZoomModal</find>
-      <find>zoominprog</find>
-      <find>zoomMode</find>
-      <find>toggleDisplayMode</find>
-      <find>watch</find>
-      <find>clearZoom</find>
-      <find>chip</find>
-      <find>display options</find>
-      <find>purp</find>
       <find>purple</find>
       <find>width</find>
       <find>brush</find>
@@ -149,6 +125,26 @@
       <find>geneselec</find>
       <find>clearzoom</find>
       <find>modal-body</find>
+      <find>jquery</find>
+      <find>zoom-viz</find>
+      <find>display options</find>
+      <find>circle</find>
+      <find>onVariantClick</find>
+      <find>variantclick</find>
+      <find>showvari</find>
+      <find>showVariantCircle</find>
+      <find>getVariantSVG</find>
+      <find>subset</find>
+      <find>id</find>
+      <find>#</find>
+      <find>svg</find>
+      <find>$refs</find>
+      <find>self.name</find>
+      <find>zoomVizRef</find>
+      <find>showcircl</find>
+      <find>pinned.circle</find>
+      <find>showcircle</find>
+      <find>.circle</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/client/js/model</dir>
@@ -168,14 +164,16 @@
         <option value="$PROJECT_DIR$/client/app/components/viz/UpdatedVariantViz.vue" />
         <option value="$PROJECT_DIR$/client/app/models/CohortModel.js" />
         <option value="$PROJECT_DIR$/client/js/model/vcf.iobio.js" />
-        <option value="$PROJECT_DIR$/client/js/d3/variant.d3.js" />
         <option value="$PROJECT_DIR$/client/app/components/pages/Home.vue" />
         <option value="$PROJECT_DIR$/client/app/models/VariantModel.js" />
         <option value="$PROJECT_DIR$/client/app/routes.js" />
         <option value="$PROJECT_DIR$/client/assets/sass/_symbols.sass" />
-        <option value="$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js" />
-        <option value="$PROJECT_DIR$/client/app/components/viz/UpdatedVariantCard.vue" />
+        <option value="$PROJECT_DIR$/package.json" />
+        <option value="$PROJECT_DIR$/server/views/index.html" />
         <option value="$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue" />
+        <option value="$PROJECT_DIR$/client/app/components/viz/UpdatedVariantCard.vue" />
+        <option value="$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js" />
+        <option value="$PROJECT_DIR$/client/js/d3/variant.d3.js" />
       </list>
     </option>
   </component>
@@ -195,10 +193,10 @@
       <path value="$PROJECT_DIR$/package.json" />
     </packageJsonPaths>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds">
     <option name="y" value="23" />
     <option name="width" value="1905" />
-    <option name="height" value="797" />
+    <option name="height" value="976" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -228,57 +226,6 @@
               <item name="cohort-gene" type="b2602c69:ProjectViewProjectNode" />
               <item name="cohort-gene" type="462c0819:PsiDirectoryNode" />
               <item name="client" type="462c0819:PsiDirectoryNode" />
-              <item name="app" type="462c0819:PsiDirectoryNode" />
-              <item name="components" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cohort-gene" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cohort-gene" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-              <item name="app" type="462c0819:PsiDirectoryNode" />
-              <item name="components" type="462c0819:PsiDirectoryNode" />
-              <item name="pages" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cohort-gene" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cohort-gene" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-              <item name="app" type="462c0819:PsiDirectoryNode" />
-              <item name="components" type="462c0819:PsiDirectoryNode" />
-              <item name="partials" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cohort-gene" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cohort-gene" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-              <item name="app" type="462c0819:PsiDirectoryNode" />
-              <item name="components" type="462c0819:PsiDirectoryNode" />
-              <item name="viz" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cohort-gene" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cohort-gene" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-              <item name="app" type="462c0819:PsiDirectoryNode" />
-              <item name="models" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cohort-gene" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cohort-gene" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-              <item name="assets" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cohort-gene" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cohort-gene" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-              <item name="assets" type="462c0819:PsiDirectoryNode" />
-              <item name="sass" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cohort-gene" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cohort-gene" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
               <item name="js" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -291,22 +238,13 @@
             <path>
               <item name="cohort-gene" type="b2602c69:ProjectViewProjectNode" />
               <item name="cohort-gene" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-              <item name="js" type="462c0819:PsiDirectoryNode" />
-              <item name="model" type="462c0819:PsiDirectoryNode" />
+              <item name="server" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="cohort-gene" type="b2602c69:ProjectViewProjectNode" />
               <item name="cohort-gene" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-              <item name="spec" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="cohort-gene" type="b2602c69:ProjectViewProjectNode" />
-              <item name="cohort-gene" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-              <item name="spec" type="462c0819:PsiDirectoryNode" />
-              <item name="components" type="462c0819:PsiDirectoryNode" />
+              <item name="server" type="462c0819:PsiDirectoryNode" />
+              <item name="views" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -354,18 +292,18 @@
       <workItem from="1528841807095" duration="19634000" />
       <workItem from="1529339130241" duration="4311000" />
       <workItem from="1530030235867" duration="502000" />
-      <workItem from="1530032811220" duration="140413000" />
+      <workItem from="1530032811220" duration="147551000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="165886000" />
+    <option name="totallyTimeSpent" value="173024000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1917" height="977" extended-state="6" />
+    <frame x="0" y="23" width="1905" height="976" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.17266563" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.17375328" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" weight="0.3293979" />
@@ -596,9 +534,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/client/app/models/DataSetModel.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-28">
@@ -675,13 +610,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/views/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="205">
-          <caret line="350" column="51" lean-forward="true" selection-start-line="350" selection-start-column="51" selection-end-line="350" selection-end-column="51" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/client/js/model/vcf.iobio.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2218">
@@ -689,13 +617,6 @@
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/js/d3/variant.d3.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
-          <caret line="12" column="17" lean-forward="true" selection-start-line="12" selection-start-column="17" selection-end-line="12" selection-end-column="17" />
         </state>
       </provider>
     </entry>
@@ -723,16 +644,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/viz/UpdatedVariantViz.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="478">
-          <caret line="337" column="19" selection-start-line="337" selection-start-column="19" selection-end-line="337" selection-end-column="19" />
-          <folding>
-            <element signature="n#style#0;n#v-chip#0;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/client/app/models/VariantModel.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="302">
@@ -753,28 +664,55 @@
     <entry file="file://$PROJECT_DIR$/client/app/routes.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="160">
-          <caret line="25" column="34" lean-forward="true" selection-start-line="25" selection-start-column="34" selection-end-line="25" selection-end-column="34" />
+          <caret line="25" column="34" selection-start-line="25" selection-start-column="34" selection-end-line="25" selection-end-column="34" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js">
+    <entry file="file://$PROJECT_DIR$/package.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2224">
-          <caret line="139" column="47" selection-start-line="139" selection-start-column="47" selection-end-line="139" selection-end-column="47" />
+        <state relative-caret-position="240">
+          <caret line="15" selection-start-line="15" selection-end-line="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/views/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="634">
+          <caret line="312" column="13" lean-forward="true" selection-start-line="312" selection-start-column="13" selection-end-line="312" selection-end-column="13" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/client/app/components/pages/Home.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="276">
-          <caret line="333" column="23" selection-start-line="333" selection-start-column="14" selection-end-line="333" selection-end-column="23" />
+        <state relative-caret-position="1981">
+          <caret line="340" column="51" selection-start-line="340" selection-start-column="51" selection-end-line="340" selection-end-column="51" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1780">
+          <caret line="149" column="28" lean-forward="true" selection-start-line="149" selection-start-column="28" selection-end-line="149" selection-end-column="28" />
+          <folding>
+            <element signature="n#style#0;n#v-container#0;n#slot#0;n#div#0;n#div#0;n#div#0;n#div#0;n#transition#0;n#template#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/components/viz/UpdatedVariantViz.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3645">
+          <caret line="304" column="63" lean-forward="true" selection-start-line="304" selection-start-column="63" selection-end-line="304" selection-end-column="63" />
+          <folding>
+            <element signature="n#style#0;n#v-chip#0;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/client/app/components/viz/UpdatedVariantCard.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="766">
-          <caret line="91" column="29" lean-forward="true" selection-start-line="91" selection-start-column="29" selection-end-line="91" selection-end-column="29" />
+        <state relative-caret-position="481">
+          <caret line="407" column="66" selection-start-line="407" selection-start-column="66" selection-end-line="407" selection-end-column="66" />
           <folding>
             <element signature="n#style#0;n#span#0;n#v-flex#0;n#v-layout#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#v-chip#0;n#v-flex#0;n#v-layout#1;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
@@ -783,13 +721,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue">
+    <entry file="file://$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="427">
-          <caret line="54" column="23" selection-start-line="54" selection-start-column="23" selection-end-line="54" selection-end-column="23" />
-          <folding>
-            <element signature="n#style#0;n#v-container#0;n#slot#0;n#div#0;n#div#0;n#div#0;n#div#0;n#transition#0;n#template#0;n#!!top" expanded="true" />
-          </folding>
+        <state relative-caret-position="233">
+          <caret line="807" column="42" selection-start-line="807" selection-start-column="35" selection-end-line="807" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/js/d3/variant.d3.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="503">
+          <caret line="589" column="19" selection-start-line="589" selection-start-column="19" selection-end-line="589" selection-end-column="19" />
         </state>
       </provider>
     </entry>

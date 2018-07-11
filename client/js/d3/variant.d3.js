@@ -54,6 +54,7 @@ function variantD3() {
 
     var showCircle = function(d, svgContainer, indicateMissingVariant, pinned) {
         // Find the matching variant
+        debugger;
         var matchingVariant = null;
         svgContainer.selectAll(".variant").each( function (variant,i) {
             if (d.start === variant.start
@@ -68,8 +69,6 @@ function variantD3() {
                 } else {
                     matchingVariant = variant;
                 }
-
-
             }
         });
 
@@ -553,17 +552,17 @@ function variantD3() {
 
 
                 // add a circle and arrows for 'hover' event and 'pinned' event
-                // ['hover', 'pinned'].forEach(function(clazz) {
-                //     var circleClazz = '.' + clazz + '.circle';
-                //     if (svg.selectAll(circleClazz).empty()) {
-                //         svg.selectAll(circleClazz).data([0])
-                //             .enter().append('circle')
-                //             .attr("class", clazz + " circle")
-                //             .attr("cx", 0)
-                //             .attr("cy", 0)
-                //             .attr("r", variantHeight + 2)
-                //             .style("opacity", 0);
-                //     }
+                ['hover', 'pinned'].forEach(function(clazz) {
+                    var circleClazz = '.' + clazz + '.circle';
+                    if (svg.selectAll(circleClazz).empty()) {
+                        svg.selectAll(circleClazz).data([0])
+                            .enter().append('circle')
+                            .attr("class", clazz + " circle")
+                            .attr("cx", 0)
+                            .attr("cy", 0)
+                            .attr("r", variantHeight + 2)
+                            .style("opacity", 0);
+                    }
                 //
                 //     var arrowClazz = 'g.' + clazz + '.arrow';
                 //     if (svg.selectAll(arrowClazz).empty()) {
@@ -588,10 +587,7 @@ function variantD3() {
                 //             .attr("y2", variantHeight + 2)
                 //             .style("opacity", 0);
                 //     }
-                // })
-
-
-
+                });
 
                 dispatch.d3rendered();
             }

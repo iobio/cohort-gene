@@ -140,7 +140,6 @@ Updated: SJG Apr2018
                             ref="zoomVizRef"
                             :modalWidth="zoomWidth"
                             :modalXStart="zoomX"
-                            :id="subsetCohort.getName()"
                             :model="subsetCohort"
                             :data="subsetCohort.selectedVariants"
                             :regionStart="regionStart"
@@ -293,7 +292,6 @@ Updated: SJG Apr2018
                 }
             },
             onVariantClick: function (variant, cohortKey) {
-                //this.Tooltip();
                 if (this.showVariantViz) {
                     this.hideVariantCircle();
                     this.showVariantCircle(variant);
@@ -395,12 +393,20 @@ Updated: SJG Apr2018
                 if (self.showVariantViz && self.$refs.subsetVizRef != null) {
                     self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
                 }
+                if (self.$refs.zoomVizRef != null) {
+                    self.$refs.zoomVizRef.showVariantCircle(variant, self.getZoomSVG(), true);
+                }
             },
             hideVariantCircle: function () {
                 let self = this;
                 if (self.showVariantViz && self.$refs.subsetVizRef != null) {
                     self.$refs.subsetVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.subsetVizRef.name));
                 }
+            },
+            getZoomSVG: function() {
+                let parentId = d3.select(this.$refs.zoomVizRef.$el).node().id;
+                let svg = d3.select('#' + parentId).select('svg');
+                return svg;
             },
             getVariantSVG: function (vizTrackName) {
                 var svg = d3.select(this.$el).select('#' + vizTrackName + ' > svg');
