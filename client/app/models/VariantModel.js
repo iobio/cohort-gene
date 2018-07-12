@@ -172,9 +172,9 @@ class VariantModel {
                             if (!((ids[0].id).startsWith('SSC'))) {
                                 probandCohort.subsetIds = self.convertSimonsIds(ids);
                             }
-                            // Coming from SPARK
+                            // Coming from SPARK or other
                             else {
-                                probandCohort.substeIds = ids;
+                                probandCohort.subsetIds = ids;
                             }
                             probandCohort.subsetPhenotypes.push('n = ' + ids.length);
                         });
@@ -189,7 +189,7 @@ class VariantModel {
                             Object.keys(self.phenoFilters).forEach(function (filter) {
                                 if (filter !== 'affected_status')
                                     filteredPhenoFilters[filter] = self.phenoFilters[filter];
-                            })
+                            });
                             self.phenoFilters = filteredPhenoFilters;
                         }
                     }

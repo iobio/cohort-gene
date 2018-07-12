@@ -92,7 +92,7 @@
                 <div class="modal-container" v-bind:style="{ width: modalWidth + 'px', marginLeft: modalXStart + 'px'}">
                     <div class="modal-header">
                         <slot name="header">
-                            <v-container style="margin-bottom: 0;">
+                            <div>
                                 <v-layout>
                                     <v-flex xs6>
                                         <div class="modal-title">
@@ -106,7 +106,7 @@
                                         </v-btn>
                                     </v-flex>
                                 </v-layout>
-                            </v-container>
+                            </div>
                         </slot>
                     </div>
                     <div class="modal-body">

@@ -607,8 +607,8 @@ vcfiobio = function module() {
         // OR we can call next step promise straight from here if we can scope it here
         return new Promise(function (resolve, reject) {
 
-            var vcfSampleNames = samplesToRetrieve.filter(function (sample) {
-                return (sample.vcfSampleName != "" && sample.vcfSampleName != null);
+            let varSampleNames = samplesToRetrieve.filter(function (sample) {
+                return (sample.vcfSampleName !== "" && sample.vcfSampleName != null);
             })
                 .map(function (sample) {
                     return sample.vcfSampleName;
@@ -616,13 +616,80 @@ vcfiobio = function module() {
                 .join(",");
 
             // This comma separated string of samples to be contained in the maps of genotypes
-            var sampleNamesToGenotype = samplesToRetrieve.map(function (sample) {
+            let sampleNamesToGenotype = samplesToRetrieve.map(function (sample) {
                 return sample.sampleName;
             })
                 .join(",");
 
-            if (sourceType == SOURCE_TYPE_URL) {
-                me._getRemoteVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
+
+            if (sourceType === SOURCE_TYPE_URL) {
+                me._getRemoteVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, varSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
+                    // SJG NOTE: not doing anything with annotated data, so removing for now
+                    // function(annotatedData, results) {
+                    //   if (annotatedData && results) {
+                    //     resolve([annotatedData, results]);
+                    //   }
+                    function (resultMapList) { // SJG_1x: this is callback - resolving promise
+                        if (resultMapList) {
+                            resolve(resultMapList);
+                        }
+                        else {
+                            reject();
+                        }
+                    }, null, keepVariantsCombined, isSubset, efficiencyMode);
+            } else {
+                //me._getLocalStats(refName, geneObject.start, geneObject.end, sampleName);
+
+                me._getLocalVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
+                    function (annotatedData, results) {
+                        if (annotatedData && results) {
+                            resolve([annotatedData, results]);
+                        } else {
+                            reject();
+                        }
+                    });
+            }
+        });
+    }
+
+    exports.promiseGetEnrichedVariants = function (refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, keepVariantsCombined = false, isSubset = false, efficiencyMode = false) {
+        var me = this;
+
+        // SJG_1x: I think this single promise needs to go away and a promise must be created for each individual callback the comes back from data stream
+        // OR we can call next step promise straight from here if we can scope it here
+        return new Promise(function (resolve, reject) {
+
+            let expSampleNames = expSamplesToRetrieve.filter(function (sample) {
+                return (sample.vcfSampleName !== "" && sample.vcfSampleName != null);
+            })
+                .map(function (sample) {
+                    return sample.vcfSampleName;
+                })
+                .join(",");
+
+            // This comma separated string of samples to be contained in the maps of genotypes
+            let expSampleNamesToGenotype = expSamplesToRetrieve.map(function (sample) {
+                return sample.sampleName;
+            })
+                .join(",");
+
+            let controlSampleNames = controlSamplesToRetrieve.filter(function (sample) {
+                return (sample.vcfSampleName !== "" && sample.vcfSampleName != null);
+            })
+                .map(function (sample) {
+                    return sample.vcfSampleName;
+                })
+                .join(",");
+
+            // This comma separated string of samples to be contained in the maps of genotypes
+            let controlSampleNamesToGenotype = controlSamplesToRetrieve.map(function (sample) {
+                return sample.sampleName;
+            })
+                .join(",");
+
+
+            if (sourceType === SOURCE_TYPE_URL) {
+                me._updatedGetRemoteVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, expSampleNames, expSampleNamesToGenotype, controlSampleNames, controlSampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
                     // SJG NOTE: not doing anything with annotated data, so removing for now
                     // function(annotatedData, results) {
                     //   if (annotatedData && results) {
@@ -708,6 +775,86 @@ vcfiobio = function module() {
                     }
                 });
         });
+    }
+
+    /* SJG cohort version 11Jul2018 */
+    exports._updatedGetRemoteVariantsImpl = function (refName, geneObject, selectedTranscript, regions, isMultiSample, expSampleNames, expSampleNamesToGenotype, controlSampleNames, controlSampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false, isSubset = false, efficiencyMode = false) {
+        let me = this;
+
+        if (regions == null || regions.length === 0) {
+            regions = [];
+            regions.push({'name': refName, 'start': geneObject.start, 'end': geneObject.end});
+        }
+
+        let serverCacheKey = me._getServerCacheKey(vcfURL, annotationEngine, refName, geneObject, vcfSampleNames, {
+            refseq: isRefSeq,
+            hgvs: hgvsNotation,
+            rsid: getRsId
+        });
+
+        let cmd = me.getEndpoint().annotateEnrichment({
+            'vcfUrl': vcfURL,
+            'tbiUrl': tbiUrl
+        }, refName, regions, expSampleNames, controlSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey, efficiencyMode);
+
+
+        let annotatedData = '';
+        // Get the results from the iobio command
+        cmd.on('data', function(data) {
+            if (data == null) {
+                return;
+            }
+            annotatedData += data;
+        });
+
+        // We have all of the annotated vcf recs.  Now parse them into vcf objects
+        cmd.on('end', function(data) {
+            let annotatedRecs = annotatedData.split("\n");
+            let vcfObjects = [];
+
+            annotatedRecs.forEach(function(record) {
+                if (record.charAt(0) === "#") {
+                    me._parseHeaderForInfoFields(record);
+
+                } else {
+
+                    // Parse the vcf record into its fields
+                    let fields = record.split('\t');
+                    let pos    = fields[1];
+                    let id     = fields[2];
+                    let ref    = fields[3];
+                    let alt    = fields[4];
+                    let qual   = fields[5];
+                    let filter = fields[6];
+                    let info   = fields[7];
+                    let format = fields[8];
+                    // let genotypes = [];
+                    // for (let i = 9; i < fields.length; i++) {
+                    //     genotypes.push(fields[i]);
+                    // }
+                    let enrichment = fields[9];
+                    debugger;
+
+                    // Turn vcf record into a JSON object and add it to an array
+                    let vcfObject = {'pos': pos, 'id': 'id', 'ref': ref, 'alt': alt,
+                        'qual': qual, 'filter': filter, 'info': info, 'format':format, 'enrichmentValues': enrichment};
+                    vcfObjects.push(vcfObject);
+                }
+            });
+
+            // Parse the vcf object into a variant object that is visualized by the client.
+            // SJG TODO: see if we need field samplenamestogenotype?
+            let results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, expSampleNamesToGenotype, null, vepAF);
+
+
+            callback(annotatedRecs, results);
+        });
+
+        cmd.on('error', function(error) {
+            console.log(error);
+        });
+
+        cmd.run();
     }
 
     exports._getRemoteVariantsImpl = function (refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false, isSubset = false, efficiencyMode = false) {

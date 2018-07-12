@@ -42,9 +42,9 @@ EndpointCmd.prototype.getVcfDepth = function (vcfUrl, tbiUrl) {
 
 /* Returns command to obtain vcf annotated with enrichment information.
  * Used in cohort-gene.iobio to render large amounts of variants ranked by enrichment quickly and without overflow.
- * Input: a vcf file, proband only IDs, and subset IDs
+ * Input: a vcf file, experimental group IDs (aka Subset for now) and control group IDs (aka Probands for now)
  * Output: a vcf file with all proband samples with 'enrichment' info field and no genotype info field */
-EndpointCmd.prototype.annotateEnrichment = function(vcfSource, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey, efficiencyMode = true) {
+EndpointCmd.prototype.annotateEnrichment = function(vcfSource, refName, regions, expSampleNames, controlSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey, efficiencyMode = true) {
     let self = this;
 
     let regionParm = "";
@@ -72,7 +72,7 @@ EndpointCmd.prototype.annotateEnrichment = function(vcfSource, refName, regions,
             args.push('"' + vcfSource.tbiUrl + '"');
         }
         cmd = new iobio.cmd(self.IOBIO.tabix, args, {ssl: self.useSSL})
-            .pipe(self.IOBIO.bcftools, ['annotate', '-h', contigNameFile, '-'], {ssl: self.useSSL})
+            .pipe(self.IOBIO.bcftools, ['annotate', '-h', contigNameFile, '-'], {ssl: self.useSSL});
 
     } else if (vcfSource.hasOwnProperty('writeStream')) {
         // If we have a local vcf file, use the writeStream function to stream in the vcf records
@@ -82,9 +82,19 @@ EndpointCmd.prototype.annotateEnrichment = function(vcfSource, refName, regions,
         return null;
     }
 
-    if (vcfSampleNames && vcfSampleNames.length > 0) {
-        let sampleNameFile = new Blob([vcfSampleNames.split(",").join("\n")]);
-        cmd = cmd.pipe(self.IOBIO.vt, ["subset", "-s", sampleNameFile, '-'], {ssl: self.useSSL})
+    // Filter vcf for probands only
+    if (controlSampleNames && controlSampleNames.length > 0) {
+        let sampleNameFile = new Blob([controlSampleNames.split(",").join("\n")]);
+        cmd = cmd.pipe(self.IOBIO.vt, ["subset", "-s", sampleNameFile, '-'], {ssl: self.useSSL});
+    }
+
+    // Annotate enrichment info
+    cmd = cmd.pipe(self.IOBIO.gtEnricher, [], {ssl: self.useSSL});
+
+    // Filter for subset samples only
+    if (expSampleNames && expSampleNames.length > 0) {
+        let sampleNameFile = new Blob([expSampleNames.split(",").join("\n")]);
+        cmd = cmd.pipe(self.IOBIO.vt, ["subset", "-s", sampleNameFile, '-'], {ssl: self.useSSL});
     }
 
     // normalize variants
@@ -93,14 +103,14 @@ EndpointCmd.prototype.annotateEnrichment = function(vcfSource, refName, regions,
 
     if (!efficiencyMode) {
         // if af not retreived from vep, get allele frequencies from 1000G and ExAC in af service
-        cmd = cmd.pipe(me.IOBIO.af, ["-b", me.genomeBuildHelper.getCurrentBuildName()], {ssl: me.useSSL});
+        cmd = cmd.pipe(self.IOBIO.af, ["-b", self.genomeBuildHelper.getCurrentBuildName()], {ssl: self.useSSL});
 
         // Skip snpEff if RefSeq transcript set or we are just annotating with the vep engine
         if (isRefSeq || annotationEngine === 'vep') {
             // VEP
             var vepArgs = [];
             vepArgs.push(" --assembly");
-            vepArgs.push(me.genomeBuildHelper.getCurrentBuildName());
+            vepArgs.push(self.genomeBuildHelper.getCurrentBuildName());
             vepArgs.push(" --format vcf");
             vepArgs.push(" --allele_number");
             if (vepAF) {

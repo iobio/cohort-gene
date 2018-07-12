@@ -970,7 +970,7 @@ class CohortModel {
                             theTranscript,
                             null,   // regions
                             true,   //isMultiSample (true for cohort)
-                            me.getFormattedSampleIds(),
+                            me.getFormattedSampleIds('subset'),
                             me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
                             me.getTranslator().clinvarMap,
                             me.getGeneModel().geneSource === 'refseq',
@@ -1226,7 +1226,8 @@ class CohortModel {
                         theTranscript,
                         null,   // regions
                         isMultiSample,
-                        me.getFormattedSampleIds(),
+                        me.getFormattedSampleIds('subset'),
+                        // me.getFormattedSampleIds('probands'),
                         me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
                         me.getTranslator().clinvarMap,
                         me.getGeneModel().geneSource === 'refseq',
@@ -1550,14 +1551,31 @@ class CohortModel {
         self.getCacheHelper().promiseRemoveCacheItem(dataKind, key);
     }
 
-    getFormattedSampleIds() {
+    /* Only called by subset model for now */
+    getFormattedSampleIds(type) {
+        //debugger;   // TODO: step through this - figure out why empty
         let self = this;
-        var subsetSamples = [];
 
-        self.subsetIds.forEach(function (sample) {
-            subsetSamples.push({vcfSampleName: sample, sampleName: sample});
-        })
-        return subsetSamples;
+        if (type === 'subset') {
+            let subsetSamples = [];
+            self.subsetIds.forEach(function (sample) {
+                subsetSamples.push({vcfSampleName: sample, sampleName: sample});
+            });
+            return subsetSamples;
+        }
+        else if (type === 'probands') {
+            let probandSamples = [];
+            let probandIds = self.getDataSet().getProbandCohort().subsetIds;
+            if (probandIds.count > 0) {
+                probandIds.forEach(function(sample) {
+                    probandSamples.push({vcfSampleName: sample, sampleName: samples});
+                });
+                return probandSamples;
+            }
+            else {
+                console.log("Could not obtain proband sample IDs in getFormattedSampleIds in CohortModel");
+            }
+        }
     }
 
     _getSamplesToRetrieve() {
@@ -2532,7 +2550,7 @@ class CohortModel {
                         sampleNames,
                         me.getAnnotationScheme().toLowerCase(),
                         me.getTranslator().clinvarMap,
-                        me.getGeneModel().geneSource == 'refseq' ? true : false)
+                        me.getGeneModel().geneSource === 'refseq' ? true : false)
                         .then(function (data) {
                             if (data != null && data.features != null) {
                                 //var annotatedRecs = data[0];
