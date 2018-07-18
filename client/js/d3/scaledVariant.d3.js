@@ -158,14 +158,19 @@ function scaledVariantD3() {
 
     let hideBrush = function() {
         // Get rid of brushing area
-        let brush = container.select('svg').selectAll("g.y.brush");
-        brush.remove();
+        if (container != null) {
+            let svg = container.select('svg');
+            if (svg != null) {
+                let brush = svg.selectAll("g.y.brush");
+                brush.remove();
+            }
 
-        // Change coloring back
-        switchSelectedColorScheme(false, impactMode);
+            // Change coloring back
+            switchSelectedColorScheme(false, impactMode);
 
-        // Reset variants
-        selectedVariants = [];
+            // Reset variants
+            selectedVariants = [];
+        }
     };
 
     var showCircle = function (d, svgContainer, indicateMissingVariant, emphasize) {

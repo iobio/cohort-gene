@@ -84,74 +84,76 @@ EndpointCmd.prototype.annotateEnrichment = function(vcfSource, refName, regions,
 
     // Filter vcf for probands only
     if (controlSampleNames && controlSampleNames.length > 0) {
-        let sampleNameFile = new Blob([controlSampleNames.split(",").join("\n")]);
+        let formattedControls = controlSampleNames.join("\n");
+        let sampleNameFile = new Blob([formattedControls]);
         cmd = cmd.pipe(self.IOBIO.vt, ["subset", "-s", sampleNameFile, '-'], {ssl: self.useSSL});
     }
 
     // Annotate enrichment info
-    cmd = cmd.pipe(self.IOBIO.gtEnricher, [], {ssl: self.useSSL});
+    debugger;
+    cmd = cmd.pipe(self.IOBIO.gtEnricher, expSampleNames, {ssl: self.useSSL});
 
     // Filter for subset samples only
-    if (expSampleNames && expSampleNames.length > 0) {
-        let sampleNameFile = new Blob([expSampleNames.split(",").join("\n")]);
-        cmd = cmd.pipe(self.IOBIO.vt, ["subset", "-s", sampleNameFile, '-'], {ssl: self.useSSL});
-    }
-
-    // normalize variants
-    let refFastaFile = self.genomeBuildHelper.getFastaPath(refName);
-    cmd = cmd.pipe(self.IOBIO.vt, ["normalize", "-n", "-r", refFastaFile, '-'], {ssl: self.useSSL});
-
-    if (!efficiencyMode) {
-        // if af not retreived from vep, get allele frequencies from 1000G and ExAC in af service
-        cmd = cmd.pipe(self.IOBIO.af, ["-b", self.genomeBuildHelper.getCurrentBuildName()], {ssl: self.useSSL});
-
-        // Skip snpEff if RefSeq transcript set or we are just annotating with the vep engine
-        if (isRefSeq || annotationEngine === 'vep') {
-            // VEP
-            var vepArgs = [];
-            vepArgs.push(" --assembly");
-            vepArgs.push(self.genomeBuildHelper.getCurrentBuildName());
-            vepArgs.push(" --format vcf");
-            vepArgs.push(" --allele_number");
-            if (vepAF) {
-                vepArgs.push("--af");
-                vepArgs.push("--af_gnomad");
-                vepArgs.push("--af_esp");
-                vepArgs.push("--af_1kg");
-                vepArgs.push("--max_af");
-            }
-            if (isRefSeq) {
-                vepArgs.push("--refseq");
-            }
-            // Get the hgvs notation and the rsid since we won't be able to easily get it one demand
-            // since we won't have the original vcf records as input
-            if (hgvsNotation) {
-                vepArgs.push("--hgvs");
-            }
-            if (getRsId) {
-                vepArgs.push("--check_existing");
-            }
-            if (hgvsNotation || utility.getRsId || isRefSeq) {
-                vepArgs.push("--fasta");
-                vepArgs.push(refFastaFile);
-            }
-
-            //
-            //  SERVER SIDE CACHING
-            //
-            var urlParameters = {};
-            if (useServerCache && serverCacheKey.length > 0) {
-                urlParameters.cache = serverCacheKey;
-                urlParameters.partialCache = true;
-                cmd = cmd.pipe("nv-dev-new.iobio.io/vep/", vepArgs, {ssl: self.useSSL, urlparams: urlParameters});
-            } else {
-                cmd = cmd.pipe(self.IOBIO.vep, vepArgs, {ssl: self.useSSL, urlparams: urlParameters});
-            }
-
-        } else if (annotationEngine === 'snpeff') {
-            cmd = cmd.pipe(self.IOBIO.snpEff, [], {ssl: self.useSSL});
-        }
-    }
+    // if (expSampleNames && expSampleNames.length > 0) {
+    //     let sampleNameFile = new Blob([expSampleNames.split(",").join("\n")]);
+    //     cmd = cmd.pipe(self.IOBIO.vt, ["subset", "-s", sampleNameFile, '-'], {ssl: self.useSSL});
+    // }
+    //
+    // // normalize variants
+    // let refFastaFile = self.genomeBuildHelper.getFastaPath(refName);
+    // cmd = cmd.pipe(self.IOBIO.vt, ["normalize", "-n", "-r", refFastaFile, '-'], {ssl: self.useSSL});
+    //
+    // if (!efficiencyMode) {
+    //     // if af not retreived from vep, get allele frequencies from 1000G and ExAC in af service
+    //     cmd = cmd.pipe(self.IOBIO.af, ["-b", self.genomeBuildHelper.getCurrentBuildName()], {ssl: self.useSSL});
+    //
+    //     // Skip snpEff if RefSeq transcript set or we are just annotating with the vep engine
+    //     if (isRefSeq || annotationEngine === 'vep') {
+    //         // VEP
+    //         var vepArgs = [];
+    //         vepArgs.push(" --assembly");
+    //         vepArgs.push(self.genomeBuildHelper.getCurrentBuildName());
+    //         vepArgs.push(" --format vcf");
+    //         vepArgs.push(" --allele_number");
+    //         if (vepAF) {
+    //             vepArgs.push("--af");
+    //             vepArgs.push("--af_gnomad");
+    //             vepArgs.push("--af_esp");
+    //             vepArgs.push("--af_1kg");
+    //             vepArgs.push("--max_af");
+    //         }
+    //         if (isRefSeq) {
+    //             vepArgs.push("--refseq");
+    //         }
+    //         // Get the hgvs notation and the rsid since we won't be able to easily get it one demand
+    //         // since we won't have the original vcf records as input
+    //         if (hgvsNotation) {
+    //             vepArgs.push("--hgvs");
+    //         }
+    //         if (getRsId) {
+    //             vepArgs.push("--check_existing");
+    //         }
+    //         if (hgvsNotation || utility.getRsId || isRefSeq) {
+    //             vepArgs.push("--fasta");
+    //             vepArgs.push(refFastaFile);
+    //         }
+    //
+    //         //
+    //         //  SERVER SIDE CACHING
+    //         //
+    //         var urlParameters = {};
+    //         if (useServerCache && serverCacheKey.length > 0) {
+    //             urlParameters.cache = serverCacheKey;
+    //             urlParameters.partialCache = true;
+    //             cmd = cmd.pipe("nv-dev-new.iobio.io/vep/", vepArgs, {ssl: self.useSSL, urlparams: urlParameters});
+    //         } else {
+    //             cmd = cmd.pipe(self.IOBIO.vep, vepArgs, {ssl: self.useSSL, urlparams: urlParameters});
+    //         }
+    //
+    //     } else if (annotationEngine === 'snpeff') {
+    //         cmd = cmd.pipe(self.IOBIO.snpEff, [], {ssl: self.useSSL});
+    //     }
+    // }
     return cmd;
 }
 

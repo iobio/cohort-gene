@@ -1217,17 +1217,16 @@ class CohortModel {
             // so call the iobio services to retreive the variants for the gene region
             // and annotate them
             //let t0 = 0; // SJG_TIMING
-            me._promiseVcfRefName(theGene.chr)  // SJG_TIMING NOTE: this takes ~25ms
+            me._promiseVcfRefName(theGene.chr)
                 .then(function () {
-                    //t0 = performance.now(); // SJG_TIMING
-                    return me.vcf.promiseGetVariants(
+                    return me.vcf.promiseGetEnrichedVariants(
                         me.getVcfRefName(theGene.chr),
                         theGene,
                         theTranscript,
                         null,   // regions
                         isMultiSample,
                         me.getFormattedSampleIds('subset'),
-                        // me.getFormattedSampleIds('probands'),
+                        me.getFormattedSampleIds('probands'),
                         me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
                         me.getTranslator().clinvarMap,
                         me.getGeneModel().geneSource === 'refseq',
@@ -1245,8 +1244,6 @@ class CohortModel {
                         let probandCountsLookup = dataMap[1];
                         resolve(probandCountsLookup);
                     }
-                    //let t1 = performance.now(); // SJG_TIMING
-                    //console.log('took ' + (t1 - t0) + 'ms to return from vcf.promiseGetVariants'); // SJG_TIMING
                     // if (dataMap == null) {
                     //     // SJG TODO: pass some sort of exception
                     //     me.inProgress.loadingVariants = false;
@@ -1553,28 +1550,28 @@ class CohortModel {
 
     /* Only called by subset model for now */
     getFormattedSampleIds(type) {
-        //debugger;   // TODO: step through this - figure out why empty
         let self = this;
 
         if (type === 'subset') {
-            let subsetSamples = [];
-            self.subsetIds.forEach(function (sample) {
-                subsetSamples.push({vcfSampleName: sample, sampleName: sample});
-            });
-            return subsetSamples;
+            return self.subsetIds;
+            // let subsetSamples = [];
+            // self.subsetIds.forEach(function (sample) {
+            //     subsetSamples.push({vcfSampleName: sample, sampleName: sample});
+            // });
+            // return subsetSamples;
         }
         else if (type === 'probands') {
-            let probandSamples = [];
-            let probandIds = self.getDataSet().getProbandCohort().subsetIds;
-            if (probandIds.count > 0) {
-                probandIds.forEach(function(sample) {
-                    probandSamples.push({vcfSampleName: sample, sampleName: samples});
-                });
-                return probandSamples;
-            }
-            else {
-                console.log("Could not obtain proband sample IDs in getFormattedSampleIds in CohortModel");
-            }
+            //let probandSamples = [];
+            return self.getDataSet().getProbandCohort().subsetIds;
+            // if (probandIds.length > 0) {
+            //     probandIds.forEach(function(sample) {
+            //         probandSamples.push({vcfSampleName: sample, sampleName: sample});
+            //     });
+            //     return probandSamples;
+            // }
+            // else {
+            //     console.log("Could not obtain proband sample IDs in getFormattedSampleIds in CohortModel");
+            // }
         }
     }
 

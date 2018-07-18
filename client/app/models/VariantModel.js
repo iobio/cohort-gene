@@ -477,27 +477,26 @@ class VariantModel {
             let probandCounts = null;
 
             // Annotate variants for cohort models that have specified IDs
-            if (self.dataSet.getCohorts().length > 0) {
-                self.dataSet.getCohorts().forEach(function (cohortModel) {
-                    cohortModel.inProgress.loadingVariants = true;
-                    let p = cohortModel.promiseAnnotateVariants(theGene,
-                        theTranscript, [cohortModel],
-                        false, isBackground, self.keepVariantsCombined, true)
-                        .then(function (resultMap) {
-                            cohortModel.inProgress.loadingVariants = false;
-                            cohortModel.inProgress.drawingVariants = true;
-                            if (cohortModel.isSubsetCohort) {
-                                subsetResults = resultMap;
-                            }
-                            else {
-                                probandCounts = resultMap;
-                            }
-                        })
-                        .catch((error) => {
-                            console.log('Problem in promiseAnnotateVars ' + error);
-                        })
-                    annotatePromises.push(p);
-                })
+            if (self.dataSet.getSubsetCohort() != null) {
+                let cohortModel = self.dataSet.getSubsetCohort();
+                cohortModel.inProgress.loadingVariants = true;
+                let p = cohortModel.promiseAnnotateVariants(theGene,
+                    theTranscript, [cohortModel],
+                    false, isBackground, self.keepVariantsCombined, true)
+                    .then(function (resultMap) {
+                        cohortModel.inProgress.loadingVariants = false;
+                        cohortModel.inProgress.drawingVariants = true;
+                        if (cohortModel.isSubsetCohort) {
+                            subsetResults = resultMap;
+                        }
+                        else {
+                            probandCounts = resultMap;
+                        }
+                    })
+                    .catch((error) => {
+                        console.log('Problem in promiseAnnotateVars ' + error);
+                    });
+                annotatePromises.push(p);
             }
             Promise.all(annotatePromises)
                 .then(function () {
@@ -1149,7 +1148,7 @@ class VariantModel {
         for (var key in effectList) {
             if (annotationScheme.toLowerCase() === 'vep' && key.indexOf("&") > 0) {
                 let tokens = key.split("&");
-                tokens.forEach( function(token) {
+                tokens.forEach(function (token) {
                     effects += " " + token;
 
                 });
@@ -1157,13 +1156,13 @@ class VariantModel {
                 effects += " " + key;
             }
         }
-        let impactList =  (annotationScheme == null || annotationScheme.toLowerCase() === 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_FILTER]);
+        let impactList = (annotationScheme == null || annotationScheme.toLowerCase() === 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_FILTER]);
         for (let key in impactList) {
             impacts += " " + key;
         }
-        let colorImpactList =  (annotationScheme == null || annotationScheme.toLowerCase() === 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_FILTER]);
+        let colorImpactList = (annotationScheme == null || annotationScheme.toLowerCase() === 'snpeff' ? d.impact : d[IMPACT_FIELD_TO_FILTER]);
         for (let key in colorImpactList) {
-            colorimpacts += " " + 'impact_'+key;
+            colorimpacts += " " + 'impact_' + key;
         }
         if (colorimpacts === "") {
             colorimpacts = "impact_none";
@@ -1178,7 +1177,7 @@ class VariantModel {
             regulatory += " " + key;
         }
 
-        return  'variant ' + d.type.toLowerCase()  + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' '  + sift + ' ' + polyphen + ' ' + regulatory +  ' ' + + ' ' + d.clinvar + ' ' + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts;
+        return 'variant ' + d.type.toLowerCase() + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' ' + sift + ' ' + polyphen + ' ' + regulatory + ' ' + +' ' + d.clinvar + ' ' + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts;
     }
 
     getVepImpactClass(domVar, annotationScheme) {
