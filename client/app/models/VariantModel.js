@@ -365,14 +365,14 @@ class VariantModel {
             cohorts.forEach(function (cohort) {
                 cohort.inProgress.verifyingVcfUrl = true;
                 cohort.init(self);
-            })
+            });
 
             // Check vcf url and add samples
             let firstCohort = cohorts[0];
             self.promiseAddSamples(firstCohort, self.dataSet.vcfUrl, self.dataSet.tbiUrl)
                 .then(function (aCohort) {
                     // Copy over retrieved sample info and flip status flags
-                    for (var i = 1; i < cohorts.length; i++) {
+                    for (let i = 1; i < cohorts.length; i++) {
                         let currCohort = cohorts[i];
                         currCohort.vcf = aCohort.vcf;
                         currCohort.inProgress.verifyingVcfUrl = false;
@@ -390,7 +390,6 @@ class VariantModel {
 
     /* Promises to verify the vcf url and adds samples to vcf object. */
     promiseAddSamples(aCohort, vcfUrl, tbiUrl) {
-        let self = this;
         if (aCohort.vcf) {
             return new Promise(function (resolve, reject) {
                     aCohort.onVcfUrlEntered(vcfUrl, tbiUrl, function () {
@@ -421,19 +420,16 @@ class VariantModel {
                 self.startGeneProgress(theGene.gene_name);
                 self.clearLoadedData();
 
-                var dataSetResultMap = null;
+                let dataSetResultMap = null;
                 let p1 = self.promiseLoadVariants(theGene, theTranscript, options)
                     .then(function (data) {
                         dataSetResultMap = data.resultMap;
                         self.setLoadedVariants(data.gene);
-                    })
+                    });
                 promises.push(p1);
 
                 Promise.all(promises)
                     .then(function () {
-                        // let blankFilter = {};
-                        // console.log('BELOW FOLLOWS CACHE CONTENTS AFTER promiseLoadData: ');
-                        // self.cacheHelper.logCacheContents(blankFilter);
                         resolve(dataSetResultMap);
                     })
                     .catch(function (error) {
@@ -451,7 +447,6 @@ class VariantModel {
         return new Promise(function (resolve, reject) {
             self.promiseAnnotateVariants(theGene, theTranscript, false, options)
                 .then(function (resultMap) {
-                    // SJG Q4 NOTE: changed default to not cache vcf data
                     return self.promiseAnnotateInheritance(theGene, theTranscript, resultMap, {
                         isBackground: false,
                         cacheData: false
@@ -492,6 +487,9 @@ class VariantModel {
                         else {
                             probandCounts = resultMap;
                         }
+                        debugger;
+                        let unwrappedFeatures = resultMap['Subset'].features;
+                        self.promiseAssignCohortsToEnrichmentGroups(unwrappedFeatures);
                     })
                     .catch((error) => {
                         console.log('Problem in promiseAnnotateVars ' + error);
@@ -555,7 +553,7 @@ class VariantModel {
         let updatedLookup = [];
         updatedVariants.forEach(function (variant) {
             updatedLookup[variant.id] = variant;
-        })
+        });
         let subsetModel = self.dataSet.getSubsetCohort();
 
         // Assign existing variants depending on variant(s) coming in
@@ -598,7 +596,7 @@ class VariantModel {
                 existingVar.clinVarClinicalSignificance = matchingVar.clinVarClinicalSignificance;
                 existingVar.clinvar = matchingVar.clinvar;
             }
-        })
+        });
 
         if (updatedVariants.length > 1) {
             self.extraAnnotationsLoaded = true;
@@ -757,109 +755,65 @@ class VariantModel {
         }
     }
 
-    // TODO: moved this to gtenricher callback - can get rid of after final display decisions
+    // TODO: moved this functionality to gtenricher callback - can get rid of after final display decisions
     /* Assigns cohort-relative statistics to each variant.
        Used to populate Summary Card graphs when clicking on a variant. */
-    // annotateDataSetFrequencies(subsetFeatures, probandCountsMap) {
-    //     let self = this;
-    //
-    //     if (subsetFeatures == null || subsetFeatures.length === 0) return;    // Avoid console output on initial load
-    //     self.assignCrossCohortInfo(probandCountsMap, subsetFeatures);
-    // }
-
-    // TODO: moved this to gtenricher callback - can get rid of after final display decisions
-    // assignCrossCohortInfo(probandCountsMap, subsetFeatures) {
-    //     let self = this;
-    //
-    //     let unwrappedFeatures = subsetFeatures.Subset.features;
-    //     unwrappedFeatures.forEach((feature) => {
-    //         // Find matching proband feature
-    //         let matchingProbandCounts = probandCountsMap[feature.id];
-    //         if (matchingProbandCounts == null) {
-    //             console.log('Could not find subset feature in proband count lookup');
-    //         }
-    //
-    //         feature.probandZygCounts = matchingProbandCounts;
-    //         feature.totalProbandCount = matchingProbandCounts[0] + matchingProbandCounts[1] + matchingProbandCounts[2] + matchingProbandCounts[3];
-    //         feature.affectedProbandCount = matchingProbandCounts[1] + matchingProbandCounts[2]; // Counts ordered homRefs, hets, homAlts, noCalls
-    //
-    //         // Compute delta and assign to both
-    //         let subsetPercentage = feature.totalSubsetCount === 0 ? 0 : feature.affectedSubsetCount / feature.totalSubsetCount * 100;  // Can be 0
-    //         let probandPercentage = feature.affectedProbandCount / feature.totalProbandCount * 100; // Can never be 0
-    //         let foldEnrichment = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
-    //         feature.subsetDelta = foldEnrichment;
-    //
-    //         self.assignCohortsToEnrichmentGroups(unwrappedFeatures);
-    //     })
-    // }
-
-    // SJG TODO: old version, can get rid of?
-    /* Assigns both a delta value representing subset enrichment, and total sample zygosities, to each variant.
-       Used to populate Summary Card information when a variant is clicked on, and for visual variant rendering. */
-    // assignCrossCohortInfo(probandFeatures, subsetFeatures) {
-    //     let self = this;
-    //
-    //     // Put proband features into a lookup
-    //     let probandLookup = {};
-    //     probandFeatures.forEach(function (feature) {
-    //         probandLookup[feature.id] = feature;
-    //     })
-    //
-    //     // Iterate through subset
-    //     subsetFeatures.forEach(function (feature) {
-    //         // Get corresponding proband feature
-    //         let matchingProbandFeature = probandLookup[feature.id];
-    //
-    //         if (matchingProbandFeature == null) {
-    //             console.log('Could not find subset feature in proband feature lookup');
-    //         }
-    //
-    //         // Assign subset metrics to cohort feature
-    //         matchingProbandFeature.totalSubsetCount = feature.totalSubsetCount;
-    //         matchingProbandFeature.affectedSubsetCount = feature.affectedSubsetCount;
-    //         matchingProbandFeature.subsetZygCounts = feature.subsetZygCounts;
-    //
-    //         // Assign proband metrics to subset feature
-    //         feature.totalProbandCount = matchingProbandFeature.totalProbandCount;
-    //         feature.affectedProbandCount = matchingProbandFeature.affectedProbandCount;
-    //         feature.probandZygCounts = matchingProbandFeature.probandZygCounts;
-    //
-    //         // Compute delta and assign to both
-    //         let subsetPercentage = feature.totalSubsetCount === 0 ? 0 : feature.affectedSubsetCount / feature.totalSubsetCount * 100;  // Can be 0
-    //         let probandPercentage = feature.affectedProbandCount / feature.totalProbandCount * 100; // Can never be 0
-    //         let foldEnrichment = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
-    //         feature.subsetDelta = foldEnrichment;
-    //         matchingProbandFeature.subsetDelta = foldEnrichment;
-    //     })
-    //
-    //     // Filter out features only in probands
-    //     let filteredProbandFeatures = self.filterProbandsByDelta(probandFeatures);
-    //
-    //     // Assign variants to groups based on subset delta
-    //     self.assignCohortsToEnrichmentGroups(filteredProbandFeatures);
-    //
-    //     return filteredProbandFeatures;
-    // }
-
-    /* Reference assigns all features in provided parameter to enrichment groups. */
-    assignCohortsToEnrichmentGroups(variants) {
+    annotateDataSetFrequencies(subsetFeatures, probandCountsMap) {
         let self = this;
 
-        variants.forEach(function (variant) {
-            if (variant.subsetDelta >= self.subsetEnrichmentThreshold) {
-                self.subsetEnrichedVars[variant.id] = variant;
+        if (subsetFeatures == null || subsetFeatures.length === 0) return;    // Avoid console output on initial load
+        self.assignCrossCohortInfo(probandCountsMap, subsetFeatures);
+    }
+
+    assignCrossCohortInfo(probandCountsMap, subsetFeatures) {
+        let self = this;
+
+        let unwrappedFeatures = subsetFeatures.Subset.features;
+        unwrappedFeatures.forEach((feature) => {
+            // Find matching proband feature
+            let matchingProbandCounts = probandCountsMap[feature.id];
+            if (matchingProbandCounts == null) {
+                console.log('Could not find subset feature in proband count lookup');
             }
-            else if (variant.subsetDelta <= self.probandEnrichmentThreshold) {
-                self.probandEnrichedVars[variant.id] = variant;
-            }
-            else if (variant.subsetDelta !== 1) {
-                self.nonEnrichedVars[variant.id] = variant;
-            }
-            // SJG TODO: put back in after server side filtering implemented
-            // else {
-            //     self.probandOnlyVars[variant.id] = variant;
-            // }
+
+            feature.probandZygCounts = matchingProbandCounts;
+            feature.totalProbandCount = matchingProbandCounts[0] + matchingProbandCounts[1] + matchingProbandCounts[2] + matchingProbandCounts[3];
+            feature.affectedProbandCount = matchingProbandCounts[1] + matchingProbandCounts[2]; // Counts ordered homRefs, hets, homAlts, noCalls
+
+            // Compute delta and assign to both
+            let subsetPercentage = feature.totalSubsetCount === 0 ? 0 : feature.affectedSubsetCount / feature.totalSubsetCount * 100;  // Can be 0
+            let probandPercentage = feature.affectedProbandCount / feature.totalProbandCount * 100; // Can never be 0
+            let foldEnrichment = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
+            feature.subsetDelta = foldEnrichment;
+
+            self.assignCohortsToEnrichmentGroups(unwrappedFeatures);
         })
+    }
+
+    /* Reference assigns all features in provided parameter to enrichment groups. */
+    promiseAssignCohortsToEnrichmentGroups(variants) {
+        let self = this;
+        return new Promise((resolve, reject)=> {
+            if (variants == null || variants.length === 0) {
+                reject('No variants to assign to enrichment groups');
+            }
+            variants.forEach(function (variant) {
+                if (variant.subsetDelta >= self.subsetEnrichmentThreshold) {
+                    self.subsetEnrichedVars[variant.id] = variant;
+                }
+                else if (variant.subsetDelta <= self.probandEnrichmentThreshold) {
+                    self.probandEnrichedVars[variant.id] = variant;
+                }
+                else if (variant.subsetDelta !== 1) {
+                    self.nonEnrichedVars[variant.id] = variant;
+                }
+                // SJG TODO: put back in after server side filtering implemented
+                // else {
+                //     self.probandOnlyVars[variant.id] = variant;
+                // }
+            });
+            resolve();
+        });
     }
 
     /* Returns array of enrichment group variants to which the given variant is apart of.
@@ -1133,16 +1087,15 @@ class VariantModel {
     }
 
     classifyByImpact(d, annotationScheme) {
-        let self = this;
-        var impacts = "";
-        var colorimpacts = "";
-        var effects = "";
-        var sift = "";
-        var polyphen = "";
-        var regulatory = "";
+        let impacts = "";
+        let colorimpacts = "";
+        let effects = "";
+        let sift = "";
+        let polyphen = "";
+        let regulatory = "";
 
         let effectList = (annotationScheme == null || annotationScheme.toLowerCase() === 'snpeff' ? d.effect : d.vepConsequence);
-        for (var key in effectList) {
+        for (let key in effectList) {
             if (annotationScheme.toLowerCase() === 'vep' && key.indexOf("&") > 0) {
                 let tokens = key.split("&");
                 tokens.forEach(function (token) {
@@ -1177,7 +1130,7 @@ class VariantModel {
         return 'variant ' + d.type.toLowerCase() + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' ' + sift + ' ' + polyphen + ' ' + regulatory + ' ' + +' ' + d.clinvar + ' ' + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts;
     }
 
-    getVepImpactClass(domVar, annotationScheme) {
+    getVepImpactClass(domVar) {
         // Pull variant out of lookup
         let self = this;
         let varId = domVar.id;
@@ -1188,7 +1141,6 @@ class VariantModel {
         if (variant == null) return '';
 
         let toggleImpact = "";  // Grouping classes, added & removed based on impact mode
-        //var colorimpacts = "";  // Color classes, constant
         let impactObj = variant.vepImpact;
         let vepImpact = '';
         if (impactObj['LOW'] != null) vepImpact = 'LOW';

@@ -228,7 +228,6 @@ TD & SJG updated Jun2018 -->
                 .then(function () {
                         self.filterModel = new FilterModel(self.variantModel.affectedInfo);
                         self.variantModel.filterModel = self.filterModel;
-                        // TODO: prompt for gene selection
                         self.determineSourceAndInit();
                     },
                     function (error) {
@@ -289,6 +288,7 @@ TD & SJG updated Jun2018 -->
                                     self.selectedTranscript,
                                     options)
                                     .then(function (resultMap) {
+                                        debugger;
                                         let resultVars = resultMap[0]['Subset'].features;  // Unwrap result map
                                         self.variantModel.combineVariantInfo(resultVars);
                                         self.updateClasses();
@@ -305,6 +305,7 @@ TD & SJG updated Jun2018 -->
             },
             updateClasses: function () {
                 let self = this;
+                debugger;
                 $('.variant').each(function (i, v) {
                     let impactClass = self.variantModel.getVepImpactClass(v, 'vep');
                     $(v).addClass(impactClass);

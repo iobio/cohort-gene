@@ -937,9 +937,6 @@ class CohortModel {
     promiseGetVariantExtraAnnotations(theGene, theTranscript, variant, format, getHeader = false, sampleNames) {
         let me = this;
 
-        // SJG_TIMING
-        //var t0 = 0;
-
         return new Promise(function (resolve, reject) {
 
             // Create a gene object with start and end reduced to the variants coordinates.
@@ -963,7 +960,6 @@ class CohortModel {
             } else {
                 me._promiseVcfRefName(theGene.chr)
                     .then(function () {
-                        //t0 = performance.now(); // SJG_TIMING
                         me.vcf.promiseGetVariants(
                             me.getVcfRefName(theGene.chr),
                             fakeGeneObject,
@@ -983,7 +979,6 @@ class CohortModel {
                             false   // efficiency mode (aka variant calling only - no annotation)
                         )
                             .then(function (dataMap) {
-                                //var t1 = performance.now(); // SJG_TIMING
                                 //console.log("Loading single variant anno took: " + (t1 - t0) + ' ms'); SJG_TIMING
 
                                 // SJG NOTE: removing for now, not using
@@ -1016,6 +1011,7 @@ class CohortModel {
                                 // });
 
                                 //var theVcfData = data[1];
+                                debugger;
                                 var subsetVcfData = dataMap[0];
                                 if (subsetVcfData != null && subsetVcfData.features != null && subsetVcfData.features.length > 0) {
                                     var matchingVariants = [];
