@@ -500,11 +500,6 @@ class VariantModel {
             }
             Promise.all(annotatePromises)
                 .then(function () {
-                    self.annotateDataSetFrequencies(subsetResults, probandCounts); // SJG_TIMING NOTE: takes < 10ms
-                    // sjg todo: this DNE?
-                    // if (self.mergeCohortVariants) {
-                    //     resultMapList = self.combineCohortVariants(resultMapList);
-                    // }
                     let quickLoad = options.efficiencyMode === true;
                     if (!quickLoad) {
                         self.promiseAnnotateWithClinvar(subsetResults, theGene, theTranscript, isBackground)
@@ -762,39 +757,41 @@ class VariantModel {
         }
     }
 
+    // TODO: moved this to gtenricher callback - can get rid of after final display decisions
     /* Assigns cohort-relative statistics to each variant.
        Used to populate Summary Card graphs when clicking on a variant. */
-    annotateDataSetFrequencies(subsetFeatures, probandCountsMap) {
-        let self = this;
+    // annotateDataSetFrequencies(subsetFeatures, probandCountsMap) {
+    //     let self = this;
+    //
+    //     if (subsetFeatures == null || subsetFeatures.length === 0) return;    // Avoid console output on initial load
+    //     self.assignCrossCohortInfo(probandCountsMap, subsetFeatures);
+    // }
 
-        if (subsetFeatures == null || subsetFeatures.length === 0) return;    // Avoid console output on initial load
-        self.assignCrossCohortInfo(probandCountsMap, subsetFeatures);
-    }
-
-    assignCrossCohortInfo(probandCountsMap, subsetFeatures) {
-        let self = this;
-
-        let unwrappedFeatures = subsetFeatures.Subset.features;
-        unwrappedFeatures.forEach((feature) => {
-            // Find matching proband feature
-            let matchingProbandCounts = probandCountsMap[feature.id];
-            if (matchingProbandCounts == null) {
-                console.log('Could not find subset feature in proband count lookup');
-            }
-
-            feature.probandZygCounts = matchingProbandCounts;
-            feature.totalProbandCount = matchingProbandCounts[0] + matchingProbandCounts[1] + matchingProbandCounts[2] + matchingProbandCounts[3];
-            feature.affectedProbandCount = matchingProbandCounts[1] + matchingProbandCounts[2]; // Counts ordered homRefs, hets, homAlts, noCalls
-
-            // Compute delta and assign to both
-            let subsetPercentage = feature.totalSubsetCount === 0 ? 0 : feature.affectedSubsetCount / feature.totalSubsetCount * 100;  // Can be 0
-            let probandPercentage = feature.affectedProbandCount / feature.totalProbandCount * 100; // Can never be 0
-            let foldEnrichment = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
-            feature.subsetDelta = foldEnrichment;
-
-            self.assignCohortsToEnrichmentGroups(unwrappedFeatures);
-        })
-    }
+    // TODO: moved this to gtenricher callback - can get rid of after final display decisions
+    // assignCrossCohortInfo(probandCountsMap, subsetFeatures) {
+    //     let self = this;
+    //
+    //     let unwrappedFeatures = subsetFeatures.Subset.features;
+    //     unwrappedFeatures.forEach((feature) => {
+    //         // Find matching proband feature
+    //         let matchingProbandCounts = probandCountsMap[feature.id];
+    //         if (matchingProbandCounts == null) {
+    //             console.log('Could not find subset feature in proband count lookup');
+    //         }
+    //
+    //         feature.probandZygCounts = matchingProbandCounts;
+    //         feature.totalProbandCount = matchingProbandCounts[0] + matchingProbandCounts[1] + matchingProbandCounts[2] + matchingProbandCounts[3];
+    //         feature.affectedProbandCount = matchingProbandCounts[1] + matchingProbandCounts[2]; // Counts ordered homRefs, hets, homAlts, noCalls
+    //
+    //         // Compute delta and assign to both
+    //         let subsetPercentage = feature.totalSubsetCount === 0 ? 0 : feature.affectedSubsetCount / feature.totalSubsetCount * 100;  // Can be 0
+    //         let probandPercentage = feature.affectedProbandCount / feature.totalProbandCount * 100; // Can never be 0
+    //         let foldEnrichment = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
+    //         feature.subsetDelta = foldEnrichment;
+    //
+    //         self.assignCohortsToEnrichmentGroups(unwrappedFeatures);
+    //     })
+    // }
 
     // SJG TODO: old version, can get rid of?
     /* Assigns both a delta value representing subset enrichment, and total sample zygosities, to each variant.

@@ -632,7 +632,7 @@ class CohortModel {
 
     /* Setup VCF fields */
     init(variantModel) {
-        var me = this;
+        let me = this;
         me.vcf = vcfiobio();
         me.vcf.setEndpoint(variantModel.endpoint);
         me.vcf.setGenericAnnotation(variantModel.genericAnnotation);
@@ -1188,51 +1188,22 @@ class CohortModel {
     promiseAnnotateVariants(theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, efficiencyMode = false) {
         let me = this;
         return new Promise(function (resolve, reject) {
-
-            // First the gene vcf data has been cached, just return
-            // it.  (No need to retrieve the variants from the iobio service.)
-            //let resultMap = {};
-            // var promises = [];
-            // cohortModels.forEach(function(model) {
-            //   var p = model._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript) // SJG_TIMING NOTE: this only takes ~70 ms
-            //    .then(function(vcfData) {
-            //     if (vcfData != null && vcfData != '') {
-            //       resultMap[model.name] = vcfData;
-            //
-            //       if (!isBackground) {
-            //         model.vcfData = vcfData;
-            //         model.fbData = me.reconstituteFbData(vcfData);
-            //       }
-            //     }
-            //    })
-            //    promises.push(p);
-            // })
-
-            //Promise.all(promises)
-            //.then(function() {
-            //   if (Object.keys(resultMap).length == cohortModels.length) {
-            //     resolve(resultMap);
-            //   } else {
-            // We don't have the variants for the gene in cache,
-            // so call the iobio services to retreive the variants for the gene region
-            // and annotate them
-            //let t0 = 0; // SJG_TIMING
             me._promiseVcfRefName(theGene.chr)
                 .then(function () {
                     return me.vcf.promiseGetEnrichedVariants(
                         me.getVcfRefName(theGene.chr),
                         theGene,
                         theTranscript,
-                        null,   // regions
+                        null,       // regions
                         isMultiSample,
                         me.getFormattedSampleIds('subset'),
                         me.getFormattedSampleIds('probands'),
                         me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
                         me.getTranslator().clinvarMap,
                         me.getGeneModel().geneSource === 'refseq',
-                        false,  // hgvs notation
-                        false,  // rsid
-                        false,    // vep af
+                        false,      // hgvs notation
+                        false,      // rsid
+                        false,      // vep af
                         null,
                         keepVariantsCombined,
                         me.isSubsetCohort,
@@ -1240,68 +1211,42 @@ class CohortModel {
                     );
                 })
                 .then(function (dataMap) {
-                    if (!me.isSubsetCohort) {
-                        let probandCountsLookup = dataMap[1];
-                        resolve(probandCountsLookup);
-                    }
-                    // if (dataMap == null) {
-                    //     // SJG TODO: pass some sort of exception
-                    //     me.inProgress.loadingVariants = false;
-                    // }
-                    // SJG NOTE: taking out for now to improve space
-
-                    //var annotatedRecs = data[0];
-                    //var results = data[1];  // One entry per sample in results
-                    else {
-                        let subsetResults = dataMap[0];
-
-                        if (subsetResults) {
-                            if (keepVariantsCombined) {
-                                subsetResults.features = subsetResults.features[0];
-                            }
-                            let theGeneObject = me.getGeneModel().geneObjects[subsetResults.gene];
-                            if (theGeneObject) {
-                                let resultMap = {};
-                                let model = cohortModels[0];
-                                let theVcfData = subsetResults;
-                                if (theVcfData == null) {
-                                    if (callback) {
-                                        callback();
-                                    }
-                                    return;
+                    let subsetResults = dataMap;
+                    if (subsetResults) {
+                        let theGeneObject = me.getGeneModel().geneObjects[subsetResults.gene];
+                        if (theGeneObject) {
+                            let resultMap = {};
+                            let model = cohortModels[0];
+                            let theVcfData = subsetResults;
+                            if (theVcfData == null) {
+                                if (callback) {
+                                    callback();
                                 }
-                                theVcfData.gene = theGeneObject;
-                                let cohortName = me.getName();
-                                resultMap[cohortName] = theVcfData;
-
-                                if (!isBackground) {
-                                    model.vcfData = theVcfData;
-                                }
-                                resolve(resultMap);
-                            } else {
-                                let error = "ERROR - cannot locate gene object to match with vcf data " + data.ref + " " + data.start + "-" + data.end;
-                                console.log(error);
-                                reject(error);
+                                return;
                             }
+                            theVcfData.gene = theGeneObject;
+                            let cohortName = me.getName();
+                            resultMap[cohortName] = theVcfData;
+
+                            if (!isBackground) {
+                                model.vcfData = theVcfData;
+                            }
+                            resolve(resultMap);
                         } else {
-                            let error = "ERROR - empty vcf results for " + theGene.gene_name;
+                            let error = "ERROR - cannot locate gene object to match with vcf data " + data.ref + " " + data.start + "-" + data.end;
                             console.log(error);
                             reject(error);
                         }
+                    } else {
+                        let error = "ERROR - empty vcf results for " + theGene.gene_name;
+                        console.log(error);
+                        reject(error);
                     }
                 })
                 .catch((error) => {
                     console.log('Problem in cohort model ' + error);
                 })
-            // function (error) {
-            //     reject("missing reference: " + error);
-            // });
         });
-        //   },
-        //   function(error) {
-        //     reject(error);
-        //   });
-        // });
     }
 
     _combineUniqueFeatures(results) {
@@ -1640,7 +1585,7 @@ class CohortModel {
         let me = this;
         let width = 1000;
         let theFeatures = features;
-        theFeatures.forEach(function(v) {
+        theFeatures.forEach(function (v) {
             v.level = 0;
         });
 
@@ -1648,8 +1593,8 @@ class CohortModel {
         let posToPixelFactor = Math.round((end - start) / width);
         let widthFactor = featureWidth + (4);
         let maxLevel = this.vcf.pileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor);
-        if ( maxLevel > 30) {
-            for(let i = 1; i < posToPixelFactor; i++) {
+        if (maxLevel > 30) {
+            for (let i = 1; i < posToPixelFactor; i++) {
                 // TODO:  Devise a more sensible approach to setting the min width.  We want the
                 // widest width possible without increasing the levels beyond 30.
                 if (i > 4) {
@@ -1662,7 +1607,7 @@ class CohortModel {
                     featureWidth = 4;
                 }
 
-                features.forEach(function(v) {
+                features.forEach(function (v) {
                     v.level = 0;
                 });
                 let factor = posToPixelFactor / (i * 2);
@@ -1673,7 +1618,7 @@ class CohortModel {
                 }
             }
         }
-        return { 'maxLevel': maxLevel, 'featureWidth': featureWidth };
+        return {'maxLevel': maxLevel, 'featureWidth': featureWidth};
     }
 
     /* For Cohort */

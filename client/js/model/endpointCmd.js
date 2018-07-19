@@ -90,7 +90,6 @@ EndpointCmd.prototype.annotateEnrichment = function(vcfSource, refName, regions,
     }
 
     // Annotate enrichment info
-    debugger;
     cmd = cmd.pipe(self.IOBIO.gtEnricher, expSampleNames, {ssl: self.useSSL});
 
     // Filter for subset samples only
