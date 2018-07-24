@@ -182,7 +182,7 @@ TD & SJG updated Jun2018 -->
             self.cardWidth = self.$el.offsetWidth;
 
             self.genomeBuildHelper = new GenomeBuildHelper();
-            self.genomeBuildHelper.promiseInit({DEFAULT_BUILD: 'GRCh37'})
+            self.genomeBuildHelper.promiseInit({DEFAULT_BUILD: 'GRCh38'})
                 .then(function () {
                     return self.promiseInitCache();
                 })
@@ -288,7 +288,6 @@ TD & SJG updated Jun2018 -->
                                     self.selectedTranscript,
                                     options)
                                     .then(function (resultMap) {
-                                        debugger;
                                         let resultVars = resultMap[0]['Subset'].features;  // Unwrap result map
                                         self.variantModel.combineVariantInfo(resultVars);
                                         self.updateClasses();
@@ -305,7 +304,6 @@ TD & SJG updated Jun2018 -->
             },
             updateClasses: function () {
                 let self = this;
-                debugger;
                 $('.variant').each(function (i, v) {
                     let impactClass = self.variantModel.getVepImpactClass(v, 'vep');
                     $(v).addClass(impactClass);

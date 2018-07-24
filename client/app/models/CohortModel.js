@@ -175,7 +175,7 @@ class CohortModel {
         // If this is the refseq gene model, set the annotation
         // scheme on the filter card to 'VEP' since snpEff will
         // be bypassed at this time.
-        if (this.getGeneModel().geneSource == 'refseq') {
+        if (this.getGeneModel().geneSource === 'refseq') {
             return "VEP";
         } else {
             return this.getDataSet().getAnnotationScheme();
@@ -755,13 +755,15 @@ class CohortModel {
     // }
 
     onVcfUrlEntered(vcfUrl, tbiUrl, callback) {
-        var me = this;
+        let me = this;
 
         me.vcfData = null;
-        var success = true;
+        let success = true;
         me.sampleName = null;
 
-        if (vcfUrl == null || vcfUrl == '') {
+        // TODO: reformat this to 
+
+        if (vcfUrl == null || vcfUrl === '') {
             me.vcfUrlEntered = false;
             success = false;
         } else {
@@ -770,7 +772,6 @@ class CohortModel {
             me.getVcfRefName = null;
             me.isMultiSample = true;
 
-            // SJG not providing a callback fxn
             success = me.vcf.openVcfUrl(vcfUrl, tbiUrl, function (success, errorMsg) {
                 if (me.lastVcfAlertify) {
                     me.lastVcfAlertify.dismiss();
@@ -781,12 +782,12 @@ class CohortModel {
                     me.getVcfRefName = null;
                     // Get the sample names from the vcf header
                     me.vcf.getSampleNames(function (sampleNames) {
-                        me.isMultiSample = sampleNames && sampleNames.length > 1 ? true : false;
+                        me.isMultiSample = !!(sampleNames && sampleNames.length > 1);
                         callback(success, sampleNames);
                     });
                 } else {
                     me.vcfUrlEntered = false;
-                    var msg = "<span style='font-size:18px'>" + errorMsg + "</span><br><span style='font-size:12px'>" + vcfUrl + "</span>";
+                    let msg = "<span style='font-size:18px'>" + errorMsg + "</span><br><span style='font-size:12px'>" + vcfUrl + "</span>";
                     alertify.set('notifier', 'position', 'top-right');
                     me.lastVcfAlertify = alertify.error(msg, 15);
                     callback(success);
@@ -814,10 +815,10 @@ class CohortModel {
                     refData.forEach(function (refObject) {
                         var refName = refObject.name;
 
-                        if (refName == theRef) {
+                        if (refName === theRef) {
                             me.getVcfRefName = me._getRefName;
                             foundRef = true;
-                        } else if (refName == me._stripRefName(theRef)) {
+                        } else if (refName === me._stripRefName(theRef)) {
                             me.getVcfRefName = me._stripRefName;
                             foundRef = true;
                         }
@@ -833,7 +834,6 @@ class CohortModel {
                         });
                         resolve();
                     } else {
-
                         // If we didn't find the matching ref name, show a warning.
                         reject();
                     }
@@ -979,39 +979,6 @@ class CohortModel {
                             false   // efficiency mode (aka variant calling only - no annotation)
                         )
                             .then(function (dataMap) {
-                                //console.log("Loading single variant anno took: " + (t1 - t0) + ' ms'); SJG_TIMING
-
-                                // SJG NOTE: removing for now, not using
-                                // var rawVcfRecords = data[0];
-                                // var vcfRecords = rawVcfRecords.filter(function(record) {
-                                //   if (record.indexOf("#") == 0) {
-                                //     if (getHeader) {
-                                //       return true;
-                                //     } else {
-                                //       return false;
-                                //     }
-                                //   } else if (record != "") {
-                                //     var fields = record.split("\t");
-                                //     var chrom = fields[0];
-                                //     var start = fields[1];
-                                //     var ref   = fields[3];
-                                //     var alt   = fields[4];
-                                //     var found = false;
-                                //     alt.split(",").forEach(function(theAlt) {
-                                //       if (!found &&
-                                //         me.getVcfRefName(theGene.chr) == chrom &&
-                                //         start == variant.start &&
-                                //         theAlt == variant.alt &&
-                                //         ref == variant.ref) {
-                                //         found = true;
-                                //       }
-                                //     })
-                                //     return found;
-                                //   }
-                                // });
-
-                                //var theVcfData = data[1];
-                                debugger;
                                 var subsetVcfData = dataMap[0];
                                 if (subsetVcfData != null && subsetVcfData.features != null && subsetVcfData.features.length > 0) {
                                     var matchingVariants = [];
@@ -1042,7 +1009,7 @@ class CohortModel {
                                             me._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript, cacheHelper)
                                                 .then(function (cachedVcfData) {
                                                     if (cachedVcfData) {
-                                                        var theVariants = cachedVcfData.features.filter(function (d) {
+                                                        let theVariants = cachedVcfData.features.filter(function (d) {
                                                             if (d.start === v.start &&
                                                                 d.alt === v.alt &&
                                                                 d.ref === v.ref) {
@@ -1052,7 +1019,7 @@ class CohortModel {
                                                             }
                                                         });
                                                         if (theVariants && theVariants.length > 0) {
-                                                            var theVariant = theVariants[0];
+                                                            let theVariant = theVariants[0];
 
                                                             // set the hgvs and rsid on the existing variant
                                                             theVariant.extraAnnot = true;
@@ -1492,27 +1459,11 @@ class CohortModel {
     /* Only called by subset model for now */
     getFormattedSampleIds(type) {
         let self = this;
-
         if (type === 'subset') {
             return self.subsetIds;
-            // let subsetSamples = [];
-            // self.subsetIds.forEach(function (sample) {
-            //     subsetSamples.push({vcfSampleName: sample, sampleName: sample});
-            // });
-            // return subsetSamples;
         }
         else if (type === 'probands') {
-            //let probandSamples = [];
             return self.getDataSet().getProbandCohort().subsetIds;
-            // if (probandIds.length > 0) {
-            //     probandIds.forEach(function(sample) {
-            //         probandSamples.push({vcfSampleName: sample, sampleName: sample});
-            //     });
-            //     return probandSamples;
-            // }
-            // else {
-            //     console.log("Could not obtain proband sample IDs in getFormattedSampleIds in CohortModel");
-            // }
         }
     }
 

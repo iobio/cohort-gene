@@ -734,7 +734,6 @@ vcfiobio = function module() {
     /* SJG cohort version 11Jul2018 */
     exports._updatedGetRemoteVariantsImpl = function (refName, geneObject, selectedTranscript, regions, isMultiSample, expSampleNames, controlSampleNames, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false, isSubset = false, efficiencyMode = false) {
         let me = this;
-
         if (regions == null || regions.length === 0) {
             regions = [];
             regions.push({'name': refName, 'start': geneObject.start, 'end': geneObject.end});

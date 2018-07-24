@@ -4,10 +4,9 @@ class DataSetModel {
     constructor() {
         // Public props
         this.name = '';   // Key for variant card
-        this.vcfUrl = null;
-        this.vcfFile = null;
-        this.tbiUrl = null;
-        this.tbiFile = null;
+        this.urlLookup = null;  // Lookup for vcf & tbi urls - keys are chrN - values are object w/ vcf and tbi arrays of urls in same relative order
+        this.vcfFiles = null;
+        this.tbiFiles = null;
         this.annotationScheme = 'VEP';
 
         // Psuedo-private props
