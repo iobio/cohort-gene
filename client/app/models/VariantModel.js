@@ -147,24 +147,14 @@ class VariantModel {
 
             // Get URLs from Hub
             self.promiseGetUrlsFromHub(self.projectId, initialLaunch)
-                .then(function (chrUrlsLookup) {
-
-                    // Ensure we have data for all chromosomes
-                    let retrievedUrlsForAllChr = true;
-                    self.chrNameMap.forEach((chrName) => {
-                        retrievedUrlsForAllChr &= ((chrUrlsLookup[chrName])['vcf'].length > 0);
-                    });
-                    if (!retrievedUrlsForAllChr) {
-                        let subsetCohort = self.dataSet.getSubsetCohort();
-                        if (subsetCohort != null) {
-                            subsetCohort.inProgress.fetchingHubData = false;
-                        }
-                        self.hubIssue = true;
-                        reject('Missing urls for some chromosomes from Hub');
+                .then(function (urlObj) {
+                    if (urlObj == null || urlObj.names == null || urlObj.names.length === 0) {
+                        reject('Did not retrieve any matching files for given criteria');
                     }
-
                     // Store urls in data set model
-                    hubDataSet.urlLookup = chrUrlsLookup;
+                    hubDataSet.vcfNames = urlObj.names;
+                    hubDataSet.vcfUrls = urlObj.vcfs;
+                    hubDataSet.tbiUrls = urlObj.tbis;
 
                     // Format filter to send to Hub to get all proband IDs (via 'affected status' metric)
                     let probandFilter = self.getProbandPhenoFilter();
@@ -206,7 +196,6 @@ class VariantModel {
                     // Add proband filter to subset filter set
                     self.appendSubsetPhenoFilters(subsetCohort, probandFilter);
 
-
                     // Retrieve subset sample IDs from Hub
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                         .then(function (ids) {
@@ -231,7 +220,7 @@ class VariantModel {
                             // Free up some space
                             self.simonsIdMap = null;
                             // Get variant loading rolling
-                            self.promiseInit()
+                            self.promiseInit(hubDataSet.vcfNames)
                                 .then(function () {
                                     resolve();
                                 })
@@ -272,26 +261,48 @@ class VariantModel {
                 tbiUrlList = [];
             // Files coming back from Hub
             let vcfFiles = null,
-                tbiFiles = null;
+                tbiCsiFiles = null;
 
             // Retrieve file objects from Hub
             self.hubEndpoint.getFilesForProject(projectId, initialLaunch).done(data => {
                 // Stable sort by file type
                 vcfFiles = data.data.filter(f => f.type === 'vcf');
-                tbiFiles = data.data.filter(f => f.type === 'tbi');
+                tbiCsiFiles = data.data.filter(f => f.type === 'tbi' || f.type === 'csi');
+
+                // Pull out combined vcfs from individual chromosome ones
+                let sortedVcfFiles = [];
+                vcfFiles.forEach((file) => {
+                    let name = file.name;
+                    let namePieces = name.split('.');
+                    namePieces.forEach((piece) => {
+                        if (piece === 'all') {
+                            sortedVcfFiles.push(file);
+                        }
+                    })
+                });
+                let sortedTbiCsiFiles = [];
+                tbiCsiFiles.forEach((file) => {
+                    let name = file.name;
+                    let namePieces = name.split('.');
+                    namePieces.forEach((piece) => {
+                        if (piece === 'all') {
+                            sortedTbiCsiFiles.push(file);
+                        }
+                    })
+                });
 
                 // Check that we have matching data for all files
-                if (vcfFiles.length !== tbiFiles.length) {
-                    console.log('Did not obtain matching vcf and tbi files from Hub. Data may not be complete.');
+                if (sortedVcfFiles.length !== (sortedTbiCsiFiles.length)) {
+                    console.log('Did not obtain matching vcf and tbi/csi files from Hub. Data may not be complete.');
                 }
 
                 // Get urls for both vcf and tbi
                 let urlPromises = [];
-                for (let i = 1; i < vcfFiles.length; i++) { // TODO: skipping first file coming back b/c from phase 1, fix this
-                    let currVcf = vcfFiles[i];
-                    let currTbi = tbiFiles[i];
+                for (let i = 0; i < sortedVcfFiles.length; i++) {
+                    let currVcf = sortedVcfFiles[i];
+                    let currTbi = sortedTbiCsiFiles[i];
                     let urlP = self.promiseGetSignedUrls(currVcf, currTbi)
-                        .then((urlObj) => {         // TODO: this is coming back null
+                        .then((urlObj) => {
                             nameList.push(urlObj.name);
                             vcfUrlList.push(urlObj.vcf);
                             tbiUrlList.push(urlObj.tbi);
@@ -301,25 +312,7 @@ class VariantModel {
                 // Sort data by chromosome once we have all urls
                 Promise.all(urlPromises)
                     .then(() => {
-                        // Initialize lookup table with chromosome names
-                        let chrUrlLookup = self._initUrlLookup();
-
-                        // Iterate through all files and add to lookup table
-                        for (let i = 0; i < nameList.length; i++) {
-                            let currFileName = nameList[i];
-                            let namePieces = (currFileName.split('.')[0]).split('_');
-                            for (let j = (namePieces.length - 1); j >= 0; j--) {  // Iterate backwards - current naming conventions has chr at end of phrase
-                                let currPiece = namePieces[j];
-
-                                // Try to pull out matching chromosome object and add vcf/tbi - if it doesn't correspond to a chromosome, don't keep for now TODO: ask CM what to do in this case
-                                let chrObj = chrUrlLookup[currPiece];
-                                if (chrObj != null) {
-                                    chrObj['vcf'].push(vcfUrlList[i]);
-                                    chrObj['tbi'].push(tbiUrlList[i]);
-                                }
-                            }
-                        }
-                        resolve(chrUrlLookup);
+                        resolve({'names': nameList, 'vcfs': vcfUrlList, 'tbis': tbiUrlList});
                     })
                     .catch((error) => {
                         reject('There was a problem retrieving file urls from Hub: ' + error);
@@ -348,7 +341,7 @@ class VariantModel {
                         vcfUrl = url;
                     }
                 });
-                urlPromises.push(vcfP);
+            urlPromises.push(vcfP);
 
             // Get tbi url
             let tbiP = self.promiseGetSignedUrl(tbi)
@@ -365,7 +358,7 @@ class VariantModel {
             // Return after we have both to preserve relative ordering
             Promise.all(urlPromises)
                 .then(() => {
-                    resolve({ 'name': vcf.name, 'vcf': vcfUrl, 'tbi': tbiUrl });
+                    resolve({'name': vcf.name, 'vcf': vcfUrl, 'tbi': tbiUrl});
                 })
                 .catch((error) => {
                     reject('There was a problem obtaining signed urls from Hub: ' + error);
@@ -486,24 +479,24 @@ class VariantModel {
     }
 
     /* Returns promise to check vcf url and finishes initializing cohort models. */
-    promiseInit() {
+    promiseInit(vcfFileNames) {
         let self = this;
 
         return new Promise(function (resolve, reject) {
             // Finish initializing cohort models
             let subsetCohort = self.dataSet.getSubsetCohort();
             subsetCohort.inProgress.verifyingVcfUrl = true;
-            subsetCohort.init(self);
+            subsetCohort.init(self, vcfFileNames);
 
-            // Check vcf url and add samples
-
-            // TODO: can pass array of urls here instead of individuals
-
-            self.promiseAddSamples(subsetCohort, self.dataSet.vcfUrl, self.dataSet.tbiUrl)
-                .then(function (aCohort) {
+            // Check vcf urls and add samples
+            self.promiseAddSamples(subsetCohort, self.dataSet.vcfUrls, self.dataSet.tbiUrls)
+                .then(function () {
                     // Copy over retrieved sample info and flip status flags
-                    subsetCohort.vcf = aCohort.vcf;                             // TODO: what are we copying over here and do I need to retain return info for each vcf?? Or is this just endpoint
-                    subsetCohort.inProgress.verifyingVcfUrl = false;
+
+                    // TODO: have to assign all of the vcfs to each file in hash in cohortModel
+                    //subsetCohort.vcf = aCohort.vcf;
+                    // TODO: also move this
+                    //subsetCohort.inProgress.verifyingVcfUrl = false;
                     self.inProgress.loadingDataSources = false;
                     self.isLoaded = true;
                     resolve();
@@ -516,20 +509,21 @@ class VariantModel {
     }
 
     /* Promises to verify the vcf url and adds samples to vcf object. */
-    promiseAddSamples(aCohort, vcfUrl, tbiUrl) {
-        // TODO: pass array of urls instead of individuals
-        if (aCohort.vcf) {
+    promiseAddSamples(subsetCohort, vcfUrls, tbiUrls) {
+
+        if (Object.keys(subsetCohort.vcfEndptHash).length > 0) {    // TODO: probably a more robust check to do herre
             return new Promise(function (resolve, reject) {
-                    aCohort.onVcfUrlEntered(vcfUrl, tbiUrl, function () {
-                        aCohort.inProgress.verifyingVcfUrl = false;
-                        resolve(aCohort);
-                    })
-                },
-                function (error) {
-                    reject(error);
-                });
-        }
-        else {
+                subsetCohort.onVcfUrlEntered(vcfUrls, tbiUrls)
+                    .then((success) => {
+                        if (success) {
+                            resolve();
+                        }
+                        else {
+                            reject('There was a problem checking vcf/tbi urls and adding samples.');
+                        }
+                    });
+            });
+        } else {
             return Promise.reject('No vcf data to open in promiseAddSamples');
         }
     }
@@ -733,7 +727,10 @@ class VariantModel {
         }
     }
 
-    promiseAnnotateInheritance(geneObject, theTranscript, resultMap, options = {isBackground: false, cacheData: true}) {
+    promiseAnnotateInheritance(geneObject, theTranscript, resultMap, options = {
+        isBackground: false,
+        cacheData: true
+    }) {
         let self = this;
 
         let resolveIt = function (resolve, resultMap, geneObject, theTranscript, options) {
@@ -746,7 +743,11 @@ class VariantModel {
 
         return new Promise(function (resolve, reject) {
             if (self.isAlignmentsOnly() && !autocall && resultMap == null) {
-                resolve({'resultMap': {PROBAND_ID: {features: []}}, 'gene': geneObject, 'transcript': theTranscript});
+                resolve({
+                    'resultMap': {PROBAND_ID: {features: []}},
+                    'gene': geneObject,
+                    'transcript': theTranscript
+                });
             } else {
                 resolveIt(resolve, resultMap, geneObject, theTranscript, options);
             }

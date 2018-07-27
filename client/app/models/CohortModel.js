@@ -3,8 +3,11 @@
 
 class CohortModel {
     constructor(theVariantModel) {
-        this.vcf = null;                // VCF iobio service endpoint
-        this.bam = null;                // BAM iobio service endpoint
+        // this.vcf = null;                // VCF iobio service endpoint
+        // this.bam = null;                // BAM iobio service endpoint
+        // TODO: refactor this model to use one vcf endpoint per multi-vcf instead of a single one
+        this.vcfEndptHash = {};      // One vcf iobio service endpoint per multi-vcf url (key is name of file)
+        this.bamEndptHash = {};      // One bam iobio service endpoint per multi-bam url (key is name of file)
 
         // BAM, VCF data fields
         this.vcfData = null;            // Contains VCF variant information
@@ -631,12 +634,22 @@ class CohortModel {
     // }
 
     /* Setup VCF fields */
-    init(variantModel) {
+    init(variantModel, vcfFileNames) {
         let me = this;
-        me.vcf = vcfiobio();
-        me.vcf.setEndpoint(variantModel.endpoint);
-        me.vcf.setGenericAnnotation(variantModel.genericAnnotation);
-        me.vcf.setGenomeBuildHelper(variantModel.genomeBuildHelper);
+
+        // TODO: verify this initialization works
+        vcfFileNames.forEach((fileName) => {
+            me.vcfEndptHash[fileName] = vcfiobio();
+            let currEndpt = me.vcfEndptHash[fileName];
+            currEndpt.setEndpoint(variantModel.endpoint);
+            currEndpt.setGenericAnnotation(variantModel.genericAnnotation);
+            currEndpt.setGenomeBuildHelper(variantModel.genomeBuildHelper);
+        });
+        // TODO: get rid of once refactor done
+        // me.vcf = vcfiobio();
+        // me.vcf.setEndpoint(variantModel.endpoint);
+        // me.vcf.setGenericAnnotation(variantModel.genericAnnotation);
+        // me.vcf.setGenomeBuildHelper(variantModel.genomeBuildHelper);
     };
 
     // promiseBamFilesSelected(event) {
@@ -754,45 +767,54 @@ class CohortModel {
     //   }
     // }
 
-    onVcfUrlEntered(vcfUrl, tbiUrl, callback) {
+    onVcfUrlEntered(vcfUrls, tbiUrls) {
         let me = this;
-
         me.vcfData = null;
-        let success = true;
         me.sampleName = null;
 
-        // TODO: reformat this to 
-
-        if (vcfUrl == null || vcfUrl === '') {
+        // For each vcf url, open and get sample names
+        if (vcfUrls == null || vcfUrls.length === 0) {
             me.vcfUrlEntered = false;
-            success = false;
         } else {
             me.vcfUrlEntered = true;
             me.vcfFileOpened = false;
             me.getVcfRefName = null;
             me.isMultiSample = true;
 
-            success = me.vcf.openVcfUrl(vcfUrl, tbiUrl, function (success, errorMsg) {
-                if (me.lastVcfAlertify) {
-                    me.lastVcfAlertify.dismiss();
-                }
-                if (success) {
-                    me.vcfUrlEntered = true;
-                    me.vcfFileOpened = false;
-                    me.getVcfRefName = null;
-                    // Get the sample names from the vcf header
-                    me.vcf.getSampleNames(function (sampleNames) {
-                        me.isMultiSample = !!(sampleNames && sampleNames.length > 1);
-                        callback(success, sampleNames);
+            let openPromises = [];
+            let singleSuccess = true;
+            for (let i = 0; i < vcfUrls.length; i++) {
+                let p = new Promise((resolve, reject) => {
+                    me.vcf.openVcfUrl(vcfUrls[i], tbiUrls[i], function (success, errorMsg) {
+                        singleSuccess &= success;
+                        if (success) {
+                            me.vcfUrlEntered = true;
+                            me.vcfFileOpened = false;
+                            me.getVcfRefName = null;
+
+                            // TODO: left off here - how do I do this?
+                            // Replace vcf in hash?
+                            // Flip status flag
+                            me.inProgress.verifyingVcfUrl = false;
+
+                            // Get the sample names from the vcf header
+                            me.vcf.getSampleNames(function (sampleNames) {
+                                me.isMultiSample = !!(sampleNames && sampleNames.length > 1);
+                                resolve();  // TODO: is this the right spot for resolve?
+                            });
+                        } else {
+                            me.vcfUrlEntered = false;
+                            console.log('Could not open the file: ' + vcfUrls[i] + 'or ' + tbiUrls[i] + ' - ' + errorMsg);
+                            reject(errorMsg);
+                        }
                     });
-                } else {
-                    me.vcfUrlEntered = false;
-                    let msg = "<span style='font-size:18px'>" + errorMsg + "</span><br><span style='font-size:12px'>" + vcfUrl + "</span>";
-                    alertify.set('notifier', 'position', 'top-right');
-                    me.lastVcfAlertify = alertify.error(msg, 15);
-                    callback(success);
-                }
-            });
+                });
+                openPromises.push(p);
+            }
+            Promise.all(openPromises)
+                .then(() => {
+                    resolve(singleSuccess);
+                })
         }
     }
 

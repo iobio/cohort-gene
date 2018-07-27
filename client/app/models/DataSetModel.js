@@ -4,8 +4,10 @@ class DataSetModel {
     constructor() {
         // Public props
         this.name = '';   // Key for variant card
-        this.urlLookup = null;  // Lookup for vcf & tbi urls - keys are chrN - values are object w/ vcf and tbi arrays of urls in same relative order
+        this.vcfNames = [];         // List of names corresponding to vcf urls - matching order as vcfUrls
+        this.vcfUrls = [];          // List of urls for phases vcfs
         this.vcfFiles = null;
+        this.tbiUrls = [];          // List of urls for phases tbis - matching order as vcfUrls
         this.tbiFiles = null;
         this.annotationScheme = 'VEP';
 
