@@ -230,7 +230,7 @@ vcfiobio = function module() {
         var cmd = me.getEndpoint().getVcfHeader(url, tbiUrl);
 
         cmd.on('data', function (data) {
-            if (data != undefined) {
+            if (data != null) {
                 success = true;
                 buffer += data;
             }
@@ -242,7 +242,7 @@ vcfiobio = function module() {
             }
             if (success && buffer.length > 0) {
                 buffer.split("\n").forEach(function (rec) {
-                    if (rec.indexOf("#") == 0) {
+                    if (rec.indexOf("#") === 0) {
                         me._parseHeaderForInfoFields(rec);
                     }
                 })

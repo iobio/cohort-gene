@@ -220,6 +220,8 @@ class VariantModel {
                             // Free up some space
                             self.simonsIdMap = null;
                             // Get variant loading rolling
+
+                            // TODO: have I initialized vcf for each model here yet?
                             self.promiseInit(hubDataSet.vcfNames)
                                 .then(function () {
                                     resolve();
@@ -290,6 +292,11 @@ class VariantModel {
                         }
                     })
                 });
+
+                // TODO: TAKE THIS OUT WHEN PHASE 4 CSI FIXED
+                // TODO: CAN TRY -C ARG WITH TABIX COMMAND
+                sortedVcfFiles.pop();
+                sortedTbiCsiFiles.pop();
 
                 // Check that we have matching data for all files
                 if (sortedVcfFiles.length !== (sortedTbiCsiFiles.length)) {
@@ -489,7 +496,7 @@ class VariantModel {
             subsetCohort.init(self, vcfFileNames);
 
             // Check vcf urls and add samples
-            self.promiseAddSamples(subsetCohort, self.dataSet.vcfUrls, self.dataSet.tbiUrls)
+            self.promiseAddSamples(subsetCohort, self.dataSet.vcfNames, self.dataSet.vcfUrls, self.dataSet.tbiUrls)
                 .then(function () {
                     // Copy over retrieved sample info and flip status flags
 
@@ -509,11 +516,10 @@ class VariantModel {
     }
 
     /* Promises to verify the vcf url and adds samples to vcf object. */
-    promiseAddSamples(subsetCohort, vcfUrls, tbiUrls) {
-
-        if (Object.keys(subsetCohort.vcfEndptHash).length > 0) {    // TODO: probably a more robust check to do herre
+    promiseAddSamples(subsetCohort, urlNames, vcfUrls, tbiUrls) {
+        if ((Object.keys(subsetCohort.vcfEndptHash)).length > 0) {    // TODO: probably a more robust check to do here
             return new Promise(function (resolve, reject) {
-                subsetCohort.onVcfUrlEntered(vcfUrls, tbiUrls)
+                subsetCohort.onVcfUrlEntered(urlNames, vcfUrls, tbiUrls)
                     .then((success) => {
                         if (success) {
                             resolve();

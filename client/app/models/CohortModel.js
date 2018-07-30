@@ -767,55 +767,62 @@ class CohortModel {
     //   }
     // }
 
-    onVcfUrlEntered(vcfUrls, tbiUrls) {
+    onVcfUrlEntered(urlNames, vcfUrls, tbiUrls) {
         let me = this;
         me.vcfData = null;
         me.sampleName = null;
 
-        // For each vcf url, open and get sample names
-        if (vcfUrls == null || vcfUrls.length === 0) {
-            me.vcfUrlEntered = false;
-        } else {
-            me.vcfUrlEntered = true;
-            me.vcfFileOpened = false;
-            me.getVcfRefName = null;
-            me.isMultiSample = true;
+        return new Promise((resolve, reject) => {
+            // For each vcf url, open and get sample names
+            if (vcfUrls == null || vcfUrls.length === 0) {
+                me.vcfUrlEntered = false;
+                reject();
+            } else {
+                me.vcfUrlEntered = true;
+                me.vcfFileOpened = false;
+                me.getVcfRefName = null;
+                me.isMultiSample = true;
 
-            let openPromises = [];
-            let singleSuccess = true;
-            for (let i = 0; i < vcfUrls.length; i++) {
-                let p = new Promise((resolve, reject) => {
-                    me.vcf.openVcfUrl(vcfUrls[i], tbiUrls[i], function (success, errorMsg) {
-                        singleSuccess &= success;
-                        if (success) {
-                            me.vcfUrlEntered = true;
-                            me.vcfFileOpened = false;
-                            me.getVcfRefName = null;
+                let openPromises = [];
+                let singleSuccess = true;
+                for (let i = 0; i < vcfUrls.length; i++) {
+                    let p = new Promise((resolve, reject) => {
+                        let currVcfEndpt = me.vcfEndptHash[urlNames[i]];
+                        currVcfEndpt.openVcfUrl(vcfUrls[i], tbiUrls[i], function (success, errorMsg) {
+                            singleSuccess |= success;
+                            if (success) {
+                                me.vcfUrlEntered = true;
+                                me.vcfFileOpened = false;
+                                me.getVcfRefName = null;
 
-                            // TODO: left off here - how do I do this?
-                            // Replace vcf in hash?
-                            // Flip status flag
-                            me.inProgress.verifyingVcfUrl = false;
+                                // TODO: left off here - how do I do this?
+                                // Replace vcf in hash?
+                                debugger;   // check to see if I need to assign back vcf data?
 
-                            // Get the sample names from the vcf header
-                            me.vcf.getSampleNames(function (sampleNames) {
-                                me.isMultiSample = !!(sampleNames && sampleNames.length > 1);
-                                resolve();  // TODO: is this the right spot for resolve?
-                            });
-                        } else {
-                            me.vcfUrlEntered = false;
-                            console.log('Could not open the file: ' + vcfUrls[i] + 'or ' + tbiUrls[i] + ' - ' + errorMsg);
-                            reject(errorMsg);
-                        }
+                                // Flip status flag
+                                me.inProgress.verifyingVcfUrl = false;
+
+                                // Get the sample names from the vcf header
+                                currVcfEndpt.getSampleNames(function (sampleNames) {
+                                    me.isMultiSample = !!(sampleNames && sampleNames.length > 1);
+                                    resolve();  // TODO: is this the right spot for resolve?
+                                });
+                            } else {
+                                me.vcfUrlEntered = false;
+                                console.log('Could not open the file: ' + vcfUrls[i] + 'or ' + tbiUrls[i] + ' - ' + errorMsg);
+                                reject(errorMsg);
+                            }
+                        });
                     });
-                });
-                openPromises.push(p);
+                    openPromises.push(p);
+                }
+                Promise.all(openPromises)
+                    .then(() => {
+                        debugger;
+                        resolve(singleSuccess);
+                    });
             }
-            Promise.all(openPromises)
-                .then(() => {
-                    resolve(singleSuccess);
-                })
-        }
+        });
     }
 
     _promiseVcfRefName(ref) {
