@@ -90,7 +90,7 @@ EndpointCmd.prototype.annotateEnrichment = function(vcfSource, refName, regions,
     }
 
     // Annotate enrichment info
-    cmd = cmd.pipe(self.IOBIO.gtEnricher, [expSampleNames], {ssl: self.useSSL});
+    cmd = cmd.pipe(self.IOBIO.gtEnricher, expSampleNames, {ssl: self.useSSL});
 
     return cmd;
 }

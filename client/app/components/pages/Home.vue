@@ -96,7 +96,7 @@ TD & SJG updated Jun2018 -->
 
     // Static data
     import allGenesData from '../../../data/genes.json'
-    import simonsIdMap from '../../../data/idmap.json'
+    import simonsIdMap from '../../../data/new_id_map.json'
 
     export default {
         name: 'home',
@@ -107,7 +107,6 @@ TD & SJG updated Jun2018 -->
             VariantZoomCard,
             VariantCard,
             UpdatedVariantCard
-            // SJG TODO: add FeatureMatrixCard, GenesCard
         },
         props: {
             paramProjectId: {

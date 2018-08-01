@@ -169,12 +169,12 @@ class VariantModel {
                                 reject('No samples found for proband filtering from Hub');
                             }
                             // Coming from SSC data set
-                            if (!((ids[0].id).startsWith('SSC'))) {
+                            if (!((ids[0].id).startsWith('SS'))) {
                                 probandCohort.subsetIds = self.convertSimonsIds(ids);
                             }
                             // Coming from SPARK or other
                             else {
-                                probandCohort.subsetIds = ids;
+                                probandCohort.subsetIds = self.getRawIds(ids);
                             }
                             probandCohort.subsetPhenotypes.push('n = ' + ids.length);
                         });
@@ -199,11 +199,10 @@ class VariantModel {
                     // Retrieve subset sample IDs from Hub
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                         .then(function (ids) {
-                            if (ids.length > 0 && !((ids[0].id).startsWith('SSC'))) {
+                            if (ids.length > 0 && !((ids[0].id).startsWith('SS'))) {
                                 subsetCohort.subsetIds = self.convertSimonsIds(ids);
-                            }
-                            else {
-                                subsetCohort.subsetIds = ids;
+                            } else {
+                                subsetCohort.subsetIds = self.getRawIds(ids);
                             }
                         });
                     promises.push(subsetP);
@@ -236,6 +235,13 @@ class VariantModel {
         })
     }
 
+    getRawIds(ids) {
+        let rawIds = [];
+        ids.forEach((idObj) => {
+            rawIds.push(idObj.id);
+        });
+        return rawIds;
+    }
 
     /* Converts provide list of Hub encoded sample IDs to those found in the Phase 1 Simons VCF. */
     convertSimonsIds(hubIds) {
@@ -1057,7 +1063,7 @@ class VariantModel {
                     ? self.dataSet.getProbandCohort()._refreshVariantsWithClinvarVCFRecs.bind(self.dataSet.getProbandCohort(), unionVcfData)
                     : self.dataSet.getProbandCohort()._refreshVariantsWithClinvarEutils.bind(self.dataSet.getProbandCohort(), unionVcfData);
 
-                self.dataSet.getProbandCohort().vcf.promiseGetClinvarRecords(
+                self.dataSet.getProbandCohort().getFirstVcf().promiseGetClinvarRecords(
                     unionVcfData,
                     self.dataSet.getProbandCohort()._stripRefName(geneObject.chr),
                     geneObject,

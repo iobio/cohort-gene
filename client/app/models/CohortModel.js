@@ -104,6 +104,11 @@ class CohortModel {
         this.sampleName = sampleName;
     }
 
+    /* Returns the first vcf in vcfEndptHash. */
+    getFirstVcf() {
+
+    }
+
     promiseSetLoadState(theVcfData, taskName) {
         let me = this;
 
@@ -795,9 +800,8 @@ class CohortModel {
                                 me.vcfFileOpened = false;
                                 me.getVcfRefName = null;
 
-                                // TODO: left off here - how do I do this?
+                                // TODO: need to verify that I don't need to copy over vcf info here
                                 // Replace vcf in hash?
-                                debugger;   // check to see if I need to assign back vcf data?
 
                                 // Flip status flag
                                 me.inProgress.verifyingVcfUrl = false;
@@ -805,7 +809,7 @@ class CohortModel {
                                 // Get the sample names from the vcf header
                                 currVcfEndpt.getSampleNames(function (sampleNames) {
                                     me.isMultiSample = !!(sampleNames && sampleNames.length > 1);
-                                    resolve();  // TODO: is this the right spot for resolve?
+                                    resolve();
                                 });
                             } else {
                                 me.vcfUrlEntered = false;
@@ -818,7 +822,6 @@ class CohortModel {
                 }
                 Promise.all(openPromises)
                     .then(() => {
-                        debugger;
                         resolve(singleSuccess);
                     });
             }
@@ -839,10 +842,18 @@ class CohortModel {
                 }
             } else {
                 me.vcfRefNamesMap = {};
-                me.vcf.getReferenceLengths(function (refData) {
-                    var foundRef = false;
+                let firstVcfName = Object.keys(me.vcfEndptHash)[0];     // Only need one lookup table - use first vcf to retrieve
+                let firstVcfEndpt = null;
+                if (firstVcfName != null) {
+                    firstVcfEndpt = me.vcfEndptHash[firstVcfName];
+                } else {
+                  reject('Could not retrieve vcf endpoint in _promiseVcfRefName in CohortModel');
+                }
+
+                firstVcfEndpt.getReferenceLengths(function (refData) {
+                    let foundRef = false;
                     refData.forEach(function (refObject) {
-                        var refName = refObject.name;
+                        let refName = refObject.name;
 
                         if (refName === theRef) {
                             me.getVcfRefName = me._getRefName;
@@ -857,8 +868,8 @@ class CohortModel {
                     // a new gene is loaded to make sure the ref exists.
                     if (foundRef) {
                         refData.forEach(function (refObject) {
-                            var refName = refObject.name;
-                            var theRefName = me.getVcfRefName(refName);
+                            let refName = refObject.name;
+                            let theRefName = me.getVcfRefName(refName);
                             me.vcfRefNamesMap[theRefName] = refName;
                         });
                         resolve();
@@ -1182,63 +1193,138 @@ class CohortModel {
         return new Promise(function (resolve, reject) {
             me._promiseVcfRefName(theGene.chr)
                 .then(function () {
-                    return me.vcf.promiseGetEnrichedVariants(
-                        me.getVcfRefName(theGene.chr),
-                        theGene,
-                        theTranscript,
-                        null,       // regions
-                        isMultiSample,
-                        me.getFormattedSampleIds('subset'),
-                        me.getFormattedSampleIds('probands'),
-                        me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
-                        me.getTranslator().clinvarMap,
-                        me.getGeneModel().geneSource === 'refseq',
-                        false,      // hgvs notation
-                        false,      // rsid
-                        false,      // vep af
-                        null,
-                        keepVariantsCombined,
-                        me.isSubsetCohort,
-                        efficiencyMode
-                    );
-                })
-                .then(function (dataMap) {
-                    let subsetResults = dataMap;
-                    if (subsetResults) {
-                        let theGeneObject = me.getGeneModel().geneObjects[subsetResults.gene];
-                        if (theGeneObject) {
-                            let resultMap = {};
-                            let model = cohortModels[0];
-                            let theVcfData = subsetResults;
-                            if (theVcfData == null) {
-                                if (callback) {
-                                    callback();
-                                }
-                                return;
-                            }
-                            theVcfData.gene = theGeneObject;
-                            let cohortName = me.getName();
-                            resultMap[cohortName] = theVcfData;
-
-                            if (!isBackground) {
-                                model.vcfData = theVcfData;
-                            }
-                            resolve(resultMap);
-                        } else {
-                            let error = "ERROR - cannot locate gene object to match with vcf data " + data.ref + " " + data.start + "-" + data.end;
-                            console.log(error);
-                            reject(error);
+                    // Iterate through vcfs and retrieve enriched values for each one
+                    let urlNames = Object.keys(me.vcfEndptHash);
+                    let enrichResults = {};   // TODO: should this be obj or array
+                    let enrichPromises = [];
+                    for (let i = 0; i < urlNames.length; i++) {
+                        let currVcfEndpt = me.vcfEndptHash[urlNames[i]];
+                        if (currVcfEndpt != null) {
+                            let subsetIds = me.getFormattedSampleIds('subset');
+                            let probandIds = me.getFormattedSampleIds('probands');
+                            let enrichP = currVcfEndpt.promiseGetEnrichedVariants(
+                                me.getVcfRefName(theGene.chr),
+                                theGene,
+                                theTranscript,
+                                null,       // regions
+                                isMultiSample,
+                                subsetIds,
+                                probandIds,
+                                me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
+                                me.getTranslator().clinvarMap,
+                                me.getGeneModel().geneSource === 'refseq',
+                                false,      // hgvs notation
+                                false,      // rsid
+                                false,      // vep af
+                                null,
+                                keepVariantsCombined,
+                                me.isSubsetCohort,
+                                efficiencyMode
+                            )
+                                .then((results) => {
+                                    enrichResults[urlNames[i]] = results;
+                                });
+                            enrichPromises.push(enrichP);
                         }
-                    } else {
-                        let error = "ERROR - empty vcf results for " + theGene.gene_name;
-                        console.log(error);
-                        reject(error);
+                        else {
+                            console.log('Problem in CohortModel promoiseAnnotateVariants: Could not retrieve endpoint for the file: ' + urlNames[i]);
+                        }
                     }
-                })
-                .catch((error) => {
-                    console.log('Problem in cohort model ' + error);
+                    Promise.all(enrichPromises)
+                        .then(() => {
+                            let combinedResults = me._combineAnnotationResults(enrichResults);
+                            if (combinedResults) {
+                                let theGeneObject = me.getGeneModel().geneObjects[combinedResults.gene];
+                                if (theGeneObject) {
+                                    let resultMap = {};
+                                    let model = cohortModels[0];
+                                    let theVcfData = combinedResults;
+                                    if (theVcfData == null) {
+                                        if (callback) {
+                                            callback();
+                                        }
+                                        return;
+                                    }
+                                    theVcfData.gene = theGeneObject;
+                                    let cohortName = me.getName();
+                                    resultMap[cohortName] = theVcfData;
+
+                                    if (!isBackground) {
+                                        model.vcfData = theVcfData;
+                                    }
+                                    resolve(resultMap);
+                                } else {
+                                    let error = "ERROR - cannot locate gene object to match with vcf data " + data.ref + " " + data.start + "-" + data.end;
+                                    console.log(error);
+                                    reject(error);
+                                }
+                            } else {
+                                let error = "ERROR - empty vcf results for " + theGene.gene_name;
+                                console.log(error);
+                                reject(error);
+                            }
+                        })
+                        .catch((error) => {
+                            console.log('Problem in cohort model ' + error);
+                        });
                 })
         });
+    }
+
+    _combineAnnotationResults(annotationResults) {
+        let self = this;
+
+        let vcfNames = Object.keys(annotationResults);
+        let combinedResults = annotationResults[vcfNames[0]];
+        let featureLookup = {};
+        for (let i = 0; i < combinedResults.features.length; i++) {
+            featureLookup[combinedResults.features[i].id] = i;
+        }
+
+        for (let i = 1; i < vcfNames.length; i++) {
+            let currName = vcfNames[i];
+            let currResult = annotationResults[currName];
+            if (currResult != null) {
+                // Combine currResult features into combined result object
+                let currFeatures = currResult.features;
+                currFeatures.forEach((feature) => {
+                    if (featureLookup[feature.id] != null) {
+                        // Pull out existing counts
+                        let combinedIndex = featureLookup[feature.id];
+                        let currProCounts = combinedResults.features[combinedIndex].probandZygCounts;
+                        let currSubCounts = combinedResults.features[combinedIndex].subsetZygCounts;
+
+                        // Pull out additional counts to add
+                        let addProCounts = feature.probandZygCounts;
+                        let addSubCounts = feature.subsetZygCounts;
+
+                        // Combine counts
+                        currProCounts[0] += addProCounts[0];
+                        currProCounts[1] += addProCounts[1];
+                        currProCounts[2] += addProCounts[2];
+                        currProCounts[3] += addProCounts[3];
+                        currSubCounts[0] += addSubCounts[0];
+                        currSubCounts[1] += addSubCounts[1];
+                        currSubCounts[2] += addSubCounts[2];
+                        currSubCounts[3] += addSubCounts[3];
+
+                        // Reassign counts back
+                        combinedResults.features[combinedIndex].probandZygCounts = currProCounts;
+                        combinedResults.features[combinedIndex].subsetZygCounts = currSubCounts;
+                    } else {
+                        // Add this feature to the combinedResults
+                        combinedResults.features.push(feature);
+
+                        // Add feature to lookup
+                        featureLookup[feature.id] = combinedResults.length - 1;
+                    }
+                });
+            }
+        }
+        debugger;
+        // TODO: recalculate subset delta for combined object and assign
+
+        return combinedResults;
     }
 
     _combineUniqueFeatures(results) {
@@ -1613,8 +1699,11 @@ class CohortModel {
             widthFactor /= 2;
         }
 
-        // Want to do this for both proband/subset now
-        let levelObj = me.vcf.updatedPileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, true);
+        // Pull out first (now combined) vcf
+        let firstKey = Object.keys(me.vcfEndptHash)[0];
+        let combinedVcf = me.vcfEndptHash[firstKey];
+
+        let levelObj = combinedVcf.updatedPileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, true);
         let maxSubLevel = levelObj.maxSubLevel;
         let maxPosLevel = levelObj.maxPosLevel;
         let maxNegLevel = levelObj.maxNegLevel;

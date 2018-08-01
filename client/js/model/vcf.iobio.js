@@ -180,7 +180,7 @@ vcfiobio = function module() {
 
     exports.getHeader = function (callback) {
         var me = this;
-        if (sourceType.toLowerCase() == SOURCE_TYPE_URL.toLowerCase() && vcfURL != null) {
+        if (sourceType.toLowerCase() === SOURCE_TYPE_URL.toLowerCase() && vcfURL != null) {
 
             var buffer = "";
             var success = false;
@@ -434,7 +434,7 @@ vcfiobio = function module() {
 
 
     exports.getReferenceLengths = function (callback) {
-        if (sourceType.toLowerCase() == SOURCE_TYPE_URL.toLowerCase()) {
+        if (sourceType.toLowerCase() === SOURCE_TYPE_URL.toLowerCase()) {
             this._getRemoteReferenceLengths(callback);
         } else {
             this._getLocalReferenceLengths(callback);
@@ -651,7 +651,7 @@ vcfiobio = function module() {
         return new Promise(function (resolve, reject) {
             if (sourceType === SOURCE_TYPE_URL) {
                 me._updatedGetRemoteVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
-                    function (resultMapList) { // SJG_1x: this is callback - resolving promise
+                    function (resultMapList) {
                         if (resultMapList) {
                             resolve(resultMapList);
                         }
@@ -739,7 +739,6 @@ vcfiobio = function module() {
             regions.push({'name': refName, 'start': geneObject.start, 'end': geneObject.end});
         }
 
-        // TODO: shouldn't need this currently for cohort - putting in controlSampleNames for now
         let serverCacheKey = me._getServerCacheKey(vcfURL, annotationEngine, refName, geneObject, controlSampleNames, {
             refseq: isRefSeq,
             hgvs: hgvsNotation,
@@ -763,6 +762,7 @@ vcfiobio = function module() {
 
         // We have all of the annotated vcf recs.  Now parse them into vcf objects
         cmd.on('end', function (data) {
+            debugger;   // Look at header here
             let annotatedRecs = annotatedData.split("\n");
             annotatedRecs.pop();    // Clip off last blank line
             let vcfObjects = [];
@@ -770,9 +770,7 @@ vcfiobio = function module() {
             annotatedRecs.forEach(function (record) {
                 if (record.charAt(0) === "#") {
                     me._parseHeaderForInfoFields(record);
-
                 } else {
-
                     // Parse the vcf record into its fields
                     let fields = record.split('\t');
                     let pos = fields[1];
@@ -832,7 +830,7 @@ vcfiobio = function module() {
 
         // Accumulation vars
         let remainingBuffer = '';
-        let subsetResults = null;  // SJG_1x: get rid of this for single drawing
+        let subsetResults = null;
         let featureCount = 0;
         let probandCountsLookup = {};
 
@@ -880,7 +878,7 @@ vcfiobio = function module() {
 
         // We have all of the annotated vcf recs.  Now parse them into vcf objects
         cmd.on('end', function (data) {
-            // SJG TODO: left off here, perpetuate the single annotations through callback and beyond so that drawing will be piecemeal
+            // SJG TODO: perpetuate the single annotations through callback and beyond so that drawing will be piecemeal
             let t1 = performance.now();
             console.log('Annotating ' + featureCount + ' variants took ' + (t1 - t0) + ' ms');
             // For subset, will return populated variant map - for probands, will return only counts map
@@ -1777,6 +1775,9 @@ vcfiobio = function module() {
     };
 
     exports.parseEnrichmentInfo = function (enrichmentField) {
+
+        // TODO: pass in num vcf files - if only one, can calc subset delta here - otherwise skip calc b/c need to do later
+
         let enrichObj = {};
 
         // Split counts up into array
