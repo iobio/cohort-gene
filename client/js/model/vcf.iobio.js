@@ -597,55 +597,8 @@ vcfiobio = function module() {
         });
     }
 
-    exports.promiseGetVariants = function (refName, geneObject, selectedTranscript, regions, isMultiSample, samplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, keepVariantsCombined = false, isSubset = false, efficiencyMode = false) {
-        let me = this;
-
-        // SJG_1x: I think this single promise needs to go away and a promise must be created for each individual callback the comes back from data stream
-        // OR we can call next step promise straight from here if we can scope it here
-        return new Promise(function (resolve, reject) {
-
-            let varSampleNames = samplesToRetrieve.filter(function (sample) {
-                return (sample.vcfSampleName !== "" && sample.vcfSampleName != null);
-            }).map(function (sample) {
-                return sample.vcfSampleName;
-            }).join(",");
-
-            // This comma separated string of samples to be contained in the maps of genotypes
-            let sampleNamesToGenotype = samplesToRetrieve.map(function (sample) {
-                return sample.sampleName;
-            }).join(",");
-
-
-            if (sourceType === SOURCE_TYPE_URL) {
-                me._getRemoteVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, varSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
-                    // SJG NOTE: not doing anything with annotated data, so removing for now
-                    // function(annotatedData, results) {
-                    //   if (annotatedData && results) {
-                    //     resolve([annotatedData, results]);
-                    //   }
-                    function (resultMapList) { // SJG_1x: this is callback - resolving promise
-                        if (resultMapList) {
-                            resolve(resultMapList);
-                        }
-                        else {
-                            reject();
-                        }
-                    }, null, keepVariantsCombined, isSubset, efficiencyMode);
-            } else {
-                me._getLocalVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, varSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
-                    function (annotatedData, results) {
-                        if (annotatedData && results) {
-                            resolve([annotatedData, results]);
-                        } else {
-                            reject();
-                        }
-                    });
-            }
-        });
-    }
-
     /* Returns enrichment data relative to selected subset group - uses new service provided by YQ */
-    exports.promiseGetEnrichedVariants = function (refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, keepVariantsCombined = false, isSubset = false, efficiencyMode = false) {
+    exports.promiseGetVariants = function (refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, keepVariantsCombined = false, enrichMode = false) {
         let me = this;
 
         return new Promise(function (resolve, reject) {
@@ -658,9 +611,9 @@ vcfiobio = function module() {
                         else {
                             reject();
                         }
-                    }, null, keepVariantsCombined, isSubset, efficiencyMode);
+                    }, null, keepVariantsCombined, enrichMode);
             } else {
-                me._getLocalVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
+                me._getLocalVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
                     function (annotatedData, results) {
                         if (annotatedData && results) {
                             resolve([annotatedData, results]);
@@ -732,7 +685,7 @@ vcfiobio = function module() {
     }
 
     /* SJG cohort version 11Jul2018 */
-    exports._updatedGetRemoteVariantsImpl = function (refName, geneObject, selectedTranscript, regions, isMultiSample, expSampleNames, controlSampleNames, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false, isSubset = false, efficiencyMode = false) {
+    exports._updatedGetRemoteVariantsImpl = function (refName, geneObject, selectedTranscript, regions, isMultiSample, expSampleNames, controlSampleNames, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false, enrichMode = false) {
         let me = this;
         if (regions == null || regions.length === 0) {
             regions = [];
@@ -745,10 +698,18 @@ vcfiobio = function module() {
             rsid: getRsId
         });
 
-        let cmd = me.getEndpoint().annotateEnrichment({
-            'vcfUrl': vcfURL,
-            'tbiUrl': tbiUrl
-        }, refName, regions, expSampleNames, controlSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey, efficiencyMode);
+        let cmd = null;
+        if (enrichMode) {
+            cmd = me.getEndpoint().annotateEnrichment({
+                'vcfUrl': vcfURL,
+                'tbiUrl': tbiUrl
+            }, refName, regions, expSampleNames, controlSampleNames);
+        } else {
+            cmd = me.getEndpoint().annotateVariants({
+                'vcfUrl': vcfURL,
+                'tbiUrl': tbiUrl
+            }, refName, regions, expSampleNames, controlSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey);
+        }
 
 
         let annotatedData = '';
@@ -762,7 +723,6 @@ vcfiobio = function module() {
 
         // We have all of the annotated vcf recs.  Now parse them into vcf objects
         cmd.on('end', function (data) {
-            debugger;   // Look at header here
             let annotatedRecs = annotatedData.split("\n");
             annotatedRecs.pop();    // Clip off last blank line
             let vcfObjects = [];
@@ -786,7 +746,10 @@ vcfiobio = function module() {
                         let splitFields = field.split('=');
                         infoLookup[splitFields[0]] = splitFields[1];
                     });
-                    let enrichment = infoLookup['ENRICH'];
+                    let enrichment = '';
+                    if (enrichMode) {
+                        enrichment = infoLookup['ENRICH'];
+                    }
 
                     // Turn vcf record into a JSON object and add it to an array
                     let vcfObject = {
@@ -798,7 +761,8 @@ vcfiobio = function module() {
             });
 
             // Parse the vcf object into a variant object that is visualized by the client.
-            let results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, expSampleNames, null, vepAF);
+            let results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, expSampleNames, null, vepAF, keepVariantsCombined, enrichMode);
+            results.features = results.features[0];     // Unwrap feature array
             callback(results);
         });
 
@@ -809,7 +773,7 @@ vcfiobio = function module() {
         cmd.run();
     }
 
-    exports._getRemoteVariantsImpl = function (refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false, isSubset = false, efficiencyMode = false) {
+    exports._getRemoteVariantsImpl = function (refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false, enrichMode = false) {
         let me = this;
 
         if (regions == null || regions.length === 0) {
@@ -826,7 +790,7 @@ vcfiobio = function module() {
         let cmd = me.getEndpoint().annotateVariants({
             'vcfUrl': vcfURL,
             'tbiUrl': tbiUrl
-        }, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey, efficiencyMode);
+        }, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey, enrichMode);
 
         // Accumulation vars
         let remainingBuffer = '';
@@ -857,7 +821,7 @@ vcfiobio = function module() {
                         me._parseHeaderForInfoFields(line);
                     }
                     else if (line.length > 0) {
-                        let result = me._processVcfLine(line, refName, geneObject, selectedTranscript, clinvarMap, hgvsNotation, getRsId, isMultiSample, sampleNamesToGenotype, vepAF, keepVariantsCombined, isSubset, efficiencyMode);
+                        let result = me._processVcfLine(line, refName, geneObject, selectedTranscript, clinvarMap, hgvsNotation, getRsId, isMultiSample, sampleNamesToGenotype, vepAF, keepVariantsCombined, enrichMode);
                         featureCount++;
                         // if we're looking at probands, just tally counts
                         if (!isSubset) {
@@ -893,7 +857,7 @@ vcfiobio = function module() {
 
     /* PIECEMEAL parses raw vcf line into vcfObject and then sends to _parseVcfRecords
      Returns results piecemeal. */
-    exports._processVcfLine = function (line, refName, geneObject, selectedTranscript, clinvarMap, hgvsNotation, getRsId, isMultiSample, sampleNamesToGenotype, vepAF, keepVariantsCombined, isSubset, efficiencyMode) {
+    exports._processVcfLine = function (line, refName, geneObject, selectedTranscript, clinvarMap, hgvsNotation, getRsId, isMultiSample, sampleNamesToGenotype, vepAF, keepVariantsCombined, enrichMode) {
         let me = this;
 
         // Parse the vcf record into its fields
@@ -917,7 +881,7 @@ vcfiobio = function module() {
             'qual': qual, 'filter': filter, 'info': info, 'format': format, 'genotypes': genotypes
         };
         // Parse record and return it
-        return me._parseVcfRecords([vcfObject], refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined, isSubset, efficiencyMode);
+        return me._parseVcfRecords([vcfObject], refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined, enrichMode);
     }
 
 
@@ -1180,7 +1144,7 @@ vcfiobio = function module() {
 
 
         // Parse the vcf object into a variant object that is visualized by the client.
-        var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, false, sampleNamesToGenotype, sampleIndex, vepAF);
+        var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, false, sampleNamesToGenotype, sampleIndex, vepAF, false, true);
         return {'annotatedRecs': annotatedRecs, 'results': results};
 
     }
@@ -1544,7 +1508,7 @@ vcfiobio = function module() {
     }
 
     /* Returns a single result object for the given vcfRecs. */
-    exports._parseVcfRecords = function (vcfRecs, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, parseMultiSample, sampleNames, sampleIndex, vepAF, keepVariantsCombined = false, isSubset = false, efficiencyMode) {
+    exports._parseVcfRecords = function (vcfRecs, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, parseMultiSample, sampleNames, sampleIndex, vepAF, keepVariantsCombined = true, enrichMode = false) {
 
         let me = this;
         let selectedTranscriptID = utility.stripTranscriptPrefix(selectedTranscript.transcript_id);
@@ -1554,25 +1518,25 @@ vcfiobio = function module() {
         // to be evaluated and parsed.  If sampleNames (a comma separated value string) is
         // provided, evaluate the sample indices as ordinals since vt select will return only those
         // sample (genotype) columns.
-        // let gtSampleIndices = [];
-        // let gtSampleNames = null;
-        //
-        // if (sampleNames != null && sampleNames !== "") {
-        //     gtSampleNames = utility.uniq(sampleNames);
-        //     gtSampleIndices = gtSampleNames.map(function (sampleName, i) {
-        //         return i;
-        //     });
-        // }
-        // // If no sample name provided, get the genotype for the provided
-        // // index.  If no index provided, get the first genotype.
-        // if (gtSampleIndices.length === 0) {
-        //     gtSampleIndices.push(sampleIndex != null ? sampleIndex : 0);
-        // }
-        // if (gtSampleNames == null) {
-        //     gtSampleNames = gtSampleIndices.map(function (elem) {
-        //         return elem.toString();
-        //     })
-        // }
+        let gtSampleIndices = [];
+        let gtSampleNames = null;
+
+        if (sampleNames != null && sampleNames !== "") {
+            gtSampleNames = utility.uniq(sampleNames);
+            gtSampleIndices = gtSampleNames.map(function (sampleName, i) {
+                return i;
+            });
+        }
+        // If no sample name provided, get the genotype for the provided
+        // index.  If no index provided, get the first genotype.
+        if (gtSampleIndices.length === 0) {
+            gtSampleIndices.push(sampleIndex != null ? sampleIndex : 0);
+        }
+        if (gtSampleNames == null) {
+            gtSampleNames = gtSampleIndices.map(function (elem) {
+                return elem.toString();
+            })
+        }
         let allVariants = null;
         if (parseMultiSample) {
             allVariants = gtSampleIndices.map(function() {
@@ -1644,8 +1608,10 @@ vcfiobio = function module() {
 
                     let annot = me._parseAnnot(rec, altIdx, isMultiAllelic, geneObject, selectedTranscript, selectedTranscriptID, vepAF);
                     let clinvarResult = me.parseClinvarInfo(rec.info, clinvarMap);
-                    let enrichResult = me.parseEnrichmentInfo(rec.enrichment);
-                    //let gtResult = me._parseGenotypes(rec, alt, altIdx, gtSampleIndices, gtSampleNames);
+                    let enrichResult = null;
+                    if (enrichMode) {
+                        enrichResult = me.parseEnrichmentInfo(rec.enrichment);
+                    }
 
                     let highestImpactSnpeff = me._getHighestImpact(annot.snpEff.allSnpeff, me._cullTranscripts, selectedTranscriptID);
                     let highestImpactVep = me._getHighestImpact(annot.vep.allVep, me._cullTranscripts, selectedTranscriptID);
@@ -1675,7 +1641,7 @@ vcfiobio = function module() {
                                 'recfilter': rec.filter.split(";").join("-"),
                                 'extraAnnot': hasExtraAnnot,
 
-                                'zygosity': enrichResult.gx,  // Used to filter and pileup variants
+                                'zygosity': '',  // Used to filter and pileup variants
 
                                 // annot fields
                                 'af': annot.af,
@@ -1706,14 +1672,25 @@ vcfiobio = function module() {
                                 'highestPolyphen': highestPolyphen,
 
                                 // cohort specific
-                                'subsetDelta': +enrichResult.subsetDelta,
-                                'totalProbandCount': (+enrichResult.counts[0] + +enrichResult.counts[1] + +enrichResult.counts[2] + +enrichResult.counts[3]),
-                                'totalSubsetCount': (+enrichResult.counts[4] + +enrichResult.counts[5] + +enrichResult.counts[6] + +enrichResult.counts[7]),
-                                'affectedProbandCount': (+enrichResult.counts[1] + +enrichResult.counts[2]),
-                                'affectedSubsetCount': (+enrichResult.counts[5] + +enrichResult.counts[6]),
-                                'probandZygCounts': [+enrichResult.counts[0], +enrichResult.counts[1], +enrichResult.counts[2], +enrichResult.counts[3]],
-                                'subsetZygCounts': [+enrichResult.counts[4], +enrichResult.counts[5], +enrichResult.counts[6], +enrichResult.counts[7]]
+                                'subsetDelta': +1,
+                                'totalProbandCount': +0,
+                                'totalSubsetCount': +0,
+                                'affectedProbandCount': +0,
+                                'affectedSubsetCount': +0,
+                                'probandZygCounts': [],
+                                'subsetZygCounts': []
                             };
+
+                            if (enrichMode) {
+                                variant.zygosity = enrichResult.gx;
+                                variant.subsetDelta = +enrichResult.subsetDelta;
+                                variant.totalProbandCount = (+enrichResult.counts[0] + +enrichResult.counts[1] + +enrichResult.counts[2] + +enrichResult.counts[3]);
+                                variant.totalSubsetCount = (+enrichResult.counts[4] + +enrichResult.counts[5] + +enrichResult.counts[6] + +enrichResult.counts[7]);
+                                variant.affectedProbandCount = (+enrichResult.counts[1] + +enrichResult.counts[2]);
+                                variant.affectedSubsetCount = (+enrichResult.counts[5] + +enrichResult.counts[6]);
+                                variant.probandZygCounts = [+enrichResult.counts[0], +enrichResult.counts[1], +enrichResult.counts[2], +enrichResult.counts[3]];
+                                variant.subsetZygCounts = [+enrichResult.counts[4], +enrichResult.counts[5], +enrichResult.counts[6], +enrichResult.counts[7]];
+                            }
 
                             for (let key in clinvarResult) {
                                 variant[key] = clinvarResult[key];
@@ -1775,9 +1752,6 @@ vcfiobio = function module() {
     };
 
     exports.parseEnrichmentInfo = function (enrichmentField) {
-
-        // TODO: pass in num vcf files - if only one, can calc subset delta here - otherwise skip calc b/c need to do later
-
         let enrichObj = {};
 
         // Split counts up into array
@@ -2602,13 +2576,13 @@ vcfiobio = function module() {
             for (var key in genotypeMap) {
                 totalSampleNumber++;
                 currSample = genotypeMap[key];
-                if (currSample.zygosity == "HET") {
+                if (currSample.zygosity === "HET") {
                     hets++;
                 }
-                else if (currSample.zygosity == "HOM") {
+                else if (currSample.zygosity === "HOM") {
                     homAlts++;
                 }
-                else if (currSample.zygosity == "HOMREF") {
+                else if (currSample.zygosity === "HOMREF") {
                     homRefs++;
                 }
                 else {
@@ -2618,12 +2592,6 @@ vcfiobio = function module() {
             variant.totalSubsetCount = totalSampleNumber;
             variant.affectedSubsetCount = (hets + homAlts);
             variant.subsetZygCounts = [homRefs, hets, homAlts, noCalls];
-
-            totalSampleNumber = 0;
-            homRefs = 0;
-            hets = 0;
-            homAlts = 0;
-            noCalls = 0;
         }
         // Assign cumulative proband counts
         else {
@@ -2631,13 +2599,13 @@ vcfiobio = function module() {
             for (var key in genotypeMap) {
                 totalSampleNumber++;
                 currSample = genotypeMap[key];
-                if (currSample.zygosity == "HET") {
+                if (currSample.zygosity === "HET") {
                     hets++;
                 }
-                else if (currSample.zygosity == "HOM") {
+                else if (currSample.zygosity === "HOM") {
                     homAlts++;
                 }
-                else if (currSample.zygosity == "HOMREF") {
+                else if (currSample.zygosity === "HOMREF") {
                     homRefs++;
                 }
                 else {
@@ -2647,12 +2615,6 @@ vcfiobio = function module() {
             variant.totalProbandCount = totalSampleNumber;
             variant.affectedProbandCount = (hets + homAlts);
             variant.probandZygCounts = [homRefs, hets, homAlts, noCalls];
-
-            totalSampleNumber = 0;
-            homRefs = 0;
-            hets = 0;
-            homAlts = 0;
-            noCalls = 0;
         }
     }
 

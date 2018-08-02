@@ -504,12 +504,7 @@ class VariantModel {
             // Check vcf urls and add samples
             self.promiseAddSamples(subsetCohort, self.dataSet.vcfNames, self.dataSet.vcfUrls, self.dataSet.tbiUrls)
                 .then(function () {
-                    // Copy over retrieved sample info and flip status flags
-
-                    // TODO: have to assign all of the vcfs to each file in hash in cohortModel
-                    //subsetCohort.vcf = aCohort.vcf;
-                    // TODO: also move this
-                    //subsetCohort.inProgress.verifyingVcfUrl = false;
+                    subsetCohort.inProgress.verifyingVcfUrl = false;
                     self.inProgress.loadingDataSources = false;
                     self.isLoaded = true;
                     resolve();
@@ -609,7 +604,7 @@ class VariantModel {
             if (self.dataSet.getSubsetCohort() != null) {
                 let cohortModel = self.dataSet.getSubsetCohort();
                 cohortModel.inProgress.loadingVariants = true;
-                let p = cohortModel.promiseAnnotateVariants(theGene,
+                let p = cohortModel.promiseAnnotateVariantEnrichment(theGene,
                     theTranscript, [cohortModel],
                     false, isBackground, self.keepVariantsCombined, true)
                     .then(function (resultMap) {
@@ -655,7 +650,7 @@ class VariantModel {
         let self = this;
 
         return new Promise(function (resolve, reject) {
-            // Annotate proband (all) variants
+            // Annotate all variants in both proband and subset groups
             let subsetCohort = self.dataSet.getSubsetCohort();
             subsetCohort.promiseAnnotateVariants(theGene,
                 theTranscript, [subsetCohort],
@@ -1051,7 +1046,7 @@ class VariantModel {
                     }
                 }
             }
-            if (Object.keys(uniqueVariants).length == 0) {
+            if (Object.keys(uniqueVariants).length === 0) {
                 resolve(resultMap);
             } else {
 
@@ -1059,13 +1054,13 @@ class VariantModel {
                     unionVcfData.features.push(formatClinvarThinVariant(key));
                 }
 
-                var refreshVariantsFunction = isClinvarOffline || clinvarSource == 'vcf'
+                var refreshVariantsFunction = isClinvarOffline || clinvarSource === 'vcf'
                     ? self.dataSet.getProbandCohort()._refreshVariantsWithClinvarVCFRecs.bind(self.dataSet.getProbandCohort(), unionVcfData)
                     : self.dataSet.getProbandCohort()._refreshVariantsWithClinvarEutils.bind(self.dataSet.getProbandCohort(), unionVcfData);
 
-                self.dataSet.getProbandCohort().getFirstVcf().promiseGetClinvarRecords(
+                self.dataSet.getSubsetCohort().getFirstVcf().promiseGetClinvarRecords(
                     unionVcfData,
-                    self.dataSet.getProbandCohort()._stripRefName(geneObject.chr),
+                    self.dataSet.getSubsetCohort()._stripRefName(geneObject.chr),
                     geneObject,
                     self.geneModel.clinvarGenes,
                     refreshVariantsFunction)
@@ -1075,7 +1070,7 @@ class VariantModel {
                         unionVcfData.features.forEach(function (variant) {
                             var clinvarAnnot = {};
 
-                            for (var key in self.dataSet.getProbandCohort().vcf.getClinvarAnnots()) {
+                            for (var key in self.dataSet.getSubsetCohort().getFirstVcf().getClinvarAnnots()) {
                                 clinvarAnnot[key] = variant[key];
                                 clinvarLookup[formatClinvarKey(variant)] = clinvarAnnot;
                             }

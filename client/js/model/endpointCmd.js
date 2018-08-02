@@ -44,7 +44,7 @@ EndpointCmd.prototype.getVcfDepth = function (vcfUrl, tbiUrl) {
  * Used in cohort-gene.iobio to render large amounts of variants ranked by enrichment quickly and without overflow.
  * Input: a vcf file, experimental group IDs (aka Subset for now) and control group IDs (aka Probands for now)
  * Output: a vcf file with all proband samples with 'enrichment' info field and no genotype info field */
-EndpointCmd.prototype.annotateEnrichment = function(vcfSource, refName, regions, expSampleNames, controlSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey, efficiencyMode = true) {
+EndpointCmd.prototype.annotateEnrichment = function (vcfSource, refName, regions, expSampleNames, controlSampleNames) {
     let self = this;
 
     let regionParm = "";
@@ -97,7 +97,7 @@ EndpointCmd.prototype.annotateEnrichment = function(vcfSource, refName, regions,
 
 /* Compiles and annotates variants for the given regions, from the given sources.
    When efficiencyMode = true, hgvs, rsId, vep, and AF annotations are not obtained. */
-EndpointCmd.prototype.annotateVariants = function (vcfSource, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey, efficiencyMode = false) {
+EndpointCmd.prototype.annotateVariants = function (vcfSource, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey) {
     var me = this;
     // Figure out the file location of the reference seq files
     var regionParm = "";
@@ -138,7 +138,8 @@ EndpointCmd.prototype.annotateVariants = function (vcfSource, refName, regions, 
     }
 
     if (vcfSampleNames && vcfSampleNames.length > 0) {
-        var sampleNameFile = new Blob([vcfSampleNames.split(",").join("\n")])
+        debugger;
+        var sampleNameFile = new Blob([vcfSampleNames.join("\n")])
         cmd = cmd.pipe(me.IOBIO.vt, ["subset", "-s", sampleNameFile, '-'], {ssl: me.useSSL})
     }
 
@@ -146,57 +147,55 @@ EndpointCmd.prototype.annotateVariants = function (vcfSource, refName, regions, 
     var refFastaFile = me.genomeBuildHelper.getFastaPath(refName);
     cmd = cmd.pipe(me.IOBIO.vt, ["normalize", "-n", "-r", refFastaFile, '-'], {ssl: me.useSSL})
 
-    if (!efficiencyMode) {
-        // if af not retreived from vep, get allele frequencies from 1000G and ExAC in af service
-        cmd = cmd.pipe(me.IOBIO.af, ["-b", me.genomeBuildHelper.getCurrentBuildName()], {ssl: me.useSSL});
+    // if af not retreived from vep, get allele frequencies from 1000G and ExAC in af service
+    cmd = cmd.pipe(me.IOBIO.af, ["-b", me.genomeBuildHelper.getCurrentBuildName()], {ssl: me.useSSL});
 
-        // Skip snpEff if RefSeq transcript set or we are just annotating with the vep engine
-        if (isRefSeq || annotationEngine == 'vep') {
-            // VEP
-            var vepArgs = [];
-            vepArgs.push(" --assembly");
-            vepArgs.push(me.genomeBuildHelper.getCurrentBuildName());
-            vepArgs.push(" --format vcf");
-            vepArgs.push(" --allele_number");
-            if (vepAF) {
-                vepArgs.push("--af");
-                vepArgs.push("--af_gnomad");
-                vepArgs.push("--af_esp");
-                vepArgs.push("--af_1kg");
-                vepArgs.push("--max_af");
-            }
-            if (isRefSeq) {
-                vepArgs.push("--refseq");
-            }
-            // Get the hgvs notation and the rsid since we won't be able to easily get it one demand
-            // since we won't have the original vcf records as input
-            if (hgvsNotation) {
-                vepArgs.push("--hgvs");
-            }
-            if (getRsId) {
-                vepArgs.push("--check_existing");
-            }
-            if (hgvsNotation || utility.getRsId || isRefSeq) {
-                vepArgs.push("--fasta");
-                vepArgs.push(refFastaFile);
-            }
-
-            //
-            //  SERVER SIDE CACHING
-            //
-            var cacheKey = null;
-            var urlParameters = {};
-            if (useServerCache && serverCacheKey.length > 0) {
-                urlParameters.cache = serverCacheKey;
-                urlParameters.partialCache = true;
-                cmd = cmd.pipe("nv-dev-new.iobio.io/vep/", vepArgs, {ssl: me.useSSL, urlparams: urlParameters});
-            } else {
-                cmd = cmd.pipe(me.IOBIO.vep, vepArgs, {ssl: me.useSSL, urlparams: urlParameters});
-            }
-
-        } else if (annotationEngine == 'snpeff') {
-            cmd = cmd.pipe(me.IOBIO.snpEff, [], {ssl: me.useSSL});
+    // Skip snpEff if RefSeq transcript set or we are just annotating with the vep engine
+    if (isRefSeq || annotationEngine == 'vep') {
+        // VEP
+        var vepArgs = [];
+        vepArgs.push(" --assembly");
+        vepArgs.push(me.genomeBuildHelper.getCurrentBuildName());
+        vepArgs.push(" --format vcf");
+        vepArgs.push(" --allele_number");
+        if (vepAF) {
+            vepArgs.push("--af");
+            vepArgs.push("--af_gnomad");
+            vepArgs.push("--af_esp");
+            vepArgs.push("--af_1kg");
+            vepArgs.push("--max_af");
         }
+        if (isRefSeq) {
+            vepArgs.push("--refseq");
+        }
+        // Get the hgvs notation and the rsid since we won't be able to easily get it one demand
+        // since we won't have the original vcf records as input
+        if (hgvsNotation) {
+            vepArgs.push("--hgvs");
+        }
+        if (getRsId) {
+            vepArgs.push("--check_existing");
+        }
+        if (hgvsNotation || utility.getRsId || isRefSeq) {
+            vepArgs.push("--fasta");
+            vepArgs.push(refFastaFile);
+        }
+
+        //
+        //  SERVER SIDE CACHING
+        //
+        var cacheKey = null;
+        var urlParameters = {};
+        if (useServerCache && serverCacheKey.length > 0) {
+            urlParameters.cache = serverCacheKey;
+            urlParameters.partialCache = true;
+            cmd = cmd.pipe("nv-dev-new.iobio.io/vep/", vepArgs, {ssl: me.useSSL, urlparams: urlParameters});
+        } else {
+            cmd = cmd.pipe(me.IOBIO.vep, vepArgs, {ssl: me.useSSL, urlparams: urlParameters});
+        }
+
+    } else if (annotationEngine == 'snpeff') {
+        cmd = cmd.pipe(me.IOBIO.snpEff, [], {ssl: me.useSSL});
     }
     return cmd;
 }
