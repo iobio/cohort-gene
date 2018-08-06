@@ -4,6 +4,7 @@
 class CohortModel {
     constructor(theVariantModel) {
         this.vcfEndptHash = {};         // One vcf iobio service endpoint per multi-vcf url (key is name of file)
+        this.varsInFileHash = {};    // Key is file name, value is list of variant IDs
 
         // BAM, VCF data fields
         this.vcfData = null;            // Contains VCF variant information
@@ -985,7 +986,6 @@ class CohortModel {
                     resolve(variant);
                 }
             } else {
-                // SJG TODO: figure out which vcf contains the variant then pull out the matching vcf model
                 let containingVcf = me.getContainingVcf(variant.id);
                 me._promiseVcfRefName(theGene.chr)
                     .then(function () {
@@ -994,33 +994,43 @@ class CohortModel {
                             fakeGeneObject,
                             theTranscript,
                             null,   // regions
-                            true,   //isMultiSample (true for cohort)
+                            false,   //isMultiSample
                             me.getFormattedSampleIds('subset'),
                             me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
                             me.getTranslator().clinvarMap,
                             me.getGeneModel().geneSource === 'refseq',
-                            false,   // hgvs notation
-                            false,  // rsid
-                            true,   // vep af
+                            false,      // hgvs notation
+                            false,      // rsid
+                            true,       // vep af
                             null,
-                            true,   // keepVariantsCombined (true for cohort)
-                            false   // enrichment mode (aka subset delta calculations only - no annotation)
+                            true,      // keepVariantsCombined
+                            false       // enrichment mode (aka subset delta calculations only - no annotation)
                         )
-                            .then(function (dataMap) {
-                                let subsetVcfData = dataMap[0];
-                                if (subsetVcfData != null && subsetVcfData.features != null && subsetVcfData.features.length > 0) {
+                            .then(function (singleVarData) {
+                                debugger;
+                                if (singleVarData != null && singleVarData.features != null) {
                                     let matchingVariants = [];
-                                    subsetVcfData.features.forEach(function (varsAtPos) {
-                                        let matchingVar = varsAtPos.filter(function (aVariant) {
-                                            var matches =
-                                                (variant.start === aVariant.start &&
-                                                    variant.alt === aVariant.alt &&
-                                                    variant.ref === aVariant.ref);
-                                            return matches;
-                                        });
-                                        if (matchingVar.length > 0)
-                                            matchingVariants.push(matchingVar);
+                                    let featureList = [];
+                                    // If we have multiple variants at site
+                                    if (singleVarData.features.length > 0) {
+                                        featureList = singleVarData.features;
+                                    }
+                                    // If only one variant, format in list
+                                    else {
+                                        featureList.push(singleVarData.features);
+                                    }
+                                    // Pull out features matching position
+                                    let matchingVar = featureList.filter(function (aVariant) {
+                                        let matches =
+                                            (variant.start === aVariant.start &&
+                                                variant.alt === aVariant.alt &&
+                                                variant.ref === aVariant.ref);
+                                        return matches;
                                     });
+                                    if (matchingVar.length > 0)
+                                        matchingVariants.push(matchingVar);
+
+                                    // Return matching features
                                     if (matchingVariants.length > 0) {
                                         let v = matchingVariants[0];
                                         if (format && format === 'csv') {
@@ -1089,20 +1099,26 @@ class CohortModel {
         });
     }
 
+    /* Returns the vcf model corresponding to the vcf file which the provided variant exists in. If multiple vcf files
+     * contain the variant, the first one alphanumerically is returned. */
     getContainingVcf(variantId) {
         let self = this;
-
-        let containingFile = '';
+        let containingFileName = '';
         let fileNames = Object.keys(self.vcfEndptHash);
         for (let i = 0; i < fileNames.length; i++) {
-            let currFileVars = self.vcfEndptHash[fileNames[i]].features;
-            debugger;   // Do we have features by id here?
+            let fileVarList = self.varsInFileHash[fileNames[i]];
+            if (fileVarList.includes(variantId)) {
+                containingFileName = fileNames[i];
+                break;
+            }
         }
+        return self.vcfEndptHash[containingFileName];
     }
 
 
     promiseAnnotateVariants(theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, enrichMode = false) {
         let me = this;
+
         return new Promise(function (resolve, reject) {
             me._promiseVcfRefName(theGene.chr)
                 .then(function () {
@@ -1110,7 +1126,8 @@ class CohortModel {
                     let annotationResults = {};
                     let annotationPromises = [];
                     for (let i = 0; i < urlNames.length; i++) {
-                        let currVcfEndpt = me.vcfEndptHash[urlNames[i]];
+                        let currFileName = urlNames[i];
+                        let currVcfEndpt = me.vcfEndptHash[currFileName];
                         if (currVcfEndpt != null) {
                             let subsetIds = me.getFormattedSampleIds('subset');
                             let probandIds = me.getFormattedSampleIds('probands');
@@ -1132,7 +1149,7 @@ class CohortModel {
                                 keepVariantsCombined,
                                 enrichMode)
                                 .then((results) => {
-                                    annotationResults[urlNames[i]] = results;
+                                    annotationResults[currFileName] = results;
                                 });
                             annotationPromises.push(annoP);
 
@@ -1162,7 +1179,8 @@ class CohortModel {
                     let enrichResults = {};
                     let enrichPromises = [];
                     for (let i = 0; i < urlNames.length; i++) {
-                        let currVcfEndpt = me.vcfEndptHash[urlNames[i]];
+                        let currFileName = urlNames[i];
+                        let currVcfEndpt = me.vcfEndptHash[currFileName];
                         if (currVcfEndpt != null) {
                             let subsetIds = me.getFormattedSampleIds('subset');
                             let probandIds = me.getFormattedSampleIds('probands');
@@ -1184,6 +1202,12 @@ class CohortModel {
                                 keepVariantsCombined,
                                 enrichmentMode)
                                 .then((results) => {
+                                    // Add variant ids to map correlated with file
+
+                                    me.varsInFileHash[currFileName] = results.features.map((feature) => {
+                                        return feature.id;
+                                    });
+                                    // Add results to return object
                                     enrichResults[urlNames[i]] = results;
                                 });
                             enrichPromises.push(enrichP);

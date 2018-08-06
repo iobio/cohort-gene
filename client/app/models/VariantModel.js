@@ -676,15 +676,12 @@ class VariantModel {
        Sets extraAnnotationsLoaded to true. */
     combineVariantInfo(variantInfo) {
         let self = this;
-
-        // TODO: verify that individual variant click works still
-        debugger;
         let fileNames = Object.keys(variantInfo);
         let updatedVarLookup = {};
         let subsetModel = self.dataSet.getSubsetCohort();
-
-        // Assign existing variants depending on variant(s) coming in
         let existingVariants = [];
+
+        // If we have multiple variants to combine
         if (Object.keys(variantInfo).length > 1) {
             for (let i = 0; i < fileNames.length; i++) {
                 let currVars = variantInfo[fileNames[i]].features;
@@ -694,10 +691,12 @@ class VariantModel {
             }
             existingVariants = subsetModel.loadedVariants.features;
         }
+        // If we have one variant to combine
         else {
             // Pull out reference to single variant
-            updatedVarLookup = variantInfo;
-            existingVariants = subsetModel.loadedVariants.features.filter(feature => feature.id === updatedVarLookup[0].id);
+            let singleVar = variantInfo[0];
+            updatedVarLookup[singleVar.id] = singleVar;
+            existingVariants = subsetModel.loadedVariants.features.filter(feature => feature.id === singleVar.id);
         }
 
         // Iterate through existing variants, find matching updated variant, transfer info

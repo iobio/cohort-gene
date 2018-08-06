@@ -1606,7 +1606,6 @@ vcfiobio = function module() {
                         end = +rec.pos + len;
                     }
 
-                    // TODO: left off here - annot object doesn't contain VEP/SIFT info etc - why not?
                     let annot = me._parseAnnot(rec, altIdx, isMultiAllelic, geneObject, selectedTranscript, selectedTranscriptID, vepAF);
                     let clinvarResult = me.parseClinvarInfo(rec.info, clinvarMap);
                     let enrichResult = null;
