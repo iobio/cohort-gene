@@ -138,8 +138,7 @@ EndpointCmd.prototype.annotateVariants = function (vcfSource, refName, regions, 
     }
 
     if (vcfSampleNames && vcfSampleNames.length > 0) {
-        debugger;
-        var sampleNameFile = new Blob([vcfSampleNames.join("\n")])
+        var sampleNameFile = new Blob([vcfSampleNames.join("\n")]);
         cmd = cmd.pipe(me.IOBIO.vt, ["subset", "-s", sampleNameFile, '-'], {ssl: me.useSSL})
     }
 
@@ -151,7 +150,7 @@ EndpointCmd.prototype.annotateVariants = function (vcfSource, refName, regions, 
     cmd = cmd.pipe(me.IOBIO.af, ["-b", me.genomeBuildHelper.getCurrentBuildName()], {ssl: me.useSSL});
 
     // Skip snpEff if RefSeq transcript set or we are just annotating with the vep engine
-    if (isRefSeq || annotationEngine == 'vep') {
+    if (isRefSeq || annotationEngine === 'vep') {
         // VEP
         var vepArgs = [];
         vepArgs.push(" --assembly");
@@ -194,7 +193,7 @@ EndpointCmd.prototype.annotateVariants = function (vcfSource, refName, regions, 
             cmd = cmd.pipe(me.IOBIO.vep, vepArgs, {ssl: me.useSSL, urlparams: urlParameters});
         }
 
-    } else if (annotationEngine == 'snpeff') {
+    } else if (annotationEngine === 'snpeff') {
         cmd = cmd.pipe(me.IOBIO.snpEff, [], {ssl: me.useSSL});
     }
     return cmd;

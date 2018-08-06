@@ -674,29 +674,35 @@ class VariantModel {
     /* Takes in a list of fully annotated variants, and appends existing, relative positional information from subset variants to them.
        Reassigns loadedVariants in subset CohortModel.
        Sets extraAnnotationsLoaded to true. */
-    combineVariantInfo(updatedVariants) {
+    combineVariantInfo(variantInfo) {
         let self = this;
 
-        // Put updated variants into hash table
-        let updatedLookup = [];
-        updatedVariants.forEach(function (variant) {
-            updatedLookup[variant.id] = variant;
-        });
+        // TODO: verify that individual variant click works still
+        debugger;
+        let fileNames = Object.keys(variantInfo);
+        let updatedVarLookup = {};
         let subsetModel = self.dataSet.getSubsetCohort();
 
         // Assign existing variants depending on variant(s) coming in
         let existingVariants = [];
-        if (updatedVariants.length > 1) {
+        if (Object.keys(variantInfo).length > 1) {
+            for (let i = 0; i < fileNames.length; i++) {
+                let currVars = variantInfo[fileNames[i]].features;
+                currVars.forEach((variant) => {
+                    updatedVarLookup[variant.id] = variant;
+                })
+            }
             existingVariants = subsetModel.loadedVariants.features;
         }
         else {
             // Pull out reference to single variant
-            existingVariants = subsetModel.loadedVariants.features.filter(feature => feature.id === updatedVariants[0].id);
+            updatedVarLookup = variantInfo;
+            existingVariants = subsetModel.loadedVariants.features.filter(feature => feature.id === updatedVarLookup[0].id);
         }
 
         // Iterate through existing variants, find matching updated variant, transfer info
         existingVariants.forEach(function (existingVar) {
-            let matchingVar = updatedLookup[existingVar.id];
+            let matchingVar = updatedVarLookup[existingVar.id];
             if (matchingVar != null) {
                 // Copy counts and subset delta info
                 existingVar.af = matchingVar.af;
@@ -726,7 +732,7 @@ class VariantModel {
             }
         });
 
-        if (updatedVariants.length > 1) {
+        if (Object.keys(updatedVarLookup).length > 1) {
             self.extraAnnotationsLoaded = true;
         }
         else {
@@ -1030,33 +1036,32 @@ class VariantModel {
         }
 
         return new Promise(function (resolve, reject) {
-            // Combine the trio variants into one set of variants so that we can access clinvar once
-            // instead of on a per sample basis
-            var uniqueVariants = {};
-            var unionVcfData = {features: []}
-            for (var cohort in resultMap) {
-                for (var key in resultMap[cohort]) {
-                    if (Object.prototype.hasOwnProperty.call(resultMap[cohort], key)) {
-                        var vcfData = resultMap[cohort][key];
-                        if (!vcfData.loadState['clinvar'] && cohort != 'known-variants') {
-                            vcfData.features.forEach(function (feature) {
-                                uniqueVariants[formatClinvarKey(feature)] = true;
-                            })
-                        }
-                    }
+            // Combine the variants from multiple files into one set of variants so that we can access clinvar once
+            // instead of on a per phase file basis
+            let uniqueVariants = {};
+            let unionVcfData = {features: []};
+            let fileMap = resultMap[0];
+            let fileNames = Object.keys(fileMap);
+            for (let i = 0; i < fileNames.length; i++) {
+                let vcfData = fileMap[fileNames[i]];
+                if (!vcfData.loadState['clinvar'] && fileNames[i] !== 'known-variants') {
+                    vcfData.features.forEach(function (feature) {
+                        uniqueVariants[formatClinvarKey(feature)] = true;
+                    })
                 }
+
             }
             if (Object.keys(uniqueVariants).length === 0) {
                 resolve(resultMap);
             } else {
 
-                for (var key in uniqueVariants) {
+                for (let key in uniqueVariants) {
                     unionVcfData.features.push(formatClinvarThinVariant(key));
                 }
 
-                var refreshVariantsFunction = isClinvarOffline || clinvarSource === 'vcf'
-                    ? self.dataSet.getProbandCohort()._refreshVariantsWithClinvarVCFRecs.bind(self.dataSet.getProbandCohort(), unionVcfData)
-                    : self.dataSet.getProbandCohort()._refreshVariantsWithClinvarEutils.bind(self.dataSet.getProbandCohort(), unionVcfData);
+                let refreshVariantsFunction = isClinvarOffline || clinvarSource === 'vcf'
+                    ? self.dataSet.getSubsetCohort()._refreshVariantsWithClinvarVCFRecs.bind(self.dataSet.getSubsetCohort(), unionVcfData)
+                    : self.dataSet.getSubsetCohort()._refreshVariantsWithClinvarEutils.bind(self.dataSet.getSubsetCohort(), unionVcfData);
 
                 self.dataSet.getSubsetCohort().getFirstVcf().promiseGetClinvarRecords(
                     unionVcfData,
@@ -1076,25 +1081,20 @@ class VariantModel {
                             }
                         })
 
-                        var refreshPromises = [];
+                        let refreshPromises = [];
 
                         // Use the clinvar variant lookup to initialize variants with clinvar annotations
-                        for (var cohort in resultMap) {
-                            for (var key in resultMap[cohort]) {
-                                if (Object.prototype.hasOwnProperty.call(resultMap[cohort], key)) {
-                                    var vcfData = resultMap[cohort][key];
-                                    if (!vcfData.loadState['clinvar']) {
-                                        var p = refreshVariantsWithClinvarLookup(vcfData, clinvarLookup);
-                                        if (!isBackground) {
-                                            self.dataSet.getCohort(key).vcfData = vcfData;
-                                        }
-                                        //var p = getVariantCard(rel).model._promiseCacheData(vcfData, CacheHelper.VCF_DATA, vcfData.gene.gene_name, vcfData.transcript);
-                                        refreshPromises.push(p);
-                                    }
+                        for (let j = 0; j < fileNames.length; j++) {
+                            let updatedData = fileMap[fileNames[j]];
+                            if (!updatedData.loadState['clinvar']) {
+                                let p = refreshVariantsWithClinvarLookup(updatedData, clinvarLookup);
+                                if (!isBackground) {
+                                    self.dataSet.getSubsetCohort().vcfData = updatedData;
                                 }
+                                //var p = getVariantCard(rel).model._promiseCacheData(vcfData, CacheHelper.VCF_DATA, vcfData.gene.gene_name, vcfData.transcript);
+                                refreshPromises.push(p);
                             }
                         }
-
                         Promise.all(refreshPromises)
                             .then(function () {
                                 resolve(resultMap);

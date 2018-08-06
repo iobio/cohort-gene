@@ -285,10 +285,11 @@ TD & SJG updated Jun2018 -->
                                 self.doneLoadingData = true;  // Display variants
                                 self.variantModel.promiseFurtherAnnotateVariants(self.selectedGene,
                                     self.selectedTranscript,
+                                    false,  // isBackground
                                     options)
-                                    .then(function (resultMap) {
-                                        let resultVars = resultMap[0]['Subset'].features;  // Unwrap result map
-                                        self.variantModel.combineVariantInfo(resultVars);
+                                    .then((resultMap) => {
+                                        let unwrappedResultMap = resultMap[0];
+                                        self.variantModel.combineVariantInfo(unwrappedResultMap);
                                         self.updateClasses();
                                         self.doneLoadingExtras = true;
                                     })

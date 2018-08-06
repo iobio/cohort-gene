@@ -708,7 +708,7 @@ vcfiobio = function module() {
             cmd = me.getEndpoint().annotateVariants({
                 'vcfUrl': vcfURL,
                 'tbiUrl': tbiUrl
-            }, refName, regions, expSampleNames, controlSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey);
+            }, refName, regions, expSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey);
         }
 
 
@@ -1606,6 +1606,7 @@ vcfiobio = function module() {
                         end = +rec.pos + len;
                     }
 
+                    // TODO: left off here - annot object doesn't contain VEP/SIFT info etc - why not?
                     let annot = me._parseAnnot(rec, altIdx, isMultiAllelic, geneObject, selectedTranscript, selectedTranscriptID, vepAF);
                     let clinvarResult = me.parseClinvarInfo(rec.info, clinvarMap);
                     let enrichResult = null;

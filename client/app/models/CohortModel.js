@@ -3,9 +3,7 @@
 
 class CohortModel {
     constructor(theVariantModel) {
-        // this.vcf = null;                // VCF iobio service endpoint
-        // this.bam = null;                // BAM iobio service endpoint
-        this.vcfEndptHash = {};      // One vcf iobio service endpoint per multi-vcf url (key is name of file)
+        this.vcfEndptHash = {};         // One vcf iobio service endpoint per multi-vcf url (key is name of file)
 
         // BAM, VCF data fields
         this.vcfData = null;            // Contains VCF variant information
@@ -68,7 +66,6 @@ class CohortModel {
 
     /* Returns sample name. Used in gene.iobio */
 
-    // SJG TODO: this needs to be the sample names apart of the cohort (aka subset IDs?)
     getSampleName() {
         return this.sampleName;
     }
@@ -988,10 +985,11 @@ class CohortModel {
                     resolve(variant);
                 }
             } else {
-                let combinedVcf = me.getFirstVcf();
+                // SJG TODO: figure out which vcf contains the variant then pull out the matching vcf model
+                let containingVcf = me.getContainingVcf(variant.id);
                 me._promiseVcfRefName(theGene.chr)
                     .then(function () {
-                        combinedVcf.promiseGetVariants(
+                        containingVcf.promiseGetVariants(
                             me.getVcfRefName(theGene.chr),
                             fakeGeneObject,
                             theTranscript,
@@ -1091,61 +1089,64 @@ class CohortModel {
         });
     }
 
+    getContainingVcf(variantId) {
+        let self = this;
+
+        let containingFile = '';
+        let fileNames = Object.keys(self.vcfEndptHash);
+        for (let i = 0; i < fileNames.length; i++) {
+            let currFileVars = self.vcfEndptHash[fileNames[i]].features;
+            debugger;   // Do we have features by id here?
+        }
+    }
+
 
     promiseAnnotateVariants(theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, enrichMode = false) {
         let me = this;
         return new Promise(function (resolve, reject) {
             me._promiseVcfRefName(theGene.chr)
                 .then(function () {
-                    let combinedVcf = me.getFirstVcf();
-                    if (combinedVcf != null) {
-                        let subsetIds = me.getFormattedSampleIds('subset');
-                        let probandIds = me.getFormattedSampleIds('probands');
-                        return combinedVcf.promiseGetVariants(
-                            me.getVcfRefName(theGene.chr),
-                            theGene,
-                            theTranscript,
-                            null,       // regions
-                            isMultiSample,
-                            subsetIds,
-                            probandIds,
-                            me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
-                            me.getTranslator().clinvarMap,
-                            me.getGeneModel().geneSource === 'refseq',
-                            false,      // hgvs notation
-                            false,      // rsid
-                            false,      // vep af
-                            null,
-                            keepVariantsCombined,
-                            enrichMode
-                        );
-                    }
-                    else {
-                        console.log('Problem in CohortModel promoiseAnnotateVariants: Could not retrieve endpoint for the file: ' + urlNames[i]);
-                    }
-                })
-                .then((dataMap) => {
-                    debugger;
-                    let results = dataMap;
-                    if (results) {
-                        let theGeneObject = me.getGeneModel().geneObjects[results.gene];
-                        if (theGeneObject) {
-                            let resultMap = {};
-                            resultMap[me.getName()] = results;
-                            resolve(resultMap);
+                    let urlNames = Object.keys(me.vcfEndptHash);
+                    let annotationResults = {};
+                    let annotationPromises = [];
+                    for (let i = 0; i < urlNames.length; i++) {
+                        let currVcfEndpt = me.vcfEndptHash[urlNames[i]];
+                        if (currVcfEndpt != null) {
+                            let subsetIds = me.getFormattedSampleIds('subset');
+                            let probandIds = me.getFormattedSampleIds('probands');
+                            let annoP = currVcfEndpt.promiseGetVariants(
+                                me.getVcfRefName(theGene.chr),
+                                theGene,
+                                theTranscript,
+                                null,       // regions
+                                isMultiSample,
+                                subsetIds,
+                                probandIds,
+                                me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
+                                me.getTranslator().clinvarMap,
+                                me.getGeneModel().geneSource === 'refseq',
+                                false,      // hgvs notation
+                                false,      // rsid
+                                false,      // vep af
+                                null,
+                                keepVariantsCombined,
+                                enrichMode)
+                                .then((results) => {
+                                    annotationResults[urlNames[i]] = results;
+                                });
+                            annotationPromises.push(annoP);
+
                         } else {
-                            let error = "ERROR - cannot locate gene object to match with vcf data " + data.ref + " " + data.start + "-" + data.end;
-                            console.log(error);
-                            reject(error);
+                            console.log('Problem in CohortModel promoiseAnnotateVariants: Could not retrieve endpoint for the file: ' + urlNames[i]);
                         }
-                    } else {
-                        let error = "ERROR - empty vcf results for " + theGene.gene_name;
-                        console.log(error);
-                        reject(error);
                     }
-                })
-                .catch((error) => {
-                    console.log('Problem in cohort model ' + error);
+                    Promise.all(annotationPromises)
+                        .then(() => {
+                            resolve(annotationResults);
+                        })
+                        .catch((error) => {
+                            console.log('Problem in cohort model ' + error);
+                        });
                 });
         });
     }
@@ -1181,8 +1182,7 @@ class CohortModel {
                                 false,      // vep af
                                 null,
                                 keepVariantsCombined,
-                                enrichmentMode
-                            )
+                                enrichmentMode)
                                 .then((results) => {
                                     enrichResults[urlNames[i]] = results;
                                 });
@@ -2557,7 +2557,8 @@ class CohortModel {
 }
 
 // Static functions
-CohortModel._summarizeDanger = function (geneName, theVcfData, options = {}, geneCoverageAll, filterModel, translator, annotationScheme) {
+CohortModel
+    ._summarizeDanger = function (geneName, theVcfData, options = {}, geneCoverageAll, filterModel, translator, annotationScheme) {
     var dangerCounts = $().extend({}, options);
     dangerCounts.geneName = geneName;
     CohortModel.summarizeDangerForGeneCoverage(dangerCounts, geneCoverageAll, filterModel);
@@ -2726,7 +2727,8 @@ CohortModel._summarizeDanger = function (geneName, theVcfData, options = {}, gen
     return dangerCounts;
 }
 
-CohortModel.summarizeDangerForGeneCoverage = function (dangerObject, geneCoverageAll, filterModel, clearOtherDanger = false, refreshOnly = false) {
+CohortModel
+    .summarizeDangerForGeneCoverage = function (dangerObject, geneCoverageAll, filterModel, clearOtherDanger = false, refreshOnly = false) {
     dangerObject.geneCoverageInfo = {};
     dangerObject.geneCoverageProblem = false;
 
@@ -2780,7 +2782,8 @@ CohortModel.summarizeDangerForGeneCoverage = function (dangerObject, geneCoverag
     return dangerObject;
 }
 
-CohortModel.summarizeError = function (theError) {
+CohortModel
+    .summarizeError = function (theError) {
     var summaryObject = {};
 
     summaryObject.CONSEQUENCE = {};
@@ -2794,7 +2797,8 @@ CohortModel.summarizeError = function (theError) {
 }
 
 
-CohortModel._determineAffectedStatusForVariant = function (variant, affectedStatus, affectedInfo) {
+CohortModel
+    ._determineAffectedStatusForVariant = function (variant, affectedStatus, affectedInfo) {
     var matchesCount = 0;
     var summaryField = affectedStatus + "_summary";
 
@@ -2822,7 +2826,8 @@ CohortModel._determineAffectedStatusForVariant = function (variant, affectedStat
     }
 }
 
-CohortModel.calcMaxAlleleCount = function (theVcfData, maxAlleleCount = 0) {
+CohortModel
+    .calcMaxAlleleCount = function (theVcfData, maxAlleleCount = 0) {
     if (theVcfData && theVcfData.features) {
         theVcfData.features.forEach(function (theVariant) {
             if (theVariant.genotypeDepth) {
@@ -2836,7 +2841,8 @@ CohortModel.calcMaxAlleleCount = function (theVcfData, maxAlleleCount = 0) {
 }
 
 
-CohortModel.orderVariantsByPosition = function (a, b) {
+CohortModel
+    .orderVariantsByPosition = function (a, b) {
     var refAltA = a.ref + "->" + a.alt;
     var refAltB = b.ref + "->" + b.alt;
 
@@ -2874,7 +2880,8 @@ CohortModel.orderVariantsByPosition = function (a, b) {
     }
 }
 
-CohortModel.orderVcfRecords = function (rec1, rec2) {
+CohortModel
+    .orderVcfRecords = function (rec1, rec2) {
     var fields1 = rec1.split("\t");
     var fields2 = rec2.split("\t");
 
