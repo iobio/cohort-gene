@@ -708,7 +708,7 @@ vcfiobio = function module() {
             cmd = me.getEndpoint().annotateVariants({
                 'vcfUrl': vcfURL,
                 'tbiUrl': tbiUrl
-            }, refName, regions, controlSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey);
+            }, refName, regions, expSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey);
         }
 
 
@@ -1672,7 +1672,7 @@ vcfiobio = function module() {
                                 'highestPolyphen': highestPolyphen,
 
                                 // cohort specific
-                                'subsetDelta': +1,
+                                'subsetDelta': +0,
                                 'totalProbandCount': +0,
                                 'totalSubsetCount': +0,
                                 'affectedProbandCount': +0,
@@ -1699,6 +1699,12 @@ vcfiobio = function module() {
                             if (me.getGenericAnnotation() !== undefined) {
                                 me.getGenericAnnotation().setSimpleFields(variant);
                             }
+
+                            // Don't add proband only variants when pulling back enriched variants
+                            if (enrichMode && variant.affectedSubsetCount === 0) {
+                                continue;
+                            }
+
                             allVariants[i].push(variant);
                         }
                     }

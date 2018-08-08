@@ -8,10 +8,10 @@ class VariantModel {
                 cacheHelper, genomeBuildHelper) {
 
         // Reference lookups used for pre-loading extra variant annotation
-        this.subsetEnrichedVars = [];
-        this.probandEnrichedVars = [];
-        this.nonEnrichedVars = [];
-        this.probandOnlyVars = [];
+        this.subsetEnrichedVars = {};
+        this.probandEnrichedVars = {};
+        this.nonEnrichedVars = {};
+        this.probandOnlyVars = {};
 
         // Data props
         this.dataSet = null;
@@ -220,7 +220,6 @@ class VariantModel {
                             self.simonsIdMap = null;
                             // Get variant loading rolling
 
-                            // TODO: have I initialized vcf for each model here yet?
                             self.promiseInit(hubDataSet.vcfNames)
                                 .then(function () {
                                     resolve();
@@ -955,13 +954,12 @@ class VariantModel {
                 else if (variant.subsetDelta <= self.probandEnrichmentThreshold) {
                     self.probandEnrichedVars[variant.id] = variant;
                 }
-                else if (variant.subsetDelta !== 1) {
+                else if (variant.affectedSubsetCount > 0) {
                     self.nonEnrichedVars[variant.id] = variant;
                 }
-                // SJG TODO: put back in after server side filtering implemented
-                // else {
-                //     self.probandOnlyVars[variant.id] = variant;
-                // }
+                else {
+                    self.probandOnlyVars[variant.id] = variant;
+                }
             });
             resolve();
         });
@@ -1279,7 +1277,6 @@ class VariantModel {
         // Pull variant out of lookup
         let self = this;
         let varId = domVar.id;
-        // TODO: this may need to be updated now that proband vars aren't displayed...
         let variant = self.subsetEnrichedVars[varId];
         if (variant == null) variant = self.probandEnrichedVars[varId];
         if (variant == null) variant = self.nonEnrichedVars[varId];
