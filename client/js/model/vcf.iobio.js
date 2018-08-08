@@ -1206,8 +1206,8 @@ vcfiobio = function module() {
             // When the clinvar vcf is used, just use 1 batch to get all clinvar variants.  But if accessing clinvar
             // via eutils, for every 100 variants, make an http request to eutils to get clinvar records.  Keep
             // repeating until all variants have been processed.
-            var numberOfBatches = isClinvarOffline || clinvarSource == 'vcf' ? 1 : Math.ceil(theVcfData.features.length / batchSize);
-            if (numberOfBatches == 0) {
+            var numberOfBatches = isClinvarOffline || clinvarSource === 'vcf' ? 1 : Math.ceil(theVcfData.features.length / batchSize);
+            if (numberOfBatches === 0) {
                 numberOfBatches = 1;
             }
             var clinvarPromises = [];
@@ -1216,7 +1216,7 @@ vcfiobio = function module() {
                 var end = start + batchSize;
                 var batchOfVariants = theVcfData.features.slice(start, end <= theVcfData.features.length ? end : theVcfData.features.length);
 
-                if (isClinvarOffline || clinvarSource == 'vcf') {
+                if (isClinvarOffline || clinvarSource === 'vcf') {
                     var promise = me.promiseGetClinvarVCFImpl(batchOfVariants, refName, geneObject, clinvarGenes, clinvarLoadVariantsFunction)
                         .then(function () {
 
@@ -1228,7 +1228,7 @@ vcfiobio = function module() {
                 } else {
                     var promise = me.promiseGetClinvarEutilsImpl(batchOfVariants, refName, geneObject, clinvarLoadVariantsFunction)
                         .then(function (data) {
-                            if (data == 'clinvarError') {
+                            if (data === 'clinvarError') {
                                 alertify.alert("A problem occurred accessing ClinVar variants in gene " + geneObject.gene_name + ".  Unable to get ClinVar annotations at this time.");
                             }
 
@@ -1305,7 +1305,7 @@ vcfiobio = function module() {
                 var vcfObjects = [];
 
                 clinvarRecs.forEach(function (record) {
-                    if (record.charAt(0) == "#" || record == "") {
+                    if (record.charAt(0) === "#" || record === "") {
 
                     } else {
 
@@ -2838,18 +2838,18 @@ vcfiobio = function module() {
         widthFactor = widthFactor ? widthFactor : 1;
         // Variant's can overlap each over.  Set a field called variant.level which determines
         // how to stack the variants vertically in these cases.
-        var posLevels = {};                                                 // Collection of vertical stack for every X coordinate
-        var maxLevel = 0;
-        var posUnitsForEachVariant = posToPixelFactor * widthFactor;        // This is i sub X
+        let posLevels = {};                                                 // Collection of vertical stack for every X coordinate
+        let maxLevel = 0;
+        let posUnitsForEachVariant = posToPixelFactor * widthFactor;        // This is i sub X
         variants.forEach(function (variant) {
 
-            // get next available vertical spot starting at level 0
-            var startIdx = (variant.start - regionStart);// + i;            // This is major X
-            var posLevel = 0;                                               // This is major Y?
-            var stackAtStart = posLevels[startIdx];                         // This is stack of taken Y levels for each major X
+            // Get next available vertical spot starting at level 0
+            let startIdx = (variant.start - regionStart);// + i;            // This is major X
+            let posLevel = 0;                                               // This is major Y?
+            let stackAtStart = posLevels[startIdx];                         // This is stack of taken Y levels for each major X
             if (stackAtStart) {
                 for (var k = 0; k <= stackAtStart.length; k++) {
-                    if (stackAtStart[k] == undefined) {
+                    if (stackAtStart[k] == null) {
                         posLevel = k;
                         break;
                     }
@@ -2860,9 +2860,9 @@ vcfiobio = function module() {
             variant.level = posLevel;
 
             // Now set new level for each positions comprised of this variant.
-            for (var i = 0; i < variant.len + posUnitsForEachVariant; i++) {        // For each i sub X horizontal position
-                var idx = (variant.start - regionStart) + i;
-                var stack = posLevels[idx] || [];
+            for (let i = 0; i < variant.len + posUnitsForEachVariant; i++) {        // For each i sub X horizontal position
+                let idx = (variant.start - regionStart) + i;
+                let stack = posLevels[idx] || [];
                 stack[variant.level] = true;
                 posLevels[idx] = stack;
 

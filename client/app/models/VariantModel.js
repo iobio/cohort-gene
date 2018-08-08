@@ -735,9 +735,6 @@ class VariantModel {
                 existingVar.highestImpactVep = matchingVar.highestImpactVep;
                 existingVar.highestSIFT = matchingVar.highestSIFT;
                 existingVar.highestPolyphen = matchingVar.highestPolyphen;
-
-                existingVar.clinVarClinicalSignificance = matchingVar.clinVarClinicalSignificance;
-                existingVar.clinvar = matchingVar.clinvar;
             }
         });
 
@@ -747,6 +744,50 @@ class VariantModel {
         else {
             return existingVariants[0];
         }
+    }
+
+    /* Takes in a list of ClinVar annotated variants, and appends their clinvar fields to the existing, currently displayed enriched variants.
+     * The list of annotated variants may be longer or shorter than the currently displayed enriched variants. */
+    combineClinVarInfo(annotatedVars) {
+        let self = this;
+
+        if (annotatedVars.length === 0) {
+            console.log('Did not retreive any variants from clinvar call.');
+        }
+
+        // Populate hash of clinvar variant(s)
+        let clinVarLookup = {};
+        annotatedVars.forEach((variant) => {
+            clinVarLookup[variant.id] = variant;
+        });
+
+        // Retrieve currently displayed variants, or singly clicked on variant
+        let subsetModel = self.dataSet.getSubsetCohort();
+        let existingVariants = [];
+        if (annotatedVars.length > 1) {
+            existingVariants = subsetModel.loadedVariants.features;
+        }
+        else {
+            let singleVar = annotatedVars[0];
+            existingVariants = subsetModel.loadedVariants.features.filter(feature => feature.id === singleVar.id);
+        }
+
+        // Iterate through existing variants, find matching updated variant, transfer info
+        existingVariants.forEach(function (existingVar) {
+            let matchingVar = clinVarLookup[existingVar.id];
+            if (matchingVar != null) {
+                // Copy all clinvar fields
+                existingVar.clinVarClinicalSignificance = matchingVar.clinVarClinicalSignificance;
+                existingVar.clinvar = matchingVar.clinvar;
+                existingVar.clinVarAccession = matchingVar.clinVarAccession;
+                existingVar.clinVarPhenotype = matchingVar.clinVarPhenotype;
+                existingVar.clinvarRank = matchingVar.clinvarRank;
+                existingVar.clinvarSubmissions = matchingVar.clinvarSubmissions;
+            }
+        });
+
+        // Return singly clicked on variant
+        return existingVariants[0];
     }
 
     promiseAnnotateInheritance(geneObject, theTranscript, resultMap, options = {
@@ -908,37 +949,37 @@ class VariantModel {
 // TODO: moved this functionality to gtenricher callback - can get rid of after final display decisions
     /* Assigns cohort-relative statistics to each variant.
        Used to populate Summary Card graphs when clicking on a variant. */
-    annotateDataSetFrequencies(subsetFeatures, probandCountsMap) {
-        let self = this;
-
-        if (subsetFeatures == null || subsetFeatures.length === 0) return;    // Avoid console output on initial load
-        self.assignCrossCohortInfo(probandCountsMap, subsetFeatures);
-    }
-
-    assignCrossCohortInfo(probandCountsMap, subsetFeatures) {
-        let self = this;
-
-        let unwrappedFeatures = subsetFeatures.Subset.features;
-        unwrappedFeatures.forEach((feature) => {
-            // Find matching proband feature
-            let matchingProbandCounts = probandCountsMap[feature.id];
-            if (matchingProbandCounts == null) {
-                console.log('Could not find subset feature in proband count lookup');
-            }
-
-            feature.probandZygCounts = matchingProbandCounts;
-            feature.totalProbandCount = matchingProbandCounts[0] + matchingProbandCounts[1] + matchingProbandCounts[2] + matchingProbandCounts[3];
-            feature.affectedProbandCount = matchingProbandCounts[1] + matchingProbandCounts[2]; // Counts ordered homRefs, hets, homAlts, noCalls
-
-            // Compute delta and assign to both
-            let subsetPercentage = feature.totalSubsetCount === 0 ? 0 : feature.affectedSubsetCount / feature.totalSubsetCount * 100;  // Can be 0
-            let probandPercentage = feature.affectedProbandCount / feature.totalProbandCount * 100; // Can never be 0
-            let foldEnrichment = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
-            feature.subsetDelta = foldEnrichment;
-
-            self.assignCohortsToEnrichmentGroups(unwrappedFeatures);
-        })
-    }
+    //annotateDataSetFrequencies(subsetFeatures, probandCountsMap) {
+    //     let self = this;
+    //
+    //     if (subsetFeatures == null || subsetFeatures.length === 0) return;    // Avoid console output on initial load
+    //     self.assignCrossCohortInfo(probandCountsMap, subsetFeatures);
+    // }
+    //
+    // assignCrossCohortInfo(probandCountsMap, subsetFeatures) {
+    //     let self = this;
+    //
+    //     let unwrappedFeatures = subsetFeatures.Subset.features;
+    //     unwrappedFeatures.forEach((feature) => {
+    //         // Find matching proband feature
+    //         let matchingProbandCounts = probandCountsMap[feature.id];
+    //         if (matchingProbandCounts == null) {
+    //             console.log('Could not find subset feature in proband count lookup');
+    //         }
+    //
+    //         feature.probandZygCounts = matchingProbandCounts;
+    //         feature.totalProbandCount = matchingProbandCounts[0] + matchingProbandCounts[1] + matchingProbandCounts[2] + matchingProbandCounts[3];
+    //         feature.affectedProbandCount = matchingProbandCounts[1] + matchingProbandCounts[2]; // Counts ordered homRefs, hets, homAlts, noCalls
+    //
+    //         // Compute delta and assign to both
+    //         let subsetPercentage = feature.totalSubsetCount === 0 ? 0 : feature.affectedSubsetCount / feature.totalSubsetCount * 100;  // Can be 0
+    //         let probandPercentage = feature.affectedProbandCount / feature.totalProbandCount * 100; // Can never be 0
+    //         let foldEnrichment = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
+    //         feature.subsetDelta = foldEnrichment;
+    //
+    //         self.assignCohortsToEnrichmentGroups(unwrappedFeatures);
+    //     })
+    // }
 
     /* Reference assigns all features in provided parameter to enrichment groups. */
     promiseAssignCohortsToEnrichmentGroups(variants) {
@@ -1048,6 +1089,7 @@ class VariantModel {
             // instead of on a per phase file basis
             let uniqueVariants = {};
             let unionVcfData = {features: []};
+            debugger;   // what's up w/ fileMap
             let fileMap = resultMap[0];
             let fileNames = Object.keys(fileMap);
             for (let i = 0; i < fileNames.length; i++) {
@@ -1097,9 +1139,8 @@ class VariantModel {
                             if (!updatedData.loadState['clinvar']) {
                                 let p = refreshVariantsWithClinvarLookup(updatedData, clinvarLookup);
                                 if (!isBackground) {
-                                    self.dataSet.getSubsetCohort().vcfData = updatedData;
+                                    self.combineClinVarInfo(updatedData.features);
                                 }
-                                //var p = getVariantCard(rel).model._promiseCacheData(vcfData, CacheHelper.VCF_DATA, vcfData.gene.gene_name, vcfData.transcript);
                                 refreshPromises.push(p);
                             }
                         }

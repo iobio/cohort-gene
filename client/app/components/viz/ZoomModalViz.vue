@@ -116,7 +116,6 @@
                     </div>
                     <div>
                         <slot name="footer">
-                            <!--TODO: how to hide this-->
                         </slot>
                     </div>
                 </div>
@@ -266,7 +265,6 @@
                 self.$emit("variantClick", variant, cohortKey);
             },
             showVariantCircle: function (variant, container, lock) {
-                console.log('getting here');
                 this.selectionVarChart.showCircle()(variant,
                     container,
                     variant.fbCalled && variant.fbCalled === 'Y',
@@ -283,7 +281,6 @@
             let self = this;
             self.draw();
             self.update();
-            // TODO: make draggable
         }
     }
 

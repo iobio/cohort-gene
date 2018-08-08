@@ -288,7 +288,6 @@ TD & SJG updated Jun2018 -->
                                     false,  // isBackground
                                     options)
                                     .then((resultMap) => {
-                                        debugger;   // are these results combined?
                                         let unwrappedResultMap = resultMap[0];
                                         self.variantModel.combineVariantInfo(unwrappedResultMap);
                                         // TODO: look at number of vars going into updateClasses vs proband/subset counts

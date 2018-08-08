@@ -4,10 +4,10 @@
 class CohortModel {
     constructor(theVariantModel) {
         this.vcfEndptHash = {};         // One vcf iobio service endpoint per multi-vcf url (key is name of file)
-        this.varsInFileHash = {};    // Key is file name, value is list of variant IDs
+        this.varsInFileHash = {};       // Key is file name, value is list of variant IDs (used for individual variant annotations)
 
         // BAM, VCF data fields
-        this.vcfData = null;            // Contains VCF variant information
+        this.vcfData = null;            // Combined vcf data for all phase files apart of this cohort
         this.fbData = null;
         this.bamData = null;
         this.vcfUrlEntered = false;
@@ -1219,7 +1219,7 @@ class CohortModel {
                     }
                     Promise.all(enrichPromises)
                         .then(() => {
-                            let combinedResults = me._combineAnnotationResults(enrichResults);
+                            let combinedResults = me._combineEnrichmentCounts(enrichResults);
                             if (combinedResults) {
                                 let theGeneObject = me.getGeneModel().geneObjects[combinedResults.gene];
                                 if (theGeneObject) {
@@ -1258,8 +1258,9 @@ class CohortModel {
         });
     }
 
-    /* Combines zygosity counts for each variant, from each vcf file. Recalculates subset delta and reassigns. */
-    _combineAnnotationResults(annotationResults) {
+    /* Combines zygosity counts for each variant, from each vcf file, into the first object in annotation results. Recalculates subset delta and reassigns.
+    *  If only one vcf result is provided, returns original data. */
+    _combineEnrichmentCounts(annotationResults) {
         let self = this;
 
         let vcfNames = Object.keys(annotationResults);
@@ -1310,8 +1311,9 @@ class CohortModel {
                         let subsetPercentage = totalSubsetCount === 0 ? 0 : affectedSubsetCount / totalSubsetCount * 100;  // Can be 0
                         let probandPercentage = affectedProbandCount / totalProbandCount * 100; // Can never be 0
                         combinedResults.features[combinedIndex].subsetDelta = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
+
+                    // Add this feature to the combinedResults if it doesn't already exist
                     } else {
-                        // Add this feature to the combinedResults
                         combinedResults.features.push(feature);
 
                         // Add feature to lookup
@@ -1650,7 +1652,8 @@ class CohortModel {
         let featureWidth = 4;
         let posToPixelFactor = Math.round((end - start) / width);
         let widthFactor = featureWidth + (4);
-        let maxLevel = this.vcf.pileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor);
+        let combinedVcf = this.getFirstVcf();
+        let maxLevel = combinedVcf.pileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor);
         if (maxLevel > 30) {
             for (let i = 1; i < posToPixelFactor; i++) {
                 // TODO:  Devise a more sensible approach to setting the min width.  We want the
@@ -1928,7 +1931,7 @@ class CohortModel {
                 var clinvarRec = clinvarRecs[clinvarIter];
 
                 // compare curr variant and curr clinVar record
-                if (recs[vcfIter].start === +clinvarRec.pos) {
+                if (+(recs[vcfIter].start) === +clinvarRec.pos) {
 
 
                     // add clinVar info to variant if it matches
@@ -1949,14 +1952,14 @@ class CohortModel {
                         // iter (multiple vcf recs with same position as 1 clinvar rec) or
                         // the clinvar iter needs to be advanced (multiple clinvar recs with same
                         // position as 1 vcf rec)
-                        if (vcfIter + 1 < recs.length && recs[vcfIter + 1].start === +clinvarRec.pos) {
+                        if (vcfIter + 1 < recs.length && +(recs[vcfIter + 1].start) === +clinvarRec.pos) {
                             vcfIter++;
                         } else {
                             clinvarIter++;
                         }
                     }
 
-                } else if (recs[vcfIter].start < +clinvarRec.pos) {
+                } else if (+(recs[vcfIter].start) < +clinvarRec.pos) {
                     vcfIter++;
                 } else {
                     clinvarIter++;

@@ -39,55 +39,6 @@ EndpointCmd.prototype.getVcfDepth = function (vcfUrl, tbiUrl) {
     return cmd;
 }
 
-EndpointCmd.prototype.getSubsetOnlyVariants = function(vcfSource, refName, regions, expSampleNames) {
-    let self = this;
-
-    let regionParm = "";
-    if (regions && regions.length > 0) {
-        regions.forEach(function (region) {
-            if (regionParm.length > 0) {
-                regionParm += " ";
-            }
-            regionParm += region.name + ":" + region.start + "-" + region.end;
-        })
-    }
-
-    let contigStr = "";
-    self.getHumanRefNames(refName).split(" ").forEach(function (ref) {
-        contigStr += "##contig=<ID=" + ref + ">\n";
-    });
-    let contigNameFile = new Blob([contigStr]);
-
-    // Create an iobio command get get the variants and add any header recs.
-    let cmd = null;
-    if (vcfSource.hasOwnProperty('vcfUrl')) {
-        //  If we have a vcf URL, use tabix to get the variants for the region
-        let args = ['-h', '"' + vcfSource.vcfUrl + '"', regionParm];
-        if (vcfSource.tbiUrl) {
-            args.push('"' + vcfSource.tbiUrl + '"');
-        }
-        cmd = new iobio.cmd(self.IOBIO.tabix, args, {ssl: self.useSSL})
-            .pipe(self.IOBIO.bcftools, ['annotate', '-h', contigNameFile, '-'], {ssl: self.useSSL});
-
-    } else if (vcfSource.hasOwnProperty('writeStream')) {
-        // If we have a local vcf file, use the writeStream function to stream in the vcf records
-        cmd = new iobio.cmd(self.IOBIO.bcftools, ['annotate', '-h', contigNameFile, vcfSource.writeStream], {ssl: self.useSSL})
-    } else {
-        console.log("EndpointCmd.annotateVariants() vcfSource arg is not invalid.");
-        return null;
-    }
-
-    // Filter vcf for subset samples only
-    if (controlSampleNames && expSampleNames.length > 0) {
-        let formattedControls = expSampleNames.join("\n");
-        let sampleNameFile = new Blob([formattedControls]);
-        cmd = cmd.pipe(self.IOBIO.vt, ["subset", "-s", sampleNameFile, '-'], {ssl: self.useSSL});
-    }
-
-    return cmd;
-}
-
-
 /* Returns command to obtain vcf annotated with enrichment information.
  * Used in cohort-gene.iobio to render large amounts of variants ranked by enrichment quickly and without overflow.
  * Input: a vcf file, experimental group IDs (aka Subset for now) and control group IDs (aka Probands for now)
