@@ -708,7 +708,7 @@ vcfiobio = function module() {
             cmd = me.getEndpoint().annotateVariants({
                 'vcfUrl': vcfURL,
                 'tbiUrl': tbiUrl
-            }, refName, regions, expSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey);
+            }, refName, regions, controlSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey);
         }
 
 

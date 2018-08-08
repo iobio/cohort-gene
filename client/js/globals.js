@@ -16,7 +16,7 @@ var HUB_SUBSET_NAME = "HubSubsetProbands";
 var DEV_IOBIO                 = "nv-dev-new.iobio.io/";
 var STAGE_IOBIO               = "nv-purple.iobio.io/";
 var PROD_IOBIO                = "nv-prod.iobio.io/";
-var CURRENT_IOBIO             = "nv-green.iobio.io/";
+var CURRENT_IOBIO             = "nv-blue.iobio.io/";
 var iobio_services            = isOffline              ? serverInstance : CURRENT_IOBIO;
 var iobio_http_services       = (useSSL ? "https://" : "http://") + (isOffline ? serverInstance : CURRENT_IOBIO);
 

@@ -280,29 +280,40 @@ class VariantModel {
                 // Pull out combined vcfs from individual chromosome ones
                 let sortedVcfFiles = [];
                 vcfFiles.forEach((file) => {
+                    let phase4 = false;
+                    let phaseFile = false;
                     let name = file.name;
                     let namePieces = name.split('.');
                     namePieces.forEach((piece) => {
-                        if (piece === 'all') {
-                            sortedVcfFiles.push(file);
+                        if (piece === 'phase4') {
+                            phase4 = true;
                         }
-                    })
+                        else if (piece === 'all') {
+                            phaseFile = true;
+                        }
+                    });
+                    if (!phase4 && phaseFile) {
+                        sortedVcfFiles.push(file);
+                    }
                 });
                 let sortedTbiCsiFiles = [];
                 tbiCsiFiles.forEach((file) => {
+                    let phase4 = false;
+                    let phaseFile = false;
                     let name = file.name;
                     let namePieces = name.split('.');
                     namePieces.forEach((piece) => {
                         if (piece === 'all') {
-                            sortedTbiCsiFiles.push(file);
+                            phaseFile = true;
                         }
-                    })
+                        else if (piece === 'phase4') {
+                            phase4 = true;
+                        }
+                    });
+                    if (!phase4 && phaseFile) {
+                        sortedTbiCsiFiles.push(file);
+                    }
                 });
-
-                // TODO: TAKE THIS OUT WHEN PHASE 4 CSI FIXED
-                // TODO: CAN TRY -C ARG WITH TABIX COMMAND
-                sortedVcfFiles.pop();
-                sortedTbiCsiFiles.pop();
 
                 // Check that we have matching data for all files
                 if (sortedVcfFiles.length !== (sortedTbiCsiFiles.length)) {
@@ -1268,6 +1279,7 @@ class VariantModel {
         // Pull variant out of lookup
         let self = this;
         let varId = domVar.id;
+        // TODO: this may need to be updated now that proband vars aren't displayed...
         let variant = self.subsetEnrichedVars[varId];
         if (variant == null) variant = self.probandEnrichedVars[varId];
         if (variant == null) variant = self.nonEnrichedVars[varId];

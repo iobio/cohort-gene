@@ -290,6 +290,7 @@ TD & SJG updated Jun2018 -->
                                     .then((resultMap) => {
                                         let unwrappedResultMap = resultMap[0];
                                         self.variantModel.combineVariantInfo(unwrappedResultMap);
+                                        // TODO: look at number of vars going into updateClasses vs proband/subset counts
                                         self.updateClasses();
                                         self.doneLoadingExtras = true;
                                     })

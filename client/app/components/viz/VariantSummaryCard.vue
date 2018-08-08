@@ -195,7 +195,7 @@
           <div class='form-group'>
             <v-chip v-bind:class="{hide: variant == null}" v-bind:style="{margin: 0}" small outline color="cohortDarkBlue"
               @input="summaryCardVariantDeselect()">
-               <span style="padding-right: 10px; font-size: 14px; text-align:center;" v-bind:class="{hide: geneName == ''}">{{geneName}}</span>
+               <span style="padding-right: 10px; font-size: 14px; text-align:center;" v-bind:class="{hide: geneName === ''}">{{geneName}}</span>
                <span style="padding-top: 1px; font-size: 12px; padding-right: 4px">{{selectedVariantLocation}}</span>
             </v-chip>
           </div>
@@ -478,7 +478,7 @@ export default {
     },
     selectedVariantLocation: function() {
       if (this.variant != null) {
-        return 'chr' + this.variant.chrom + ' ' + this.variant.start.toLocaleString() + ' - ' + this.variant.end.toLocaleString();
+        return this.variant.chrom + ' ' + this.variant.start.toLocaleString() + ' - ' + this.variant.end.toLocaleString();
       }
       return '';
     },

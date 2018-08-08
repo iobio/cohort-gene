@@ -95,9 +95,9 @@ EndpointCmd.prototype.annotateEnrichment = function (vcfSource, refName, regions
     return cmd;
 }
 
-/* Compiles and annotates variants for the given regions, from the given sources.
-   When efficiencyMode = true, hgvs, rsId, vep, and AF annotations are not obtained. */
+/* Compiles and annotates variants for the given regions, from the given sources. */
 EndpointCmd.prototype.annotateVariants = function (vcfSource, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey) {
+    debugger;   // check all params coming in here
     var me = this;
     // Figure out the file location of the reference seq files
     var regionParm = "";
@@ -154,7 +154,7 @@ EndpointCmd.prototype.annotateVariants = function (vcfSource, refName, regions, 
         // VEP
         var vepArgs = [];
         vepArgs.push(" --assembly");
-        vepArgs.push(me.genomeBuildHelper.getCurrentBuildName());
+        vepArgs.push(me.genomeBuildHelper.getCurrentBuildName());   // TODO: debug - is grch38 a problem?
         vepArgs.push(" --format vcf");
         vepArgs.push(" --allele_number");
         if (vepAF) {

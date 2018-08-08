@@ -996,6 +996,7 @@ class CohortModel {
                             null,   // regions
                             false,   //isMultiSample
                             me.getFormattedSampleIds('subset'),
+                            me.getFormattedSampleIds('proband'),
                             me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
                             me.getTranslator().clinvarMap,
                             me.getGeneModel().geneSource === 'refseq',
@@ -1007,7 +1008,7 @@ class CohortModel {
                             false       // enrichment mode (aka subset delta calculations only - no annotation)
                         )
                             .then(function (singleVarData) {
-                                debugger;
+                                // TODO: need to test this when variant overlap
                                 if (singleVarData != null && singleVarData.features != null) {
                                     let matchingVariants = [];
                                     let featureList = [];
@@ -1144,7 +1145,7 @@ class CohortModel {
                                 me.getGeneModel().geneSource === 'refseq',
                                 false,      // hgvs notation
                                 false,      // rsid
-                                false,      // vep af
+                                true,      // vep af
                                 null,
                                 keepVariantsCombined,
                                 enrichMode)
