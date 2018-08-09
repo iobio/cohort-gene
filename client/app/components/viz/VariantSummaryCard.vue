@@ -187,10 +187,10 @@
       <v-flex lg12 xl8>
         <div class='form-inline'>
           <div class='form-group'>
-            <v-icon medium color="limeGreen" v-bind:class="{hide: variantSelected == false || subsetDelta < 2}">arrow_upward</v-icon>
-            <v-icon medium color="slateGray" v-bind:class="{hide: variantSelected == false || (subsetDelta <= 1 || subsetDelta >= 2)}">arrow_upward</v-icon>
-            <v-icon medium color="slateGray" v-bind:class="{hide: variantSelected == false || (subsetDelta <= 0.5 || subsetDelta >= 1)}">arrow_downward</v-icon>
-            <v-icon medium color="cherryRed" v-bind:class="{hide: variantSelected == false || subsetDelta > 0.5}">arrow_downward</v-icon>
+            <v-icon medium color="limeGreen" v-bind:class="{hide: variantSelected === false || subsetDelta < 2}">arrow_upward</v-icon>
+            <v-icon medium color="slateGray" v-bind:class="{hide: variantSelected === false || (subsetDelta <= 1 || subsetDelta >= 2)}">arrow_upward</v-icon>
+            <v-icon medium color="slateGray" v-bind:class="{hide: variantSelected === false || (subsetDelta <= 0.5 || subsetDelta >= 1)}">arrow_downward</v-icon>
+            <v-icon medium color="cherryRed" v-bind:class="{hide: variantSelected === false || subsetDelta > 0.5}">arrow_downward</v-icon>
           </div>
           <div class='form-group'>
             <v-chip v-bind:class="{hide: variant == null}" v-bind:style="{margin: 0}" small outline color="cohortDarkBlue"
@@ -329,18 +329,18 @@ export default {
     // Currently not using these but could be useful in the future...
     totalCountSelectedTrack: function() {
       if (this.variant != null) {
-        if (this.variant.name == "HubProbands")
+        if (this.variant.name === "HubProbands")
           return this.totalProbandCount;
-        else if (this.variant.name == "HubSubsetProbands")
+        else if (this.variant.name === "HubSubsetProbands")
           return this.totalSubsetCount;
       }
       return 0;
     },
     affectedCountSelectedTrack: function() {
       if (this.variant != null) {
-        if (this.variant.name == "HubProbands")
+        if (this.variant.name === "HubProbands")
           return this.affectedProbandCount;
-        else if (this.variant.name == "HubSubsetProbands")
+        else if (this.variant.name === "HubSubsetProbands")
           return this.affectedSubsetCount;
       }
       return 0;
@@ -420,16 +420,16 @@ export default {
       let map = [];
       if (this.variant != null) {
         let zygArr = this.variant.probandZygCounts;
-        map.push({label: "hom ref", value: zygArr[0]})
-        map.push({label: "het", value: zygArr[1]})
-        map.push({label: "hom alt", value: zygArr[2]})
-        map.push({label: "no call", value: zygArr[3]})
+        map.push({label: "hom ref", value: zygArr[0]});
+        map.push({label: "het", value: zygArr[1]});
+        map.push({label: "hom alt", value: zygArr[2]});
+        map.push({label: "no call", value: zygArr[3]});
       }
       else {
-        map.push({label: "hom ref", value: 0})
-        map.push({label: "het", value: 0})
-        map.push({label: "hom alt", value: 0})
-        map.push({label: "no call", value: 0})
+        map.push({label: "hom ref", value: 0});
+        map.push({label: "het", value: 0});
+        map.push({label: "hom alt", value: 0});
+        map.push({label: "no call", value: 0});
       }
       return map;
     },
@@ -437,16 +437,16 @@ export default {
       let map = [];
       if (this.variant != null) {
         let zygArr = this.variant.subsetZygCounts;
-        map.push({label: "hom ref", value: zygArr[0]})
-        map.push({label: "het", value: zygArr[1]})
-        map.push({label: "hom alt", value: zygArr[2]})
-        map.push({label: "no call", value: zygArr[3]})
+        map.push({label: "hom ref", value: zygArr[0]});
+        map.push({label: "het", value: zygArr[1]});
+        map.push({label: "hom alt", value: zygArr[2]});
+        map.push({label: "no call", value: zygArr[3]});
       }
       else {
-        map.push({label: "hom ref", value: 0})
-        map.push({label: "het", value: 0})
-        map.push({label: "hom alt", value: 0})
-        map.push({label: "no call", value: 0})
+        map.push({label: "hom ref", value: 0});
+        map.push({label: "het", value: 0});
+        map.push({label: "hom alt", value: 0});
+        map.push({label: "no call", value: 0});
       }
       return map;
     },
@@ -458,9 +458,9 @@ export default {
         var gtObj = this.variant.genotypes;
         for (var gt in gtObj) {
           if (gtObj.hasOwnProperty(gt)) {
-            if (gtObj[gt].zygosity == 'HOM' || gtObj[gt].zygosity == 'HET')
+            if (gtObj[gt].zygosity === 'HOM' || gtObj[gt].zygosity === 'HET')
               affectedCount++;
-            else if (gtObj[gt].zygosity == 'HOMREF') {
+            else if (gtObj[gt].zygosity === 'HOMREF') {
               unaffectedCount++;
             }
           }

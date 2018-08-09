@@ -1089,7 +1089,6 @@ class VariantModel {
             // instead of on a per phase file basis
             let uniqueVariants = {};
             let unionVcfData = {features: []};
-            debugger;   // what's up w/ fileMap
             let fileMap = resultMap[0];
             let fileNames = Object.keys(fileMap);
             for (let i = 0; i < fileNames.length; i++) {

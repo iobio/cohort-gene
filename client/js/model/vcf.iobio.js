@@ -1646,6 +1646,7 @@ vcfiobio = function module() {
                                 // annot fields
                                 'af': annot.af,
                                 'afExAC': me._parseAf(altIdx, annot.afExAC),
+                                'af1000G': me._parseAf(altIdx, annot.af1000G),
                                 'afgnomAD': vepAF ? annot.vep.af['gnomAD'].AF : '',
 
                                 // snpeff
@@ -1865,41 +1866,41 @@ vcfiobio = function module() {
         var annotTokens = rec.info.split(";");
 
         annotTokens.forEach(function (annotToken) {
-            if (annotToken.indexOf("BGAF_1KG=") == 0) {
+            if (annotToken.indexOf("BGAF_1KG=") === 0) {
 
                 annot.af1000G = annotToken.substring(9, annotToken.length);
 
-            } else if (annotToken.indexOf("BGAF_EXAC=") == 0) {
+            } else if (annotToken.indexOf("BGAF_EXAC=") === 0) {
 
                 annot.afExAC = annotToken.substring(10, annotToken.length);
 
-            } else if (annotToken.indexOf("RS=") == 0) {
+            } else if (annotToken.indexOf("RS=") === 0) {
 
                 annot.rs = annotToken.substring(3, annotToken.length);
 
-            } else if (annotToken.indexOf("AF=") == 0) {
+            } else if (annotToken.indexOf("AF=") === 0) {
 
                 // For now, just grab first af
                 //af = me._parseAnnotForAlt(annotToken.substring(3, annotToken.length), altIdx);
                 annot.af = me._parseAnnotForAlt(annotToken.substring(3, annotToken.length), 0);
 
-            } else if (annotToken.indexOf("TYPE=") == 0) {
+            } else if (annotToken.indexOf("TYPE=") === 0) {
 
                 annot.typeAnnotated = me._parseAnnotForAlt(annotToken.substring(5, annotToken.length), altIdx);
 
-            } else if (annotToken.indexOf("DP=") == 0) {
+            } else if (annotToken.indexOf("DP=") === 0) {
 
                 annot.combinedDepth = annotToken.substring(3, annotToken.length);
 
-            } else if (annotToken.indexOf("EFF=") == 0) {
+            } else if (annotToken.indexOf("EFF=") === 0) {
 
                 me._parseSnpEffAnnot(annotToken, annot, geneObject, selectedTranscriptID);
 
-            } else if (annotToken.indexOf("CSQ") == 0) {
+            } else if (annotToken.indexOf("CSQ") === 0) {
 
                 me._parseVepAnnot(altIdx, isMultiAllelic, annotToken, annot, geneObject, selectedTranscript, selectedTranscriptID, vepAF)
 
-            } else if (annotToken.indexOf("AVIA3") == 0) {
+            } else if (annotToken.indexOf("AVIA3") === 0) {
                 me._parseGenericAnnot("AVIA3", annotToken, annot);
 
             }
