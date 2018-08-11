@@ -22,6 +22,20 @@ EndpointCmd.prototype.getVcfHeader = function (vcfUrl, tbiUrl) {
     return cmd;
 }
 
+EndpointCmd.prototype.getChromosomesFromVcf = function(vcfUrl, tbiUrl) {
+    var me = this;
+    var args = ['-l', '"' + vcfUrl + '"'];
+    if (tbiUrl) {
+        args.push('"' + tbiUrl + '"');
+    }
+    var cmd = new iobio.cmd(
+        me.IOBIO.tabix,
+        args,
+        {ssl: me.useSSL}
+    );
+    return cmd;
+}
+
 EndpointCmd.prototype.getVcfDepth = function (vcfUrl, tbiUrl) {
     var me = this;
     var args = ['-i'];

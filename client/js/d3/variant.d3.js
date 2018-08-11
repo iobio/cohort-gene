@@ -54,7 +54,6 @@ function variantD3() {
 
     var showCircle = function(d, svgContainer, indicateMissingVariant, pinned) {
         // Find the matching variant
-        debugger;
         var matchingVariant = null;
         svgContainer.selectAll(".variant").each( function (variant,i) {
             if (d.start === variant.start

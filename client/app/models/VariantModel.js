@@ -291,7 +291,7 @@ class VariantModel {
                             phaseFile = true;
                         }
                     });
-                    if (!phase4 && phaseFile) {
+                    if (phaseFile) {
                         sortedVcfFiles.push(file);
                     }
                 });
@@ -309,7 +309,7 @@ class VariantModel {
                             phase4 = true;
                         }
                     });
-                    if (!phase4 && phaseFile) {
+                    if (phaseFile) {
                         sortedTbiCsiFiles.push(file);
                     }
                 });
@@ -528,11 +528,16 @@ class VariantModel {
 
     /* Promises to verify the vcf url and adds samples to vcf object. */
     promiseAddSamples(subsetCohort, urlNames, vcfUrls, tbiUrls) {
+        let self = this;
         if ((Object.keys(subsetCohort.vcfEndptHash)).length > 0) {    // TODO: probably a more robust check to do here
             return new Promise(function (resolve, reject) {
                 subsetCohort.onVcfUrlEntered(urlNames, vcfUrls, tbiUrls)
-                    .then((success) => {
-                        if (success) {
+                    .then((updatedListObj) => {
+                        if (updatedListObj != null) {
+                            // Assign updated lists to data set model
+                            self.dataSet.vcfNames = updatedListObj['names'];
+                            self.dataSet.vcfUrls = updatedListObj['vcfs'];
+                            self.dataSet.tbiUrls = updatedListObj['tbis'];
                             resolve();
                         }
                         else {

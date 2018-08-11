@@ -172,8 +172,8 @@ vcfiobio = function module() {
         tbiUrl = theTbiUrl;
 
 
-        this.checkVcfUrl(url, tbiUrl, function (success, message) {
-            callback(success, message);
+        this.checkVcfUrl(url, tbiUrl, function (success, message, buildResult) {
+            callback(success, message, buildResult);
         });
 
     }
@@ -222,12 +222,11 @@ vcfiobio = function module() {
 
 
     exports.checkVcfUrl = function (url, tbiUrl, callback) {
-        var me = this;
-        var success = null;
-        var buffer = "";
-        var recordCount = 0;
+        let me = this;
+        let success = null;
+        let buffer = "";
 
-        var cmd = me.getEndpoint().getVcfHeader(url, tbiUrl);
+        let cmd = me.getEndpoint().getVcfHeader(url, tbiUrl);
 
         cmd.on('data', function (data) {
             if (data != null) {
@@ -241,12 +240,54 @@ vcfiobio = function module() {
                 success = true;
             }
             if (success && buffer.length > 0) {
-                buffer.split("\n").forEach(function (rec) {
+                let bufferLines = buffer.split("\n");
+                bufferLines.forEach(function (rec) {
                     if (rec.indexOf("#") === 0) {
                         me._parseHeaderForInfoFields(rec);
                     }
-                })
-                callback(success);
+                });
+                let buildResult = me.getGenomeBuildHelper().getBuildFromSscVcfHeader(buffer);
+                callback(success, '', buildResult);
+            }
+        });
+
+        cmd.on('error', function (error) {
+            if (me.ignoreErrorMessage(error)) {
+            } else {
+                if (success == null) {
+                    success = false;
+                    console.log(error);
+                    callback(success, me.translateErrorMessage(error));
+                }
+            }
+
+        });
+
+        cmd.run();
+    }
+
+    /* Returns list of chromosomes found in supplied vcf file. */
+    exports.getChromosomesFromVcf = function(url, tbiUrl, callback) {
+        let me = this;
+        let success = null;
+        let buffer = "";
+
+        let cmd = me.getEndpoint().getChromosomesFromVcf(url, tbiUrl);
+
+        cmd.on('data', function (data) {
+            if (data != null) {
+                success = true;
+                buffer += data;
+            }
+        });
+
+        cmd.on('end', function () {
+            if (success == null) {
+                success = true;
+            }
+            if (success && buffer.length > 0) {
+                let buildResult = me.getGenomeBuildHelper().getBuildFromSscVcfChromosomes(buffer);
+                callback(success, '', buildResult);
             }
         });
 

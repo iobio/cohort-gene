@@ -13,6 +13,7 @@ class CohortModel {
         this.vcfUrlEntered = false;
         this.vcfFileOpened = false;
         this.getVcfRefName = null;
+        this.majorityBuild = '';        // Represents the build found in most uploaded files to the application (i.e., GRCh37 or GRCh38)
         this.bamUrlEntered = false;
         this.bamFileOpened = false;
         this.getBamRefName = null;
@@ -771,6 +772,19 @@ class CohortModel {
     //   }
     // }
 
+
+    /* Checks vcfs to ensure they are found and can be successfully opened. Also retrieves build information
+     * for each vcf provided.
+     *
+     * Takes in three stably sorted lists of file names, vcf urls, and tbi urls.
+     *
+     * Returns three stable sorted lists of vcf names, urls, and tbi urls.
+     * Each list only contains information relative to vcf files that may be found, successfully opened,
+     * and were aligned with the majority reference build found in all of the provided files (i.e. GRCh38).
+     *
+     * Notifies the user of any vcfs that 1) may not be opened, 2) have indeterminate reference builds, or 3) do not
+     * have the majority reference build.
+     */
     onVcfUrlEntered(urlNames, vcfUrls, tbiUrls) {
         let me = this;
         me.vcfData = null;
@@ -786,40 +800,164 @@ class CohortModel {
                 me.vcfFileOpened = false;
                 me.getVcfRefName = null;
                 me.isMultiSample = true;
+                let individualRefBuilds = {};
+                let openErrorFiles = [];
 
                 let openPromises = [];
                 let singleSuccess = true;
                 for (let i = 0; i < vcfUrls.length; i++) {
                     let p = new Promise((resolve, reject) => {
-                        let currVcfEndpt = me.vcfEndptHash[urlNames[i]];
-                        currVcfEndpt.openVcfUrl(vcfUrls[i], tbiUrls[i], function (success, errorMsg) {
+                        let currFileName = urlNames[i];
+                        let currVcfEndpt = me.vcfEndptHash[currFileName];
+                        let currVcf = vcfUrls[i];
+                        let currTbi = tbiUrls[i];
+                        currVcfEndpt.openVcfUrl(currVcf, currTbi, function (success, errorMsg, hdrBuildResult) {
                             singleSuccess |= success;
                             if (success) {
-                                me.vcfUrlEntered = true;
-                                me.vcfFileOpened = false;
-                                me.getVcfRefName = null;
-
                                 // Get the sample names from the vcf header
                                 currVcfEndpt.getSampleNames(function (sampleNames) {
-                                    me.isMultiSample = !!(sampleNames && sampleNames.length > 1);
-                                    resolve();
+                                    me.isMultiSample = !!(sampleNames && sampleNames.length > 1);   // TODO: this may be need to be moved to vcf model - not sure what fxnality is
                                 });
+
+                                // Get build version from vcf chromosome notation if can't get from header
+                                if (hdrBuildResult === '') {
+                                    // Look at chrom notation if we couldn't determine here
+                                    currVcfEndpt.getChromosomesFromVcf(currVcf, currTbi, function (success, errorMsg, chrBuildResult) {
+                                        if (success) {
+                                            individualRefBuilds[currFileName] = chrBuildResult;
+                                        }
+                                    })
+                                } else {
+                                    individualRefBuilds[currFileName] = hdrBuildResult;
+                                }
                             } else {
-                                // TODO: remove url from list to send in to annotation so it doesn't break
-                                me.vcfUrlEntered = false;
-                                console.log('Could not open the file: ' + vcfUrls[i] + 'or ' + tbiUrls[i] + ' - ' + errorMsg);
-                                reject(errorMsg);
+                                openErrorFiles.push(currFileName);
+                                console.log('Could not open either: ' + vcfUrls[i] + 'or ' + tbiUrls[i] + ' - ' + errorMsg);
                             }
+                            resolve();
                         });
                     });
                     openPromises.push(p);
                 }
                 Promise.all(openPromises)
                     .then(() => {
-                        resolve(singleSuccess);
+                        debugger;
+                        let errorMsg = '';
+                        let updatedListObj = {};
+                        // Initialize return object w/ all files
+                        updatedListObj['names'] = urlNames;
+                        updatedListObj['vcfs'] = vcfUrls;
+                        updatedListObj['tbis'] = tbiUrls;
+
+                        // Remove files that that could not be found or opened
+                        if (openErrorFiles.length === urlNames.length) {
+                            me.vcfUrlEntered = false;
+                            errorMsg = 'None of the provided files could be found or opened. If launching from Mosaic, please contact a Frameshift representative.';
+                            alert(errorMsg);
+                            reject();
+                        }
+                        else if (openErrorFiles.length > 0) {
+                            errorMsg += 'The following files could not be found and will not be included in the analysis: ' + openErrorFiles.join(',');
+                            let updatedListObj = me.removeEntriesFromLists(openErrorFiles, urlNames, vcfUrls, tbiUrls);
+                            urlNames = updatedListObj['names'];
+                            vcfUrls = updatedListObj['vcfs'];
+                            tbiUrls = updatedListObj['tbis'];
+                        }
+
+                        // Create object with unique build refs as keys and file name lists as values
+                        let refMap = {};
+                        let unfoundRefFiles = [];
+                        for (let i = 0; i < urlNames.length; i++) {
+                            let currFileName = urlNames[i];
+                            let currFileRef = individualRefBuilds[currFileName];
+                            if (currFileRef === '') {
+                                unfoundRefFiles.add(currFileName);
+                            } else if (refMap[currFileRef] == null) {
+                                refMap[currFileRef] = [];
+                                refMap[currFileRef].push(currFileName);
+                            } else {
+                                refMap[currFileRef].push(currFileName);
+                            }
+                        }
+
+                        // If we couldn't find a reference from any file, notify and return
+                        if (unfoundRefFiles.length === urlNames.length) {
+                            me.vcfUrlEntered = false;
+                            errorMsg = 'None of the provided files could be loaded because their reference build could not be determined. If launching from Mosaic, please contact a Frameshift representative.';
+                            reject();
+                        }
+                        // If we have some files we couldn't find a reference for, remove from lists
+                        else if (unfoundRefFiles.length > 0) {
+                            updatedListObj = me.removeEntriesFromLists(unfoundRefFiles, urlNames, vcfUrls, tbiUrls);
+                            urlNames = updatedListObj['names'];
+                            vcfUrls = updatedListObj['vcfs'];
+                            tbiUrls = updatedListObj['tbis'];
+                        }
+
+                        // If we have multiple references found, remove files with non-majority reference
+                        if (Object.keys(refMap).length > 1) {
+                            let refKeys = Object.keys(refMap);
+                            let majorityRefCount = 1;   // Initialize to min value possible
+                            let majorityRef = '';
+                            let minorityRefKeyNames = [];
+
+                            // Find the majority count and add minority indices to list
+                            for (let i = 0; i < refKeys.length; i++) {
+                                let currName = refKeys[i];
+                                let currRef = refMap[currName];
+                                if (currRef.length > majorityRefCount) {
+                                    majorityRefCount = currRef.length;
+                                    majorityRef = refMap[currName];
+                                }
+                                else {
+                                    minorityRefKeyNames.push((refMap[currName].split()));
+                                }
+                            }
+                            // If all counts are at 1, pop off last one to keep
+                            if (majorityRefCount === 1) {
+                                minorityRefKeyNames.pop();
+                            }
+                            // Remove files with minority ref builds
+                            updatedListObj = me.removeEntriesFromLists(minorityRefKeyNames, urlNames, vcfUrls, tbiUrls);
+                            urlNames = updatedListObj['names'];
+                            vcfUrls = updatedListObj['vcfs'];
+                            tbiUrls = updatedListObj['tbis'];
+                            errorMsg += ' The following files will not be included in the analysis because their reference build could not be determined: ' + unfoundRefFiles.join(',');
+                        }
+
+                        // Set flags and display error message as appropriate
+                        if (errorMsg !== '') {
+                            alert(errorMsg);
+                        }
+                        me.vcfUrlEntered = true;
+                        me.vcfFileOpened = false;
+                        me.getVcfRefName = null;
+                        resolve(updatedListObj);
                     });
             }
         });
+    }
+
+    /* Takes in a list of file names and removes them from the data set which contains this cohort.
+     * If a file name is provided that is not within the dataset model's name list, no lists are affected. */
+    removeEntriesFromLists(fileNames, nameList, vcfList, tbiList) {
+        let self = this;
+
+        // Create return object
+        let listObj = {};
+
+        fileNames.forEach((fileName) => {
+            // Get index of file relative to all lists
+            let fileIndex = nameList.indexOf(fileName);
+            nameList.splice(fileIndex, 1);
+            vcfList.splice(fileIndex, 1);
+            tbiList.splice(fileIndex, 1);
+        });
+
+        listObj['names'] = nameList;
+        listObj['vcfs'] = vcfList;
+        listObj['tbis'] = tbiList;
+        return listObj;
     }
 
     _promiseVcfRefName(ref) {
@@ -1312,7 +1450,7 @@ class CohortModel {
                         let probandPercentage = affectedProbandCount / totalProbandCount * 100; // Can never be 0
                         combinedResults.features[combinedIndex].subsetDelta = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
 
-                    // Add this feature to the combinedResults if it doesn't already exist
+                        // Add this feature to the combinedResults if it doesn't already exist
                     } else {
                         combinedResults.features.push(feature);
 
