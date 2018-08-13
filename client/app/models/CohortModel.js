@@ -841,7 +841,6 @@ class CohortModel {
                 }
                 Promise.all(openPromises)
                     .then(() => {
-                        debugger;
                         let errorMsg = '';
                         let updatedListObj = {};
                         // Initialize return object w/ all files
@@ -932,6 +931,7 @@ class CohortModel {
                         me.vcfUrlEntered = true;
                         me.vcfFileOpened = false;
                         me.getVcfRefName = null;
+                        debugger;
                         resolve(updatedListObj);
                     });
             }
