@@ -857,6 +857,7 @@ class CohortModel {
                         }
                         else if (openErrorFiles.length > 0) {
                             errorMsg += 'The following files could not be found and will not be included in the analysis: ' + openErrorFiles.join(',');
+                            me.removeEntriesFromHash(openErrorFiles);
                             let updatedListObj = me.removeEntriesFromLists(openErrorFiles, urlNames, vcfUrls, tbiUrls);
                             urlNames = updatedListObj['names'];
                             vcfUrls = updatedListObj['vcfs'];
@@ -887,6 +888,7 @@ class CohortModel {
                         }
                         // If we have some files we couldn't find a reference for, remove from lists
                         else if (unfoundRefFiles.length > 0) {
+                            me.removeEntriesFromHash(unfoundRefFiles);
                             updatedListObj = me.removeEntriesFromLists(unfoundRefFiles, urlNames, vcfUrls, tbiUrls);
                             urlNames = updatedListObj['names'];
                             vcfUrls = updatedListObj['vcfs'];
@@ -917,6 +919,7 @@ class CohortModel {
                                 minorityRefKeyNames.pop();
                             }
                             // Remove files with minority ref builds
+                            me.removeEntriesFromHash(minorityRefKeyNames);
                             updatedListObj = me.removeEntriesFromLists(minorityRefKeyNames, urlNames, vcfUrls, tbiUrls);
                             urlNames = updatedListObj['names'];
                             vcfUrls = updatedListObj['vcfs'];
@@ -931,15 +934,15 @@ class CohortModel {
                         me.vcfUrlEntered = true;
                         me.vcfFileOpened = false;
                         me.getVcfRefName = null;
-                        debugger;
                         resolve(updatedListObj);
                     });
             }
         });
     }
 
-    /* Takes in a list of file names and removes them from the data set which contains this cohort.
-     * If a file name is provided that is not within the dataset model's name list, no lists are affected. */
+    /* Takes in a list of file names and removes them from the subsequent three provided lists.
+     * If a file name is provided that is not within nameList, vcfList, and/or tbiList, nothing is affected
+     * Returns nameList, vcfList, and tbiList in a combined object. */
     removeEntriesFromLists(fileNames, nameList, vcfList, tbiList) {
         let self = this;
 
@@ -959,6 +962,15 @@ class CohortModel {
         listObj['tbis'] = tbiList;
         return listObj;
     }
+
+    /* Removes the object-key pair from this cohort's vcf endpoint hash. */
+    removeEntriesFromHash(fileNames) {
+        let self = this;
+        fileNames.forEach((fileName) => {
+            self.vcfEndptHash = _.omit(self.vcfEndptHash,fileName);
+        })
+    }
+
 
     _promiseVcfRefName(ref) {
         let me = this;
