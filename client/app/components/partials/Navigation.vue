@@ -51,6 +51,10 @@
                             style="font-size: 14px; font-family: Quicksand; font-weight: bold;">
                         {{ selectedGeneDisplay }}
                     </v-chip>
+                    <v-chip color="cohortDarkBlue" text-color="white"
+                            style="font-size: 14px; font-family: Quicksand; font-weight: bold;">
+                        {{ selectedBuild }}
+                    </v-chip>
                 </div>
 
             </v-toolbar-items>
@@ -130,7 +134,8 @@
         props: {
             knownGenes: null,
             selectedGeneName: "",
-            selectedChr: ""
+            selectedChr: "",
+            selectedBuild: ''
             //flaggedVariants: null,
         },
         computed: {

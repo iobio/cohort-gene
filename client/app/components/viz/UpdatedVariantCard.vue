@@ -92,7 +92,7 @@ Updated: SJG Apr2018
                     </v-menu>
                 </v-flex>
             </v-layout>
-            <div style="width:100%; height: 783px">
+            <div style="width:100%">
                 <updated-variant-viz
                         v-if="(showVariantViz && subsetCohort != null && probandCohort != null)"
                         ref="subsetVizRef"
@@ -101,6 +101,9 @@ Updated: SJG Apr2018
                         :data="subsetCohort.loadedVariants"
                         :title="probandCohort.trackName"
                         :phenotypes="subsetCohort.subsetPhenotypes"
+                        :validSourceFiles="formattedValidFiles"
+                        :invalidSourceFiles="formattedInvalidFiles"
+                        :invalidSourceReasons="formattedInvalidReasons"
                         :regionStart="regionStart"
                         :regionEnd="regionEnd"
                         :annotationScheme="annotationScheme"
@@ -226,7 +229,10 @@ Updated: SJG Apr2018
                 zoomX: 0,
                 zoomY: 0,
                 zoomDrawUp: false,
-                enrichmentColorLegend: {}
+                enrichmentColorLegend: {},
+                formattedValidFiles: [],
+                formattedInvalidFiles: [],
+                formattedInvalidReasons: []
             }
         },
         computed: {
@@ -247,6 +253,30 @@ Updated: SJG Apr2018
             zoomModeText: function () {
                 if (this.zoomMode) return 'Exit Zoom';
                 else return 'Zoom';
+            },
+            validSourceFiles: function() {
+                let self = this;
+                let files = [];
+                if (self.dataSetModel != null) {
+                    files = self.dataSetModel.vcfNames;
+                }
+                return files;
+            },
+            invalidSourceFiles: function() {
+                let self = this;
+                let files = [];
+                if (self.dataSetModel != null) {
+                    files = self.dataSetModel.invalidVcfNames;
+                }
+                return files;
+            },
+            invalidSourceReasons: function() {
+                let self = this;
+                let reasons = [];
+                if (self.dataSetModel != null) {
+                    reasons = self.dataSetModel.invalidVcfReasons;
+                }
+                return reasons;
             }
         },
         watch: {
@@ -258,13 +288,54 @@ Updated: SJG Apr2018
                 let self = this;
                 self.impactMode = false;
                 self.doneLoadingData = false;
-            }
+            },
+            validSourceFiles: function() {
+                let self = this;
+                // Sort valid files
+                self.formattedValidFiles = self.formatAndSortPhaseFiles(self.validSourceFiles);
+            },
+            invalidSourceFiles: function() {
+                let self = this;
+                self.formattedInvalidFiles = self.formatAndSortPhaseFiles(self.invalidSourceFiles);
+            },
+            invalidSourceReasons: function() {
+                let self = this;
 
+                let sortedInvalidReasons = [];
+                let sortedInvalidFiles = self.invalidSourceFiles.sort();
+                sortedInvalidFiles.forEach((file) => {
+                    let prevIndex = self.invalidSourceFiles.indexOf(file);
+                    sortedInvalidReasons.push(self.invalidSourceReasons[prevIndex]);
+                });
+                self.formattedInvalidReasons = sortedInvalidReasons;
+            }
         },
         created: function () {
             this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
         },
         methods: {
+            formatAndSortPhaseFiles: function(files) {
+                let formattedFileNames = [];
+                files.forEach((fileName) => {
+                    if (fileName === 'phase2.all.vcf.gz') {
+                        formattedFileNames.push('Phase 2');
+                    }
+                    else if (fileName === 'phase3_1.all.vcf.gz') {
+                        formattedFileNames.push('Phase 3-1');
+                    }
+                    else if (fileName === 'phase3_2.all.vcf.gz') {
+                        formattedFileNames.push('Phase 3-2');
+                    }
+                    else if (fileName === 'phase4.all.vcf.gz') {
+                        formattedFileNames.push('Phase 4');
+                    }
+                    else {
+                        formattedFileNames.push(fileName);
+                    }
+                });
+                // Return alphanumerically sorted
+                return formattedFileNames.sort();
+            },
             drawColorLegend: function () {
                 this.enrichmentColorLegend = colorLegend()
                     .numberSegments(4)

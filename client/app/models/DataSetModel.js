@@ -1,14 +1,16 @@
 /* Logic relative to a single data set (for example, Sfari data set).
-   SJG updated Apr2018 */
+   SJG updated Aug2018 */
 class DataSetModel {
     constructor() {
         // Public props
-        this.name = '';   // Key for variant card
-        this.vcfNames = [];         // List of names corresponding to vcf urls - matching order as vcfUrls
-        this.vcfUrls = [];          // List of urls for phases vcfs
+        this.name = '';                 // Key for variant card
+        this.vcfNames = [];             // List of names corresponding to vcf urls - matching order as vcfUrls
+        this.vcfUrls = [];              // List of urls for phases vcfs
         this.vcfFiles = null;
-        this.tbiUrls = [];          // List of urls for phases tbis - matching order as vcfUrls
+        this.tbiUrls = [];              // List of urls for phases tbis - matching order as vcfUrls
         this.tbiFiles = null;
+        this.invalidVcfNames = [];      // List of names corresponding to invalid vcfs
+        this.invalidVcfReasons = [];   // List of reasons corresponding to invalid vcfs - matching order as invalidVcfNames
         this.annotationScheme = 'VEP';
 
         // Psuedo-private props

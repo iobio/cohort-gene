@@ -847,10 +847,17 @@ class CohortModel {
                         updatedListObj['names'] = urlNames;
                         updatedListObj['vcfs'] = vcfUrls;
                         updatedListObj['tbis'] = tbiUrls;
+                        let invalidVcfNames = [];
+                        let invalidVcfReasons = []; // Must be in identical order as invalidVcfNames
 
                         // Remove files that that could not be found or opened
                         if (openErrorFiles.length === urlNames.length) {
                             me.vcfUrlEntered = false;
+                            let subObj = {};
+                            openErrorFiles.forEach((file) => {
+                                subObj[file] = 'File could not be found or opened';
+                            });
+                            updatedListObj['invalidObj'] = subObj;
                             errorMsg = 'None of the provided files could be found or opened. If launching from Mosaic, please contact a Frameshift representative.';
                             alert(errorMsg);
                             reject();
@@ -862,6 +869,11 @@ class CohortModel {
                             urlNames = updatedListObj['names'];
                             vcfUrls = updatedListObj['vcfs'];
                             tbiUrls = updatedListObj['tbis'];
+
+                            openErrorFiles.forEach((file) => {
+                                invalidVcfNames.push(file);
+                                invalidVcfReasons.push('File could not be found or opened');
+                            });
                         }
 
                         // Create object with unique build refs as keys and file name lists as values
@@ -883,6 +895,7 @@ class CohortModel {
                         // If we couldn't find a reference from any file, notify and return
                         if (unfoundRefFiles.length === urlNames.length) {
                             me.vcfUrlEntered = false;
+                            updatedListObj['invalids'].push(unfoundRefFiles.join(','));
                             errorMsg = 'None of the provided files could be loaded because their reference build could not be determined. If launching from Mosaic, please contact a Frameshift representative.';
                             reject();
                         }
@@ -893,6 +906,12 @@ class CohortModel {
                             urlNames = updatedListObj['names'];
                             vcfUrls = updatedListObj['vcfs'];
                             tbiUrls = updatedListObj['tbis'];
+
+                            unfoundRefFiles.forEach((fileName) => {
+                                invalidVcfNames.push(fileName);
+                                invalidVcfReasons.push('Could not find reference build used to align file');
+                            });
+                            errorMsg += ' The following files will not be included in the analysis because their reference build could not be determined: ' + unfoundRefFiles.join(',');
                         }
 
                         // If we have multiple references found, remove files with non-majority reference
@@ -924,7 +943,11 @@ class CohortModel {
                             urlNames = updatedListObj['names'];
                             vcfUrls = updatedListObj['vcfs'];
                             tbiUrls = updatedListObj['tbis'];
-                            errorMsg += ' The following files will not be included in the analysis because their reference build could not be determined: ' + unfoundRefFiles.join(',');
+                            minorityRefKeyNames.forEach((fileName) => {
+                                invalidVcfNames.push(fileName);
+                                invalidVcfReasons.push('File aligned to different reference build than others');
+                            });
+                            errorMsg += ' The following files will not be included in the analysis because their reference build differed than the majority of files: ' + unfoundRefFiles.join(',');
                         }
 
                         // Set flags and display error message as appropriate
@@ -934,6 +957,9 @@ class CohortModel {
                         me.vcfUrlEntered = true;
                         me.vcfFileOpened = false;
                         me.getVcfRefName = null;
+                        // TODO: not getting reassinged in data set model
+                        updatedListObj['invalidNames'] = invalidVcfNames;
+                        updatedListObj['invalidReasons'] = invalidVcfReasons;
                         resolve(updatedListObj);
                     });
             }

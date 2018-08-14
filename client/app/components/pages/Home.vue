@@ -23,6 +23,7 @@ TD & SJG updated Jun2018 -->
                 :knownGenes="variantModel.geneModel.allKnownGenes"
                 :selectedGeneName="selectedGene.gene_name"
                 :selectedChr="selectedGene.chr"
+                :selectedBuild="genomeBuildHelper.getCurrentSpeciesName() + ' ' + genomeBuildHelper.getCurrentBuildName()"
                 @input="onGeneSelected"
                 @load-demo-data="onLoadDemoData"
                 @clear-cache="clearCache"
@@ -113,14 +114,6 @@ TD & SJG updated Jun2018 -->
                 default: '0',
                 type: String
             },
-            // paramTokenType: {
-            //     default: '',
-            //     type: String
-            // },
-            // paramToken: {
-            //     default: '',
-            //     type: String
-            // },
             paramSource: {
                 default: '',
                 type: String

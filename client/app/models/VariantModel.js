@@ -534,10 +534,12 @@ class VariantModel {
                 subsetCohort.onVcfUrlEntered(urlNames, vcfUrls, tbiUrls)
                     .then((updatedListObj) => {
                         if (updatedListObj != null) {
-                            // Assign updated lists to data set model
+                            // Assign updated, stably-sorted lists to data set model
                             self.dataSet.vcfNames = updatedListObj['names'];
                             self.dataSet.vcfUrls = updatedListObj['vcfs'];
                             self.dataSet.tbiUrls = updatedListObj['tbis'];
+                            self.dataSet.invalidVcfNames = updatedListObj['invalidNames'];
+                            self.dataSet.invalidVcfReasons = updatedListObj['invalidReasons'];
                             resolve();
                         }
                         else {

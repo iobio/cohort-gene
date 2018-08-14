@@ -34,7 +34,7 @@
 
     .ibo-variant .circle, .ibo-variant .arrow-line
         stroke: #6c94b7
-        stroke-width: 2
+        stroke-width: 2px
 
         fill: none
         pointer-events: none
@@ -42,7 +42,7 @@
     .ibo-variant.circle.emphasize, .ibo-variant .arrow-line.emphasize
         stroke: #6c94b7
         fill: none
-        stroke-width: 3
+        stroke-width: 3px
         pointer-events: none
 
     .ibo-variant .arrow, .ibo-variant .arrow.emphasize
@@ -67,12 +67,12 @@
             rect
                 fill: none
                 stroke: #1574C7
-                stroke-width: 7
+                stroke-width: 7px
                 opacity: .8
 
             line
                 stroke: #1574C7
-                stroke-width: 5
+                stroke-width: 5px
                 opacity: .8
 
             g
@@ -88,6 +88,24 @@
                     :key="phenotype">
                 {{phenotype}}
             </v-chip>
+        </div>
+        <div class="variant-viz">
+            <span class="field-label-header">Analysis sources</span>
+            <v-chip color="cohortNavy" small outline style="font-size: 12px" v-for="file in validSourceFiles"
+                    :key="file">
+                {{file}}
+                <v-icon right color="green">check_circle_outline</v-icon>
+            </v-chip>
+            <template v-for="(file,index) in invalidSourceFiles">
+                <v-tooltip bottom>
+                    <v-chip color="cohortNavy" small outline style="font-size: 12px; font-family: 'Open Sans'" slot="activator"
+                            :key="file">
+                        {{file}}
+                        <v-icon right color="red">error_outline</v-icon>
+                    </v-chip>
+                    <span style="color: red">{{getInvalidReason(index)}}</span>
+                </v-tooltip>
+            </template>
         </div>
         <div style="text-align: center;clear: both;">
             <div v-bind:class="{ hide: !model.inProgress.loadingVariants }"
@@ -191,6 +209,18 @@
                 type: Array,
                 default: () => []
             },
+            validSourceFiles: {
+                type: Array,
+                default: () => []
+            },
+            invalidSourceFiles: {
+                type: Array,
+                default: () => []
+            },
+            invalidSourceReasons: {
+                type: Array,
+                default: () => []
+            },
             impactMode: {
                 type: Boolean,
                 default: false
@@ -228,6 +258,10 @@
             self.draw();
         },
         methods: {
+            getInvalidReason: function(index) {
+                let self = this;
+                return self.invalidSourceReasons[index];
+            },
             draw: function () {
                 let self = this;
                 this.variantChart = scaledVariantD3()
@@ -341,13 +375,13 @@
             hideVariantBrush: function () {
                 this.variantChart.hideBrush()();
             },
-            clearVariants: function(svg) {
+            clearVariants: function (svg) {
                 this.variantChart.clearVariants()(svg);
             }
         },
         watch: {
             data: function () {
-            let self = this;
+                let self = this;
                 self.$emit('clearVariants');
                 self.update();
 
