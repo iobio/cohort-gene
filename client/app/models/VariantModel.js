@@ -774,7 +774,7 @@ class VariantModel {
         if (annotatedVars.length > 1) {
             existingVariants = subsetModel.loadedVariants.features;
         }
-        else {
+        else if (annotatedVars.length === 1) {
             let singleVar = annotatedVars[0];
             existingVariants = subsetModel.loadedVariants.features.filter(feature => feature.id === singleVar.id);
         }
