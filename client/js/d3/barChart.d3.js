@@ -15,7 +15,7 @@ function barChart() {
       var parentId,
       barColor = '#6c94b7',
       comingSoonFlag = false,
-      yValueMax = 550,
+      yValueMax = 550,// TODO: send this in with rounded up value retrieved from hub
       yValueTicks = 5;
 
   // Private variables (can be made public if necessary except for _x and _y)
@@ -30,12 +30,11 @@ function barChart() {
      Providing an empty data array will zero out all bars.
      NOTE: newDataMap MUST have an identical number of entries as the original dataMap, in the exact same order
    */
-
   var fillChart = function(newDataMap) {
     var svg = d3.select('#' + parentId).select('svg');
 
     // Reset all columns to 0 if nothing in map
-    if (newDataMap == null || newDataMap.length == 0) {
+    if (newDataMap == null || newDataMap.length === 0) {
       svg.selectAll("rect")
           .transition()
           .duration(700)
@@ -73,9 +72,6 @@ function barChart() {
     currAxis.transition()
             .duration(700)
             .style("opacity", 1);
-
-            //SJG TODO: stopped here - not working
-
     }
 
   /* Draws outline of chart and axes */
@@ -83,7 +79,7 @@ function barChart() {
     var svg = d3.select('#' + parentId).append('svg')
                 .attr('height', height)
                 .attr('width', "100%")
-                .attr('style', "padding-left: 15%; padding-top: 2%");
+                .attr('style', "padding-left: 20%; padding-top: 2%");
 
     // Define axes data
     _x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
@@ -118,7 +114,7 @@ function barChart() {
         .attr("transform", "rotate(-90)")
         .attr("y", -2) // Distance label is from y-axis
         .attr("dx", "-3em")
-        .attr("dy", "-3em")
+        .attr("dy", "-4em")
         .style("text-anchor", "end")
         .text("# Samples");
 

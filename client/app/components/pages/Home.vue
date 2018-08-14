@@ -600,7 +600,12 @@ TD & SJG updated Jun2018 -->
                     let hubEndpoint = new HubEndpoint(source);
                     let initialLaunch = !(self.paramProjectId === '0');
                     self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch)
-                        .then(function () {
+                        .then(function (idNumList) {
+                            let probandN = idNumList[0];
+                            let subsetN = idNumList[1];
+                            if (self.$refs.variantSummaryCardRef != null) {
+                                self.$refs.variantSummaryCardRef.assignBarChartValues(probandN, subsetN);
+                            }
                             let loadGene = self.DEMO_GENE;
                             if (selectedGene === '' || selectedGene == null) {
                                 alert('Could not obtain selected gene from Hub. Initializing with demo gene.');

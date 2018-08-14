@@ -222,7 +222,10 @@ class VariantModel {
 
                             self.promiseInit(hubDataSet.vcfNames)
                                 .then(function () {
-                                    resolve();
+                                    let idNumList = [];
+                                    idNumList.push(probandCohort.subsetIds.length);
+                                    idNumList.push(subsetCohort.subsetIds.length);
+                                    resolve(idNumList);
                                 })
                         })
                 })
