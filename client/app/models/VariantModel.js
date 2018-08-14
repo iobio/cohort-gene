@@ -754,12 +754,14 @@ class VariantModel {
     }
 
     /* Takes in a list of ClinVar annotated variants, and appends their clinvar fields to the existing, currently displayed enriched variants.
-     * The list of annotated variants may be longer or shorter than the currently displayed enriched variants. */
+     * The list of annotated variants may be longer or shorter than the currently displayed enriched variants.
+     * Returns the first variant in the updated list. */
     combineClinVarInfo(annotatedVars) {
         let self = this;
 
         if (annotatedVars.length === 0) {
             console.log('Did not retreive any variants from clinvar call.');
+            return;
         }
 
         // Populate hash of clinvar variant(s)
@@ -774,7 +776,7 @@ class VariantModel {
         if (annotatedVars.length > 1) {
             existingVariants = subsetModel.loadedVariants.features;
         }
-        else if (annotatedVars.length === 1) {
+        else {
             let singleVar = annotatedVars[0];
             existingVariants = subsetModel.loadedVariants.features.filter(feature => feature.id === singleVar.id);
         }
