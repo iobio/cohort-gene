@@ -217,7 +217,7 @@ Updated: SJG Apr2018
                     top: 0,
                     right: 2,
                     bottom: self.geneVizShowXAxis ? 18 : 0,
-                    left: 4
+                    left: 2     // SJG changed from 4
                 },
                 geneVizTrackHeight: 16,
                 geneVizCdsHeight: 12,

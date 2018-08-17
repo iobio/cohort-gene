@@ -136,7 +136,6 @@
             selectedGeneName: "",
             selectedChr: "",
             selectedBuild: ''
-            //flaggedVariants: null,
         },
         computed: {
             selectedGeneDisplay: function () {

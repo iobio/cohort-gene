@@ -178,7 +178,7 @@ TD & SJG updated Jun2018 -->
             self.cardWidth = self.$el.offsetWidth;
 
             let currRef = 'GRCh38';
-            if (self.paramRef != null || self.paramRef !== '') {
+            if (self.paramRef != null && self.paramRef !== "") {
                 currRef = self.paramRef;
             }
             self.genomeBuildHelper = new GenomeBuildHelper();
