@@ -121,6 +121,10 @@ TD & SJG updated Jun2018 -->
             paramGene: {
                 default: '',
                 type: String
+            },
+            paramRef: {
+                default: '',
+                type: String
             }
         },
         data() {
@@ -173,8 +177,12 @@ TD & SJG updated Jun2018 -->
             let self = this;
             self.cardWidth = self.$el.offsetWidth;
 
+            let currRef = 'GRCh38';
+            if (self.paramRef != null || self.paramRef !== '') {
+                currRef = self.paramRef;
+            }
             self.genomeBuildHelper = new GenomeBuildHelper();
-            self.genomeBuildHelper.promiseInit({DEFAULT_BUILD: 'GRCh38'})
+            self.genomeBuildHelper.promiseInit({DEFAULT_BUILD: currRef})
                 .then(function () {
                     return self.promiseInitCache();
                 })

@@ -44,7 +44,8 @@ const routes = [
         props: (route) => ({
             paramProjectId: route.query.project_uuid,
             paramSource: route.query.source,
-            paramGene: route.query.gene
+            paramGene: route.query.gene,
+            paramRef: route.query.reference
         })
     },
     {

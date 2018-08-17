@@ -273,6 +273,9 @@ class VariantModel {
             let vcfFiles = null,
                 tbiCsiFiles = null;
 
+            // TODO: for now can look in file name to see what build is
+            //
+
             // Retrieve file objects from Hub
             self.hubEndpoint.getFilesForProject(projectId, initialLaunch).done(data => {
                 // Stable sort by file type
