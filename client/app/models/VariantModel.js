@@ -282,15 +282,11 @@ class VariantModel {
                 // Pull out combined vcfs from individual chromosome ones
                 let sortedVcfFiles = [];
                 vcfFiles.forEach((file) => {
-                    let phase4 = false;
                     let phaseFile = false;
                     let name = file.name;
                     let namePieces = name.split('.');
                     namePieces.forEach((piece) => {
-                        if (piece === 'phase4') {
-                            phase4 = true;
-                        }
-                        else if (piece === 'all') {
+                        if (piece === 'all' || piece.includes('all')) {
                             phaseFile = true;
                         }
                     });
@@ -300,16 +296,12 @@ class VariantModel {
                 });
                 let sortedTbiCsiFiles = [];
                 tbiCsiFiles.forEach((file) => {
-                    let phase4 = false;
                     let phaseFile = false;
                     let name = file.name;
                     let namePieces = name.split('.');
                     namePieces.forEach((piece) => {
-                        if (piece === 'all') {
+                        if (piece === 'all' || piece.includes('all')) {
                             phaseFile = true;
-                        }
-                        else if (piece === 'phase4') {
-                            phase4 = true;
                         }
                     });
                     if (phaseFile) {

@@ -15,7 +15,7 @@ function barChart() {
       var parentId,
       barColor = '#6c94b7',
       comingSoonFlag = false,
-      yValueMax = 550,// TODO: send this in with rounded up value retrieved from hub
+      yValueMax = 550,
       yValueTicks = 5;
 
   // Private variables (can be made public if necessary except for _x and _y)

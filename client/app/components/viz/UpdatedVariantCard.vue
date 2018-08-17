@@ -314,10 +314,15 @@ Updated: SJG Apr2018
             this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
         },
         methods: {
+            /* Formats the file name provided if it is a known phase file. NOTE: this is based on names
+             * and ideally will be changed to a db field. */
             formatAndSortPhaseFiles: function(files) {
                 let formattedFileNames = [];
                 files.forEach((fileName) => {
-                    if (fileName === 'phase2.all.vcf.gz') {
+                    if (fileName === '2018-03-18_all.vcf.gz') {
+                        formattedFileNames.push('Phase 1');
+                    }
+                    else if (fileName === 'phase2.all.vcf.gz') {
                         formattedFileNames.push('Phase 2');
                     }
                     else if (fileName === 'phase3_1.all.vcf.gz') {
