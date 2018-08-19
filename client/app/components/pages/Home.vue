@@ -39,6 +39,7 @@ TD & SJG updated Jun2018 -->
                                 v-if="variantModel"
                                 ref="variantCardRef"
                                 :dataSetModel="variantModel.dataSet"
+                                :filterModel="filterModel"
                                 :annotationScheme="variantModel.annotationScheme"
                                 :classifyVariantSymbolFunc="variantModel.classifyByEnrichment"
                                 :classifyZoomSymbolFunc="variantModel.classifyByImpact"
@@ -226,9 +227,13 @@ TD & SJG updated Jun2018 -->
                         self.genomeBuildHelper);
                 })
                 .then(function () {
-                        self.filterModel = new FilterModel(self.variantModel.affectedInfo);
-                        self.variantModel.filterModel = self.filterModel;
-                        self.determineSourceAndInit();
+                        self.promiseDetermineSourceAndInit()
+                            .then(() => {
+                                let affectedInfo = self.variantModel.dataSet.affectedInfo;
+                                let isBasicMode = true; // Aka not educational mode TODO: get rid of this or incorporate app wide
+                                self.filterModel = new FilterModel(affectedInfo, isBasicMode);
+                                self.variantModel.filterModel = self.filterModel;
+                            })
                     },
                     function (error) {
                         console.log(error);
@@ -275,9 +280,9 @@ TD & SJG updated Jun2018 -->
             promiseLoadData: function () {
                 let self = this;
 
-                return new Promise(function (resolve, reject) {
+                return new Promise((resolve, reject) => {
                     if (self.variantModel.dataSet) {
-                        var options = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': true};
+                        let options = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': true};
                         // Load positional information for quick display
                         self.variantModel.promiseLoadData(self.selectedGene,
                             self.selectedTranscript,
@@ -291,7 +296,6 @@ TD & SJG updated Jun2018 -->
                                     .then((resultMap) => {
                                         let unwrappedResultMap = resultMap[0];
                                         self.variantModel.combineVariantInfo(unwrappedResultMap);
-                                        // TODO: look at number of vars going into updateClasses vs proband/subset counts
                                         self.updateClasses();
                                         self.doneLoadingExtras = true;
                                     })
@@ -557,7 +561,7 @@ TD & SJG updated Jun2018 -->
             },
             onKnownVariantsVizChange: function (viz) {
                 let self = this;
-                self.showClinvarVariants = viz == 'variants';
+                self.showClinvarVariants = viz === 'variants';
                 // if (self.showClinvarVariants) {
                 //   self.coreModel.promiseLoadKnownVariants(self.selectedGene, self.selectedTranscript);
                 // }
@@ -586,59 +590,65 @@ TD & SJG updated Jun2018 -->
             onSortGenes: function (sortBy) {
                 this.geneModel.sortGenes(sortBy);
             },
-            determineSourceAndInit: function () {
+            promiseDetermineSourceAndInit: function () {
                 let self = this;
-                let source = self.paramSource;
-                let projectId = self.paramProjectId;
-                let selectedGene = self.paramGene;
-                let phenoFilters = self.getHubPhenoFilters();
 
-                // If we can't map project id with Vue Router, may be coming from Hub OAuth
-                if (projectId === '0') {
-                    let queryParams = Qs.parse(window.location.search.substring(1)); // if query params before the fragment
-                    Object.assign(queryParams, self.$route.query);
-                    source = queryParams.source;
-                    projectId = queryParams.project_uuid;
-                    selectedGene = queryParams.gene;
-                    phenoFilters = queryParams.filter;
-                }
+                return new Promise((resolve, reject) => {
+                    let source = self.paramSource;
+                    let projectId = self.paramProjectId;
+                    let selectedGene = self.paramGene;
+                    let phenoFilters = self.getHubPhenoFilters();
 
-                // If we have a project ID here, coming from Hub launch
-                if (projectId !== '0') {
-                    let hubEndpoint = new HubEndpoint(source);
-                    let initialLaunch = !(self.paramProjectId === '0');
-                    self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch)
-                        .then(function (idNumList) {
-                            let probandN = idNumList[0];
-                            let subsetN = idNumList[1];
-                            if (self.$refs.variantSummaryCardRef != null) {
-                                self.$refs.variantSummaryCardRef.assignBarChartValues(probandN, subsetN);
-                            }
-                            let loadGene = self.DEMO_GENE;
-                            if (selectedGene === '' || selectedGene == null) {
-                                alert('Could not obtain selected gene from Hub. Initializing with demo gene.');
-                                selectedGene = loadGene;
-                            }
-                            self.geneModel.addGeneName(selectedGene);
-                            self.onGeneSelected(selectedGene);
-                        })
-                }
-                // Otherwise launching stand alone
-                else {
-                    // TODO: initialize file/url loader
-                    // NOTE: loading demo for now
-                    self.geneModel.addGeneName(self.DEMO_GENE);
-                    self.onGeneSelected(self.DEMO_GENE);
-                    self.variantModel.promiseInitDemo()
-                        .then(function () {
-                            if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
-                                self.promiseLoadData();
-                            }
-                            else {
-                                console.log("Failed to load data because no gene selected");
-                            }
-                        })
-                }
+                    // If we can't map project id with Vue Router, may be coming from Hub OAuth
+                    if (projectId === '0') {
+                        let queryParams = Qs.parse(window.location.search.substring(1)); // if query params before the fragment
+                        Object.assign(queryParams, self.$route.query);
+                        source = queryParams.source;
+                        projectId = queryParams.project_uuid;
+                        selectedGene = queryParams.gene;
+                        phenoFilters = queryParams.filter;
+                    }
+
+                    // If we have a project ID here, coming from Hub launch
+                    if (projectId !== '0') {
+                        let hubEndpoint = new HubEndpoint(source);
+                        let initialLaunch = !(self.paramProjectId === '0');
+                        self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch)
+                            .then(function (idNumList) {
+                                let probandN = idNumList[0];
+                                let subsetN = idNumList[1];
+                                if (self.$refs.variantSummaryCardRef != null) {
+                                    self.$refs.variantSummaryCardRef.assignBarChartValues(probandN, subsetN);
+                                }
+                                let loadGene = self.DEMO_GENE;
+                                if (selectedGene === '' || selectedGene == null) {
+                                    alert('Could not obtain selected gene from Hub. Initializing with demo gene.');
+                                    selectedGene = loadGene;
+                                }
+                                self.geneModel.addGeneName(selectedGene);
+                                self.onGeneSelected(selectedGene);
+                                resolve();
+                            })
+                    }
+                    // Otherwise launching stand alone
+                    else {
+                        reject('Do not have stand alone functionality implemented yet');
+                        // TODO: initialize file/url loader
+                        // NOTE: loading demo for now
+                        // self.geneModel.addGeneName(self.DEMO_GENE);
+                        // self.onGeneSelected(self.DEMO_GENE);
+                        // self.variantModel.promiseInitDemo();
+                        // TODO: below can be moved to then after this function in mounted section
+                            // .then(function () {
+                            //     if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
+                            //         self.promiseLoadData();
+                            //     }
+                            //     else {
+                            //         console.log("Failed to load data because no gene selected");
+                            //     }
+                            // })
+                    }
+                });
             },
             /* Returns array of phenotype objects {phenotypeName: phenotypeData} */
             getHubPhenoFilters: function () {

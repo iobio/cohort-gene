@@ -1,4 +1,4 @@
-/* Logic relative to a single data set (for example, Sfari data set).
+/* Logic relative to a single data set (for example, Sfari data set). Organized into cohort objects.
    SJG updated Aug2018 */
 class DataSetModel {
     constructor() {
@@ -12,6 +12,7 @@ class DataSetModel {
         this.invalidVcfNames = [];      // List of names corresponding to invalid vcfs
         this.invalidVcfReasons = [];   // List of reasons corresponding to invalid vcfs - matching order as invalidVcfNames
         this.annotationScheme = 'VEP';
+        this.affectedInfo = null;
 
         // Psuedo-private props
         this._cohorts = [];

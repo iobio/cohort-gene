@@ -82,6 +82,16 @@ Updated: SJG Apr2018
                             Display Options
                         </v-btn>
                         <v-list>
+                            <v-list-tile @click="showFilterMenu = true">
+                                <v-list-tile-title>Filters</v-list-tile-title>
+                                <filter-settings-menu class="ml-2"
+                                        v-bind:class="{hide: !showFilterMenu}"
+                                        :filterModel="filterModel"
+                                        :showCoverageCutoffs="showCoverageCutoffs"
+                                        @filter-settings-applied="onFilterSettingsApplied"
+                                        @filter-settings-closed="$emit('filter-settings-closed')"
+                                ></filter-settings-menu>
+                            </v-list-tile>
                             <v-list-tile @click="toggleZoomMode">
                                 <v-list-tile-title>{{zoomModeText}}</v-list-tile-title>
                             </v-list-tile>
@@ -166,6 +176,7 @@ Updated: SJG Apr2018
     import VariantViz from './VariantViz.vue'
     import GeneViz from './GeneViz.vue'
     import ZoomModalViz from './ZoomModalViz.vue'
+    import FilterSettingsMenu from '../partials/FilterSettingsMenu.vue'
 
     export default {
         name: 'updated-variant-card',
@@ -173,10 +184,12 @@ Updated: SJG Apr2018
             VariantViz,
             UpdatedVariantViz,
             GeneViz,
-            ZoomModalViz
+            ZoomModalViz,
+            FilterSettingsMenu
         },
         props: {
             dataSetModel: null,
+            filterModel: null,
             annotationScheme: null,
             classifyVariantSymbolFunc: null,
             classifyZoomSymbolFunc: null,
@@ -191,7 +204,8 @@ Updated: SJG Apr2018
             showGeneViz: true,
             geneVizShowXAxis: null,
             doneLoadingData: false,
-            doneLoadingExtras: false
+            doneLoadingExtras: false,
+            showCoverageCutoffs: false
         },
         data() {
             let self = this;
@@ -217,7 +231,7 @@ Updated: SJG Apr2018
                     top: 0,
                     right: 2,
                     bottom: self.geneVizShowXAxis ? 18 : 0,
-                    left: 2     // SJG changed from 4
+                    left: 2
                 },
                 geneVizTrackHeight: 16,
                 geneVizCdsHeight: 12,
@@ -232,7 +246,8 @@ Updated: SJG Apr2018
                 enrichmentColorLegend: {},
                 formattedValidFiles: [],
                 formattedInvalidFiles: [],
-                formattedInvalidReasons: []
+                formattedInvalidReasons: [],
+                showFilterMenu: false
             }
         },
         computed: {
@@ -561,6 +576,17 @@ Updated: SJG Apr2018
             closeModal: function () {
                 let self = this;
                 self.showZoomModal = false;
+            },
+            // TODO: modify this as needed for cohort - check out filter model first
+            onFilterSettingsApplied: function() {
+                let self = this;
+                self.customFilters = [];
+                for (let filterName in self.filterModel.flagCriteria) {
+                    if (self.filterModel.flagCriteria[filterName].active && self.filterModel.flagCriteria[filterName].custom) {
+                        self.customFilters.push({name: filterName, display: self.filterModel.flagCriteria[filterName].name});
+                    }
+                }
+                this.$emit('filter-settings-applied');
             }
         }
     }

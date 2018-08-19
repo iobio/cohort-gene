@@ -14,7 +14,7 @@ class VariantModel {
         this.probandOnlyVars = {};
 
         // Data props
-        this.dataSet = null;
+        this.dataSet = null;            // The collection of files for analysis, organized into cohorts
         this.totalProbandCount = 0;
         this.totalSubsetCount = 0;
         this.affectedProbandCount = 0;
@@ -39,7 +39,6 @@ class VariantModel {
         this.annotationScheme = 'vep';
         this.isLoaded = false;
         this.maxAlleleCount = null;
-        this.affectedInfo = null;
         this.maxDepth = 0;
         this.keepVariantsCombined = true;       // True for multiple samples to be displayed on single track
         this.efficiencyMode = true;              // True to only pull back variant locations and not functional impacts
