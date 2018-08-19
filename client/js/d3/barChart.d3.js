@@ -112,7 +112,7 @@ function barChart() {
         .call(yAxis)
         .append("text")
         .attr("transform", "rotate(-90)")
-        .attr("y", -2) // Distance label is from y-axis
+        .attr("y", 0) // Distance label is from y-axis
         .attr("dx", "-3em")
         .attr("dy", "-4em")
         .style("text-anchor", "end")

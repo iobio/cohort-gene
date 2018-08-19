@@ -308,7 +308,7 @@
                         let sourceHeight = $('#sourceFileLine').height();
                         bottomSourceCoord = rect.top + sourceHeight;
                     }
-                    let availableSpace = $(document).height() - bottomSourceCoord + 64; // 64 = height of navigation bar
+                    let availableSpace = $(document).height() - bottomSourceCoord + 100; // Add a bit of spacing
 
                     // Set the vertical layer count so that the height of the chart can be recalculated
                     if (self.data.maxPosLevel == null || self.data.maxPosLevel == null) {

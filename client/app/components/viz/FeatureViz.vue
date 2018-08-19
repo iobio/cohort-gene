@@ -8,7 +8,7 @@
       <v-flex xs12 class="field-label-header" style="text-align: left; margin-top: 5px">Enrichment Details</v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs3 class="summary-field-label">Frequency ∆:</v-flex>
+       <v-flex xs3 class="summary-field-label" >Frequency ∆:</v-flex>
        <v-flex xs9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">
          <span class="summary-field-value">{{ foldEnrichmentInfo }}</span>
       </v-flex>
@@ -20,15 +20,15 @@
       <v-flex xs12 class="field-label-header" style="text-align: left">Annotation Details</v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs3 class="summary-field-label">Effect:</v-flex>
-       <v-flex xs9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">{{ effect }}</v-flex>
+       <v-flex xs2 md3 class="summary-field-label">Effect:</v-flex>
+       <v-flex xs10 md9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">{{ effect }}</v-flex>
        <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations == false }">
          <img src="../../../assets/images/wheel.gif">
        </div>
     </v-layout>
     <v-layout row>
-       <v-flex xs3 class="summary-field-label">Impact:</v-flex>
-       <v-flex xs9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">
+       <v-flex xs2 md3 class="summary-field-label">Impact:</v-flex>
+       <v-flex xs10 md9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">
          <span v-bind:class="{hide: impactText == ''}">
            <svg v-bind:class="{hide: (type != 'snp' && type != 'mnp')}" class="impact-badge" height="12" width="12">
              <g transform="translate(1,3)" class="filter-symbol" v-bind:class="impactColor">
@@ -63,8 +63,8 @@
        </div>
     </v-layout>
     <v-layout row>
-       <v-flex xs3 class="summary-field-label">Clinvar:</v-flex>
-       <v-flex xs9 v-bind:class="{hide: loadingExtraClinvarAnnotations == true}" class="summary-field-value">
+       <v-flex xs2 md3 class="summary-field-label">Clinvar:</v-flex>
+       <v-flex xs10 md9 v-bind:class="{hide: loadingExtraClinvarAnnotations == true}" class="summary-field-value">
          <span v-bind:class="{hide: clinVarText == ''}">
            <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
                <g transform="translate(1,3)" v-bind:class="clinVarColor">
@@ -80,8 +80,8 @@
        </div>
     </v-layout>
     <v-layout row>
-       <v-flex xs3 class="summary-field-label">Polyphen:</v-flex>
-       <v-flex xs9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">
+       <v-flex xs2 md3 class="summary-field-label">Polyphen:</v-flex>
+       <v-flex xs10 md9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">
          <span v-bind:class="{hide: polyPhenText == ''}">
            <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
                <g transform="translate(1,3)" v-bind:class="polyPhenColor">
@@ -99,8 +99,8 @@
        </div>
     </v-layout>
     <v-layout row>
-       <v-flex xs3 class="summary-field-label">SIFT:</v-flex>
-       <v-flex xs9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">
+       <v-flex xs2 md3 class="summary-field-label">SIFT:</v-flex>
+       <v-flex xs10 md9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">
          <span v-bind:class="{hide: siftText == ''}">
            <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
                <g transform="translate(1,3)" v-bind:class="siftColor">
