@@ -38,7 +38,8 @@ function scaledVariantD3() {
         container = null,
         clazz = null,
         selectedVariants = [],
-        impactMode = false;
+        impactMode = false,
+        availableVertSpace = 0;
 
     //  options
     var defaults = {};
@@ -409,16 +410,19 @@ function scaledVariantD3() {
         // merge options and defaults
         options = $.extend(defaults, options);
 
-        // Find adjusted range based on sublevel
-        let subLayers = maxSubLevel == 0 ? 1 : maxSubLevel;
-        let topLayer = posVertLayers == 0 ? 1 : posVertLayers;
-        let bottomLayer = negVertLayers == 0 ? 0.1 : negVertLayers;
+        let subLayers = maxSubLevel === 0 ? 1 : maxSubLevel;    // Note: not using for now b/c zoom feature
+        let topLayer = posVertLayers === 0 ? 1 : posVertLayers;
+        let bottomLayer = negVertLayers === 0 ? 0.1 : negVertLayers;
         let totalLayers = topLayer + bottomLayer;
 
-        height = totalLayers * 5 * (variantHeight + verticalPadding);    // Scale this to main layers size
-        height += (variantHeight + verticalPadding);
-        if (height < 800) height = 800;   // Set a minimum
-        if (height > 950) height = 950;   // Set a maximum
+        if (availableVertSpace !== 0) {
+            height = availableVertSpace;
+        } else {
+            height = totalLayers * 5 * (variantHeight + verticalPadding);    // Scale this to main layers size
+            height += (variantHeight + verticalPadding);
+            if (height < 800) height = 800;   // Set a minimum
+            if (height > 950) height = 950;   // Set a maximum
+        }
 
         // Account for the margin when we are showing the xAxis
         if (showXAxis) {
@@ -1127,6 +1131,12 @@ function scaledVariantD3() {
     chart.impactMode = function (_) {
         if (!arguments.length) return impactMode;
         impactMode = _;
+        return chart;
+    };
+
+    chart.availableVertSpace = function (_) {
+        if (!arguments.length) return availableVertSpace;
+        availableVertSpace = _;
         return chart;
     };
 

@@ -82,14 +82,14 @@
 
 <template>
     <div>
-        <div class="variant-viz loaded-variant-viz">
-            <span class="field-label-header">{{title}}</span>
+        <div class="variant-viz loaded-variant-viz" id="selectionDetailsLine">
+            <span class="field-label-header">Selection Details</span>
             <v-chip color="cohortNavy" small outline style="font-size: 12px" v-for="phenotype in phenotypes"
                     :key="phenotype">
                 {{phenotype}}
             </v-chip>
         </div>
-        <div class="variant-viz">
+        <div class="variant-viz" id="sourceFileLine">
             <span class="field-label-header">Analysis sources</span>
             <v-chip color="cohortNavy" small outline style="font-size: 12px" v-for="file in validSourceFiles"
                     :key="file">
@@ -264,6 +264,7 @@
             },
             draw: function () {
                 let self = this;
+
                 this.variantChart = scaledVariantD3()
                     .width(this.width)
                     .clazz(function (variant) {
@@ -300,6 +301,15 @@
                 self.model.inProgress.drawingVariants = false;
 
                 if (self.data) {
+                    // Get available veertical space to send into scaled variant d3
+                    let bottomSourceCoord = 0;
+                    let rect = $('#sourceFileLine').offset();
+                    if (rect != null) {
+                        let sourceHeight = $('#sourceFileLine').height();
+                        bottomSourceCoord = rect.top + sourceHeight;
+                    }
+                    let availableSpace = $(document).height() - bottomSourceCoord + 64; // 64 = height of navigation bar
+
                     // Set the vertical layer count so that the height of the chart can be recalculated
                     if (self.data.maxPosLevel == null || self.data.maxPosLevel == null) {
                         self.data.maxPosLevel = d3.max(self.data.features, function (d) {
@@ -320,6 +330,7 @@
                     self.variantChart.negVertLayers(self.data.maxNegLevel);
                     self.variantChart.maxSubLevel(self.data.maxSubLevel);
                     self.variantChart.lowestWidth(self.data.featureWidth);
+                    self.variantChart.availableVertSpace(availableSpace);
                     if (self.data.features == null || self.data.features.length === 0) {
                         self.variantChart.showXAxis(false);
                     } else {

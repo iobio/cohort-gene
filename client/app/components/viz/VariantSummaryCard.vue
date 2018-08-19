@@ -179,7 +179,7 @@
 </style>
 
 <template>
-    <v-card>
+    <v-card height="100%">
         <v-card-title primary-title style="width: 100%; height: 35px">
             <v-flex lg12 xl4 style="display:inline-block; padding-right: 10px; font-size: 15px">VARIANT SUMMARY</v-flex>
             <v-flex lg12 xl8>

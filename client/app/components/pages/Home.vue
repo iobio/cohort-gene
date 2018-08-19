@@ -65,7 +65,7 @@ TD & SJG updated Jun2018 -->
                                 @zoomModeStart="startZoomMode">
                         </updated-variant-card>
                     </v-flex>
-                    <v-flex xs3 style="margin-left: 3px">
+                    <v-flex xs3 style="margin-left: 3px;">
                         <variant-summary-card
                                 :selectedGene="selectedGene.gene_name"
                                 :variant="selectedVariant"

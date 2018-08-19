@@ -30,9 +30,9 @@
             v-model="showMenu"
     >
 
-        <v-btn slot="activator" raised medium flat>
-            <v-icon id="filter-settings-icon">settings</v-icon>
-        </v-btn>
+        <!--<v-btn slot="activator" raised medium flat>-->
+            <!--<v-icon id="filter-settings-icon">settings</v-icon>-->
+        <!--</v-btn>-->
 
 
         <v-layout row wrap class="filter-settings-form mt-3 mx-2 px-2" style="max-width:500px;min-width:500px;">
@@ -115,7 +115,7 @@
         },
         data() {
             return {
-                showMenu: false,
+                showMenu: true,
                 filters: [
                     {name: 'pathogenic', display: 'Known pathogenic', active: false, custom: false},
                     {name: 'autosomalDominant', display: 'Autosomal dominant', active: false, custom: false},

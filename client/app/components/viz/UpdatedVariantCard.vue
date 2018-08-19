@@ -66,7 +66,7 @@ Updated: SJG Apr2018
 <style lang="css">
 </style>
 <template>
-    <v-card tile id="variant-card" class="app-card">
+    <v-card tile id="variant-card" class="app-card" height="100%">
         <v-card-title primary-title>
             <v-layout align-left>
                 <v-flex xs6>
