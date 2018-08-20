@@ -179,42 +179,36 @@
 </style>
 
 <template>
-    <v-card height="100%">
-        <v-card-title primary-title style="width: 100%; height: 35px">
-            <v-flex lg12 xl4 style="display:inline-block; padding-right: 10px; font-size: 15px">VARIANT SUMMARY</v-flex>
-            <v-flex lg12 xl8>
-                <div class='form-inline'>
-                    <div class='form-group'>
-                        <v-icon medium color="limeGreen"
-                                v-bind:class="{hide: variantSelected === false || subsetDelta < 2}">arrow_upward
-                        </v-icon>
-                        <v-icon medium color="slateGray"
-                                v-bind:class="{hide: variantSelected === false || (subsetDelta <= 1 || subsetDelta >= 2)}">
-                            arrow_upward
-                        </v-icon>
-                        <v-icon medium color="slateGray"
-                                v-bind:class="{hide: variantSelected === false || (subsetDelta <= 0.5 || subsetDelta >= 1)}">
-                            arrow_downward
-                        </v-icon>
-                        <v-icon medium color="cherryRed"
-                                v-bind:class="{hide: variantSelected === false || subsetDelta > 0.5}">arrow_downward
-                        </v-icon>
-                    </div>
-                    <div class='form-group'>
-                        <v-chip v-bind:class="{hide: variant == null}" v-bind:style="{margin: 0}" small outline
-                                color="cohortDarkBlue"
-                                @input="summaryCardVariantDeselect()">
+    <v-container height="100%">
+        <div style="width: 100%">
+            <!--<v-flex style="font-size: 15px">VARIANT SUMMARY</v-flex>-->
+            <v-flex lg12>
+                <v-icon medium color="limeGreen"
+                        v-bind:class="{hide: variantSelected === false || subsetDelta < 2}">arrow_upward
+                </v-icon>
+                <v-icon medium color="slateGray"
+                        v-bind:class="{hide: variantSelected === false || (subsetDelta <= 1 || subsetDelta >= 2)}">
+                    arrow_upward
+                </v-icon>
+                <v-icon medium color="slateGray"
+                        v-bind:class="{hide: variantSelected === false || (subsetDelta <= 0.5 || subsetDelta >= 1)}">
+                    arrow_downward
+                </v-icon>
+                <v-icon medium color="cherryRed"
+                        v-bind:class="{hide: variantSelected === false || subsetDelta > 0.5}">arrow_downward
+                </v-icon>
+                <v-chip v-bind:class="{hide: variant == null}" v-bind:style="{margin: 0}" small outline
+                        color="cohortDarkBlue"
+                        @input="summaryCardVariantDeselect()">
                             <span style="padding-right: 10px; font-size: 14px; text-align:center;"
                                   v-bind:class="{hide: geneName === ''}">{{geneName}}</span>
-                            <span style="padding-top: 1px; font-size: 12px; padding-right: 4px">{{selectedVariantLocation}}</span>
-                        </v-chip>
-                    </div>
-                </div>
+                    <span style="padding-top: 1px; font-size: 12px; padding-right: 4px">{{selectedVariantLocation}}</span>
+                </v-chip>
             </v-flex>
-        </v-card-title>
+        </div>
         <v-container fluid grid-list-md>
             <v-layout row wrap>
-                <feature-viz id="loaded-feature-viz" class="summary-viz" style="padding-top: 10px"
+                <feature-viz id="loaded-feature-viz" class="summary-viz"
                              ref="summaryFeatureViz"
                              :effect="effect"
                              :impactText="impactText"
@@ -254,7 +248,7 @@
                 </bar-feature-viz>
             </v-layout>
         </v-container>
-    </v-card>
+    </v-container>
 </template>
 
 
@@ -503,7 +497,7 @@
                 //self.$refs.summaryBarFeatureViz.clear();  SJG NOTE: took out bars for now
                 self.$emit("summaryCardVariantDeselect");
             },
-            assignBarChartValues: function(probandN, subsetN) {
+            assignBarChartValues: function (probandN, subsetN) {
                 let self = this;
                 if (self.$refs.summaryBarFeatureViz != null) {
                     self.$refs.summaryBarFeatureViz.drawCharts(probandN, subsetN);

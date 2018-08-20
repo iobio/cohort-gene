@@ -65,16 +65,55 @@ TD & SJG updated Jun2018 -->
                                 @zoomModeStart="startZoomMode">
                         </updated-variant-card>
                     </v-flex>
-                    <v-flex xs3 style="margin-left: 3px;">
-                        <variant-summary-card
-                                :selectedGene="selectedGene.gene_name"
-                                :variant="selectedVariant"
-                                :variantInfo="selectedVariantInfo"
-                                :loadingExtraAnnotations="loadingExtraAnnotations"
-                                :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations"
-                                @summaryCardVariantDeselect="deselectVariant"
-                                ref="variantSummaryCardRef">
-                        </variant-summary-card>
+                    <v-flex xs3>
+                        <v-card>
+                            <v-tabs icons centered>
+                                <v-tabs-bar>
+                                    <v-tabs-slider color="cohortDarkBlue"></v-tabs-slider>
+                                    <v-tabs-item href="#summary-tab" style="text-decoration: none">
+                                        <v-icon style="margin-bottom: 0px">bar_chart</v-icon>
+                                        Summary
+                                    </v-tabs-item>
+                                    <v-tabs-item href="#filter-tab">
+                                        <v-icon style="margin-bottom: 0px">bubble_chart</v-icon>
+                                        Filters
+                                    </v-tabs-item>
+                                </v-tabs-bar>
+                                <v-tabs-items>
+                                    <v-tabs-content
+                                            :key="'summaryTab'"
+                                            :id="'summary-tab'">
+                                        <v-container>
+                                            <variant-summary-card
+                                            :selectedGene="selectedGene.gene_name"
+                                            :variant="selectedVariant"
+                                            :variantInfo="selectedVariantInfo"
+                                            :loadingExtraAnnotations="loadingExtraAnnotations"
+                                            :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations"
+                                            @summaryCardVariantDeselect="deselectVariant"
+                                            ref="variantSummaryCardRef">
+                                            </variant-summary-card>
+                                        </v-container>
+                                    </v-tabs-content>
+                                    <v-tabs-content
+                                            :key="'filterTab'"
+                                            :id="'filter-tab'">
+                                        <v-card flat>
+                                            Filter Stuff
+                                        </v-card>
+                                    </v-tabs-content>
+                                </v-tabs-items>
+                            </v-tabs>
+                        </v-card>
+                        <!--<variant-summary-card-->
+                                <!--:selectedGene="selectedGene.gene_name"-->
+                                <!--:variant="selectedVariant"-->
+                                <!--:variantInfo="selectedVariantInfo"-->
+                                <!--:loadingExtraAnnotations="loadingExtraAnnotations"-->
+                                <!--:loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations"-->
+                                <!--@summaryCardVariantDeselect="deselectVariant"-->
+                                <!--ref="variantSummaryCardRef">-->
+                        <!--</variant-summary-card>-->
                     </v-flex>
                 </v-layout>
             </v-container>
