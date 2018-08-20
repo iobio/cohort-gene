@@ -70,8 +70,8 @@ TD & SJG updated Jun2018 -->
                             <v-tabs icons centered>
                                 <v-tabs-bar>
                                     <v-tabs-slider color="cohortDarkBlue"></v-tabs-slider>
-                                    <v-tabs-item href="#summary-tab" style="text-decoration: none">
-                                        <v-icon style="margin-bottom: 0px">bar_chart</v-icon>
+                                    <v-tabs-item href="#summary-tab">
+                                        <v-icon style="margin-bottom: 0px;">bar_chart</v-icon>
                                         Summary
                                     </v-tabs-item>
                                     <v-tabs-item href="#filter-tab">

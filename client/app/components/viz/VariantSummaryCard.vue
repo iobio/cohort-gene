@@ -179,33 +179,38 @@
 </style>
 
 <template>
-    <v-container height="100%">
-        <div style="width: 100%">
-            <!--<v-flex style="font-size: 15px">VARIANT SUMMARY</v-flex>-->
-            <v-flex lg12>
-                <v-icon medium color="limeGreen"
-                        v-bind:class="{hide: variantSelected === false || subsetDelta < 2}">arrow_upward
-                </v-icon>
-                <v-icon medium color="slateGray"
-                        v-bind:class="{hide: variantSelected === false || (subsetDelta <= 1 || subsetDelta >= 2)}">
-                    arrow_upward
-                </v-icon>
-                <v-icon medium color="slateGray"
-                        v-bind:class="{hide: variantSelected === false || (subsetDelta <= 0.5 || subsetDelta >= 1)}">
-                    arrow_downward
-                </v-icon>
-                <v-icon medium color="cherryRed"
-                        v-bind:class="{hide: variantSelected === false || subsetDelta > 0.5}">arrow_downward
-                </v-icon>
-                <v-chip v-bind:class="{hide: variant == null}" v-bind:style="{margin: 0}" small outline
-                        color="cohortDarkBlue"
-                        @input="summaryCardVariantDeselect()">
+    <v-container height="100%" style="padding-top: 15px;">
+        <!--<div style="width: 100%">-->
+            <v-flex lg9 offset-lg2 md12>
+                <div class='form-inline'>
+                    <div class='form-group'>
+                        <v-icon medium color="limeGreen"
+                                v-bind:class="{hide: variantSelected === false || subsetDelta < 2}">arrow_upward
+                        </v-icon>
+                        <v-icon medium color="slateGray"
+                                v-bind:class="{hide: variantSelected === false || (subsetDelta <= 1 || subsetDelta >= 2)}">
+                            arrow_upward
+                        </v-icon>
+                        <v-icon medium color="slateGray"
+                                v-bind:class="{hide: variantSelected === false || (subsetDelta <= 0.5 || subsetDelta >= 1)}">
+                            arrow_downward
+                        </v-icon>
+                        <v-icon medium color="cherryRed"
+                                v-bind:class="{hide: variantSelected === false || subsetDelta > 0.5}">arrow_downward
+                        </v-icon>
+                    </div>
+                    <div class='form-group'>
+                        <v-chip v-bind:class="{hide: variant == null}" v-bind:style="{margin: 0}" small outline
+                                color="cohortDarkBlue"
+                                @input="summaryCardVariantDeselect()">
                             <span style="padding-right: 10px; font-size: 14px; text-align:center;"
                                   v-bind:class="{hide: geneName === ''}">{{geneName}}</span>
-                    <span style="padding-top: 1px; font-size: 12px; padding-right: 4px">{{selectedVariantLocation}}</span>
-                </v-chip>
+                            <span style="padding-top: 1px; font-size: 12px; padding-right: 4px">{{selectedVariantLocation}}</span>
+                        </v-chip>
+                    </div>
+                </div>
             </v-flex>
-        </div>
+        <!--</div>-->
         <v-container fluid grid-list-md>
             <v-layout row wrap>
                 <feature-viz id="loaded-feature-viz" class="summary-viz"
