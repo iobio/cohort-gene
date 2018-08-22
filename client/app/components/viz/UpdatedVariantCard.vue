@@ -82,16 +82,6 @@ Updated: SJG Apr2018
                             Display Options
                         </v-btn>
                         <v-list>
-                            <v-list-tile @click="showFilterMenu = true">
-                                <v-list-tile-title>Filters</v-list-tile-title>
-                                <filter-settings-menu class="ml-2"
-                                        v-bind:class="{hide: !showFilterMenu}"
-                                        :filterModel="filterModel"
-                                        :showCoverageCutoffs="showCoverageCutoffs"
-                                        @filter-settings-applied="onFilterSettingsApplied"
-                                        @filter-settings-closed="$emit('filter-settings-closed')"
-                                ></filter-settings-menu>
-                            </v-list-tile>
                             <v-list-tile @click="toggleZoomMode">
                                 <v-list-tile-title>{{zoomModeText}}</v-list-tile-title>
                             </v-list-tile>

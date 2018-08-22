@@ -181,21 +181,21 @@
 <template>
     <v-container height="100%" style="padding-top: 15px;">
         <!--<div style="width: 100%">-->
-            <v-flex lg9 offset-lg2 md12>
+            <v-flex xl9 offset-xl2 lg12>
                 <div class='form-inline'>
                     <div class='form-group'>
-                        <v-icon medium color="limeGreen"
+                        <v-icon color="limeGreen"
                                 v-bind:class="{hide: variantSelected === false || subsetDelta < 2}">arrow_upward
                         </v-icon>
-                        <v-icon medium color="slateGray"
+                        <v-icon color="slateGray"
                                 v-bind:class="{hide: variantSelected === false || (subsetDelta <= 1 || subsetDelta >= 2)}">
                             arrow_upward
                         </v-icon>
-                        <v-icon medium color="slateGray"
+                        <v-icon color="slateGray"
                                 v-bind:class="{hide: variantSelected === false || (subsetDelta <= 0.5 || subsetDelta >= 1)}">
                             arrow_downward
                         </v-icon>
-                        <v-icon medium color="cherryRed"
+                        <v-icon color="cherryRed"
                                 v-bind:class="{hide: variantSelected === false || subsetDelta > 0.5}">arrow_downward
                         </v-icon>
                     </div>

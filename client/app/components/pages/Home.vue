@@ -65,7 +65,7 @@ TD & SJG updated Jun2018 -->
                                 @zoomModeStart="startZoomMode">
                         </updated-variant-card>
                     </v-flex>
-                    <v-flex xs3>
+                    <v-flex xs3 style="margin-left: 2px">
                         <v-card>
                             <v-tabs icons centered>
                                 <v-tabs-bar>
@@ -78,6 +78,10 @@ TD & SJG updated Jun2018 -->
                                         <v-icon style="margin-bottom: 0px">bubble_chart</v-icon>
                                         Filters
                                     </v-tabs-item>
+                                    <v-tabs-item href="#flag-tab">
+                                        <v-icon style="margin-bottom: 0px">outlined_flag</v-icon>
+                                        Flags
+                                    </v-tabs-item>
                                 </v-tabs-bar>
                                 <v-tabs-items>
                                     <v-tabs-content
@@ -85,35 +89,42 @@ TD & SJG updated Jun2018 -->
                                             :id="'summary-tab'">
                                         <v-container>
                                             <variant-summary-card
-                                            :selectedGene="selectedGene.gene_name"
-                                            :variant="selectedVariant"
-                                            :variantInfo="selectedVariantInfo"
-                                            :loadingExtraAnnotations="loadingExtraAnnotations"
-                                            :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations"
-                                            @summaryCardVariantDeselect="deselectVariant"
-                                            ref="variantSummaryCardRef">
+                                                    :selectedGene="selectedGene.gene_name"
+                                                    :variant="selectedVariant"
+                                                    :variantInfo="selectedVariantInfo"
+                                                    :loadingExtraAnnotations="loadingExtraAnnotations"
+                                                    :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations"
+                                                    @summaryCardVariantDeselect="deselectVariant"
+                                                    ref="variantSummaryCardRef">
                                             </variant-summary-card>
                                         </v-container>
                                     </v-tabs-content>
                                     <v-tabs-content
                                             :key="'filterTab'"
                                             :id="'filter-tab'">
-                                        <v-card flat>
-                                            Filter Stuff
-                                        </v-card>
+                                        <v-container>
+                                            <filter-settings-menu
+                                                    v-if="filterModel"
+                                                    ref="filterSettingsMenuRef"
+                                                    :filterModel="filterModel"
+                                                    :showCoverageCutoffs="showCoverageCutoffs"
+                                                    @filter-settings-applied="onFilterSettingsApplied"
+                                                    @filter-settings-closed="$emit('filter-settings-closed')">
+                                            </filter-settings-menu>
+                                        </v-container>
+                                    </v-tabs-content>
+                                    <v-tabs-content
+                                            :key="'flagTab'"
+                                            :id="'flag-tab'">
+                                        <v-container>
+                                            <div style="text-align: center">
+                                                Coming Soon
+                                            </div>
+                                        </v-container>
                                     </v-tabs-content>
                                 </v-tabs-items>
                             </v-tabs>
                         </v-card>
-                        <!--<variant-summary-card-->
-                                <!--:selectedGene="selectedGene.gene_name"-->
-                                <!--:variant="selectedVariant"-->
-                                <!--:variantInfo="selectedVariantInfo"-->
-                                <!--:loadingExtraAnnotations="loadingExtraAnnotations"-->
-                                <!--:loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations"-->
-                                <!--@summaryCardVariantDeselect="deselectVariant"-->
-                                <!--ref="variantSummaryCardRef">-->
-                        <!--</variant-summary-card>-->
                     </v-flex>
                 </v-layout>
             </v-container>
@@ -129,6 +140,7 @@ TD & SJG updated Jun2018 -->
     import UpdatedVariantCard from '../viz/UpdatedVariantCard.vue'
     import VariantSummaryCard from '../viz/VariantSummaryCard.vue'
     import VariantZoomCard from '../viz/ZoomModalViz.vue'
+    import FilterSettingsMenu from '../partials/FilterSettingsMenu.vue'
 
     // Models
     import GeneModel from '../../models/GeneModel.js'
@@ -147,7 +159,8 @@ TD & SJG updated Jun2018 -->
             VariantSummaryCard,
             VariantZoomCard,
             VariantCard,
-            UpdatedVariantCard
+            UpdatedVariantCard,
+            FilterSettingsMenu
         },
         props: {
             paramProjectId: {
@@ -199,6 +212,7 @@ TD & SJG updated Jun2018 -->
                 cardWidth: 0,
                 showClinvarVariants: false,
                 activeBookmarksDrawer: null,
+                showCoverageCutoffs: false,  // TODO: not sure what this does/needs to be
 
                 DEMO_GENE: 'BRCA2'   // SJG TODO: get rid of this outside of demo
             }
@@ -268,10 +282,7 @@ TD & SJG updated Jun2018 -->
                 .then(function () {
                         self.promiseDetermineSourceAndInit()
                             .then(() => {
-                                let affectedInfo = self.variantModel.dataSet.affectedInfo;
-                                let isBasicMode = true; // Aka not educational mode TODO: get rid of this or incorporate app wide
-                                self.filterModel = new FilterModel(affectedInfo, isBasicMode);
-                                self.variantModel.filterModel = self.filterModel;
+                                self.initializeFiltering();
                             })
                     },
                     function (error) {
@@ -280,6 +291,13 @@ TD & SJG updated Jun2018 -->
                     })
         },
         methods: {
+            initializeFiltering: function () {
+                let self = this;
+                let affectedInfo = self.variantModel.dataSet.affectedInfo;
+                let isBasicMode = true; // Aka not educational mode
+                self.filterModel = new FilterModel(affectedInfo, isBasicMode);
+                self.variantModel.filterModel = self.filterModel;
+            },
             promiseInitCache: function () {
                 let self = this;
                 return new Promise(function (resolve, reject) {
@@ -537,7 +555,7 @@ TD & SJG updated Jun2018 -->
                     self.$refs.variantCardRef.hideVariantCircle();
                 }
             },
-            startZoomMode: function(selectedVarIds) {
+            startZoomMode: function (selectedVarIds) {
                 let self = this;
 
                 // Pileup selection
@@ -575,9 +593,9 @@ TD & SJG updated Jun2018 -->
                 let self = this;
                 var targetVariants = annotatedVariants.filter(function (v) {
                     return variant &&
-                        variant.start == v.start &&
-                        variant.ref == v.ref &&
-                        variant.alt == v.alt;
+                        variant.start === v.start &&
+                        variant.ref === v.ref &&
+                        variant.alt === v.alt;
                 });
                 if (targetVariants.length > 0) {
                     var annotatedVariant = targetVariants[0];
@@ -678,14 +696,14 @@ TD & SJG updated Jun2018 -->
                         // self.onGeneSelected(self.DEMO_GENE);
                         // self.variantModel.promiseInitDemo();
                         // TODO: below can be moved to then after this function in mounted section
-                            // .then(function () {
-                            //     if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
-                            //         self.promiseLoadData();
-                            //     }
-                            //     else {
-                            //         console.log("Failed to load data because no gene selected");
-                            //     }
-                            // })
+                        // .then(function () {
+                        //     if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
+                        //         self.promiseLoadData();
+                        //     }
+                        //     else {
+                        //         console.log("Failed to load data because no gene selected");
+                        //     }
+                        // })
                     }
                 });
             },
@@ -695,6 +713,9 @@ TD & SJG updated Jun2018 -->
                 let params = Qs.parse(self.$route.query);
                 let {filter} = params;
                 return filter;
+            },
+            onFilterSettingsApplied: function () {
+                // TODO: implement this - pass info to filter model
             }
         }
     }
