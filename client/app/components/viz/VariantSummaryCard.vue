@@ -226,6 +226,7 @@
                              :polyPhenText="polyPhenText"
                              :polyPhenColor="polyPhenColor"
                              :foldEnrichmentInfo="foldEnrichmentInfo"
+                             :pValueInfo="pValueInfo"
                              :variantSelected="variantSelected"
                              :loadingExtraAnnotations="loadingExtraAnnotations"
                              :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations">
@@ -325,6 +326,12 @@
                     else if (delta < 1) return (foldEnrich + "x" + " IN PROBANDS");
                     else if (this.variant.totalSubsetCount > 0) return ("EQUAL FREQUENCY");
                     else return "PROBANDS ONLY";
+                }
+                return "-";
+            },
+            pValueInfo: function() {
+                if (this.variant != null) {
+                    return '< ' + this.variant.pVal * 100 / 100;
                 }
                 return "-";
             },

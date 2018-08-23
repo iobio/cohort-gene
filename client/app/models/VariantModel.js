@@ -952,42 +952,8 @@ class VariantModel {
         }
     }
 
-// TODO: moved this functionality to gtenricher callback - can get rid of after final display decisions
-    /* Assigns cohort-relative statistics to each variant.
-       Used to populate Summary Card graphs when clicking on a variant. */
-    //annotateDataSetFrequencies(subsetFeatures, probandCountsMap) {
-    //     let self = this;
-    //
-    //     if (subsetFeatures == null || subsetFeatures.length === 0) return;    // Avoid console output on initial load
-    //     self.assignCrossCohortInfo(probandCountsMap, subsetFeatures);
-    // }
-    //
-    // assignCrossCohortInfo(probandCountsMap, subsetFeatures) {
-    //     let self = this;
-    //
-    //     let unwrappedFeatures = subsetFeatures.Subset.features;
-    //     unwrappedFeatures.forEach((feature) => {
-    //         // Find matching proband feature
-    //         let matchingProbandCounts = probandCountsMap[feature.id];
-    //         if (matchingProbandCounts == null) {
-    //             console.log('Could not find subset feature in proband count lookup');
-    //         }
-    //
-    //         feature.probandZygCounts = matchingProbandCounts;
-    //         feature.totalProbandCount = matchingProbandCounts[0] + matchingProbandCounts[1] + matchingProbandCounts[2] + matchingProbandCounts[3];
-    //         feature.affectedProbandCount = matchingProbandCounts[1] + matchingProbandCounts[2]; // Counts ordered homRefs, hets, homAlts, noCalls
-    //
-    //         // Compute delta and assign to both
-    //         let subsetPercentage = feature.totalSubsetCount === 0 ? 0 : feature.affectedSubsetCount / feature.totalSubsetCount * 100;  // Can be 0
-    //         let probandPercentage = feature.affectedProbandCount / feature.totalProbandCount * 100; // Can never be 0
-    //         let foldEnrichment = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
-    //         feature.subsetDelta = foldEnrichment;
-    //
-    //         self.assignCohortsToEnrichmentGroups(unwrappedFeatures);
-    //     })
-    // }
-
     /* Reference assigns all features in provided parameter to enrichment groups. */
+    // TODO: change this to assign to enrichment groups based on p-value
     promiseAssignCohortsToEnrichmentGroups(variants) {
         let self = this;
         return new Promise((resolve, reject) => {
@@ -1216,7 +1182,6 @@ class VariantModel {
     }
 
     /* Assigns classes to each variant to control visual display in the DOM. */
-
     classifyByEnrichment(d, annotationScheme) {
         var impacts = "";
         // var toggleImpact = "";  // Grouping classes, added & removed based on impact mode
@@ -1228,6 +1193,7 @@ class VariantModel {
         var enrichment = "";   // Grouping classes, added & removed based on impact mode
         var enrichColor = "";  // Color classes, constant
 
+        /* Still want to keep color scheme based on subset delta fold frequency for now*/
         var subsetEnrichment = d.subsetDelta;
         var roundedSubset = Math.round(d.subsetDelta * 10) / 10;
 

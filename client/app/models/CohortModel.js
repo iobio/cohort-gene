@@ -993,7 +993,7 @@ class CohortModel {
     removeEntriesFromHash(fileNames) {
         let self = this;
         fileNames.forEach((fileName) => {
-            self.vcfEndptHash = _.omit(self.vcfEndptHash,fileName);
+            self.vcfEndptHash = _.omit(self.vcfEndptHash, fileName);
         })
     }
 
@@ -1447,12 +1447,14 @@ class CohortModel {
             featureLookup[featureList[i].id] = i;
         }
 
+        // First loop to combine counts
         for (let i = 1; i < vcfNames.length; i++) {
             let currName = vcfNames[i];
             let currResult = annotationResults[currName];
             if (currResult != null) {
                 // Combine currResult features into combined result object
                 let currFeatures = currResult.features;
+
                 currFeatures.forEach((feature) => {
                     if (featureLookup[feature.id] != null) {
                         // Pull out existing counts
@@ -1478,27 +1480,88 @@ class CohortModel {
                         // Reassign counts back
                         combinedResults.features[combinedIndex].probandZygCounts = currProCounts;
                         combinedResults.features[combinedIndex].subsetZygCounts = currSubCounts;
-
-                        // Recalculate subset delta
-                        let totalProbandCount = +currProCounts[0] + +currProCounts[1] + +currProCounts[2] + +currProCounts[3];
-                        let totalSubsetCount = +currSubCounts[0] + +currSubCounts[1] + +currSubCounts[2] + +currSubCounts[3];
-                        let affectedSubsetCount = +currSubCounts[1] + +currSubCounts[2];
-                        let affectedProbandCount = +currProCounts[1] + +currProCounts[2];
-                        let subsetPercentage = totalSubsetCount === 0 ? 0 : affectedSubsetCount / totalSubsetCount * 100;  // Can be 0
-                        let probandPercentage = affectedProbandCount / totalProbandCount * 100; // Can never be 0
-                        combinedResults.features[combinedIndex].subsetDelta = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
-
-                        // Add this feature to the combinedResults if it doesn't already exist
                     } else {
+                        // Add this feature to the combinedResults if it doesn't already exist and add to lookup
                         combinedResults.features.push(feature);
-
-                        // Add feature to lookup
                         featureLookup[feature.id] = combinedResults.features.length - 1;
                     }
                 });
             }
         }
+        // Second loop to calculate subset deltas and p-values only once for combined values
+        combinedResults.features.forEach((feature) => {
+
+            let currProCounts = feature.probandZygCounts;
+            let currSubCounts = feature.subsetZygCounts;
+
+            // Calculate subset delta
+            let totalProbandCount = +currProCounts[0] + +currProCounts[1] + +currProCounts[2];  // NOTE: not including no calls in counts
+            let totalSubsetCount = +currSubCounts[0] + +currSubCounts[1] + +currSubCounts[2];
+            let affectedSubsetCount = +currSubCounts[1] + +currSubCounts[2];
+            let affectedProbandCount = +currProCounts[1] + +currProCounts[2];
+
+            let subsetPercentage = totalSubsetCount === 0 ? 0 : affectedSubsetCount / totalSubsetCount * 100;  // Can be 0
+            let probandPercentage = affectedProbandCount / totalProbandCount * 100; // Can never be 0
+            feature.subsetDelta = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
+
+            // Calculate p-value using Cochran Armitage trend test
+            let homRefNonSubset = +currProCounts[0] - +currSubCounts[0];
+            let hetAffNonSubset = +currProCounts[1] - +currSubCounts[1];
+            let homAffNonSubset = +currProCounts[2] - +currSubCounts[2];
+            let pVal = self.computeTrend(+currSubCounts[0], +currSubCounts[1], +currSubCounts[2], homRefNonSubset, hetAffNonSubset, homAffNonSubset);
+            feature.pVal = pVal;
+        });
+
         return combinedResults;
+    }
+
+    /* Performs a Cochran Armitage Trend test for the given values. Takes in the following parameters:
+    *  homozygous reference counts (AA), heterozygous alternate counts (Aa), homozygous alternate counts (aa) from an
+    *  experimental group (aka subset cohort), and a control group (aka non-subset cohort), respectively.
+    *  Assumes a codominant model for weighting of (0,1,2).
+    *  Returns a p-value based on a single degree of freedom, or one independent variable.
+    *
+    *  For more info: http://statgen.org/wp-content/uploads/2012/08/armitage.pdf
+    */
+    computeTrend(expHomRef, expHet, expHomAlt, conHomRef, conHet, conHomAlt) {
+        // Define variables
+        let controlTotal = conHomRef + conHet + conHomAlt;  // Aka S
+        let expTotal = expHomRef + expHet + expHomAlt;      // Aka R
+        let sampleTotal = controlTotal + expTotal;          // Aka N
+        let hetTotal = expHet + conHet;                     // Aka n_1
+        let homAltTotal = expHomAlt + conHomAlt;            // Aka n_2
+
+        // Calculate numerator and denominator of Sasieni notation for CA using weighted vector of (0,1,2)
+        let trendTestStat = (sampleTotal * (expHet + (2 * expHomAlt))) - (expTotal * (hetTotal + (2 * homAltTotal)));   // Aka U_mod
+        let trendVarA = controlTotal * expTotal;    // Aka S * R
+        let trendVarB = sampleTotal * (hetTotal + (4 * homAltTotal));   // Aka N * (n_1 + 4*n_2)
+        let trendVarC = (hetTotal + (2 * homAltTotal)) ** 2;    // Aka (n_1 + 2*n_2)^2
+        let numerator = sampleTotal * (trendTestStat ** 2);     // Aka N * U_mod
+        let denominator = trendVarA * (trendVarB - trendVarC);  // Aka A*(B-C)
+        let z = Math.sqrt((numerator / denominator));
+
+        // Populate arrays w/ fixed values for single degree of freedom
+        // (must be identical lengths!) - decided to do iterative approach vs taking integral for speed
+        const singleDegreeChiSqValues = [0.000, 0.004, 0.016, 0.102, 0.455, 1.32, 2.71, 3.84, 6.63];
+        const correspondingPValues = [0.99, 0.95, 0.90, 0.75, 0.50, 0.25, 0.10, 0.05, 0.01];
+
+        // Find where our chi-squared value falls & return appropriate p-value
+        let lowestBound = singleDegreeChiSqValues[0];
+        let highestBound = singleDegreeChiSqValues[singleDegreeChiSqValues.length - 1];
+        if (z <= lowestBound) {
+            return correspondingPValues[0];
+        } else if (z >= highestBound) {
+            return correspondingPValues[correspondingPValues.length - 1];
+        } else {
+            // Iterate through array, comparing adjacent values to see if curr number falls in that range
+            for (let i = 0; i < correspondingPValues.length; i++) {
+                let lowBound = singleDegreeChiSqValues[i];
+                let highBound = singleDegreeChiSqValues[i + 1];
+                if (z >= lowBound && z < highBound) {
+                    return correspondingPValues[i];
+                }
+            }
+        }
     }
 
     _combineUniqueFeatures(results) {

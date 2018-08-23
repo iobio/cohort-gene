@@ -301,7 +301,7 @@
                 self.model.inProgress.drawingVariants = false;
 
                 if (self.data) {
-                    // Get available veertical space to send into scaled variant d3
+                    // Get available vertical space to send into scaled variant d3
                     let bottomSourceCoord = 0;
                     let rect = $('#sourceFileLine').offset();
                     if (rect != null) {
@@ -316,19 +316,7 @@
                             return d.level;
                         });
                     }
-                    if (self.data.maxNegLevel == null || self.data.maxNegLevel == null) {
-                        self.data.maxNegLevel = d3.min(self.data.features, function (d) {
-                            return d.level;
-                        });
-                    }
-                    if (self.data.maxSubLevel == null || self.data.maxSubLevel == null) {
-                        self.data.maxSubLevel = d3.max(self.data.features, function (d) {
-                            return d.subLevel;
-                        });
-                    }
                     self.variantChart.posVertLayers(self.data.maxPosLevel);
-                    self.variantChart.negVertLayers(self.data.maxNegLevel);
-                    self.variantChart.maxSubLevel(self.data.maxSubLevel);
                     self.variantChart.lowestWidth(self.data.featureWidth);
                     self.variantChart.availableVertSpace(availableSpace);
                     if (self.data.features == null || self.data.features.length === 0) {

@@ -5,15 +5,24 @@
 <template>
     <v-flex xs12>
         <v-layout row>
-            <v-flex xs12 class="field-label-header" style="text-align: left; margin-top: 5px">Enrichment Details
+            <v-flex xs12 class="field-label-header" style="text-align: left; margin-top: 5px">Cohort Details
             </v-flex>
         </v-layout>
         <v-layout row>
             <v-flex xs3 class="summary-field-label">Frequency ∆:</v-flex>
-            <v-flex xs9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">
+            <v-flex xs9 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
                 <span class="summary-field-value">{{ foldEnrichmentInfo }}</span>
             </v-flex>
-            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations == false }">
+            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
+                <img src="../../../assets/images/wheel.gif">
+            </div>
+        </v-layout>
+        <v-layout row>
+            <v-flex xs3 class="summary-field-label">P-value:</v-flex>
+            <v-flex xs9 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
+                <span class="summary-field-value">{{ pValueInfo }}</span>
+            </v-flex>
+            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
                 <img src="../../../assets/images/wheel.gif">
             </div>
         </v-layout>
@@ -173,6 +182,10 @@
                 type: Boolean
             },
             foldEnrichmentInfo: {
+                default: "",
+                type: String
+            },
+            pValueInfo: {
                 default: "",
                 type: String
             },

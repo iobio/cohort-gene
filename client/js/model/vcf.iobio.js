@@ -1714,6 +1714,7 @@ vcfiobio = function module() {
                                 'highestPolyphen': highestPolyphen,
 
                                 // cohort specific
+                                'pVal': +1, // Guilty until proven innocent
                                 'subsetDelta': +0,
                                 'totalProbandCount': +0,
                                 'totalSubsetCount': +0,
@@ -1725,9 +1726,8 @@ vcfiobio = function module() {
 
                             if (enrichMode) {
                                 variant.zygosity = enrichResult.gx;
-                                variant.subsetDelta = +enrichResult.subsetDelta;
-                                variant.totalProbandCount = (+enrichResult.counts[0] + +enrichResult.counts[1] + +enrichResult.counts[2] + +enrichResult.counts[3]);
-                                variant.totalSubsetCount = (+enrichResult.counts[4] + +enrichResult.counts[5] + +enrichResult.counts[6] + +enrichResult.counts[7]);
+                                variant.totalProbandCount = (+enrichResult.counts[0] + +enrichResult.counts[1] + +enrichResult.counts[2]);  // NOTE: not including no calls in totals
+                                variant.totalSubsetCount = (+enrichResult.counts[4] + +enrichResult.counts[5] + +enrichResult.counts[6]);
                                 variant.affectedProbandCount = (+enrichResult.counts[1] + +enrichResult.counts[2]);
                                 variant.affectedSubsetCount = (+enrichResult.counts[5] + +enrichResult.counts[6]);
                                 variant.probandZygCounts = [+enrichResult.counts[0], +enrichResult.counts[1], +enrichResult.counts[2], +enrichResult.counts[3]];
@@ -1820,15 +1820,34 @@ vcfiobio = function module() {
             enrichObj['gx'] = 'gt_unknown';
         }
 
-        // Calculate subset delta
-        let totalProbandCount = +counts[0] + +counts[1] + +counts[2] + +counts[3];  // GtEnricher returns probandHomRef, probandHet, probandHomAlt, probandNoCall
-        let totalSubsetCount = +counts[4] + +counts[5] + +counts[6] + +counts[7];   // GtEnricher returns subsetHomRef, subsetHet, subsetHomAlt, subsetNoCall
-        let affectedSubsetCount = +counts[5] + +counts[6];
-        let affectedProbandCount = +counts[1] + +counts[2];
-        let subsetPercentage = totalSubsetCount === 0 ? 0 : affectedSubsetCount / totalSubsetCount * 100;  // Can be 0
-        let probandPercentage = affectedProbandCount / totalProbandCount * 100; // Can never be 0
-        enrichObj['subsetDelta'] = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
+        // Tally cohort counts
+        // let totalProbandCount = +counts[0] + +counts[1] + +counts[2] + +counts[3];  // GtEnricher returns probandHomRef, probandHet, probandHomAlt, probandNoCall
+        // let totalSubsetCount = +counts[4] + +counts[5] + +counts[6] + +counts[7];   // GtEnricher returns subsetHomRef, subsetHet, subsetHomAlt, subsetNoCall
+        // let totalNonSubsetCount = totalProbandCount - totalSubsetCount;
+        // let affectedSubsetCount = +counts[5] + +counts[6];
+        // let affectedProbandCount = +counts[1] + +counts[2];
+        // let affectedNonSubsetCount = affectedProbandCount - affectedSubsetCount;
 
+        // TODO: moved all of this to cohort model
+        // Determine expected affected-subset count
+        // let freqNonSubset = affectedNonSubsetCount / totalNonSubsetCount;
+        // let expectedSubsetCount = freqNonSubset * totalSubsetCount;
+        //
+        // // Calculate p-value using appropriate test
+        // let pVal = 1;
+        // if (expectedSubsetCount < 5) {
+        //     pVal = computeFishers();
+        // } else {
+        //     pVal = computeTrend();
+        // }
+        //
+        // // Calculate subset delta for coloring purposes
+        // let subsetPercentage = totalSubsetCount === 0 ? 0 : affectedSubsetCount / totalSubsetCount * 100;  // Can be 0
+        // let probandPercentage = affectedProbandCount / totalProbandCount * 100; // Can never be 0
+        // enrichObj['subsetDelta'] = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
+        //
+        // // Assign p-value in object & return
+        // enrichObj['pVal'] = pVal;
         return enrichObj;
     };
 
@@ -2917,6 +2936,7 @@ vcfiobio = function module() {
         return maxLevel;
     }
 
+    // TODO: rename this to more telling name
     exports.updatedPileupVcfRecords = function (variants, regionStart, posToPixelFactor, widthFactor) {
         widthFactor = widthFactor ? widthFactor : 1;
         let xYstack = {};
@@ -2930,13 +2950,8 @@ vcfiobio = function module() {
             // Horizontal coordinate
             let xMajor = (variant.start - regionStart);
 
-            // If subset delta below 0 (enriched in proband), flip up to draw like Manhattan plot
-            let adjustedDelta = variant.subsetDelta;
-            if (adjustedDelta < 1.0) {
-                adjustedDelta = 1.0 / adjustedDelta;
-            }
-            // Vertical starting coordinate based on subset delta value
-            let yMajor = Math.trunc(adjustedDelta * 100) / 100;
+            // Vertical starting coordinate based on -log10(pVal)
+            let yMajor = -Math.log10(variant.pVal);
 
             // Keep track of extrema
             if (yMajor > maxYmajor) maxYmajor = yMajor;
@@ -2982,20 +2997,7 @@ vcfiobio = function module() {
             }
         });
 
-        // Spread out variants that are overlapping vertically - TODO: not using for now
-        // variants.forEach(function (variant) {
-        //     //let verticalSpreadFactor = 0.1;           // Deduced by trial and error
-        //     //let overlapFactor = inversionFactor * verticalSpreadFactor * variant.subLevel;
-        //     inversionFactor *= -1;                    // Alternate direction we're stacking in
-        //
-        //     if (variant.subsetDelta !== 1) {
-        //         // let antiScaleFactor = variant.level < 1.1 ? 0 : 1 / Math.log2(variant.level);
-        //         // let scaledOverlap = antiScaleFactor * overlapFactor;
-        //         variant.adjustedLevel = variant.level;
-        //     }
-        // });
-
-        return {'maxPosLevel': maxYmajor, 'maxNegLevel': minYmajor, 'maxSubLevel': maxYminor};
+        return {'maxPosLevel': Math.round(maxYmajor + 1), 'maxNegLevel': minYmajor, 'maxSubLevel': maxYminor};
     }
 
 

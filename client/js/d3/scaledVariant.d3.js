@@ -9,7 +9,7 @@ function scaledVariantD3() {
         height = 100;
     // scales
     var x = d3.scale.linear(),
-        y = d3.scale.log().base(2);
+        y = d3.scale.linear();
     // axis
     var xAxis = d3.svg.axis()
         .scale(x)
@@ -407,12 +407,8 @@ function scaledVariantD3() {
     };
 
     function chart(selection, options) {
-        // merge options and defaults
-        options = $.extend(defaults, options);
-
-        let subLayers = maxSubLevel === 0 ? 1 : maxSubLevel;    // Note: not using for now b/c zoom feature
-        let topLayer = posVertLayers === 0 ? 1 : posVertLayers;
-        let bottomLayer = negVertLayers === 0 ? 0.1 : negVertLayers;
+        let topLayer = posVertLayers;
+        let bottomLayer = 0.1;  // Gives a bit of space on bottom
         let totalLayers = topLayer + bottomLayer;
 
         if (availableVertSpace !== 0) {
@@ -463,7 +459,7 @@ function scaledVariantD3() {
                 x.range([0, width - margin.left - margin.right]);
 
                 // Update the y-scale.
-                y.domain([(bottomLayer - (Math.round(bottomLayer * 10) / 80)), (topLayer + (Math.round(topLayer * 10) / 20))]);   // Pad space above and below by 5% and 3.3% respectively
+                y.domain([0, topLayer]);
                 y.range([innerHeight, 0]);
 
                 // Find out the smallest width interval between variants on the x-axis
@@ -575,9 +571,7 @@ function scaledVariantD3() {
                     .orient("left")
                     .scale(y)
                     .tickFormat(function (d) {
-                        let dTransform = d;
-                        if (d < 1) dTransform = 1 / d;
-                        return (y.tickFormat(4, d3.format(""))(dTransform) + "x")
+                        return (y.tickFormat(4, d3.format(""))(d))
                     });
 
                 // Draw y-axis using axis style class
@@ -590,7 +584,7 @@ function scaledVariantD3() {
                     .attr("dy", "-2.5em")
                     .style('font-size', '14px')
                     .style("text-anchor", "middle")
-                    .text("Fold Enrichment");
+                    .text("-log10(pVal)");
 
                 // Create dividing line
                 g.selectAll(".divider").remove();
