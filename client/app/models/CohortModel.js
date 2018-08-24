@@ -1542,8 +1542,8 @@ class CohortModel {
 
         // Populate arrays w/ fixed values for single degree of freedom
         // (must be identical lengths!) - decided to do iterative approach vs taking integral for speed
-        const singleDegreeChiSqValues = [0.000, 0.004, 0.016, 0.102, 0.455, 1.32, 2.71, 3.84, 6.63];
-        const correspondingPValues = [0.99, 0.95, 0.90, 0.75, 0.50, 0.25, 0.10, 0.05, 0.01];
+        const singleDegreeChiSqValues = [0.000, 0.001, 0.004, 0.016, 0.102, 0.455, 1.32, 1.64, 2.71, 3.84, 5.02, 5.41, 6.63, 7.88, 9.14, 10.83, 12.12];
+        const correspondingPValues = [0.99, 0.975, 0.95, 0.90, 0.75, 0.50, 0.25, 0.2, 0.10, 0.05, 0.025, 0.02, 0.01, 0.005, 0.0025, 0.001, 0.0005];
 
         // Find where our chi-squared value falls & return appropriate p-value
         let lowestBound = singleDegreeChiSqValues[0];

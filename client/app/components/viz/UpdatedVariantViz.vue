@@ -316,7 +316,7 @@
                             return d.level;
                         });
                     }
-                    self.variantChart.posVertLayers(self.data.maxPosLevel);
+                    self.variantChart.posVertLayers(5); // Hardcoding for now
                     self.variantChart.lowestWidth(self.data.featureWidth);
                     self.variantChart.availableVertSpace(availableSpace);
                     if (self.data.features == null || self.data.features.length === 0) {

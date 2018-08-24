@@ -459,7 +459,7 @@ function scaledVariantD3() {
                 x.range([0, width - margin.left - margin.right]);
 
                 // Update the y-scale.
-                y.domain([0, topLayer]);
+                y.domain([-0.1, topLayer]);
                 y.range([innerHeight, 0]);
 
                 // Find out the smallest width interval between variants on the x-axis
@@ -475,12 +475,12 @@ function scaledVariantD3() {
                         // For each variant.  Calculate the distance on the screen
                         // between the 2 variants.
                         for (let i = 0; i < d.features.length - 1; i++) {
-                            let currAdjLevel = Math.round(d.features[i].adjustedLevel * 10) / 10;
+                            let currAdjLevel = Math.round(d.features[i].adjustedLevel * 100) / 100;
                             if (currAdjLevel === l) {
                                 // find the next feature at the same level
                                 var nextPos = null;
                                 for (let next = i + 1; next < d.features.length; next++) {
-                                    let nextAdjLevel = Math.round(d.features[next].adjustedLevel * 10) / 10;
+                                    let nextAdjLevel = Math.round(d.features[next].adjustedLevel * 100) / 100;
                                     if (nextAdjLevel === l) {
                                         nextPos = next;
                                         break;
@@ -570,8 +570,9 @@ function scaledVariantD3() {
                 var yAxis = d3.svg.axis()
                     .orient("left")
                     .scale(y)
+                    .ticks(5)
                     .tickFormat(function (d) {
-                        return (y.tickFormat(4, d3.format(""))(d))
+                        return (y.tickFormat(5, d3.format(""))(d))
                     });
 
                 // Draw y-axis using axis style class
@@ -725,7 +726,6 @@ function scaledVariantD3() {
                             return d3.round(x(d.start) - (minWidth / 2) + (minWidth / 4));
                         })
                         .attr('width', function (d) {
-                            // TODO:  Need to review!!
                             return variantHeight;
                         })
                         .attr('y', function (d) {
