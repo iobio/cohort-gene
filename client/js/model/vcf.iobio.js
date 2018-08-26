@@ -1819,70 +1819,8 @@ vcfiobio = function module() {
         else {
             enrichObj['gx'] = 'gt_unknown';
         }
-
-        // Tally cohort counts
-        // let totalProbandCount = +counts[0] + +counts[1] + +counts[2] + +counts[3];  // GtEnricher returns probandHomRef, probandHet, probandHomAlt, probandNoCall
-        // let totalSubsetCount = +counts[4] + +counts[5] + +counts[6] + +counts[7];   // GtEnricher returns subsetHomRef, subsetHet, subsetHomAlt, subsetNoCall
-        // let totalNonSubsetCount = totalProbandCount - totalSubsetCount;
-        // let affectedSubsetCount = +counts[5] + +counts[6];
-        // let affectedProbandCount = +counts[1] + +counts[2];
-        // let affectedNonSubsetCount = affectedProbandCount - affectedSubsetCount;
-
-        // TODO: moved all of this to cohort model
-        // Determine expected affected-subset count
-        // let freqNonSubset = affectedNonSubsetCount / totalNonSubsetCount;
-        // let expectedSubsetCount = freqNonSubset * totalSubsetCount;
-        //
-        // // Calculate p-value using appropriate test
-        // let pVal = 1;
-        // if (expectedSubsetCount < 5) {
-        //     pVal = computeFishers();
-        // } else {
-        //     pVal = computeTrend();
-        // }
-        //
-        // // Calculate subset delta for coloring purposes
-        // let subsetPercentage = totalSubsetCount === 0 ? 0 : affectedSubsetCount / totalSubsetCount * 100;  // Can be 0
-        // let probandPercentage = affectedProbandCount / totalProbandCount * 100; // Can never be 0
-        // enrichObj['subsetDelta'] = subsetPercentage === 0 ? 1 : subsetPercentage / probandPercentage;
-        //
-        // // Assign p-value in object & return
-        // enrichObj['pVal'] = pVal;
         return enrichObj;
     };
-
-    /* Takes in genotype calls for all samples from a vcf and returns the zygosity, as follows:
-      If keepVariantsCombined is false, returns the single called Gt or unknown, as appropriate.
-      If keepVariantsCombined is true, returns the first non-ref zygosity encountered in the list,
-      where a non-ref zygosity is either HOM or HET, if one exists. Otherwise returns HOMREF or unknown,
-      as appropriate. */
-    // exports._getZygosity = function (singleGt, combinedGtResult, keepVariantsCombined) {
-    //     let resultZyg = "gt_unknown";
-    //
-    //     if (!keepVariantsCombined && singleGt) {
-    //         resultZyg = singleGt.zygosity ? singleGt.zygosity : "gt_unknown";
-    //     }
-    //     else if (keepVariantsCombined && combinedGtResult) {
-    //         let gtArr = combinedGtResult.genotypes;
-    //         if (gtArr && gtArr.length > 0) {
-    //             let i;
-    //             for (i = 0; i < gtArr.length; i++) {
-    //                 if (gtArr[i].zygosity === "HOM") {
-    //                     resultZyg = "HOM";
-    //                     break;
-    //                 }
-    //                 else if (gtArr[i].zygosity === "HET") {
-    //                     resultZyg = "HET";
-    //                     break;
-    //                 }
-    //                 else if (gtArr[i].zygosity === "HOMREF") {
-    //                     resultZyg = "HOMREF";
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     return resultZyg;
-    // };
 
     exports._parseAnnot = function (rec, altIdx, isMultiAllelic, geneObject, selectedTranscript, selectedTranscriptID, vepAF) {
         var me = this;
@@ -2936,8 +2874,7 @@ vcfiobio = function module() {
         return maxLevel;
     }
 
-    // TODO: rename this to more telling name
-    exports.updatedPileupVcfRecords = function (variants, regionStart, posToPixelFactor, widthFactor) {
+    exports.pileupVcfRecordsByPvalue = function (variants, regionStart, posToPixelFactor, widthFactor) {
         widthFactor = widthFactor ? widthFactor : 1;
         let xYstack = {};
         let xPerVariant = posToPixelFactor * widthFactor;    // The adjusted width of the variant

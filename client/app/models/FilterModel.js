@@ -12,7 +12,6 @@ class FilterModel {
         this.regionEnd = null;
 
         this.pathogenicityScheme = "clinvar";
-
         this.annotClasses = ".type, .impact, ." + 'highestImpactVep' + ", .effect, .vepConsequence, .sift, .polyphen, .regulatory, .zygosity, .inheritance, .clinvar, .uasibs, .recfilter";
         this.annotClassLabels = "Type, Impact, VEP Impact, Effect, VEP Consequence, SIFT, PolyPhen, Regulatory, Zygosity, Inheritance mode, ClinVar, Unaffected Sibs, VCF Filter Status";
 
@@ -334,11 +333,6 @@ class FilterModel {
             }
         }
 
-
-//    if ($('#exonic-only-cb').is(":checked")) {
-//      filterString += AND(filterString) + filterBox("not intronic");
-//    }
-
         if (filterObject.afMin != null && filterObject.afMax != null) {
             if (filterObject.afMin >= 0 && filterObject.afMax < 1) {
                 filterString += AND(filterString) + filterBox("Allele freqency between " + filterObject.afMin + " and  " + filterObject.afMax);
@@ -460,7 +454,7 @@ class FilterModel {
 
         if (self.affectedInfo) {
             self.affectedInfo.filter(function (info) {
-                return info.model.isAffected() && info.relationship != 'proband';
+                return info.model.isAffected() && info.relationship !== 'proband';
             })
                 .forEach(function (info) {
                     //var cb = $('#present-in-affected').find("#" + info.id + " input");
@@ -618,17 +612,17 @@ class FilterModel {
             notFound: false
         };
 
-        if (badge == 'notCategorized') {
+        if (badge === 'notCategorized') {
             if (variant.notCategorized) {
                 passes.notCategorized = true;
                 passes.all = true;
             }
-        } else if (badge == 'notFound') {
+        } else if (badge === 'notFound') {
             if (variant.notFound) {
                 passes.notFound = true;
                 passes.all = true;
             }
-        } else if (badgeCriteria.userFlagged == true) {
+        } else if (badgeCriteria.userFlagged === true) {
             if (variant.isUserFlagged) {
                 passes.userFlagged = true;
                 passes.all = true;
@@ -658,13 +652,13 @@ class FilterModel {
             } else {
                 passes.consequence = true;
             }
-            if (badgeCriteria.clinvar == null || badgeCriteria.clinvar.length == 0 || badgeCriteria.clinvar.indexOf(variant.clinvar) >= 0) {
+            if (badgeCriteria.clinvar == null || badgeCriteria.clinvar.length === 0 || badgeCriteria.clinvar.indexOf(variant.clinvar) >= 0) {
                 passes.clinvar = true;
             }
-            if (badgeCriteria.inheritance == null || badgeCriteria.inheritance.length == 0 || badgeCriteria.inheritance.indexOf(variant.inheritance) >= 0) {
+            if (badgeCriteria.inheritance == null || badgeCriteria.inheritance.length === 0 || badgeCriteria.inheritance.indexOf(variant.inheritance) >= 0) {
                 passes.inheritance = true;
             }
-            if (badgeCriteria.zygosity == null || variant.zygosity.toUpperCase() == badgeCriteria.zygosity.toUpperCase()) {
+            if (badgeCriteria.zygosity == null || variant.zygosity.toUpperCase() === badgeCriteria.zygosity.toUpperCase()) {
                 passes.zygosity = true;
             }
             if (options && options.ignore) {

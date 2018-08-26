@@ -570,7 +570,7 @@ function scaledVariantD3() {
                 var yAxis = d3.svg.axis()
                     .orient("left")
                     .scale(y)
-                    .ticks(5)
+                    .ticks(posVertLayers)
                     .tickFormat(function (d) {
                         return (y.tickFormat(5, d3.format(""))(d))
                     });

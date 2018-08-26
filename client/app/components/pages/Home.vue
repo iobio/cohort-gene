@@ -689,6 +689,7 @@ TD & SJG updated Jun2018 -->
                     }
                     // Otherwise launching stand alone
                     else {
+                        alert('This application is currently configured to launch from Mosaic.iobio - stand alone functionality will be implemented by December 2018.');ß
                         reject('Do not have stand alone functionality implemented yet');
                         // TODO: initialize file/url loader
                         // NOTE: loading demo for now

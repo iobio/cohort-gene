@@ -54,6 +54,10 @@ class CohortModel {
         this.isProbandCohort = false;
         this.isSubsetCohort = false;
         this.isUnaffectedCohort = false;
+
+        this.singleDegreeChiSqValues = [0.000, 0.001, 0.004, 0.016, 0.102, 0.455, 1.32, 1.64, 2.71, 3.84, 5.02, 5.41, 6.63, 7.88, 9.14, 10.83, 12.12];
+        this.correspondingPValues = [0.99, 0.975, 0.95, 0.90, 0.75, 0.50, 0.25, 0.2, 0.10, 0.05, 0.025, 0.02, 0.01, 0.005, 0.0025, 0.001, 0.0005];
+        this.TOTAL_VAR_CUTOFF = 5000;
     }
 
     /* Returns descriptive name depending on the ID flags.
@@ -1396,9 +1400,14 @@ class CohortModel {
                     Promise.all(enrichPromises)
                         .then(() => {
                             let combinedResults = me._combineEnrichmentCounts(enrichResults);
+                            if (combinedResults.features.length > me.TOTAL_VAR_CUTOFF) {
+                                combinedResults.features = me.filterVarsOnPVal(combinedResults.features);
+                            }
+                            // Add variant number to chips
+
                             if (combinedResults) {
                                 let theGeneObject = me.getGeneModel().geneObjects[combinedResults.gene];
-                                if (theGeneObject) {
+                                if (theGeneObject) {``
                                     let resultMap = {};
                                     let model = cohortModels[0];
                                     let theVcfData = combinedResults;
@@ -1432,6 +1441,26 @@ class CohortModel {
                         });
                 })
         });
+    }
+
+    /* Takes in a list of variants and filters them based on decreasing levels of p-values until the number of variants reaches < 10,000. */
+    filterVarsOnPVal(variants) {
+        let self = this;
+
+        let filteredVars = [];
+        for (let i = 3; i < self.correspondingPValues.length; i++) {    // Start cutoff at 0.9
+            filteredVars = [];
+            let currPValCutoff = self.correspondingPValues[i];
+            variants.forEach((variant) => {
+                if (variant.pVal < currPValCutoff) {
+                    filteredVars.push(variant);
+                }
+            });
+            if (filteredVars.length < self.TOTAL_VAR_CUTOFF) {
+                alert('The number of variants at this locus exceeds display capacity. Only displaying variants with a p-value < ' + currPValCutoff);
+                return filteredVars;
+            }
+        }
     }
 
     /* Combines zygosity counts for each variant, from each vcf file, into the first object in annotation results. Recalculates subset delta and reassigns.
@@ -1524,6 +1553,7 @@ class CohortModel {
     *  For more info: http://statgen.org/wp-content/uploads/2012/08/armitage.pdf
     */
     computeTrend(expHomRef, expHet, expHomAlt, conHomRef, conHet, conHomAlt) {
+        let self = this;
         // Define variables
         let controlTotal = conHomRef + conHet + conHomAlt;  // Aka S
         let expTotal = expHomRef + expHet + expHomAlt;      // Aka R
@@ -1540,28 +1570,26 @@ class CohortModel {
         let denominator = trendVarA * (trendVarB - trendVarC);  // Aka A*(B-C)
         let z = Math.sqrt((numerator / denominator));
 
-        // Populate arrays w/ fixed values for single degree of freedom
-        // (must be identical lengths!) - decided to do iterative approach vs taking integral for speed
-        const singleDegreeChiSqValues = [0.000, 0.001, 0.004, 0.016, 0.102, 0.455, 1.32, 1.64, 2.71, 3.84, 5.02, 5.41, 6.63, 7.88, 9.14, 10.83, 12.12];
-        const correspondingPValues = [0.99, 0.975, 0.95, 0.90, 0.75, 0.50, 0.25, 0.2, 0.10, 0.05, 0.025, 0.02, 0.01, 0.005, 0.0025, 0.001, 0.0005];
-
         // Find where our chi-squared value falls & return appropriate p-value
-        let lowestBound = singleDegreeChiSqValues[0];
-        let highestBound = singleDegreeChiSqValues[singleDegreeChiSqValues.length - 1];
+        let lowestBound = self.singleDegreeChiSqValues[0];
+        let highestBound = self.singleDegreeChiSqValues[self.singleDegreeChiSqValues.length - 1];
+        let pVal = 1;
         if (z <= lowestBound) {
-            return correspondingPValues[0];
+            pVal = self.correspondingPValues[0];
         } else if (z >= highestBound) {
-            return correspondingPValues[correspondingPValues.length - 1];
+            pVal =  self.correspondingPValues[self.correspondingPValues.length - 1];
         } else {
             // Iterate through array, comparing adjacent values to see if curr number falls in that range
-            for (let i = 0; i < correspondingPValues.length; i++) {
-                let lowBound = singleDegreeChiSqValues[i];
-                let highBound = singleDegreeChiSqValues[i + 1];
+            for (let i = 0; i < self.correspondingPValues.length; i++) {
+                let lowBound = self.singleDegreeChiSqValues[i];
+                let highBound = self.singleDegreeChiSqValues[i + 1];
                 if (z >= lowBound && z < highBound) {
-                    return correspondingPValues[i];
+                    pVal = self.correspondingPValues[i];
+                    break;
                 }
             }
         }
+        return pVal;
     }
 
     _combineUniqueFeatures(results) {
@@ -1940,43 +1968,42 @@ class CohortModel {
         // Pull out first (now combined) vcf
         let combinedVcf = me.getFirstVcf();
 
-        let levelObj = combinedVcf.updatedPileupVcfRecords(theFeatures, start, posToPixelFactor, widthFactor, true);
+        let levelObj = combinedVcf.pileupVcfRecordsByPvalue(theFeatures, start, posToPixelFactor, widthFactor, true);
         let maxSubLevel = levelObj.maxSubLevel;
         let maxPosLevel = levelObj.maxPosLevel;
         let maxNegLevel = levelObj.maxNegLevel;
 
-        // SJG TODO: figure out what this does and comment back in
-        // if (maxPosLevel > 30 && maxNegLevel < -30) {
-        //     for (var i = 1; i < posToPixelFactor; i++) {
-        //         if (i > 4) {
-        //             featureWidth = 1;
-        //         } else if (i > 3) {
-        //             featureWidth = 2;
-        //         } else if (i > 2) {
-        //             featureWidth = 3;
-        //         } else {
-        //             featureWidth = 4;
-        //         }
-        //
-        //         features.forEach(function (v) {
-        //             v.level = 0;
-        //         });
-        //         var factor = posToPixelFactor / (i * 2);
-        //         if (self.isSubsetCohort) {
-        //             levelObj = me.vcf.updatedPileupVcfRecords(theFeatures, start, factor, featureWidth + 1, true);
-        //             maxSubLevel = levelObj.maxSubLevel;
-        //             maxPosLevel = levelObj.maxPosLevel;
-        //             maxNegLevel = levelObj.maxNegLevel;
-        //         }
-        //         else {
-        //             maxPosLevel = this.vcf.updatedPileupVcfRecords(theFeatures, start, factor, featureWidth + 1);
-        //         }
-        //         if (maxPosLevel <= 50 && maxNegLevel >= -50) {
-        //             i = posToPixelFactor;
-        //             break;
-        //         }
-        //     }
-        // }
+        if (maxPosLevel > 30 && maxNegLevel < -30) {
+            for (let i = 1; i < posToPixelFactor; i++) {
+                if (i > 4) {
+                    featureWidth = 1;
+                } else if (i > 3) {
+                    featureWidth = 2;
+                } else if (i > 2) {
+                    featureWidth = 3;
+                } else {
+                    featureWidth = 4;
+                }
+
+                features.forEach(function (v) {
+                    v.level = 0;
+                });
+                let factor = posToPixelFactor / (i * 2);
+                if (self.isSubsetCohort) {
+                    levelObj = combinedVcf.pileupVcfRecordsByPvalue(theFeatures, start, factor, featureWidth + 1, true);
+                    maxSubLevel = levelObj.maxSubLevel;
+                    maxPosLevel = levelObj.maxPosLevel;
+                    maxNegLevel = levelObj.maxNegLevel;
+                }
+                else {
+                    maxPosLevel = combinedVcf.pileupVcfRecordsByPvalue(theFeatures, start, factor, featureWidth + 1);
+                }
+                if (maxPosLevel <= 50 && maxNegLevel >= -50) {
+                    i = posToPixelFactor;
+                    break;
+                }
+            }
+        }
         return {
             'maxSubLevel': maxSubLevel,
             'maxPosLevel': maxPosLevel,
