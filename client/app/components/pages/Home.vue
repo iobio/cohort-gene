@@ -404,14 +404,13 @@ TD & SJG updated Jun2018 -->
             },
             wipeModels: function () {
                 let self = this;
-                if (self.variantModel == null || self.variantModel.dataSetModel == null) {
+                if (self.variantModel == null || self.variantModel.dataSet == null) {
                     return;
                 }
-                dataSetModel.wipeVariantData();
-                let cohortModels = self.variantModel.dataSetModel.getCohorts();
+                let cohortModels = self.variantModel.dataSet.getCohorts();
                 cohortModels.forEach((model) => {
                     model.wipeGeneData();
-                })
+                });
             },
             promiseLoadGene: function (geneName) {
                 let self = this;

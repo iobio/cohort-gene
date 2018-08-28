@@ -69,11 +69,4 @@ class DataSetModel {
         });
         return theCohorts.length === self._cohorts.length;
     }
-
-    /* Wipes cohort links */
-    wipeVariantData() {
-        let self = this;
-        self._cohorts = [];
-        self._cohortMap = {};
-    }
 }

@@ -169,7 +169,7 @@ class VariantModel {
                             }
                             // Coming from SSC data set
                             if (!((ids[0].id).startsWith('SS'))) {
-                                probandCohort.subsetIds = self.convertSimonsIds(ids);
+                                probandCohort.subsetIds = self.convertSimonsIds(ids, 'proband');
                             }
                             // Coming from SPARK or other
                             else {
@@ -199,7 +199,7 @@ class VariantModel {
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                         .then(function (ids) {
                             if (ids.length > 0 && !((ids[0].id).startsWith('SS'))) {
-                                subsetCohort.subsetIds = self.convertSimonsIds(ids);
+                                subsetCohort.subsetIds = self.convertSimonsIds(ids), 'subset';
                             } else {
                                 subsetCohort.subsetIds = self.getRawIds(ids);
                             }
@@ -245,16 +245,25 @@ class VariantModel {
     }
 
     /* Converts provide list of Hub encoded sample IDs to those found in the Phase 1 Simons VCF. */
-    convertSimonsIds(hubIds) {
+    convertSimonsIds(hubIds, cohortName) {
         let self = this;
         if (self.simonsIdMap == null) {
             return hubIds;
         }
         let convertedIds = [];
+        let unmappedIds = [];
         hubIds.forEach((idObj) => {
             let simonsId = self.simonsIdMap[idObj.id];
-            convertedIds.push(simonsId);
+            if (simonsId == null) {
+                unmappedIds.push(simonsId);
+            } else {
+                convertedIds.push(simonsId);
+            }
         });
+        // TODO: return number of unmappedIds and update chip
+        if (unmappedIds.length > 0) {
+            alert ('Note: could not find translation for all sample IDs provided, not all samples from the ' + cohortName + ' cohort will be included in the analysis.');
+        }
         return convertedIds;
     }
 

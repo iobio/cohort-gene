@@ -45,10 +45,10 @@ class CohortModel {
         this._variantModel = theVariantModel;
         this.getVariantModel = function () {
             return this._variantModel;
-        }
+        };
         this.getDataSet = function () {
             return this._variantModel.dataSet;
-        }
+        };
 
         // Identifiers
         this.isProbandCohort = false;
@@ -1068,78 +1068,16 @@ class CohortModel {
         return strippedName;
     }
 
-    // promiseGetMatchingVariant(variant) {
-    //   var me = this;
-    //   return new Promise(function(resolve, reject) {
-    //     var theVcfData = me.promiseGetVcfData(window.gene, window.selectedTranscript)
-    //      .then(function(data) {
-    //       var theVcfData = data.vcfData;
-    //       var matchingVariant = null;
-    //       if (theVcfData && theVcfData.features) {
-    //         theVcfData.features.forEach(function(v) {
-    //           if (v.start == variant.start
-    //               && v.end == variant.end
-    //               && v.ref == variant.ref
-    //               && v.alt == variant.alt
-    //               && v.type.toLowerCase() == variant.type.toLowerCase()) {
-    //             matchingVariant = v;
-    //           }
-    //         });
-    //       }
-    //       resolve(matchingVariant);
-    //      },
-    //      function(error) {
-    //       var msg = "A problem occurred in CohortModel.promiseGetMatchingVariant(): " + error;
-    //       console.log(msg);
-    //       reject(msg);
-    //      })
-    //   });
-    // }
-
     /*
     * A gene has been selected. Clear out the model's state
     * in preparation for getting data.
     */
     wipeGeneData() {
-        var me = this;
-        this.vcfData = null;
-        this.fbData = null;
-        this.bamData = null;
+        if (this.subsetPhenotypes.length > 3) {
+            this.subsetPhenotypes.pop();
+        }
+        this.loadedVariants = null;
     }
-
-    // promiseAnnotated(theVcfData) {
-    //   var me = this;
-    //   return new Promise( function(resolve, reject) {
-    //     if (theVcfData != null &&
-    //       theVcfData.features != null &&
-    //       theVcfData.loadState != null &&
-    //        //(dataCard.mode == 'single' || theVcfData.loadState['inheritance'] == true) &&
-    //       theVcfData.loadState['clinvar'] == true ) {
-    //
-    //       resolve();
-    //
-    //     } else {
-    //       reject();
-    //     }
-    //   });
-    // }
-    //
-    // promiseAnnotatedAndCoverage(theVcfData) {
-    //   var me = this;
-    //   return new Promise( function(resolve, reject) {
-    //     if (theVcfData != null &&
-    //       theVcfData.features != null &&
-    //       theVcfData.loadState != null &&
-    //        (dataCard.mode == 'single' || theVcfData.loadState['inheritance'] == true) &&
-    //       theVcfData.loadState['clinvar'] == true  &&
-    //       (!me.isBamLoaded() || theVcfData.loadState['coverage'] == true)) {
-    //       resolve();
-    //
-    //     } else {
-    //       reject();
-    //     }
-    //   });
-    // }
 
     // Take in single variant, navigate to variant in vcf, annotate, return variant result
     promiseGetVariantExtraAnnotations(theGene, theTranscript, variant, format, getHeader = false, sampleNames) {
@@ -1404,10 +1342,12 @@ class CohortModel {
                                 combinedResults.features = me.filterVarsOnPVal(combinedResults.features);
                             }
                             // Add variant number to chips
+                            me.subsetPhenotypes.push(combinedResults.features.length + ' variants');
 
+                            // Assign data parameter
                             if (combinedResults) {
                                 let theGeneObject = me.getGeneModel().geneObjects[combinedResults.gene];
-                                if (theGeneObject) {``
+                                if (theGeneObject) {
                                     let resultMap = {};
                                     let model = cohortModels[0];
                                     let theVcfData = combinedResults;
