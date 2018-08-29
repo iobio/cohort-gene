@@ -199,7 +199,7 @@ class VariantModel {
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                         .then(function (ids) {
                             if (ids.length > 0 && !((ids[0].id).startsWith('SS'))) {
-                                subsetCohort.subsetIds = self.convertSimonsIds(ids), 'subset';
+                                subsetCohort.subsetIds = self.convertSimonsIds(ids, 'subset');
                             } else {
                                 subsetCohort.subsetIds = self.getRawIds(ids);
                             }

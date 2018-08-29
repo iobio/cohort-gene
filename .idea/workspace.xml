@@ -5,12 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="17d38fed-e0f5-492f-b455-1d8321fb2586" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/app/components/pages/Home.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/pages/Home.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/app/models/CohortModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/models/CohortModel.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/app/models/DataSetModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/models/DataSetModel.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/app/models/VariantModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/models/VariantModel.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/dist/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/dist/build.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/client/dist/" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -59,11 +54,20 @@
       <file leaf-file-name="VariantModel.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client/app/models/VariantModel.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="568">
-              <caret line="264" column="169" selection-start-line="264" selection-start-column="169" selection-end-line="264" selection-end-column="169" />
+            <state relative-caret-position="776">
+              <caret line="201" column="93" selection-start-line="201" selection-start-column="93" selection-end-line="201" selection-end-column="93" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="new_id_map.json" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/client/data/new_id_map.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="80">
+              <caret line="5" column="25" lean-forward="true" selection-start-line="5" selection-start-column="25" selection-end-line="5" selection-end-column="25" />
             </state>
           </provider>
         </entry>
@@ -181,10 +185,10 @@
       <find>cochr</find>
       <find>converts</find>
       <find>11005</find>
-      <find>convertSimonsIds</find>
       <find>demo</find>
       <find>getss</find>
       <find>ssc</find>
+      <find>convertSimonsIds</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/client/js/model</dir>
@@ -340,12 +344,12 @@
       <workItem from="1532129218513" duration="27060000" />
       <workItem from="1533744202745" duration="68180000" />
       <workItem from="1534438872587" duration="22380000" />
-      <workItem from="1534733762579" duration="53210000" />
+      <workItem from="1534733762579" duration="53993000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="494823000" />
+    <option name="totallyTimeSpent" value="495606000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="6" y="23" width="1884" height="1037" extended-state="0" />
@@ -732,13 +736,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/data/new_id_map.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="125840">
-          <caret line="7865" column="23" selection-start-line="7865" selection-start-column="18" selection-end-line="7865" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/client/app/models/CohortModel.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="321">
@@ -746,10 +743,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/client/data/new_id_map.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="80">
+          <caret line="5" column="25" lean-forward="true" selection-start-line="5" selection-start-column="25" selection-end-line="5" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/client/app/models/VariantModel.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="568">
-          <caret line="264" column="169" selection-start-line="264" selection-start-column="169" selection-end-line="264" selection-end-column="169" />
+        <state relative-caret-position="776">
+          <caret line="201" column="93" selection-start-line="201" selection-start-column="93" selection-end-line="201" selection-end-column="93" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
