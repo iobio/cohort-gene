@@ -168,7 +168,7 @@ class VariantModel {
                                 reject('No samples found for proband filtering from Hub');
                             }
                             // Coming from SSC data set
-                            if (!((ids[0].id).startsWith('SS'))) {
+                            if (!((ids[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
                                 probandCohort.subsetIds = self.convertSimonsIds(ids, 'proband');
                             }
                             // Coming from SPARK or other
@@ -198,7 +198,7 @@ class VariantModel {
                     // Retrieve subset sample IDs from Hub
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                         .then(function (ids) {
-                            if (ids.length > 0 && !((ids[0].id).startsWith('SS'))) {
+                            if (ids.length > 0 && !((ids[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
                                 subsetCohort.subsetIds = self.convertSimonsIds(ids, 'subset');
                             } else {
                                 subsetCohort.subsetIds = self.getRawIds(ids);
