@@ -57,7 +57,7 @@ EndpointCmd.prototype.getVcfDepth = function (vcfUrl, tbiUrl) {
  * Used in cohort-gene.iobio to render large amounts of variants ranked by enrichment quickly and without overflow.
  * Input: a vcf file, experimental group IDs (aka Subset for now) and control group IDs (aka Probands for now)
  * Output: a vcf file with all proband samples with 'enrichment' info field and no genotype info field */
-EndpointCmd.prototype.annotateEnrichment = function (vcfSource, refName, regions, expSampleNames, controlSampleNames) {
+EndpointCmd.prototype.annotateEnrichmentCounts = function (vcfSource, refName, regions, expSampleNames, controlSampleNames) {
     let self = this;
 
     let regionParm = "";
@@ -118,7 +118,27 @@ EndpointCmd.prototype.annotateEnrichment = function (vcfSource, refName, regions
     cmd = cmd.pipe(self.IOBIO.gtEnricher, expSampleNames, {ssl: self.useSSL});
 
     return cmd;
-}
+};
+
+/* Takes in multiple gtEnricher commands and sends them into vtCombiner for combining and enrichStats for p-values.
+*  NOTE: this function assumes gtEnricherCmds and fileNames are in stable order relative to each other. */
+EndpointCmd.prototype.combineCalcEnrichment = function(gtEnricherCmds, fileNames){
+    let self = this;
+
+    let vtCombinerArgs = [];
+    for (let i = 0; i < gtEnricherCmds.length; i++) {
+        let gtEnricherCmd = gtEnricherCmds[i];
+        vtCombinerArgs.push('-f');
+        vtCombinerArgs.push(fileNames[i]);
+        vtCombinerArgs.push(gtEnricherCmd);
+    }
+
+    // TODO: add in paths for these programs
+    let cmd = new iobio.cmd(self.IOBIO.vtCombiner, vtCombinerArgs, {ssl: self.useSSL});
+    cmd.pipe(self.IOBIO.enrichStats, {ssl: self.useSSL});
+
+    return cmd;
+};
 
 /* Compiles and annotates variants for the given regions, from the given sources. */
 EndpointCmd.prototype.annotateVariants = function (vcfSource, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey) {

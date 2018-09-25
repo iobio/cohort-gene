@@ -643,7 +643,7 @@ class CohortModel {
     //
     // }
 
-    /* Setup VCF fields */
+    /* Setup VCF fields & direct access to endpoint */
     init(variantModel, vcfFileNames) {
         let me = this;
 
@@ -1296,48 +1296,52 @@ class CohortModel {
                 .then(function () {
                     let urlNames = Object.keys(me.vcfEndptHash);
                     let enrichResults = {};
-                    let enrichPromises = [];
+                    let enrichCmds = [];
+                    let fileNames = []; // Stable sorted to enrichCmds
+                    let enrichCmdPromises = [];
                     for (let i = 0; i < urlNames.length; i++) {
                         let currFileName = urlNames[i];
                         let currVcfEndpt = me.vcfEndptHash[currFileName];
                         if (currVcfEndpt != null) {
                             let subsetIds = me.getFormattedSampleIds('subset');
                             let probandIds = me.getFormattedSampleIds('probands');
-                            let enrichP = currVcfEndpt.promiseGetVariants(
+                            let enrichCmdP = currVcfEndpt.promiseGetEnrichCmd(
                                 me.getVcfRefName(theGene.chr),
                                 theGene,
                                 theTranscript,
                                 null,       // regions
                                 isMultiSample,
                                 subsetIds,
-                                probandIds,
-                                me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
-                                me.getTranslator().clinvarMap,
-                                me.getGeneModel().geneSource === 'refseq',
-                                false,      // hgvs notation
-                                false,      // rsid
-                                false,      // vep af
-                                null,
-                                keepVariantsCombined,
-                                enrichmentMode)
-                                .then((results) => {
-                                    // Add variant ids to map correlated with file
-
-                                    me.varsInFileHash[currFileName] = results.features.map((feature) => {
-                                        return feature.id;
-                                    });
-                                    // Add results to return object
-                                    enrichResults[urlNames[i]] = results;
+                                probandIds)
+                                .then((cmd) => {
+                                    enrichCmds.push(cmd);
+                                    fileNames.push(currFileName);
                                 });
-                            enrichPromises.push(enrichP);
+
+                                // TODO: move this below once we get results
+                                // .then((results) => {
+                                //     // Add variant ids to map correlated with file
+                                //     me.varsInFileHash[currFileName] = results.features.map((feature) => {
+                                //         return feature.id;
+                                //     });
+                                //     // Add results to return object
+                                //     enrichResults[urlNames[i]] = results;
+                                // });
+                            enrichCmdPromises.push(enrichCmdP);
+                            //enrichPromises.push(enrichP);
                         }
                         else {
                             console.log('Problem in CohortModel promoiseAnnotateVariants: Could not retrieve endpoint for the file: ' + urlNames[i]);
                         }
                     }
-                    Promise.all(enrichPromises)
+                    Promise.all(enrichCmdPromises)
                         .then(() => {
-                            let combinedResults = me._combineEnrichmentCounts(enrichResults);
+                            // TODO: send enrich commands into combiner here - write separate method that interacts w/ endpoint directly
+                            let combinedResults = me._getCombinedResults(enrichCmds, fileNames, theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, enrichmentMode);
+
+                            // TODO: then will have combined results already
+
+                            //let combinedResults = me._combineEnrichmentCounts(enrichResults);
                             if (combinedResults.features.length > me.TOTAL_VAR_CUTOFF) {
                                 combinedResults.features = me.filterVarsOnPVal(combinedResults.features);
                             }
@@ -1381,6 +1385,32 @@ class CohortModel {
                         });
                 })
         });
+    }
+
+    /* Sends enricher commands into vcf model to retrieve combined counts and p-values. */
+    _getCombinedResults(gtenricherCmds, fileNames, theGene, theTranscript) {
+        let me = this;
+
+        let aVcf = me.getFirstVcf();
+        return aVcf.combineCalcEnrichment(
+            gtenricherCmds,
+            fileNames,
+            me.getVcfRefName(theGene.chr),
+            theGene,
+            theTranscript,
+            null,   // regions
+            false,   //isMultiSample TODO: does this need to be true for cohort?
+            me.getFormattedSampleIds('subset'),
+            me.getFormattedSampleIds('proband'),
+            me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
+            me.getTranslator().clinvarMap,
+            me.getGeneModel().geneSource === 'refseq',
+            false,      // hgvs notation
+            false,      // rsid
+            true,       // vep af
+            null,
+            true,       // keepVariantsCombined
+            true);      // enrichment mode (aka subset delta calculations only - no annotation)
     }
 
     /* Takes in a list of variants and filters them based on decreasing levels of p-values until the number of variants reaches < 10,000. */

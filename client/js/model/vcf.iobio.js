@@ -664,8 +664,125 @@ vcfiobio = function module() {
                     });
             }
         });
-    }
+    };
 
+    /* Returns iobio command that calls gtenricher on the vcf file which this model represents. */
+    exports.promiseGetEnrichCmd = function(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache) {
+        let self = this;
+
+        return new Promise(function(resolve, reject) {
+            if (sourceType === SOURCE_TYPE_URL) {
+                self._getRemoteEnrichCmd(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
+                    function (resultMapList) {
+                        if (resultMapList) {
+                            resolve(resultMapList);
+                        }
+                        else {
+                            reject();
+                        }
+                    }, null);
+            } else {
+                self._getLocalEnrichCmds(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
+                    function (annotatedData, results) {
+                        if (annotatedData && results) {
+                            resolve([annotatedData, results]);
+                        } else {
+                            reject();
+                        }
+                    });
+            }
+        });
+    };
+
+    /* Returns iobio command that calls gtenricher on the remote vcf file which this model represents. */
+    exports._getRemoteEnrichCmd = function(refName, geneObject, selectedTranscript, regions, isMultiSample, expSampleNames, controlSampleNames) {
+        let me = this;
+        if (regions == null || regions.length === 0) {
+            regions = [];
+            regions.push({'name': refName, 'start': geneObject.start, 'end': geneObject.end});
+        }
+        let cmd = me.getEndpoint().annotateEnrichmentCounts({
+            'vcfUrl': vcfURL,
+            'tbiUrl': tbiUrl
+        }, refName, regions, expSampleNames, controlSampleNames);
+
+        return cmd;
+    };
+
+    /* Returns iobio command that calls gtenricher on the local vcf file which this model represents. */
+    exports._getLocalEnrichCmd = function(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, callback, errorCallback) {
+        let cmd = null;
+        console.log("Haven't implemented _getLocalEnrichCmd in vcf.iobio.js yet");
+        return cmd;
+    };
+
+
+    /* Takes in individual gtenricher commands for each vcf, and sends into vtcombiner -> enrichstats. Then parses data coming back
+     * and returns list of unique vcf records from all files. */
+    exports.combineCalcEnrichment = function(gtenricherCmds, fileNames, refName, geneObject, selectedTranscript, regions, isMultiSample, expSampleNames, controlSampleNames, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, keepVariantsCombined, enrichMode){
+        let me = this;
+
+        let cmd = me.getEndpoint().combineCalcEnrichment(gtenricherCmds, fileNames);
+
+        let annotatedData = '';
+        // Get the results from the iobio command
+        cmd.on('data', function (data) {
+            if (data == null) {
+                return;
+            }
+            annotatedData += data;
+        });
+
+        cmd.on('error', function (error) {
+            console.log(error);
+        });
+
+        // We have all of the annotated vcf recs.  Now parse them into vcf objects
+        cmd.on('end', function (data) {
+            let annotatedRecs = annotatedData.split("\n");
+            annotatedRecs.pop();    // Clip off last blank line
+            let vcfObjects = [];
+
+            annotatedRecs.forEach(function (record) {
+                if (record.charAt(0) === "#") {
+                    me._parseHeaderForInfoFields(record);
+                } else {
+                    // Parse the vcf record into its fields
+                    let fields = record.split('\t');
+                    let pos = fields[1];
+                    let id = fields[2];
+                    let ref = fields[3];
+                    let alt = fields[4];
+                    let qual = fields[5];
+                    let filter = fields[6];
+                    let info = fields[7];
+                    let infoFields = info.split(';');
+                    let infoLookup = {};
+                    infoFields.forEach(function(field) {
+                        let splitFields = field.split('=');
+                        infoLookup[splitFields[0]] = splitFields[1];
+                    });
+
+                    let enrichment = infoLookup['ENRICH_COUNTS'];   // TODO: NOTE this field name will not be changed until new version of gtenricher deployed
+                    let pValue = infoLookup['ENRICH_PVAL'];
+
+                    // Turn vcf record into a JSON object and add it to an array
+                    let vcfObject = {
+                        'pos': pos, 'id': 'id', 'ref': ref, 'alt': alt, 'qual': qual,
+                        'filter': filter, 'info': info, 'enrichment': enrichment, 'pValue': pValue
+                    };
+                    vcfObjects.push(vcfObject);
+                }
+            });
+
+            // Parse the vcf object into a variant object that is visualized by the client.
+            let results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, expSampleNames, null, vepAF, keepVariantsCombined, enrichMode);
+            results.features = results.features[0];     // Unwrap feature array
+            callback(results);
+        });
+
+        cmd.run();
+    };
 
     exports._getLocalVariantsImpl = function (refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, callback, errorCallback) {
         var me = this;
@@ -723,7 +840,7 @@ vcfiobio = function module() {
                     }
                 });
         });
-    }
+    };
 
     /* SJG cohort version 11Jul2018 */
     exports._updatedGetRemoteVariantsImpl = function (refName, geneObject, selectedTranscript, regions, isMultiSample, expSampleNames, controlSampleNames, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false, enrichMode = false) {
@@ -741,7 +858,7 @@ vcfiobio = function module() {
 
         let cmd = null;
         if (enrichMode) {
-            cmd = me.getEndpoint().annotateEnrichment({
+            cmd = me.getEndpoint().annotateEnrichmentCounts({
                 'vcfUrl': vcfURL,
                 'tbiUrl': tbiUrl
             }, refName, regions, expSampleNames, controlSampleNames);
@@ -788,14 +905,16 @@ vcfiobio = function module() {
                         infoLookup[splitFields[0]] = splitFields[1];
                     });
                     let enrichment = '';
+                    let pValue = '';
                     if (enrichMode) {
                         enrichment = infoLookup['ENRICH'];
+                        pValue = infoLookup['IOBIO_PVAL'];  // TODO: take this out for gtcombiner changes
                     }
 
                     // Turn vcf record into a JSON object and add it to an array
                     let vcfObject = {
-                        'pos': pos, 'id': 'id', 'ref': ref, 'alt': alt,
-                        'qual': qual, 'filter': filter, 'info': info, 'enrichment': enrichment
+                        'pos': pos, 'id': 'id', 'ref': ref, 'alt': alt, 'qual': qual,
+                        'filter': filter, 'info': info, 'enrichment': enrichment, 'pValue': pValue
                     };
                     vcfObjects.push(vcfObject);
                 }
@@ -963,7 +1082,7 @@ vcfiobio = function module() {
     exports._getExonRegions = function (transcript) {
         return transcript.features
             .filter(function (feature) {
-                return feature.feature_type.toUpperCase() == 'CDS' || feature.feature_type.toUpperCase() == 'UTR';
+                return feature.feature_type.toUpperCase() === 'CDS' || feature.feature_type.toUpperCase() === 'UTR';
             })
             .sort(function (exon1, exon2) {
                 if (exon1.start < exon2.start) {
@@ -1505,7 +1624,7 @@ vcfiobio = function module() {
             }
         });
 
-    }
+    };
 
 
     exports._annotateVcfRegion = function (records, refName, sampleName, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, callback, callbackClinvar) {
@@ -1594,11 +1713,12 @@ vcfiobio = function module() {
         // keep track of the region start based on the variants.
         let variantRegionStart = geneObject.start;
 
-        // Interate through the vcf records.  For each record, if multiple
+        // Iterate through the vcf records.  For each record, if multiple
         // alternates are provided, iterate through each alternate
         vcfRecs.forEach(function (rec) {
             if (rec.pos && rec.id) {
                 let alts = [];
+                // alts returned as comma delimited list
                 if (rec.alt.indexOf(',') > -1) {
                     // Done split apart multiple alt alleles for education edition
                     if (isLevelEdu) {
@@ -1611,7 +1731,9 @@ vcfiobio = function module() {
                 }
 
                 let altIdx = 0;
-                alts.forEach(function (alt) {
+                // for each alt, return record
+                for (let i = 0; i < alts.length; i++) {
+                    let alt = alts[i];
                     let len = null;
                     let type = null;
                     let end = null;
@@ -1651,7 +1773,7 @@ vcfiobio = function module() {
                     let clinvarResult = me.parseClinvarInfo(rec.info, clinvarMap);
                     let enrichResult = null;
                     if (enrichMode) {
-                        enrichResult = me.parseEnrichmentInfo(rec.enrichment);
+                        enrichResult = me.parseEnrichmentInfo(rec.enrichment, rec.pValue, i, alts.length);
                     }
 
                     let highestImpactSnpeff = me._getHighestImpact(annot.snpEff.allSnpeff, me._cullTranscripts, selectedTranscriptID);
@@ -1732,6 +1854,7 @@ vcfiobio = function module() {
                                 variant.affectedSubsetCount = (+enrichResult.counts[5] + +enrichResult.counts[6]);
                                 variant.probandZygCounts = [+enrichResult.counts[0], +enrichResult.counts[1], +enrichResult.counts[2], +enrichResult.counts[3]];
                                 variant.subsetZygCounts = [+enrichResult.counts[4], +enrichResult.counts[5], +enrichResult.counts[6], +enrichResult.counts[7]];
+                                variant.pVal = +enrichResult.pVal;
                             }
 
                             for (let key in clinvarResult) {
@@ -1754,7 +1877,7 @@ vcfiobio = function module() {
                         variantRegionStart = rec.pos;
                     }
                     altIdx++;
-                });
+                }
             }
         });
 
@@ -1799,14 +1922,24 @@ vcfiobio = function module() {
         }
     };
 
-    exports.parseEnrichmentInfo = function (enrichmentField) {
+    /* Parses out enrichment info for alternate variant at the provided index. */
+    exports.parseEnrichmentInfo = function (enrichArr, pValArr, altIndex, numAlts) {
         let enrichObj = {};
+        let offset = (2 * numAlts) + 2;
 
-        // Split counts up into array
-        let counts = enrichmentField.split(',');
-        enrichObj['counts'] = counts;  // gtenricher returns counts in following order: probandHomRef, probandHet, probandHomAlt, probandNoCall, subsetHomRef, subsetHet, subsetHomAlt, subsetNoCall
+        // Populate counts array values relative to given alt
+        let counts = [];
+        counts[0] = enrichArr[0];
+        counts[1] = enrichArr[(altIndex * 2) - 1];
+        counts[2] = enrichArr[(altIndex * 2)];
+        counts[3] = enrichArr[(numAlts * 2) + 1];
+        counts[4] = enrichArr[offset];
+        counts[5] = enrichArr[((altIndex * 2) - 1) + offset];
+        counts[6] = enrichArr[(altIndex * 2) + offset];
+        counts[7] = enrichArr[((numAlts * 2) + 1) + offset];
+        enrichObj['counts'] = counts;
 
-        // Pick a gx term to describe collective gx (ranked het > homAlt > homRef > unknown)
+        // Assign gx - splitting up multiallelic sites into individual variants, so no ambiguity here
         if (counts[5] > 0) {
             enrichObj['gx'] = 'HET';
         }
@@ -1819,6 +1952,11 @@ vcfiobio = function module() {
         else {
             enrichObj['gx'] = 'gt_unknown';
         }
+
+        // Assign p-value
+        let pVal = pValArr[altIndex];
+        enrichObj['pVal'] = pVal;
+
         return enrichObj;
     };
 
@@ -1904,8 +2042,6 @@ vcfiobio = function module() {
             }
 
         });
-
-
         return annot;
     }
     /* To parse the VEP annot, split the CSQ string into its parts.
