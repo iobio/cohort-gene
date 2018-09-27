@@ -163,7 +163,7 @@ TD & SJG updated Jun2018 -->
             FilterSettingsMenu
         },
         props: {
-            paramProjectId: {
+            paramProjectName: {
                 default: '0',
                 type: String
             },
@@ -651,7 +651,7 @@ TD & SJG updated Jun2018 -->
 
                 return new Promise((resolve, reject) => {
                     let source = self.paramSource;
-                    let projectId = self.paramProjectId;
+                    let projectId = self.paramProjectName;
                     let selectedGene = self.paramGene;
                     let phenoFilters = self.getHubPhenoFilters();
 
@@ -668,7 +668,7 @@ TD & SJG updated Jun2018 -->
                     // If we have a project ID here, coming from Hub launch
                     if (projectId !== '0') {
                         let hubEndpoint = new HubEndpoint(source);
-                        let initialLaunch = !(self.paramProjectId === '0');
+                        let initialLaunch = !(self.paramProjectName === '0');
                         self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch)
                             .then(function (idNumList) {
                                 let probandN = idNumList[0];

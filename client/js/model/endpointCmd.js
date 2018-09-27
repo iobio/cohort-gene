@@ -122,14 +122,14 @@ EndpointCmd.prototype.annotateEnrichmentCounts = function (vcfSource, refName, r
 
 /* Takes in multiple gtEnricher commands and sends them into vtCombiner for combining and enrichStats for p-values.
 *  NOTE: this function assumes gtEnricherCmds and fileNames are in stable order relative to each other. */
-EndpointCmd.prototype.combineCalcEnrichment = function(gtEnricherCmds, fileNames){
+EndpointCmd.prototype.combineCalcEnrichment = function(gtEnricherCmds){
     let self = this;
 
     let vtCombinerArgs = [];
     for (let i = 0; i < gtEnricherCmds.length; i++) {
         let gtEnricherCmd = gtEnricherCmds[i];
-        vtCombinerArgs.push('-f');
-        vtCombinerArgs.push(fileNames[i]);
+        // TODO: I don't think I need filenames here...
+        //vtCombinerArgs.push('-f');
         vtCombinerArgs.push(gtEnricherCmd);
     }
 

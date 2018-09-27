@@ -162,20 +162,20 @@ class VariantModel {
                     // Retrieve proband sample IDs from Hub
                     let promises = [];
                     let probandP = self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
-                        .then(function (ids) {
+                        .then(function (sampleObjs) {
                             // Stop process if we don't have any probands
-                            if (ids.length === 0) {
+                            if (sampleObjs.length === 0) {
                                 reject('No samples found for proband filtering from Hub');
                             }
                             // Coming from SSC data set
-                            if (!((ids[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
-                                probandCohort.subsetIds = self.convertSimonsIds(ids, 'proband');
+                            if (!((sampleObjs[0].name).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
+                                probandCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'proband');
                             }
                             // Coming from SPARK or other
                             else {
-                                probandCohort.subsetIds = self.getRawIds(ids);
+                                probandCohort.subsetIds = self.getRawIds(sampleObjs);
                             }
-                            probandCohort.subsetPhenotypes.push('n = ' + ids.length);
+                            probandCohort.subsetPhenotypes.push('n = ' + sampleObjs.length);
                         });
                     promises.push(probandP);
 
@@ -197,11 +197,11 @@ class VariantModel {
 
                     // Retrieve subset sample IDs from Hub
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
-                        .then(function (ids) {
-                            if (ids.length > 0 && !((ids[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
-                                subsetCohort.subsetIds = self.convertSimonsIds(ids, 'subset');
+                        .then(function (sampleObjs) {
+                            if (sampleObjs.length > 0 && !((sampleObjs[0].name).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
+                                subsetCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'subset');
                             } else {
-                                subsetCohort.subsetIds = self.getRawIds(ids);
+                                subsetCohort.subsetIds = self.getRawIds(sampleObjs);
                             }
                         });
                     promises.push(subsetP);
@@ -239,7 +239,8 @@ class VariantModel {
     getRawIds(ids) {
         let rawIds = [];
         ids.forEach((idObj) => {
-            rawIds.push(idObj.id);
+            // TODO: test change from id-> name
+            rawIds.push(idObj.name);
         });
         return rawIds;
     }
@@ -250,10 +251,12 @@ class VariantModel {
         if (self.simonsIdMap == null) {
             return hubIds;
         }
+        debugger;
         let convertedIds = [];
         let unmappedIds = [];
         hubIds.forEach((idObj) => {
-            let simonsId = self.simonsIdMap[idObj.id];
+            // TODO: test this id -> name change
+            let simonsId = self.simonsIdMap[idObj.name];
             if (simonsId == null) {
                 unmappedIds.push(simonsId);
             } else {
@@ -281,11 +284,9 @@ class VariantModel {
             let vcfFiles = null,
                 tbiCsiFiles = null;
 
-            // TODO: for now can look in file name to see what build is
-            //
-
             // Retrieve file objects from Hub
             self.hubEndpoint.getFilesForProject(projectId, initialLaunch).done(data => {
+                debugger;
                 // Stable sort by file type
                 vcfFiles = data.data.filter(f => f.type === 'vcf');
                 tbiCsiFiles = data.data.filter(f => f.type === 'tbi' || f.type === 'csi');

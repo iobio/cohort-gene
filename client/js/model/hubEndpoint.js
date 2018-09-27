@@ -14,12 +14,12 @@ HubEndpoint.prototype.assignParameters = function (source, projectId) {
 
 /* First call to Hub from client to get files.
    If token expires, will prompt user to renew. */
-HubEndpoint.prototype.getFilesForProject = function (project_uuid, initialLaunch) {
+HubEndpoint.prototype.getFilesForProject = function (projectId, initialLaunch) {
     let self = this;
     let key = localStorage.getItem('hub-iobio-tkn');
 
     let fileQuery = $.ajax({
-        url: self.api + '/projects/' + project_uuid + '/files',
+        url: self.api + '/projects/' + projectId + '/files',
         type: 'GET',
         contentType: 'application/json',
         headers: {
@@ -86,7 +86,7 @@ HubEndpoint.prototype.getSamplesForProject = function (project_uuid, sampleFilte
 HubEndpoint.prototype.getSignedUrlForFile = function (file) {
     let self = this;
     return $.ajax({
-        url: self.api + '/files/' + file.uuid + '/url',
+        url: self.api + '/projects/' + file.project_id + '/files/' + file.id + '/url',
         type: 'GET',
         contentType: 'application/json',
         headers: {

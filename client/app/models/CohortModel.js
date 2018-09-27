@@ -1297,7 +1297,6 @@ class CohortModel {
                     let urlNames = Object.keys(me.vcfEndptHash);
                     let enrichResults = {};
                     let enrichCmds = [];
-                    let fileNames = []; // Stable sorted to enrichCmds
                     let enrichCmdPromises = [];
                     for (let i = 0; i < urlNames.length; i++) {
                         let currFileName = urlNames[i];
@@ -1315,7 +1314,6 @@ class CohortModel {
                                 probandIds)
                                 .then((cmd) => {
                                     enrichCmds.push(cmd);
-                                    fileNames.push(currFileName);
                                 });
 
                                 // TODO: move this below once we get results
@@ -1337,7 +1335,7 @@ class CohortModel {
                     Promise.all(enrichCmdPromises)
                         .then(() => {
                             // TODO: send enrich commands into combiner here - write separate method that interacts w/ endpoint directly
-                            let combinedResults = me._getCombinedResults(enrichCmds, fileNames, theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, enrichmentMode);
+                            let combinedResults = me._getCombinedResults(enrichCmds, theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, enrichmentMode);
 
                             // TODO: then will have combined results already
 
@@ -1388,13 +1386,12 @@ class CohortModel {
     }
 
     /* Sends enricher commands into vcf model to retrieve combined counts and p-values. */
-    _getCombinedResults(gtenricherCmds, fileNames, theGene, theTranscript) {
+    _getCombinedResults(gtenricherCmds, theGene, theTranscript) {
         let me = this;
 
         let aVcf = me.getFirstVcf();
         return aVcf.combineCalcEnrichment(
             gtenricherCmds,
-            fileNames,
             me.getVcfRefName(theGene.chr),
             theGene,
             theTranscript,

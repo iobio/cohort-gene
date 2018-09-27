@@ -719,10 +719,10 @@ vcfiobio = function module() {
 
     /* Takes in individual gtenricher commands for each vcf, and sends into vtcombiner -> enrichstats. Then parses data coming back
      * and returns list of unique vcf records from all files. */
-    exports.combineCalcEnrichment = function(gtenricherCmds, fileNames, refName, geneObject, selectedTranscript, regions, isMultiSample, expSampleNames, controlSampleNames, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, keepVariantsCombined, enrichMode){
+    exports.combineCalcEnrichment = function(gtenricherCmds, refName, geneObject, selectedTranscript, regions, isMultiSample, expSampleNames, controlSampleNames, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, keepVariantsCombined, enrichMode){
         let me = this;
 
-        let cmd = me.getEndpoint().combineCalcEnrichment(gtenricherCmds, fileNames);
+        let cmd = me.getEndpoint().combineCalcEnrichment(gtenricherCmds);
 
         let annotatedData = '';
         // Get the results from the iobio command
