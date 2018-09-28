@@ -697,7 +697,6 @@ class VariantModel {
        Reassigns loadedVariants in subset CohortModel.
        Sets extraAnnotationsLoaded to true. */
     combineVariantInfo(variantInfo) {
-        debugger;
         let self = this;
         let fileNames = Object.keys(variantInfo);
         let updatedVarLookup = {};
