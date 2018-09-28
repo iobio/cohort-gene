@@ -682,7 +682,7 @@ vcfiobio = function module() {
                         }
                     }, null);
             } else {
-                self._getLocalEnrichCmds(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
+                self._getLocalEnrichCmd(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
                     function (annotatedData, results) {
                         if (annotatedData && results) {
                             resolve([annotatedData, results]);

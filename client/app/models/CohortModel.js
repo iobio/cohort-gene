@@ -1289,6 +1289,106 @@ class CohortModel {
 
 
     /* Promises to obtain enrichment values for all variants within all urls within the provided cohort model. */
+    // promiseAnnotateVariantEnrichment(theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, enrichmentMode = true) {
+    //     let me = this;
+    //     return new Promise(function (resolve, reject) {
+    //         me._promiseVcfRefName(theGene.chr)
+    //             .then(function () {
+    //                 let urlNames = Object.keys(me.vcfEndptHash);
+    //                 let enrichResults = {};
+    //                 let enrichCmds = [];
+    //                 //let enrichCmdPromises = [];
+    //                 let enrichPromises = [];
+    //                 for (let i = 0; i < urlNames.length; i++) {
+    //                     let currFileName = urlNames[i];
+    //                     let currVcfEndpt = me.vcfEndptHash[currFileName];
+    //                     if (currVcfEndpt != null) {
+    //                         let subsetIds = me.getFormattedSampleIds('subset');
+    //                         let probandIds = me.getFormattedSampleIds('probands');
+    //                         let enrichCmdP = currVcfEndpt.promiseGetEnrichCmd(
+    //                             me.getVcfRefName(theGene.chr),
+    //                             theGene,
+    //                             theTranscript,
+    //                             null,       // regions
+    //                             isMultiSample,
+    //                             subsetIds,
+    //                             probandIds)
+    //
+    //                         // TODO: switch to this once backend up
+    //                             // .then((cmd) => {
+    //                             //     enrichCmds.push(cmd);
+    //                             // })
+    //
+    //                             .then((results) => {
+    //                                 // Add variant ids to map correlated with file
+    //                                 me.varsInFileHash[currFileName] = results.features.map((feature) => {
+    //                                     return feature.id;
+    //                                 });
+    //                                 // Add results to return object
+    //                                 enrichResults[urlNames[i]] = results;
+    //                             });
+    //                         // TODO: switch to this once backend up
+    //                         // enrichCmdPromises.push(enrichCmdP);
+    //
+    //                         enrichPromises.push(enrichP);
+    //                     }
+    //                     else {
+    //                         console.log('Problem in CohortModel promoiseAnnotateVariants: Could not retrieve endpoint for the file: ' + urlNames[i]);
+    //                     }
+    //                 }
+    //                 Promise.all(enrichCmdPromises)
+    //                     .then(() => {
+    //
+    //                         /* TODO: incorporate new back end vtcombiner and enrichstats
+    //                         let combinedResults = me._getCombinedResults(enrichCmds, theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, enrichmentMode);
+    //                         */
+    //
+    //                         let combinedResults = me._combineEnrichmentCounts(enrichResults);
+    //                         if (combinedResults.features.length > me.TOTAL_VAR_CUTOFF) {
+    //                             combinedResults.features = me.filterVarsOnPVal(combinedResults.features);
+    //                         }
+    //                         // Add variant number to chips
+    //                         me.subsetPhenotypes.push(combinedResults.features.length + ' variants');
+    //
+    //                         // Assign data parameter
+    //                         if (combinedResults) {
+    //                             let theGeneObject = me.getGeneModel().geneObjects[combinedResults.gene];
+    //                             if (theGeneObject) {
+    //                                 let resultMap = {};
+    //                                 let model = cohortModels[0];
+    //                                 let theVcfData = combinedResults;
+    //                                 if (theVcfData == null) {
+    //                                     if (callback) {
+    //                                         callback();
+    //                                     }
+    //                                     return;
+    //                                 }
+    //                                 theVcfData.gene = theGeneObject;
+    //                                 let cohortName = me.getName();
+    //                                 resultMap[cohortName] = theVcfData;
+    //
+    //                                 if (!isBackground) {
+    //                                     model.vcfData = theVcfData;
+    //                                 }
+    //                                 resolve(resultMap);
+    //                             } else {
+    //                                 let error = "ERROR - cannot locate gene object to match with vcf data " + data.ref + " " + data.start + "-" + data.end;
+    //                                 console.log(error);
+    //                                 reject(error);
+    //                             }
+    //                         } else {
+    //                             let error = "ERROR - empty vcf results for " + theGene.gene_name;
+    //                             console.log(error);
+    //                             reject(error);
+    //                         }
+    //                     })
+    //                     .catch((error) => {
+    //                         console.log('Problem in cohort model ' + error);
+    //                     });
+    //             })
+    //     });
+    // }
+
     promiseAnnotateVariantEnrichment(theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, enrichmentMode = true) {
         let me = this;
         return new Promise(function (resolve, reject) {
@@ -1296,50 +1396,48 @@ class CohortModel {
                 .then(function () {
                     let urlNames = Object.keys(me.vcfEndptHash);
                     let enrichResults = {};
-                    let enrichCmds = [];
-                    let enrichCmdPromises = [];
+                    let enrichPromises = [];
                     for (let i = 0; i < urlNames.length; i++) {
                         let currFileName = urlNames[i];
                         let currVcfEndpt = me.vcfEndptHash[currFileName];
                         if (currVcfEndpt != null) {
                             let subsetIds = me.getFormattedSampleIds('subset');
                             let probandIds = me.getFormattedSampleIds('probands');
-                            let enrichCmdP = currVcfEndpt.promiseGetEnrichCmd(
+                            let enrichP = currVcfEndpt.promiseGetVariants(
                                 me.getVcfRefName(theGene.chr),
                                 theGene,
                                 theTranscript,
                                 null,       // regions
                                 isMultiSample,
                                 subsetIds,
-                                probandIds)
-                                .then((cmd) => {
-                                    enrichCmds.push(cmd);
-                                });
+                                probandIds,
+                                me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
+                                me.getTranslator().clinvarMap,
+                                me.getGeneModel().geneSource === 'refseq',
+                                false,      // hgvs notation
+                                false,      // rsid
+                                false,      // vep af
+                                null,
+                                keepVariantsCombined,
+                                enrichmentMode)
+                                .then((results) => {
+                                    // Add variant ids to map correlated with file
 
-                                // TODO: move this below once we get results
-                                // .then((results) => {
-                                //     // Add variant ids to map correlated with file
-                                //     me.varsInFileHash[currFileName] = results.features.map((feature) => {
-                                //         return feature.id;
-                                //     });
-                                //     // Add results to return object
-                                //     enrichResults[urlNames[i]] = results;
-                                // });
-                            enrichCmdPromises.push(enrichCmdP);
-                            //enrichPromises.push(enrichP);
+                                    me.varsInFileHash[currFileName] = results.features.map((feature) => {
+                                        return feature.id;
+                                    });
+                                    // Add results to return object
+                                    enrichResults[urlNames[i]] = results;
+                                });
+                            enrichPromises.push(enrichP);
                         }
                         else {
                             console.log('Problem in CohortModel promoiseAnnotateVariants: Could not retrieve endpoint for the file: ' + urlNames[i]);
                         }
                     }
-                    Promise.all(enrichCmdPromises)
+                    Promise.all(enrichPromises)
                         .then(() => {
-                            // TODO: send enrich commands into combiner here - write separate method that interacts w/ endpoint directly
-                            let combinedResults = me._getCombinedResults(enrichCmds, theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, enrichmentMode);
-
-                            // TODO: then will have combined results already
-
-                            //let combinedResults = me._combineEnrichmentCounts(enrichResults);
+                            let combinedResults = me._combineEnrichmentCounts(enrichResults);
                             if (combinedResults.features.length > me.TOTAL_VAR_CUTOFF) {
                                 combinedResults.features = me.filterVarsOnPVal(combinedResults.features);
                             }
