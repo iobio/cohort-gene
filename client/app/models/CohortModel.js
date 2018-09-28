@@ -1422,7 +1422,6 @@ class CohortModel {
                                 enrichmentMode)
                                 .then((results) => {
                                     // Add variant ids to map correlated with file
-
                                     me.varsInFileHash[currFileName] = results.features.map((feature) => {
                                         return feature.id;
                                     });

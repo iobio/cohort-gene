@@ -251,7 +251,6 @@ class VariantModel {
         if (self.simonsIdMap == null) {
             return hubIds;
         }
-        debugger;
         let convertedIds = [];
         let unmappedIds = [];
         hubIds.forEach((idObj) => {
@@ -286,7 +285,6 @@ class VariantModel {
 
             // Retrieve file objects from Hub
             self.hubEndpoint.getFilesForProject(projectId, initialLaunch).done(data => {
-                debugger;
                 // Stable sort by file type
                 vcfFiles = data.data.filter(f => f.type === 'vcf');
                 tbiCsiFiles = data.data.filter(f => f.type === 'tbi' || f.type === 'csi');
@@ -699,14 +697,15 @@ class VariantModel {
        Reassigns loadedVariants in subset CohortModel.
        Sets extraAnnotationsLoaded to true. */
     combineVariantInfo(variantInfo) {
+        debugger;
         let self = this;
         let fileNames = Object.keys(variantInfo);
         let updatedVarLookup = {};
         let subsetModel = self.dataSet.getSubsetCohort();
         let existingVariants = [];
 
-        // If we have multiple variants to combine
-        if (Object.keys(variantInfo).length > 1) {
+        // If we have multiple files of variants to combine
+        if (Object.keys(variantInfo).length > 1 || Object.values(variantInfo)[0].features != null) {
             for (let i = 0; i < fileNames.length; i++) {
                 let currVars = variantInfo[fileNames[i]].features;
                 currVars.forEach((variant) => {
@@ -715,7 +714,7 @@ class VariantModel {
             }
             existingVariants = subsetModel.loadedVariants.features;
         }
-        // If we have one variant to combine
+        // If we have a single clicked on variant object
         else {
             // Pull out reference to single variant
             let singleVar = variantInfo[0];

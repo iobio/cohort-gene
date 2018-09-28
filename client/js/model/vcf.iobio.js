@@ -904,11 +904,11 @@ vcfiobio = function module() {
                         let splitFields = field.split('=');
                         infoLookup[splitFields[0]] = splitFields[1];
                     });
-                    let enrichment = '';
+                    let enrichment = [];
                     let pValue = '';
                     if (enrichMode) {
-                        enrichment = infoLookup['ENRICH'];
-                        pValue = infoLookup['IOBIO_PVAL'];  // TODO: take this out for gtcombiner changes
+                        enrichment = infoLookup['ENRICH'].split(',');
+                        //pValue = infoLookup['IOBIO_PVAL'];  // TODO: take this out for gtcombiner changes
                     }
 
                     // Turn vcf record into a JSON object and add it to an array
@@ -1773,7 +1773,7 @@ vcfiobio = function module() {
                     let clinvarResult = me.parseClinvarInfo(rec.info, clinvarMap);
                     let enrichResult = null;
                     if (enrichMode) {
-                        enrichResult = me.parseEnrichmentInfo(rec.enrichment, rec.pValue, i, alts.length);
+                        enrichResult = me.parseEnrichmentInfo(rec.enrichment, rec.pValue, i+1, alts.length);    // i+1 to coordinate w/ alt values of 1+ in vcf file
                     }
 
                     let highestImpactSnpeff = me._getHighestImpact(annot.snpEff.allSnpeff, me._cullTranscripts, selectedTranscriptID);
@@ -1923,20 +1923,21 @@ vcfiobio = function module() {
     };
 
     /* Parses out enrichment info for alternate variant at the provided index. */
+    // NOTE: updated version for multiple alternate alleles
     exports.parseEnrichmentInfo = function (enrichArr, pValArr, altIndex, numAlts) {
         let enrichObj = {};
         let offset = (2 * numAlts) + 2;
 
         // Populate counts array values relative to given alt
         let counts = [];
-        counts[0] = enrichArr[0];
-        counts[1] = enrichArr[(altIndex * 2) - 1];
-        counts[2] = enrichArr[(altIndex * 2)];
-        counts[3] = enrichArr[(numAlts * 2) + 1];
-        counts[4] = enrichArr[offset];
-        counts[5] = enrichArr[((altIndex * 2) - 1) + offset];
-        counts[6] = enrichArr[(altIndex * 2) + offset];
-        counts[7] = enrichArr[((numAlts * 2) + 1) + offset];
+        counts[0] = +enrichArr[0];
+        counts[1] = +enrichArr[(altIndex * 2) - 1];
+        counts[2] = +enrichArr[(altIndex * 2)];
+        counts[3] = +enrichArr[(numAlts * 2) + 1];
+        counts[4] = +enrichArr[offset];
+        counts[5] = +enrichArr[((altIndex * 2) - 1) + offset];
+        counts[6] = +enrichArr[(altIndex * 2) + offset];
+        counts[7] = +enrichArr[((numAlts * 2) + 1) + offset];
         enrichObj['counts'] = counts;
 
         // Assign gx - splitting up multiallelic sites into individual variants, so no ambiguity here
@@ -1954,8 +1955,8 @@ vcfiobio = function module() {
         }
 
         // Assign p-value
-        let pVal = pValArr[altIndex];
-        enrichObj['pVal'] = pVal;
+        // let pVal = pValArr[altIndex];
+        // enrichObj['pVal'] = pVal;
 
         return enrichObj;
     };
