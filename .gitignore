@@ -1,4 +1,5 @@
 node_modules
+/client/dist/build.js
 build.js
 glyphicons-halflings-regular.89889688147bd7575d6327160d64e760.svg
 QuattrocentoSans-Bold.7fd45b9b66da92e6198e0732294d5708.ttf
