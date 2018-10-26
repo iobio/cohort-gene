@@ -6,9 +6,8 @@ function GenomeBuildHelper() {
   this.speciesToBuilds = {};      // map species to its genome builds
   this.buildNameToBuild = {};
 
-  // Constants (SJG should these be static?)
-  this.DEFAULT_SPECIES = "Human";
-  this.DEFAULT_BUILD   = "GRCh37";
+  this.DEFAULT_SPECIES                       = "Human";
+  this.DEFAULT_BUILD                         = "GRCh38";
   this.ALIAS_UCSC                            = "UCSC";
   this.ALIAS_REFSEQ_ASSEMBLY_ACCESSION_RANGE = "REFSEQ ASSEMBLY ACCESSION RANGE";
   this.RESOURCE_CLINVAR_VCF_S3      = "CLINVAR VCF S3";
@@ -30,8 +29,8 @@ GenomeBuildHelper.prototype.promiseInit = function(options) {
     $.ajax({
           url: genomeBuildServer,
           jsonp: "callback",
-      type: "GET",
-      dataType: "jsonp",
+          type: "GET",
+          dataType: "jsonp",
           error: function( xhr, status, errorThrown ) {
               console.log( "Error: " + errorThrown );
               console.log( "Status: " + status );
@@ -111,7 +110,6 @@ GenomeBuildHelper.prototype.getCurrentBuild = function() {
 GenomeBuildHelper.prototype.getCurrentBuildName = function() {
   return this.currentBuild ? this.currentBuild.name : null;
 }
-
 /* SJG TODO: might be helpful to know structure of ref going into these methods */
 /* Sets fastaPath to either UCSC or Ensembl */
 GenomeBuildHelper.prototype.getFastaPath = function(ref) {
@@ -144,7 +142,7 @@ GenomeBuildHelper.prototype.getReference = function(ref) {
   if (this.currentBuild) {
     this.currentBuild.references.forEach(function(reference) {
       if (!theRef) {
-        if (reference.name == ref || reference.alias == ref) {
+        if (reference.name === ref || reference.alias === ref) {
           theRef = reference;
         }
       }
@@ -241,55 +239,119 @@ GenomeBuildHelper.prototype.getBuildFromBamHeader = function(header) {
   return buildInfo;
 }
 
-/* Helper method that extracts build info from parsing vcf header */
-GenomeBuildHelper.prototype.getBuildFromVcfHeader = function(header) {
-    var me = this;
 
-  var buildInfo = {species: null, build: null, references: {}};
-  if (header) {
-    header.split("\n").forEach(function(headerRec) {
-      if (headerRec.indexOf("##contig=<") == 0) {
-        var allFields = headerRec.split("##contig=<")[1];
-
-        var fields = allFields.split(/[,>]/);
-        var refName = null;
-        var refLength = null;
-        fields.forEach(function(field) {
-          if (field.indexOf("ID=") == 0) {
-            refName = field.split("ID=")[1];
-          }
-          if (field.indexOf("length=") == 0) {
-            refLength = field.split("length=")[1];
-          }
-          if (!buildInfo.build && field.indexOf("assembly=") == 0) {
-            var buildString = field.split("assembly=")[1];
-            if (buildString.indexOf("\"") == 0) {
-              buildInfo.build = buildString.split("\"")[1];
-            } else if (buildString.indexOf("'") == 0) {
-              buildInfo.build = buildString.split("'")[1];
-            } else {
-              buildInfo.build = buildString;
+/* Retrieves build information from vcf file header field 'reference'.
+ * If vcf does not contain this header line, returns an empty string. */
+GenomeBuildHelper.prototype.getBuildFromSscVcfHeader = function(header) {
+    let buildRef = '';
+    if (header) {
+        header.split('\n').forEach((headerRec) => {
+            if (headerRec.indexOf('##reference') === 0) {
+                let upperCaseLine = headerRec.toUpperCase();
+                let isSeven = upperCaseLine.indexOf('GRCH37') >= 0;
+                let isEight = upperCaseLine.indexOf('GRCH38') >= 0;
+                if (isSeven) {
+                    buildRef = 'GRCh37';
+                }
+                else if (isEight) {
+                    buildRef = 'GRCh38';
+                }
             }
-          }
-          if (!buildInfo.species && field.indexOf("species=") == 0) {
-            var speciesString = field.split("species=")[1];
-            if (speciesString.indexOf("\"") == 0) {
-              buildInfo.species = speciesString.split("\"")[1];
-            } else if (speciesString.indexOf("'") == 0) {
-              buildInfo.species = speciesString.split("'")[1];
-            } else {
-              buildInfo.species = speciesString;
-            }
-          }
         })
-        if (refName && refLength) {
-          buildInfo.references[refName] = refLength;
-        }
-      }
-    });
-  }
-  return buildInfo;
+    }
+    else {
+        console.log('Could not obtain reference build information');
+    }
+    return buildRef;
 }
+
+/* Retrieves build information from vcf based on chromosome field formatting.
+ * If first two chromosomes are labeled as 'chrN', the file is determined to be GRCh38.
+ * If first two chromosomes are not labeled as 'chrN', the file is determeind to be GRCh37.
+ * If first two chromosomes are labeled in a mixed format, returns an empty string.
+ *
+ * NOTE: If the first two chromosomes are labeled in a different format than the rest of the vcf,
+ * the function may return an incorrect result.
+ *
+ * NOTE: This is not based on standardized or enforced vcf notation. */
+GenomeBuildHelper.prototype.getBuildFromSscVcfChromosomes = function(chromosomes) {
+    let buildRef = '';
+    if (chromosomes) {
+        let chrList = chromosomes.split('\n');
+        let isEight = true;
+        let isSeven = true;
+        // Check first two chromosomes
+        for (let i = 0; i < 2; i++) {
+            if (chrList[i] != null) {
+                let hasChr = chrList[i].indexOf('chr') === 0;
+                isEight &= hasChr;
+                isSeven &= !hasChr;
+            }
+        }
+        if (isEight && isSeven) {
+            return buildRef;
+        } else if (isSeven) {
+            return 'GRCh37';
+        } else if (isEight) {
+            return 'GRCh38';
+        }
+    }
+    else {
+        console.log('Could not obtain reference build information');
+    }
+    return buildRef;
+}
+
+
+/* Helper method that extracts build info from parsing vcf header */
+GenomeBuildHelper.prototype.getBuildFromVcfHeader = function (header) {
+    let buildInfo = {species: null, build: null, references: {}};
+    if (header) {
+        header.split("\n").forEach(function (headerRec) {
+            if (headerRec.indexOf("##contig=<") === 0) {
+                let allFields = headerRec.split("##contig=<")[1];
+
+                let fields = allFields.split(/[,>]/);
+                let refName = null;
+                let refLength = null;
+                fields.forEach(function (field) {
+                    if (field.indexOf("ID=") === 0) {
+                        refName = field.split("ID=")[1];
+                    }
+                    if (field.indexOf("length=") === 0) {
+                        refLength = field.split("length=")[1];
+                    }
+                    if (!buildInfo.build && field.indexOf("assembly=") === 0) {
+                        let buildString = field.split("assembly=")[1];
+                        if (buildString.indexOf("\"") === 0) {
+                            buildInfo.build = buildString.split("\"")[1];
+                        } else if (buildString.indexOf("'") === 0) {
+                            buildInfo.build = buildString.split("'")[1];
+                        } else {
+                            buildInfo.build = buildString;
+                        }
+                    }
+                    if (!buildInfo.species && field.indexOf("species=") === 0) {
+                        let speciesString = field.split("species=")[1];
+                        if (speciesString.indexOf("\"") === 0) {
+                            buildInfo.species = speciesString.split("\"")[1];
+                        } else if (speciesString.indexOf("'") === 0) {
+                            buildInfo.species = speciesString.split("'")[1];
+                        } else {
+                            buildInfo.species = speciesString;
+                        }
+                    }
+                });
+                if (refName && refLength) {
+                    buildInfo.references[refName] = refLength;
+                }
+            }
+        });
+    }
+    return buildInfo;
+}
+
+// SJG TODO: put in method to look at chr1 vs 1 to determine build
 
 /* Populates build property */
 GenomeBuildHelper.prototype.parseBuildInfo = function(buildInfo, relationship, type, theBuilds) {

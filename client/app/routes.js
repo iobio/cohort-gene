@@ -1,4 +1,5 @@
 import jQuery from 'jquery'
+
 global.jQuery = jQuery
 global.$ = jQuery
 import d3 from 'd3'
@@ -11,20 +12,24 @@ import App from './App.vue'
 import Home from './components/pages/Home.vue'
 
 import bootstrap from 'bootstrap/dist/css/bootstrap.css'
-import { Typeahead } from 'uiv'
+import {Typeahead} from 'uiv'
+
 Vue.use(Typeahead)
 
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.css'
 import '../assets/css/siteVuetify.css'
+
 Vue.use(Vuetify, {
-  theme: {
-    cohortBlue: '#95b0c6',
-    cohortDarkBlue: '#6c94b7',
-    cohortNavy: '#516e87',
-    limeGreen: '#00FF00',
-    cherryRed: '#FF000D'
-  }
+    theme: {
+        cohortBlue: '#95b0c6',
+        cohortDarkBlue: '#6c94b7',
+        cohortNavy: '#516e87',
+        cohortPeriwinkle: '#6c7cb7',
+        limeGreen: '#00d60e',
+        cherryRed: '#FF000D',
+        slateGray: '#B7B7B7'
+    }
 })
 
 global.bus = new Vue();
@@ -32,32 +37,41 @@ global.bus = new Vue();
 Vue.use(VueRouter);
 
 const routes = [
-  {
-    name: 'home',
-    path: '/',
-    component: Home,
-    props: (route) => ({
-        paramProjectId:             route.query.project_uuid,
-        parmTokenType:              route.query.token_type,
-        paramToken:                 route.query.access_token,
-        paramSource:                route.query.source
-    })
-  }
+    {
+        name: 'home',
+        path: '/',
+        component: Home,
+        props: (route) => ({
+            paramProjectName: route.query.project_id,
+            paramSource: route.query.source,
+            paramGene: route.query.gene,
+            paramRef: route.query.reference
+        })
+    },
+    {
+        name: 'auth',
+        path: '/access_token*',
+        beforeEnter: (to, from, next) => {
+            // remove initial slash from path and parse
+            const queryParams = Qs.parse(to.path.substring(1));
+            const {access_token, expires_in, token_type, ...otherQueryParams} = queryParams;
+            localStorage.setItem('hub-iobio-tkn', `${token_type} ${access_token}`);
+            next(`/${Qs.stringify(otherQueryParams, {addQueryPrefix: true, arrayFormat: 'brackets'})}`);
+        }
+    }
 ]
 
 const router = new VueRouter({
-  routes: routes
+    routes: routes
 })
 
 window.vm = new Vue({
-  el: '#app',
-  mounted: function() {
-        console.log("Routing info: ");
+    el: '#app',
+    mounted: function () {
         var q = this.$route.query
-        console.log(q)
-  },
-  created: function() {
-  },
-  render: h => h(App),
-  router
+    },
+    created: function () {
+    },
+    render: h => h(App),
+    router
 });

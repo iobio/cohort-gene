@@ -1,8 +1,5 @@
 var recordedCacheErrors = {};
 var cacheErrorTypes = {};
-
-// SJG I changed all 'relationship' references to 'name'
-
 function CacheHelper() {
 
   this.genesToCache = [];
@@ -83,7 +80,7 @@ CacheHelper.prototype.promiseClearStaleCache = function() {
   var me = this;
   return new Promise(function(resolve, reject) {
 
-    var staleSessions = localStorage["gene.iobio.stale"];
+    var staleSessions = localStorage["cohort-gene.iobio.stale"];
     if (staleSessions && staleSessions.length > 0) {
       var promises = [];
       staleSessions.split(",").forEach(function(timestamp) {
@@ -91,7 +88,7 @@ CacheHelper.prototype.promiseClearStaleCache = function() {
         promises.push(p);
       });
       Promise.all(promises).then(function() {
-        localStorage["gene.iobio.stale"] = "";
+        localStorage["cohort-gene.iobio.stale"] = "";
         resolve();
       },
       function(error) {
@@ -487,7 +484,7 @@ CacheHelper.prototype.refreshNextGeneBadge = function(keys, geneCount, callback)
 
 CacheHelper.prototype.getCacheKey = function(cacheObject) {
   var me = this;
-  var key =  "gene.iobio"
+  var key =  "cohort-gene.iobio"
     + CacheHelper.KEY_DELIM + this.launchTimestamp
     + CacheHelper.KEY_DELIM + cacheObject.name
     + CacheHelper.KEY_DELIM + cacheObject.sample
@@ -593,7 +590,7 @@ CacheHelper.prototype.cleanupCacheOnClose = function(launchTimestampToClear) {
       localStorage.removeItem(key);
     })
   } else {
-    var key = 'gene.iobio.stale';
+    var key = 'cohort-gene.iobio.stale';
     var staleSessions = localStorage[key];
     if (staleSessions == null || staleSessions == "") {
       staleSessions = launchTimestampToClear;
@@ -694,7 +691,7 @@ CacheHelper.prototype.clearAll = function() {
 CacheHelper.prototype.clearOther = function() {
   var me = this;
   // confirm dialog
-  alertify.confirm("Clear all cached data for other gene.iobio sessions?  IMPORTANT: To save analysis, flag any variants of interest in other browser tabs before clearing the cache.", function (e) {
+  alertify.confirm("Clear all cached data for other cohort-gene.iobio sessions?  IMPORTANT: To save analysis, flag any variants of interest in other browser tabs before clearing the cache.", function (e) {
       if (e) {
       // user clicked "ok"
       me._promiseClearCache(null, true, false)
@@ -885,7 +882,7 @@ CacheHelper._sizeMB = function(size, decimalPlaces=1) {
 CacheHelper._parseCacheKey = function(cacheKey) {
   if (cacheKey.indexOf(CacheHelper.KEY_DELIM) > 0) {
     var tokens = cacheKey.split(CacheHelper.KEY_DELIM);
-    if (tokens.length >= 7 && tokens[0] == "gene.iobio") {
+    if (tokens.length >= 7 && tokens[0] == "cohort-gene.iobio") {
       var keyObject = {
            app: tokens[0],
            launchTimestamp: tokens[1],
@@ -1200,6 +1197,7 @@ CacheHelper.prototype.promiseGetAllKeys = function() {
 
 }
 
+// SJG Q4 TODO Console log of cache contents; filterObj can be blank
 CacheHelper.prototype.logCacheContents = function(filterObject, showData=false) {
   var me = this;
   me.promiseGetKeys()

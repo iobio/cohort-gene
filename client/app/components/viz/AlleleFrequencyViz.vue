@@ -1,38 +1,47 @@
 <!-- Displays allele frequencies of selected variant -->
 <style lang="sass">
-
 .bar-outline
   stroke: #000 !important
   stroke-width: 1px !important
   stroke-opacity: .3 !important
-
 </style>
 
 <template>
-  <v-flex xs12 sm12 md6 lg5>
+  <v-flex xs12>
     <v-layout row>
-      <v-flex xs4 class="field-label-header">Allele Frequencies</v-flex>
-      <v-flex xs8></v-flex>
+      <v-flex xs12 class="field-label-header" style="text-align: left">Allele Frequencies</v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs4 class="field-label">1000 Genomes:</v-flex>
-       <v-flex xs2 md1 class="field-value">{{ oneKGenomes }}</v-flex>
-       <v-flex xs6 md7 id="oneKProgress" class="field-value"></v-flex>
+       <v-flex xs2 md3 class="summary-field-label">1000G:</v-flex>
+       <v-flex xs2 v-bind:class="{ hide: loadingExtraAnnotations === true }" class="summary-field-value">{{ oneKGenomes }}</v-flex>
+       <v-flex xs2 class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
+         <img src="../../../assets/images/wheel.gif">
+       </v-flex>
+       <v-flex xs9 md8 id="oneKProgress" style="padding: 0px"></v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs4 class="field-label">ExAC:</v-flex>
-       <v-flex xs2 md1 class="field-value">{{ exAc }}</v-flex>
-       <v-flex xs6 md7 id="exAcProgress" class="field-value"></v-flex>
+       <v-flex xs2 md3 class="summary-field-label">ExAC:</v-flex>
+       <v-flex xs2 v-bind:class="{ hide: loadingExtraAnnotations === true }" class="summary-field-value">{{ exAc }}</v-flex>
+       <v-flex xs2 class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
+         <img src="../../../assets/images/wheel.gif">
+       </v-flex>
+       <v-flex xs9 md8 id="exAcProgress" style="padding: 0px"></v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs4 class="field-label">Proband Frequency:</v-flex>
-       <v-flex xs2 md1 class="field-value">{{ probandDisplay }}</v-flex>
-       <v-flex xs6 md7 id="probandProgress" class="field-value"></v-flex>
+       <v-flex xs2 md3 class="summary-field-label">Proband%:</v-flex>
+       <v-flex xs2 v-bind:class="{ hide: loadingExtraAnnotations === true }" class="summary-field-value">{{ probandDisplay }}</v-flex>
+       <v-flex xs2 class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
+         <img src="../../../assets/images/wheel.gif">
+       </v-flex>
+       <v-flex xs9 md8 id="probandProgress" style="padding: 0px"></v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs4 class="field-label">Subset Frequency:</v-flex>
-       <v-flex xs2 md1 class="field-value">{{ subsetDisplay }}</v-flex>
-       <v-flex xs6 md7 id="subsetProgress" class="field-value"></v-flex>
+       <v-flex xs2 md3 class="summary-field-label">Subset%:</v-flex>
+       <v-flex xs2 v-bind:class="{ hide: loadingExtraAnnotations === true }" class="summary-field-value">{{ subsetDisplay }}</v-flex>
+       <v-flex xs2 class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
+         <img src="../../../assets/images/wheel.gif">
+       </v-flex>
+       <v-flex xs9 md8 id="subsetProgress" style="padding: 0px"></v-flex>
     </v-layout>
   </v-flex>
 </template>
@@ -76,6 +85,10 @@ export default {
     totalSubsetCount: {
       default: 0,
       type: Number
+    },
+    loadingExtraAnnotations: {
+      default: false,
+      type: Boolean
     }
   },
   created: function() {},

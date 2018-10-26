@@ -34,7 +34,10 @@ module.exports = {
       {
         test: /\.js$/,
         loader: 'babel-loader',
-        exclude: /node_modules/
+        exclude: /node_modules/,
+        query: {
+          "plugins": ["transform-object-rest-spread"]
+        }
       },
       {
         test: /\.s[ac]ss$/,
