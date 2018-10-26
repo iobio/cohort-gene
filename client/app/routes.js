@@ -42,7 +42,7 @@ const routes = [
         path: '/',
         component: Home,
         props: (route) => ({
-            paramProjectId: route.query.project_uuid,
+            paramProjectId: route.query.project_id,
             paramSource: route.query.source,
             paramGene: route.query.gene,
             paramRef: route.query.reference
@@ -59,11 +59,11 @@ const routes = [
             next(`/${Qs.stringify(otherQueryParams, {addQueryPrefix: true, arrayFormat: 'brackets'})}`);
         }
     }
-]
+];
 
 const router = new VueRouter({
     routes: routes
-})
+});
 
 window.vm = new Vue({
     el: '#app',

@@ -532,7 +532,7 @@ class VariantModel {
         });
     }
 
-    /* Promises to verify the vcf url and adds samples to vcf object. */
+    /* Promises to verify the vcf url and adds samples to vcf object - used when launching from Hub */
     promiseAddSamples(subsetCohort, urlNames, vcfUrls, tbiUrls) {
         let self = this;
         if ((Object.keys(subsetCohort.vcfEndptHash)).length > 0) {    // TODO: probably a more robust check to do here
@@ -556,6 +556,71 @@ class VariantModel {
         } else {
             return Promise.reject('No vcf data to open in promiseAddSamples');
         }
+    }
+
+    /* Adds a cohort based on model info input obtained from files menu */
+    // TODO: left off refactoring here!
+
+    promiseAddCohort(modelInfo) {
+        let self = this;
+        return new Promise(function (resolve, reject) {
+            let vm = new CohortModel();
+            vm.init(self);
+            vm.id = modelInfo.id;
+            vm.displayName = modelInfo.displayName;
+            // TODO: add ids and other necessary info here - figure out what that is
+
+            let vcfPromise = null;
+            if (modelInfo.vcf) {
+                vcfPromise = new Promise(function (vcfResolve, vcfReject) {
+                        // TODO: make sure we don't need to set selected sample field for model here...
+                        vm.onVcfUrlEntered(modelInfo.vcf, modelInfo.tbi, function () {
+                            if (modelInfo.displayName && modelInfo.displayName !== '') {
+                                vm.setDisplayName(modelInfo.displayName);
+                            } else if (modelInfo.selectedSample != null) {
+                                vm.setDisplayName(modelInfo.selectedSample);
+                            } else {
+                                vm.setDisplayName(modelInfo.id);
+                            }
+                            vcfResolve();
+                        })
+                    },
+                    function (error) {
+                        vcfReject(error);
+                    });
+            } else {
+                vm.selectedSample = null;
+                vcfPromise = Promise.resolve();
+            }
+
+            // TODO: incorporate bam coverage
+            let bamPromise = null;
+            if (modelInfo.bam) {
+                bamPromise = new Promise(function (bamResolve, bamReject) {
+                        vm.onBamUrlEntered(modelInfo.bam, modelInfo.bai, function () {
+                            bamResolve();
+                        })
+                    },
+                    function (error) {
+                        bamReject(error);
+                    });
+            } else {
+                vm.bam = null;
+                bamPromise = Promise.resolve();
+            }
+
+            Promise.all([vcfPromise, bamPromise])
+                .then(function () {
+                    let theModel = {'model': vm};
+                    if (destIndex >= 0) {
+                        self.sampleModels[destIndex] = vm;
+                    } else {
+                        self.sampleModels.push(vm);
+                    }
+                    self.sampleMap[modelInfo.id] = theModel;
+                    resolve(vm);
+                });
+        })
     }
 
     /* Promises to load variants for the selected gene.

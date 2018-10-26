@@ -24,6 +24,7 @@ TD & SJG updated Jun2018 -->
                 :selectedGeneName="selectedGene.gene_name"
                 :selectedChr="selectedGene.chr"
                 :selectedBuild="genomeBuildHelper.getCurrentSpeciesName() + ' ' + genomeBuildHelper.getCurrentBuildName()"
+                :variantModel="variantModel"
                 @input="onGeneSelected"
                 @load-demo-data="onLoadDemoData"
                 @clear-cache="clearCache"
@@ -660,7 +661,7 @@ TD & SJG updated Jun2018 -->
                         let queryParams = Qs.parse(window.location.search.substring(1)); // if query params before the fragment
                         Object.assign(queryParams, self.$route.query);
                         source = queryParams.source;
-                        projectId = queryParams.project_uuid;
+                        projectId = queryParams.project_uuid != null ? queryParams.project_uuid : '0';
                         selectedGene = queryParams.gene;
                         phenoFilters = queryParams.filter;
                     }
@@ -688,22 +689,7 @@ TD & SJG updated Jun2018 -->
                     }
                     // Otherwise launching stand alone
                     else {
-                        alert('This application is currently configured to launch from Mosaic.iobio - stand alone functionality will be implemented by December 2018.');ß
-                        reject('Do not have stand alone functionality implemented yet');
-                        // TODO: initialize file/url loader
-                        // NOTE: loading demo for now
-                        // self.geneModel.addGeneName(self.DEMO_GENE);
-                        // self.onGeneSelected(self.DEMO_GENE);
-                        // self.variantModel.promiseInitDemo();
-                        // TODO: below can be moved to then after this function in mounted section
-                        // .then(function () {
-                        //     if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
-                        //         self.promiseLoadData();
-                        //     }
-                        //     else {
-                        //         console.log("Failed to load data because no gene selected");
-                        //     }
-                        // })
+                        // TODO: put up splash screen like gene?
                     }
                 });
             },

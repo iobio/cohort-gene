@@ -1,365 +1,702 @@
-<!-- SJG TODO: this needs to be modified as appropriate for dataset input and phenotype hasFilters
-will wait to get details from CM and AW about data prior to implementing -->
 <style lang="sass">
+    @import ../../../assets/sass/variables
 
-.menuable__content__active
-  >form
-    margin-left: 30px
-    margin-right: 30px
-    max-width: 720px
-    font-size: 12px !important
+    .menuable__content__active
+        > form
+            margin-left: 30px
+            margin-right: 30px
+            max-width: 720px
+            font-size: 12px !important
 
-  .input-group.radio
-    margin-top: 0px
-    margin-bottom: 0px
+        .input-group.radio
+            margin-top: 0px
+            margin-bottom: 0px
 
-  .radio label
-    line-height: 25px
+        .radio label
+            line-height: 25px
 
-  .input-group.radio-group
-    padding-top: 0px
+        .input-group.radio-group
+            padding-top: 0px
 
-  .input-group__selections__comma
-    font-size: 13px
+        .input-group__selections__comma
+            font-size: 13px
 
-  .input-group.input-group--selection-controls.switch
-    label
-      font-weight: normal
-      font-size: 12px
-      padding-left: 5px
+        .input-group.input-group--selection-controls.switch
+            label
+                font-weight: normal
+                font-size: 12px
+                padding-left: 5px
 
+    #files-form
+
+        .radio-group
+            .input-group__input
+                min-height: 25px
+
+        .loader
+            display: inline-block
+            margin-right: 2px
+
+            img
+                width: 20px
+                height: 20px
+
+        .sample-label
+            span
+                margin-top: 2px
+                margin-bottom: 2px
+                vertical-align: top
+                margin-left: 0px
+                font-size: 15px
+                color: $app-color
+                display: inline-block
+                margin-right: 20px
+            .switch
+                display: inline-block
+                width: 100px
+</style>
+<!--Taken from https://alligator.io/vuejs/file-select-component/-->
+<style scoped>
+    .file-select > .select-button {
+        text-align: left;
+        padding-left: 15px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    /* Don't forget to hide the original file input! */
+    .file-select > input[type="file"] {
+        display: none;
+    }
 </style>
 
 <template>
-  <v-menu
-  id="files-menu"
-  offset-y
-  :close-on-content-click="false"
-  :nudge-width="500"
-  v-model="showFilesMenu"
-  >
+    <v-menu
+            id="files-menu"
+            offset-y
+            :close-on-content-click="false"
+            :nudge-width="500"
+            v-model="showFilesMenu">
+        <v-btn id="files-menu-button" flat slot="activator">
+            Files
+        </v-btn>
+        <v-form id="files-form">
+            <v-layout row wrap class="mt-2">
+                <v-flex xs6 class="mt-2">
+                    <v-container>
+                        <v-switch label="Separate index URL" hide-details v-model="separateUrlForIndex">
+                        </v-switch>
+                    </v-container>
+                </v-flex>
 
-    <v-btn flat slot="activator">
-     <v-icon>input</v-icon>
-     Input Sources
-    </v-btn>
+                <v-flex xs3 class="pl-2 pr-0">
+                    <v-select
+                            label="Genome Build"
+                            hide-details
+                            v-model="buildName"
+                            :items="buildList"
+                            color="cohortNavy"
+                    ></v-select>
+                </v-flex>
 
-    <v-form id="files-form">
+                <v-flex xs3 class="pr-0 pt-2">
+                    <v-menu>
+                        <v-btn outline
+                               color="cohortNavy"
+                               slot="activator">
+                            Auto-Fill
+                            <v-icon small>keyboard_arrow_down</v-icon>
+                        </v-btn>
+                        <v-list>
+                            <v-list-tile>
+                                <v-list-tile-action>
+                                    <v-btn flat color="appGray"
+                                           @click="loadDuoDemo">
+                                        {{ dualAutofill.display }}
+                                    </v-btn>
+                                </v-list-tile-action>
+                            </v-list-tile>
+                            <v-list-tile>
+                                <label class="file-select">
+                                    <!-- We can't use a normal button element here, it would become the target of the label. -->
+                                    <div class="select-button">
+                                        <span style="color: #888888">Upload Config</span>
+                                    </div>
+                                    <!-- Hidden file input -->
+                                    <input type="file" @change="onUploadCustomFile"/>
+                                </label>
+                            </v-list-tile>
+                            <v-list-tile>
+                                <v-list-tile-action>
+                                    <v-btn flat color="appGray" :disabled="!isValid"
+                                           @click="onDownloadCustomFile">
+                                        Download Config
+                                    </v-btn>
+                                </v-list-tile-action>
+                            </v-list-tile>
+                        </v-list>
+                    </v-menu>
+                </v-flex>
+                <draggable
+                        :options="{handle: '.drag-handle'}"
+                        @end="onDragEnd">
+                    <v-flex xs12
+                            v-for="sample in sampleIds"
+                            :key="sample"
+                            :id="sample"
+                            v-if="modelInfoMap && modelInfoMap[sample] && Object.keys(modelInfoMap[sample]).length > 0">
+                        <sample-data
+                                ref="sampleDataRef"
+                                v-if="modelInfoMap && modelInfoMap[sample] && Object.keys(modelInfoMap[sample]).length > 0"
+                                :modelInfo="modelInfoMap[sample]"
+                                :dragId="sample"
+                                :arrIndex=sampleIds.indexOf(sample)
+                                :separateUrlForIndex="separateUrlForIndex"
+                                @sample-data-changed="validate"
+                                @samples-available="onSamplesAvailable"
+                                @remove-sample="removeSample">
+                        </sample-data>
+                    </v-flex>
+                </draggable>
+                <v-flex xs6 class="mt-2 text-xs-left">
+                    <v-btn small outline fab color="cohortNavy"
+                           @click="promiseAddSample">
+                        <v-icon>add</v-icon>
+                    </v-btn>
+                </v-flex>
+                <v-flex xs6 class="mt-2 text-xs-right">
+                    <div class="loader" v-show="inProgress">
+                        <img src="../../../assets/images/wheel.gif">
+                    </div>
+                    <v-btn
+                            @click="onLoad"
+                            :disabled="!isValid">
+                        Load
+                    </v-btn>
 
-      <v-layout row wrap class="mt-2">
-
-        <v-flex xs2 class="px-2">
-          <v-select
-            label="Species"
-            hide-details
-            v-model="speciesName"
-            :items="speciesList"
-          ></v-select>
-        </v-flex>
-
-        <v-flex xs2 class="px-2">
-          <v-select
-            label="Genome Build"
-            hide-details
-            v-model="buildName"
-            :items="buildList"
-          ></v-select>
-         </v-flex>
-
-        <v-flex xs3>
-            <v-select
-              :items="demoActions"
-              item-value="value"
-              item-text="display"
-              @input="onLoadDemoData"
-              v-model="demoAction"
-              overflow
-              hide-details
-              label="Demo data"></v-select>
-        </v-flex>
-
-            <sample-data
-             ref="sampleDataRef"
-             v-if="modelInfoMap && modelInfoMap[rel] && Object.keys(modelInfoMap[rel]).length > 0"
-             :modelInfo="modelInfoMap[rel]"
-             :separateUrlForIndex="separateUrlForIndex"
-             @sample-data-changed="validate"
-            >
-          </sample-data>
-         </v-flex>
-
-        <v-flex xs12 class="mt-4 text-xs-right">
-          <v-btn
-            @click="onLoad"
-            :disabled="!isValid">
-            Load
-          </v-btn>
-
-          <v-btn @click="onCancel">
-           Cancel
-         </v-btn>
-        </v-flex>
-      </v-layout>
-
-    </v-form>
-
-  </v-menu>
+                    <v-btn @click="onCancel">
+                        Cancel
+                    </v-btn>
+                </v-flex>
+            </v-layout>
+        </v-form>
+    </v-menu>
 </template>
-
 <script>
 
-// import SampleData          from '../partials/SampleData.vue'
+    import SampleData from '../partials/SampleData.vue'
+    import draggable from 'vuedraggable'
+
+    export default {
+        name: 'files-menu',
+        components: {
+            SampleData,
+            draggable
+        },
+        props: {
+            variantModel: null
+        },
+        data() {
+            return {
+                showFilesMenu: false,
+                isValid: false,
+                speciesList: [],
+                speciesName: null,
+                buildName: null,
+                activeTab: null,
+
+                // TODO: these need to be modified for cohort style upload
+                modelInfoMap: {},
+                sampleIds: [],
+
+                dualAutofill: {'display': 'Demo Data', 'value': 'dual'},
+                autofillAction: null,
+                separateUrlForIndex: false,
+                inProgress: false,
+                stateUnchanged: true,
+                arrId: 0,
+                debugMe: false,
+                inputClass: 'fileSelect'
+            }
+        },
+        watch: {
+            showFilesMenu: function () {
+                if (this.variantModel && this.showFilesMenu) {
+                    this.init();
+                }
+            }
+        },
+        methods: {
+            promiseAddCohort: function (stateChanged = true) {
+                let self = this;
+                if (stateChanged) {
+                    self.stateUnchanged = false;
+                }
+
+                // If we've loaded a demo, and they change it, deselect demo drop-down
+                if (self.autofillAction != null) {
+                    self.autofillAction = null;
+                }
+
+                return new Promise((resolve, reject) => {
+                    let newId = self.findNextAvailableId();
+                    self.sampleIds.push(newId);
+
+                    // Add entry to map
+                    let newInfo = {};
+                    newInfo.id = newId;
+                    newInfo.selectedSample = '';
+                    newInfo.samples = [];
+                    newInfo.displayName = '';
+                    newInfo.vcf = null;
+                    newInfo.bam = null;
+                    newInfo.tbi = null;
+                    newInfo.bai = null;
+                    newInfo.order = self.sampleIds.length - 1;
+                    self.modelInfoMap[newId] = newInfo;
+
+                    // Add sample model for new entry
+                    self.variantModel.promiseAddCohort(newInfo)
+                        .then((model) => {
+                            newInfo.model = model;
+
+                            if (self.debugMe) {
+                                console.log('adding new sample');
+                                self.debugOrder();
+                            }
+                            resolve();
+                        })
+                        .catch(() => {
+                            reject('There was a problem adding sample.');
+                        });
+                });
+            },
+            findNextAvailableId: function () {
+                let self = this;
+                let ids = [];
+                let arrLength = self.sampleIds.length;
+                for (let i = 0; i < arrLength; i++) {
+                    ids.push(parseInt(self.sampleIds[i].substring(1)));
+                }
+                ids.sort();
+                let nextVal = arrLength;
+                for (let i = 0; i < arrLength - 1; i++) {
+                    if (ids[i + 1] - ids[i] > 1) {
+                        nextVal = i + 1;
+                        break;
+                    }
+                }
+                return 's' + nextVal;
+            },
+            onLoad: function () {
+                let self = this;
+                self.inProgress = true;
+
+                self.variantModel.genomeBuildHelper.setCurrentBuild(self.buildName);
+                self.variantModel.genomeBuildHelper.setCurrentSpecies(self.speciesName);
+
+                // TODO: remove loading clinvar here? or get this working
+                self.variantModel.promiseAddClinvarSample()
+                    .then(function () {
+                        //self.cohortModel.setTumorInfo(true);
+                        self.variantModel.isLoaded = true;
+                        self.variantModel.getCanonicalModels().forEach(function (model) {
+                            if (model.displayName == null || model.displayName.length === 0) {
+                                model.displayName = model.id;
+                            }
+                        });
+                    })
+                    .then(function () {
+                        let performAnalyzeAll = self.autofillAction ? true : false;
+                        self.inProgress = false;
+
+                        self.$emit("on-files-loaded", performAnalyzeAll);
+                        self.showFilesMenu = false;
+                    });
+            },
+            onCancel: function () {
+                this.showFilesMenu = false;
+            },
+            onUploadCustomFile: function (evt) {
+                let self = this;
+
+                let customFile = evt.target.files[0];
+                self.variantModel.promiseInitCustomFile(customFile)
+                    .then((obj) => {
+                        // TODO: set anything we need to do
+                        //self.onAutoLoad(obj.isTimeSeries, 'custom', obj.infos);
+                    })
+                    .catch((e) => {
+                        console.log('Problem loading custom config file: ' + e);
+                        alert('There was a problem loading from the selected config file. Please try again.');
+                    });
+            },
+            onDownloadCustomFile: function () {
+                let self = this;
+
+                // JSON.stringify
+                //let exportObj = {'isTimeSeries': self.timeSeriesMode};
+                let sampleArr = [];
+                let infoValues = Object.values(self.modelInfoMap);
+                infoValues.forEach((val) => {
+                    let newVal = {};
+                    newVal.id = val.id;
+                    newVal.isTumor = val.isTumor;
+                    newVal.vcf = val.vcf;
+                    newVal.tbi = val.tbi;
+                    newVal.bam = val.bam;
+                    newVal.bai = val.bai;
+                    newVal.order = val.order;
+                    newVal.selectedSample = val.selectedSample;
+                    newVal.displayName = val.displayName;
+                    sampleArr.push(newVal);
+                });
+                exportObj['samples'] = sampleArr;
+                const exportFile = JSON.stringify(exportObj);
+                const blob = new Blob([exportFile], {type: 'text/plain'});
+                const e = document.createEvent('MouseEvents'),
+                    a = document.createElement('a');
+                a.download = "oncogene_config.json";
+                a.href = window.URL.createObjectURL(blob);
+                a.dataset.downloadurl = ['text/json', a.download, a.href].join(':');
+                e.initEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+                a.dispatchEvent(e);
+            },
+            loadDuoDemo: function () {
+                let self = this;
+                self.onAutoLoad(false, 'demo', null);
+            },
+            loadTimeDemo: function () {
+                let self = this;
+                self.onAutoLoad(true, 'demo', null);
+            },
+            onAutoLoad: function (mode, customInfos) {
+                let self = this;
+
+                // Toggle switches
+                if (timeSeries) {
+                    self.timeSeriesMode = true;
+                } else {
+                    self.timeSeriesMode = false;
+                }
+
+                let infosToLoad = null;
+                let customHasSeparateIndices = false;
+                if (mode === 'demo') {
+                    let whichDemo = timeSeries ? 'timeSeries' : 'dual';
+                    infosToLoad = self.variantModel.demoModelInfos[whichDemo];
+                } else {
+                    infosToLoad = customInfos;
+                    customHasSeparateIndices = self.checkCustomIndex(customInfos);
+                }
+
+                if (self.variantModel.demoCmmlFiles || customHasSeparateIndices) {
+                    self.separateUrlForIndex = true;
+                } else {
+                    self.separateUrlForIndex = false;
+                }
+
+                // Reset modelInfoMap to get rid of any added info extras
+                self.modelInfoMap = {};
+
+                // Add relevant infos to map and ids to sample array in correct order
+                let idList = [];
+                let arrIndex = 0;
+                infosToLoad.forEach(function (modelInfo) {
+                    let id = modelInfo.id;
+                    idList.push(id);
+                    self.modelInfoMap[id] = modelInfo;
+                    self.sampleIds[arrIndex] = modelInfo.id;
+                    arrIndex++;
+                });
+
+                // Get rid of any remaining extra samples names in array
+                if (self.sampleIds.length > arrIndex) {
+                    let numToDelete = self.sampleIds.length - arrIndex;
+                    self.sampleIds.splice(arrIndex, numToDelete);
+                }
+
+                // Ensure orders are correct
+                for (let i = 0; i < self.sampleIds.length; i++) {
+                    let currInfo = self.modelInfoMap[self.sampleIds[i]];
+                    currInfo.order = i;
+                }
+
+                // Ensure models are synonymous with infos and in same order as viewd
+                self.variantModel.removeExtraModels(idList);
+                let addPromises = [];
+                for (let i = 0; i < self.sampleIds.length; i++) {
+                    let currKey = self.sampleIds[i];
+                    let currModel = self.cohortModel.getModel(currKey);
+                    if (currModel == null) {
+                        let corrInfo = self.modelInfoMap[currKey];
+                        let p = self.cohortModel.promiseAddSample(corrInfo, i); // Don't need to assign to map, done in promiseSetModel below
+                        addPromises.push(p);
+                    } else {
+                        self.cohortModel.sampleModels[i] = currModel;
+                    }
+                }
+
+                Promise.all(addPromises)
+                    .then(() => {
+                        self.variantModel.getCanonicalModels().forEach(function (model) {
+                            self.promiseSetModel(model);
+                        });
+                        if (self.debugMe) {
+                            console.log('loading demo data');
+                            self.debugOrder();
+                        }
+                    })
+            },
+            checkCustomIndex: function (infos) {
+                let areSeparate = false;
+                infos.forEach((info) => {
+                    if (info.bai != null || info.tbi != null) {
+                        areSeparate = true;
+                    }
+                });
+                return areSeparate;
+            },
+            /* Sets corresponding model for each info object; */
+            promiseSetModel: function (model) {
+                let self = this;
+                return new Promise(function (resolve, reject) {
+
+                    // Assign model prop in info object to model
+                    let theModel = model;
+                    let theModelInfo = self.modelInfoMap[theModel.id];
+                    theModelInfo.model = theModel;
+
+                    // Trigger on vcf check in model
+                    theModel.onVcfUrlEntered(theModelInfo.vcf, theModelInfo.tbi, function (success, sampleNames) {
+                        if (success) {
+                            // Set samples prop
+                            theModelInfo.samples = sampleNames;
+                            self.$refs.sampleDataRef.forEach(function (ref) {
+                                if (ref.modelInfo.id === theModel.id) {
+                                    // Set selected sample in model and in child cmpnt
+                                    theModel.selectedSample = theModelInfo.selectedSample;
+                                    ref.updateSamples(sampleNames, theModelInfo.selectedSample);
+
+                                    // Set display name in model
+                                    theModel.displayName = theModelInfo.displayName ? theModelInfo.displayName : theModelInfo.selectedSample;
+                                    self.validate();
+                                }
+                            });
+                            theModel.onBamUrlEntered(theModelInfo.bam, theModelInfo.bai, function (success) {
+                                self.validate();
+                                if (success) {
+                                    resolve();
+                                } else {
+                                    reject();
+                                }
+                            })
+                        } else {
+                            reject();
+                        }
+                    })
+                })
+            },
+            validate: function () {
+                this.isValid = true;
+
+                let keyList = Object.keys(this.modelInfoMap);
+                for (let i = 0; i < keyList.length; i++) {
+                    let currKey = keyList[i];
+                    this.isValid &= (this.modelInfoMap[currKey] != null && this.modelInfoMap[currKey].model.isReadyToLoad());
+                }
+            },
+            getModel: function (id) {
+                let theModel = null;
+                if (this.variantModel) {
+                    let modelObject = this.variantModel.sampleMap[id];
+                    if (modelObject) {
+                        theModel = modelObject.model;
+                    }
+                }
+                return theModel;
+            },
+            init: function () {
+                let self = this;
+                if (self.variantModel && self.variantModel.getCanonicalModels().length > 0) {
+                    self.initModelInfo();
+                } else {
+                    self.promiseAddCohort(false);
+                }
+            },
+            initModelInfo: function () {
+                let self = this;
+                self.separateUrlForIndex = false;
+                self.timeSeries = false;
+                self.variantModel.getCanonicalModels().forEach(function (model) {
+                    let modelInfo = self.modelInfoMap[model.id];
+                    if (modelInfo == null) {
+                        modelInfo = {};
+                        modelInfo.displayName = model.getDisplayName();
+                        modelInfo.isTumor = model.getTumorStatus();
+                        modelInfo.order = model.order;
+                        modelInfo.vcf = model.vcf ? model.vcf.getVcfURL() : null;
+                        modelInfo.tbi = model.vcf ? model.vcf.getTbiURL() : null;
+                        modelInfo.bam = model.bam ? model.bam.bamUri : null;
+                        modelInfo.bai = model.bam ? model.bam.baiUri : null;
+                        modelInfo.model = model;
+                        if (modelInfo.tbi || modelInfo.bai) {
+                            self.separateUrlForIndex = true;
+                        }
+                        let key = 's' + self.sampleIds.length;
+                        self.$set(self.modelInfoMap, key, modelInfo);
+                    }
+                })
+            },
+            promiseInitMoreTumors: function () {
+                let self = this;
+
+                return new Promise((resolve, reject) => {
+                    let promises = [];
+                    if (self.stateUnchanged && self.sampleIds.length === 2) {
+                        for (let i = 0; i < 2; i++) {
+                            promises.push(self.promiseAddSample(true, false));
+                        }
+                    }
+                    Promise.all(promises)
+                        .then(() => {
+                            resolve();
+                        });
+                });
+            },
+            removeMoreTumors: function () {
+                let self = this;
+                if (self.stateUnchanged) {
+                    let sampleLength = self.sampleIds.length;
+                    for (let i = sampleLength - 1; i > 1; i--) {
+                        self.removeSample(i, false, true);
+                    }
+                }
+            },
+            removeSample: function (sampleIndex, stateChanged = true, demoCall = false) {
+                let self = this;
+                if (stateChanged) {
+                    self.stateUnchanged = false;
+                }
+
+                // If we've selected a demo, and then changed it, deselect dropdown
+                if (self.autofillAction != null && !demoCall) {
+                    self.autofillAction = null;
+                }
+
+                // If we're deleting the first one on time series mode, must enforce next one normal
+                if (self.timeSeriesMode && sampleIndex === 0) {
+                    let key = self.sampleIds[1];
+                    self.modelInfoMap[key].isTumor = false;
+                    self.modelInfoMap[key].model.isTumor = false;
+                }
+
+                // Update order for any samples after deleted one
+                for (let i = sampleIndex + 1; i < self.sampleIds.length; i++) {
+                    let key = self.sampleIds[i];
+                    self.modelInfoMap[key].order--;
+                    self.modelInfoMap[key].model.order--;
+                }
+
+                // Remove sample and delete info
+                let id = self.sampleIds[sampleIndex];
+                self.sampleIds.splice(sampleIndex, 1);
+                delete self.modelInfoMap[id];
+                self.variantModel.removeSample(id);
+
+                // Update label
+                if (self.$refs.sampleDataRef != null) {
+                    self.$refs.sampleDataRef.forEach((ref) => {
+                        if (ref.modelInfo.order >= sampleIndex) {
+                            ref.updateLabel();
+                        }
+                    });
+                }
+                self.debugOrder();
+            },
+            onDragEnd: function (evt) {
+                let self = this;
+                self.stateUnchanged = false;
+
+                let oldIndex = evt.oldIndex;
+                let newIndex = evt.newIndex;
+
+                // Update order and isTumor props
+                self.updateSampleOrder(oldIndex, newIndex);
+            },
+            updateSampleOrder: function (oldIndex, newIndex, demoCall = false) {
+                let self = this;
+
+                if (self.autofillAction != null && !demoCall) {
+                    self.autofillAction = null;
+                }
+
+                if (self.$refs.sampleDataRef != null) {
+                    self.$refs.sampleDataRef.forEach((ref) => {
+                        ref.updateOrder(oldIndex, newIndex);
+                    });
+                }
+                // Order sample ids arrays for view and model accordingly
+                if (oldIndex < newIndex) {
+                    self.sampleIds.splice(newIndex + 1, 0, self.sampleIds[oldIndex]);
+                    self.sampleIds.splice(oldIndex, 1);
+                } else if (newIndex < oldIndex) {
+                    self.sampleIds.splice(newIndex, 0, self.sampleIds[oldIndex]);
+                    self.sampleIds.splice(oldIndex + 1, 1);
+                }
+                self.variantModel.updateSampleOrder(oldIndex, newIndex);
+
+                if (self.debugMe) {
+                    console.log('updating order');
+                    self.debugOrder();
+                }
+            },
+            debugOrder: function () {
+                let self = this;
+
+                console.log("sample id array: " + self.sampleIds.join(','));
+                console.log("modelInfoMap: " + (Object.keys(self.modelInfoMap)).join(','));
+                let modelInfoOrders = [];
+                (Object.values(self.modelInfoMap)).forEach((info) => {
+                    modelInfoOrders.push(info.order);
+                });
+                console.log('modelInfo orders: ' + modelInfoOrders.join(','));
+                let modelIds = [];
+                let modelOrders = [];
+                self.variantModel.sampleModels.forEach((model) => {
+                    modelIds.push(model.id);
+                    modelOrders.push(model.order);
+                });
+                console.log("cohort model list: " + modelIds.join(','));
+                console.log("cohort model map: " + (Object.keys(self.variantModel.sampleMap)).join(','));
+                console.log("cohort model orders: " + modelOrders.join(','));
+            }
+        },
+        computed: {
+            buildList: function () {
+                if (this.speciesName && this.variantModel.genomeBuildHelper) {
+                    return this.variantModel.genomeBuildHelper.speciesToBuilds[this.speciesName].map(function (gb) {
+                        return gb.name;
+                    })
+                } else {
+                    return [];
+                }
+            }
+        },
+        created: function () {
+        },
+        mounted: function () {
+            if (this.variantModel) {
+                this.speciesName = this.variantModel.genomeBuildHelper.getCurrentSpeciesName();
+                this.buildName = this.variantModel.genomeBuildHelper.getCurrentBuildName();
+                this.speciesList = this.variantModel.genomeBuildHelper.speciesList.map(function (sp) {
+                    return sp.name;
+                }).filter(function (name) {
+                    return name === 'Human';
+                });
+            }
 
 
-export default {
-  name: 'files-menu',
-  components: {
-    //SampleData
-  },
-  props: {
-    variantModel: null
-  },
-  data () {
-    return {
-      showFilesMenu: false,
-      isValid: false,
-      speciesList: [],
-      speciesName: null,
-      buildName: null,
-      activeTab: null,
-      modelInfoMap: {
-        proband: {},
-        mother: {},
-        father: {}
-      },
-      demoActions: [
-        // THis used ot be value = exome
-        {'display': 'Demo Simons Subset', 'value': 'simons_subset'},
-      ],
-      demoAction: null,
-      separateUrlForIndex: false
-    }
-  },
-  watch: {
-    showFilesMenu: function() {
-      if (this.variantModel && this.showFilesMenu) {
-        this.init();
-      }
-    }
-  },
-  methods: {
-    onLoad: function() {
-      // SJG TODO: refactor cohortModel -> variantModel/etc as approp
-      let self = this;
-      if (self.demoAction) {
-        self.variantModel.geneModel.copyPasteGenes(self.variantModel.demoGenes.join(", "));
-      }
-
-      //this.cohortModel.mode = this.mode;
-      self.variantModel.genomeBuildHelper.setCurrentBuild(self.buildName);
-      self.variantModel.genomeBuildHelper.setCurrentSpecies(self.speciesName);
-      self.variantModel.promiseAddClinvarSample()
-      .then(function() {
-        self.variantModel.setAffectedInfo();
-        self.variantModel.isLoaded = true;
-
-        // SJG TODO: Figure out purpose and refactor as necessary
-        // self.variantModel.getMainCohort().forEach(function(cohort) {
-        //   if (model.name == null || model.name.length == 0) {
-        //     model.name = model.relationship;
-        //   }
-        // })
-        //self.cohortModel.sortSampleModels();
-
-        self.$emit("on-files-loaded");
-        self.showFilesMenu = false;
-      })
-    },
-    onCancel:  function() {
-      this.showFilesMenu = false;
-    },
-    // TODO: factor in if trio incorporated
-    // onModeChanged: function() {
-    //   if (this.mode == 'trio' && this.cohortModel.getCanonicalModels().length < 3 ) {
-    //     this.promiseInitMotherFather();
-    //   } else if (this.mode == 'single' && this.cohortModel.getCanonicalModels().length > 1) {
-    //     this.removeMotherFather();
-    //   }
-    //
-    //   this.validate();
-    // },
-    onLoadDemoData: function() {
-      let self = this;
-
-      // TODO: changed this up a lot - see gene version if something missing
-      self.variantModel.dataSets.forEach(function(dataSet) {
-        dataSet.cohorts.forEach(function(cohort) {
-          self.promiseSetModel(cohort);
-        })
-      })
-    },
-    promiseSetModel: function(cohortModel) {
-      let self = this;
-      return new Promise(function(resolve, reject) {
-        var theModel = cohortModel;
-        var theModelInfo = self.modelInfoMap[theModel.name];
-        theModelInfo.cohortModel = theModel;
-        theModel.onVcfUrlEntered(theModelInfo.vcf, null, function(success, sampleNames) {
-          if (success) {
-            theModelInfo.samples = sampleNames;
-            self.$refs.sampleDataRef.forEach(function(ref) {
-              if (ref.modelInfo.name == theModel.name) {
-                theModel.sampleName = theModelInfo.sample;
-                ref.updateSamples(sampleNames, theModelInfo.sample);
-                theModel.name = theModel.name + " " + theModel.sampleName;
-                self.validate();
-              }
-            })
-            // SJG TODO: took bam stuff out of cohort model
-            // theModel.onBamUrlEntered(theModelInfo.bam, null, function(success) {
-            //   self.validate();
-            //   if (success) {
-            //     resolve();
-            //   } else {
-            //     reject();
-            //   }
-            // })
-          } else {
-            reject();
-          }
-        })
-      })
-    },
-    validate: function() {
-      // SJG TODO: refactor this
-      // this.isValid = false;
-      // if (this.mode == 'single') {
-      //   if (this.modelInfoMap.proband && this.modelInfoMap.proband.model.isReadyToLoad()) {
-      //     this.isValid = true;
-      //   }
-      // } else {
-      //   if (this.modelInfoMap.proband && this.modelInfoMap.proband.model && this.modelInfoMap.proband.model.isReadyToLoad()
-      //       && this.modelInfoMap.mother && this.modelInfoMap.mother.model && this.modelInfoMap.mother.model.isReadyToLoad()
-      //       && this.modelInfoMap.father && this.modelInfoMap.father.model && this.modelInfoMap.father.model.isReadyToLoad()) {
-      //     this.isValid = true;
-      //   }
-      // }
-    },
-    getModel: function(name) {
-      // SJG TODO: refactor this
-      // var theModel = null;
-      // if (this.variantModel) {
-      //   var modelObject = this.cohortModel.sampleMap[relationship];
-      //   if (modelObject) {
-      //     theModel = modelObject.model;
-      //   }
-      // }
-      // return theModel;
-    },
-    init: function() {
-      let self = this;
-      self.modelInfoMap = {};
-      if (self.variantModel && self.variantModel.getCohorts().length > 0) {
-          self.initModelInfo();
-      } else {
-        var modelInfo = {};
-        // TODO: how will we get the name here
-        modelInfo.name = 'TODO';
-        modelInfo.vcf = null;
-        modelInfo.bam = null;
-        modelInfo.affectedStatus = 'affected'
-        self.variantModel.promiseAddSamples(modelInfo)
-        .then(function() {
-          self.initModelInfo();
-        })
-      }
-    },
-    initModelInfo: function() {
-      let self = this;
-      self.variantModel.getCohorts().forEach(function(cohort) {
-        var modelInfo = self.modelInfoMap[cohort.name];
-        if (modelInfo == null) {
-          modelInfo = {};
-          modelInfo.name = cohort.name;
-          modelInfo.vcf          = cohort.vcf ? cohort.vcf.getVcfURL() : null;
-          modelInfo.tbi          = cohort.vcf ? cohort.vcf.getTbiURL() : null;
-          modelInfo.bam          = cohort.bam ? cohort.bam.bamUri : null;
-          modelInfo.bai          = cohort.bam ? cohort.bam.baiUri : null;
-          modelInfo.sample       = cohort.getSampleName();
-          modelInfo.name         = cohort.getName();
-          modelInfo.samples      = cohort.sampleNames;
-          modelInfo.isAffected   = cohort.isAffected();
-          modelInfo.model        = cohort;
-          self.$set(self.modelInfoMap, cohort.name, modelInfo);
         }
-      })
-    },
-    promiseInitMotherFather: function() {
-      // let self = this;
-      //
-      // return new Promise(function(resolve, reject) {
-      //   var modelInfoMother = {};
-      //   modelInfoMother.relationship = 'mother';
-      //   modelInfoMother.vcf = null;
-      //   modelInfoMother.bam = null;
-      //   modelInfoMother.affectedStatus = 'unaffected'
-      //   self.cohortModel.promiseAddSample(modelInfoMother)
-      //   .then(function() {
-      //     var modelInfoFather = {};
-      //     modelInfoFather.relationship = 'father';
-      //     modelInfoFather.vcf = null;
-      //     modelInfoFather.bam = null;
-      //     modelInfoFather.affectedStatus = 'unaffected'
-      //
-      //       self.cohortModel.promiseAddSample(modelInfoFather)
-      //       .then(function() {
-      //
-      //         self.initModelInfo();
-      //         resolve();
-      //
-      //       })
-      //       .catch(function(error) {
-      //         reject(error);
-      //       })
-      //   })
-      //   .catch(function(error) {
-      //     reject(error);
-      //   })
-      //
-      // })
-    },
-    removeMotherFather: function() {
-      // let self = this;
-      // delete self.modelInfoMap.mother;
-      // delete self.modelInfoMap.father;
-      // self.cohortModel.removeSample("mother");
-      // self.cohortModel.removeSample("father");
     }
-  },
-  computed: {
-    buildList: function() {
-      if (this.speciesName && this.variantModel.genomeBuildHelper) {
-        return this.variantModel.genomeBuildHelper.speciesToBuilds[this.speciesName].map(function(gb) {
-          return gb.name;
-        })
-      } else {
-        return [];
-      }
-    }
-  },
-  created: function() {
-    let self = this;
-    this.speciesName =  this.variantModel.genomeBuildHelper.getCurrentSpeciesName();
-    this.buildName   =  this.variantModel.genomeBuildHelper.getCurrentBuildName();
-    this.speciesList =  this.variantModel.genomeBuildHelper.speciesList.map(function(sp) {
-      return sp.name;
-    });
-
-
-  },
-  mounted: function() {
-
-
-  }
-}
 </script>

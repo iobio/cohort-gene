@@ -60,6 +60,12 @@
             </v-toolbar-items>
 
             <v-spacer></v-spacer>
+            <files-menu
+                    :variantModel="variantModel"
+                    @on-files-loaded="onFilesLoaded"
+                    @load-demo-data="onLoadDemoData"
+            >
+            </files-menu>
             <v-menu
                     offset-y
                     :close-on-content-click="false"
@@ -135,7 +141,8 @@
             knownGenes: null,
             selectedGeneName: "",
             selectedChr: "",
-            selectedBuild: ''
+            selectedBuild: '',
+            variantModel: null
         },
         computed: {
             selectedGeneDisplay: function () {
