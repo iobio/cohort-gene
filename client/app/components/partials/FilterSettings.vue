@@ -189,6 +189,7 @@
                 this.minGenotypeDepth = flagCriteria.minGenotypeDepth;
             },
             apply: function () {
+                debugger;   // TODO: hitting this but nothing happening
                 let flagCriteria = this.filterModel.flagCriteria[this.theFilter.name];
                 flagCriteria.name = this.name;
                 if (flagCriteria.custom) {

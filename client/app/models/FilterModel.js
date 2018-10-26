@@ -395,7 +395,7 @@ class FilterModel {
                     passCount++;
                 }
             }
-            return passCount == Object.keys(theFilters).length;
+            return passCount === Object.keys(theFilters).length;
         } else {
             return true;
         }

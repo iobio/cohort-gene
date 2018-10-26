@@ -5,6 +5,7 @@ class CohortModel {
     constructor(theVariantModel) {
         this.vcfEndptHash = {};         // One vcf iobio service endpoint per multi-vcf url (key is name of file)
         this.varsInFileHash = {};       // Key is file name, value is list of variant IDs (used for individual variant annotations)
+        // TODO: change this back to a single vcf once new back-end deployed
 
         // BAM, VCF data fields
         this.vcfData = null;            // Combined vcf data for all phase files apart of this cohort
@@ -55,6 +56,7 @@ class CohortModel {
         this.isSubsetCohort = false;
         this.isUnaffectedCohort = false;
 
+        // TODO: get rid of p-value static values once new back-end deployed
         this.singleDegreeChiSqValues = [0.000, 0.001, 0.004, 0.016, 0.102, 0.455, 1.32, 1.64, 2.71, 3.84, 5.02, 5.41, 6.63, 7.88, 9.14, 10.83, 12.12];
         this.correspondingPValues = [0.99, 0.975, 0.95, 0.90, 0.75, 0.50, 0.25, 0.2, 0.10, 0.05, 0.025, 0.02, 0.01, 0.005, 0.0025, 0.001, 0.0005];
         this.TOTAL_VAR_CUTOFF = 5000;
@@ -109,7 +111,7 @@ class CohortModel {
     getFirstVcf() {
         let self = this;
         let urlNames = Object.keys(self.vcfEndptHash);
-        if (urlNames != null && urlNames.length > 0 && urlNames[0] != null && urlNames[0] != '') {
+        if (urlNames != null && urlNames.length > 0 && urlNames[0] != null && urlNames[0] !== '') {
             return self.vcfEndptHash[urlNames[0]];
         }
     }
@@ -961,7 +963,6 @@ class CohortModel {
                         me.vcfUrlEntered = true;
                         me.vcfFileOpened = false;
                         me.getVcfRefName = null;
-                        // TODO: not getting reassinged in data set model
                         updatedListObj['invalidNames'] = invalidVcfNames;
                         updatedListObj['invalidReasons'] = invalidVcfReasons;
                         resolve(updatedListObj);
@@ -1126,7 +1127,7 @@ class CohortModel {
                             false       // enrichment mode (aka subset delta calculations only - no annotation)
                         )
                             .then(function (singleVarData) {
-                                // TODO: need to test this when variant overlap
+                                // TODO: need to test this when variants overlap in horizontal position
                                 if (singleVarData != null && singleVarData.features != null) {
                                     let matchingVariants = [];
                                     let featureList = [];
@@ -2581,6 +2582,7 @@ class CohortModel {
 
     }
 
+    /* Returns a list of variants filtered based on the provided filter object. */
     filterVariants(data, filterObject, start, end, bypassRangeFilter) {
         var me = this;
 
@@ -2589,7 +2591,7 @@ class CohortModel {
             return;
         }
 
-        if (me.relationship == 'known-variants') {
+        if (me.relationship === 'known-variants') {
             return me.filterKnownVariants(data, start, end, bypassRangeFilter);
         }
 
@@ -2613,17 +2615,17 @@ class CohortModel {
         var filteredFeatures = data.features.filter(function (d) {
 
             var passAffectedStatus = true;
-            if (me.getName() == PROBAND_ID && affectedFilters.length > 0) {
+            if (me.getName() === PROBAND_ID && affectedFilters.length > 0) {
                 affectedFilters.forEach(function (info) {
                     var genotype = data.genotypes[info.variantCard.getSampleName()];
                     var zygosity = genotype && genotype.zygosity ? genotype.zygosity : "gt_unknown";
 
-                    if (info.status == 'affected') {
-                        if (zygosity.toUpperCase() != 'HET' && zygosity.toUpperCase() != 'HOM') {
+                    if (info.status === 'affected') {
+                        if (zygosity.toUpperCase() !== 'HET' && zygosity.toUpperCase() !== 'HOM') {
                             passAffectedStatus = false;
                         }
-                    } else if (info.status == 'unaffected') {
-                        if (zygosity.toUpperCase() == 'HET' || zygosity.toUpperCase() == 'HOM') {
+                    } else if (info.status === 'unaffected') {
+                        if (zygosity.toUpperCase() === 'HET' || zygosity.toUpperCase() === 'HOM') {
                             passAffectedStatus = false;
                         }
                     }
@@ -2633,7 +2635,7 @@ class CohortModel {
 
             // We don't want to display homozygous reference variants in the variant chart
             // or feature matrix (but we want to keep it to show trio allele counts).
-            var isHomRef = (d.zygosity != null && (d.zygosity.toLowerCase() == 'gt_unknown' || d.zygosity.toLowerCase() == 'homref')) ? true : false;
+            var isHomRef = (d.zygosity != null && (d.zygosity.toLowerCase() === 'gt_unknown' || d.zygosity.toLowerCase() === 'homref'));
             var isGenotypeAbsent = d.genotype == null ? true : (d.genotype.absent ? d.genotype.absent : false);
 
             var meetsRegion = true;
@@ -2644,7 +2646,7 @@ class CohortModel {
             }
 
             // Allele frequency Exac - Treat null and blank af as 0
-            var variantAf = d.afHighest && d.afHighest != "." ? d.afHighest : 0;
+            var variantAf = d.afHighest && d.afHighest !== "." ? d.afHighest : 0;
             var meetsAf = true;
             if ($.isNumeric(filterObject.afMin) && $.isNumeric(filterObject.afMax)) {
                 meetsAf = (variantAf >= filterObject.afMin && variantAf <= filterObject.afMax);
@@ -2656,11 +2658,11 @@ class CohortModel {
             } else if (!filterObject.loadedVariants && !filterObject.calledVariants) {
                 meetsLoadedVsCalled = true;
             } else if (filterObject.loadedVariants) {
-                if (!d.hasOwnProperty("fbCalled") || d.fbCalled != 'Y') {
+                if (!d.hasOwnProperty("fbCalled") || d.fbCalled !== 'Y') {
                     meetsLoadedVsCalled = true;
                 }
             } else if (filterObject.calledVariants) {
-                if (d.hasOwnProperty("fbCalled") && d.fbCalled == 'Y') {
+                if (d.hasOwnProperty("fbCalled") && d.fbCalled === 'Y') {
                     meetsLoadedVsCalled = true;
                 }
             }
@@ -2668,13 +2670,13 @@ class CohortModel {
             var meetsExonic = false;
             if (filterObject.exonicOnly) {
                 for (key in d[impactField]) {
-                    if (key.toLowerCase() == 'high' || key.toLowerCase() == 'moderate') {
+                    if (key.toLowerCase() === 'high' || key.toLowerCase() === 'moderate') {
                         meetsExonic = true;
                     }
                 }
                 if (!meetsExonic) {
                     for (key in d[effectField]) {
-                        if (key.toLowerCase() != 'intron_variant' && key.toLowerCase() != 'intron variant' && key.toLowerCase() != "intron") {
+                        if (key.toLowerCase() !== 'intron_variant' && key.toLowerCase() !== 'intron variant' && key.toLowerCase() !== "intron") {
                             meetsExonic = true;
                         }
                     }
@@ -2748,11 +2750,11 @@ class CohortModel {
                     }
                     if ($.isPlainObject(annotValue)) {
                         for (avKey in annotValue) {
-                            var doesMatch = avKey.toLowerCase() == annot.value.toLowerCase();
+                            let doesMatch = avKey.toLowerCase() === annot.value.toLowerCase();
                             incrementEqualityCount(doesMatch, evalObject[evalKey])
                         }
                     } else {
-                        var doesMatch = annotValue.toLowerCase() == annot.value.toLowerCase();
+                        let doesMatch = annotValue.toLowerCase() === annot.value.toLowerCase();
                         incrementEqualityCount(doesMatch, evalObject[evalKey])
                     }
                 }
@@ -2761,16 +2763,16 @@ class CohortModel {
             // If zero annots to evaluate, the variant meets the criteria.
             // If annots are to be evaluated, the variant must match
             // at least one value for each annot to meet criteria
-            var meetsAnnot = true;
+            let meetsAnnot = true;
             for (key in evaluations) {
-                var evalObject = evaluations[key];
+                let evalObject = evaluations[key];
 
                 // Bypass evaluation for non-proband on inheritance mode.  This only
                 // applied to proband.
-                if (key == 'inheritance' && me.getName() != PROBAND_ID) {
+                if (key === 'inheritance' && me.getName() !== PROBAND_ID) {
                     continue;
                 }
-                if (evalObject.hasOwnProperty("equals") && evalObject["equals"].matchCount == 0) {
+                if (evalObject.hasOwnProperty("equals") && evalObject["equals"].matchCount === 0) {
                     meetsAnnot = false;
                     break;
                 }
@@ -2780,13 +2782,13 @@ class CohortModel {
             // we set that the annotation critera was not met.  Example:  When filter is
             // clinvar 'not equal' pathogenic, and variant.clinvar == 'pathogenic' matchCount > 0,
             // so the variants does not meet the annotation criteria
-            var meetsNotEqualAnnot = true
+            let meetsNotEqualAnnot = true;
             for (key in evaluations) {
-                var evalObject = evaluations[key];
+                let evalObject = evaluations[key];
 
                 // Bypass evaluation for non-proband on inheritance mode.  This only
                 // applied to proband.
-                if (key == 'inheritance' && me.getName() != PROBAND_ID) {
+                if (key === 'inheritance' && me.getName() !== PROBAND_ID) {
                     continue;
                 }
                 // Any case where the variant attribute matches value on a 'not equal' filter,
@@ -2796,14 +2798,13 @@ class CohortModel {
                     break;
                 }
             }
-
-
             return (!isHomRef || isGenotypeAbsent) && meetsRegion && meetsAf && meetsCoverage && meetsAnnot && meetsNotEqualAnnot && meetsExonic && meetsLoadedVsCalled && passAffectedStatus;
         });
 
-        var pileupObject = this._pileupVariants(filteredFeatures, start, end);
+        var pileupObject = this._enrichmentPileupVariants(filteredFeatures, start, end);
 
-        var vcfDataFiltered = {
+        // TODO F1: change this to enrichment pileup format
+        let vcfDataFiltered = {
             intronsExcludedCount: intronsExcludedCount,
             end: end,
             features: filteredFeatures,
@@ -2820,6 +2821,8 @@ class CohortModel {
         };
         return vcfDataFiltered;
     }
+
+
 
     filterKnownVariants(data, start, end, bypassRangeFilter, filterModel) {
         var me = this;

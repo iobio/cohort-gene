@@ -212,9 +212,9 @@ TD & SJG updated Jun2018 -->
                 cardWidth: 0,
                 showClinvarVariants: false,
                 activeBookmarksDrawer: null,
-                showCoverageCutoffs: false,  // TODO: not sure what this does/needs to be
+                showCoverageCutoffs: false,
 
-                DEMO_GENE: 'BRCA2'   // SJG TODO: get rid of this outside of demo
+                DEMO_GENE: 'BRCA2'
             }
         },
         computed: {
