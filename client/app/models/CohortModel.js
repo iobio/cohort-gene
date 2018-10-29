@@ -71,9 +71,13 @@ class CohortModel {
     }
 
     /* Returns sample name. Used in gene.iobio */
-
     getSampleName() {
         return this.sampleName;
+    }
+
+    /* Sets sample name. */
+    setSampleName(sampleName) {
+        this.sampleName = sampleName;
     }
 
     /* Returns a sample name if provided in the VCF header, otherwise returns null. */
@@ -100,16 +104,11 @@ class CohortModel {
         return this.getVariantModel().simonsIdMap;
     }
 
-    /* Sets sample name. */
-    setSampleName(sampleName) {
-        this.sampleName = sampleName;
-    }
-
     /* Returns the first vcf in vcfEndptHash. */
     getFirstVcf() {
         let self = this;
         let urlNames = Object.keys(self.vcfEndptHash);
-        if (urlNames != null && urlNames.length > 0 && urlNames[0] != null && urlNames[0] != '') {
+        if (urlNames != null && urlNames.length > 0 && urlNames[0] != null && urlNames[0] !== '') {
             return self.vcfEndptHash[urlNames[0]];
         }
     }
@@ -125,8 +124,7 @@ class CohortModel {
                 theVcfData.loadState[taskName] = true;
             }
             resolve();
-        }
-
+        };
         return new Promise(function (resolve, reject) {
             if (theVcfData != null) {
                 resolveIt(resolve, theVcfData);
@@ -231,7 +229,7 @@ class CohortModel {
                 // Find vcf data in cache
                 me._promiseGetData(dataKind, geneObject.gene_name, selectedTranscript)
                     .then(function (data) {
-                        if (data != null && data != '') {
+                        if (data != null && data !== '') {
                             me[dataKind] = data;
                             theVcfData = data;
                             resolve({model: me, vcfData: theVcfData});
@@ -260,7 +258,7 @@ class CohortModel {
 
                                         },
                                         function (error) {
-                                            var msg = "Problem occurred in CohortModel.promiseGetVcfData: " + error;
+                                            let msg = "Problem occurred in CohortModel.promiseGetVcfData: " + error;
                                             console.log(msg);
                                             reject(error);
                                         });
@@ -301,7 +299,7 @@ class CohortModel {
 
                                         },
                                         function (error) {
-                                            var msg = "An error occurred in CohortModel.promiseGetFbData: " + error;
+                                            let msg = "An error occurred in CohortModel.promiseGetFbData: " + error;
                                             console.log(msg);
                                             reject(msg);
                                         });
@@ -313,7 +311,7 @@ class CohortModel {
                         }
                     },
                     function (error) {
-                        var msg = "Problem in CohortModel.promiseGetFbData(): " + error;
+                        let msg = "Problem in CohortModel.promiseGetFbData(): " + error;
                         console.log(msg);
                         reject(msg);
                     })
@@ -328,7 +326,7 @@ class CohortModel {
         // Add the unique freebayes variants to vcf data to include
         // in feature matrix
         theVcfData.features.forEach(function (v) {
-            if (v.hasOwnProperty('fbCalled') && v.fbCalled == 'Y') {
+            if (v.hasOwnProperty('fbCalled') && v.fbCalled === 'Y') {
                 let variantObject = $.extend({}, v);
                 theFbData.features.push(variantObject);
                 variantObject.source = v;

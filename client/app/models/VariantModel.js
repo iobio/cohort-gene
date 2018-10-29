@@ -236,6 +236,31 @@ class VariantModel {
         })
     }
 
+    /* Sets up models for file loader. */
+    promiseInitLocal() {
+        let self = this;
+
+        // Set status
+        self.isLoaded = false;
+        self.inProgress.loadingDataSources = true;
+
+        // Initialize local data set
+        let localDataSet = new DataSetModel();
+        localDataSet.name = 'Local';
+        self.dataSet = localDataSet;
+
+        // Initialize proband model
+        let probandCohort = new CohortModel(self);
+        probandCohort.isProbandCohort = true;
+        probandCohort.subsetPhenotypes.push('Probands');
+        localDataSet.addCohort(probandCohort, PROBAND_ID);
+
+        // Initialize subset model
+        let subsetCohort = new CohortModel(self);
+        subsetCohort.isSubsetCohort = true;
+        localDataSet.addCohort(subsetCohort, SUBSET_ID);
+    }
+
     getRawIds(ids) {
         let rawIds = [];
         ids.forEach((idObj) => {

@@ -160,7 +160,7 @@
                 </draggable>
                 <v-flex xs6 class="mt-2 text-xs-left">
                     <v-btn small outline fab color="cohortNavy"
-                           @click="promiseAddSample">
+                           @click="promiseAddCohort">
                         <v-icon>add</v-icon>
                     </v-btn>
                 </v-flex>
@@ -194,7 +194,8 @@
             draggable
         },
         props: {
-            variantModel: null
+            variantModel: null,
+            launchedFromHub: false
         },
         data() {
             return {
@@ -518,9 +519,12 @@
             },
             init: function () {
                 let self = this;
-                if (self.variantModel && self.variantModel.getCanonicalModels().length > 0) {
+                // If we already have model information from Hub, we want to display that in the file loader
+                if (self.variantModel && self.launchedFromHub) {
+                    // TODO: fill in model info
                     self.initModelInfo();
                 } else {
+                    // TODO: nothing?
                     self.promiseAddCohort(false);
                 }
             },
@@ -548,31 +552,31 @@
                     }
                 })
             },
-            promiseInitMoreTumors: function () {
-                let self = this;
-
-                return new Promise((resolve, reject) => {
-                    let promises = [];
-                    if (self.stateUnchanged && self.sampleIds.length === 2) {
-                        for (let i = 0; i < 2; i++) {
-                            promises.push(self.promiseAddSample(true, false));
-                        }
-                    }
-                    Promise.all(promises)
-                        .then(() => {
-                            resolve();
-                        });
-                });
-            },
-            removeMoreTumors: function () {
-                let self = this;
-                if (self.stateUnchanged) {
-                    let sampleLength = self.sampleIds.length;
-                    for (let i = sampleLength - 1; i > 1; i--) {
-                        self.removeSample(i, false, true);
-                    }
-                }
-            },
+            // promiseInitMoreTumors: function () {
+            //     let self = this;
+            //
+            //     return new Promise((resolve, reject) => {
+            //         let promises = [];
+            //         if (self.stateUnchanged && self.sampleIds.length === 2) {
+            //             for (let i = 0; i < 2; i++) {
+            //                 promises.push(self.promiseAddSample(true, false));
+            //             }
+            //         }
+            //         Promise.all(promises)
+            //             .then(() => {
+            //                 resolve();
+            //             });
+            //     });
+            // },
+            // removeMoreTumors: function () {
+            //     let self = this;
+            //     if (self.stateUnchanged) {
+            //         let sampleLength = self.sampleIds.length;
+            //         for (let i = sampleLength - 1; i > 1; i--) {
+            //             self.removeSample(i, false, true);
+            //         }
+            //     }
+            // },
             removeSample: function (sampleIndex, stateChanged = true, demoCall = false) {
                 let self = this;
                 if (stateChanged) {

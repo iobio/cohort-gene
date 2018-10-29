@@ -25,6 +25,7 @@ TD & SJG updated Jun2018 -->
                 :selectedChr="selectedGene.chr"
                 :selectedBuild="genomeBuildHelper.getCurrentSpeciesName() + ' ' + genomeBuildHelper.getCurrentBuildName()"
                 :variantModel="variantModel"
+                :launchedFromHub="launchedFromHub"
                 @input="onGeneSelected"
                 @load-demo-data="onLoadDemoData"
                 @clear-cache="clearCache"
@@ -66,65 +67,63 @@ TD & SJG updated Jun2018 -->
                                 @zoomModeStart="startZoomMode">
                         </updated-variant-card>
                     </v-flex>
-                    <v-flex xs3 style="margin-left: 2px">
-                        <v-card>
-                            <v-tabs icons centered>
-                                <v-tabs-bar>
-                                    <v-tabs-slider color="cohortDarkBlue"></v-tabs-slider>
-                                    <v-tabs-item href="#summary-tab">
-                                        <v-icon style="margin-bottom: 0px;">bar_chart</v-icon>
-                                        Summary
-                                    </v-tabs-item>
-                                    <v-tabs-item href="#filter-tab">
-                                        <v-icon style="margin-bottom: 0px">bubble_chart</v-icon>
-                                        Filters
-                                    </v-tabs-item>
-                                    <v-tabs-item href="#flag-tab">
-                                        <v-icon style="margin-bottom: 0px">outlined_flag</v-icon>
-                                        Flags
-                                    </v-tabs-item>
-                                </v-tabs-bar>
-                                <v-tabs-items>
-                                    <v-tabs-content
-                                            :key="'summaryTab'"
-                                            :id="'summary-tab'">
-                                        <v-container>
-                                            <variant-summary-card
-                                                    :selectedGene="selectedGene.gene_name"
-                                                    :variant="selectedVariant"
-                                                    :variantInfo="selectedVariantInfo"
-                                                    :loadingExtraAnnotations="loadingExtraAnnotations"
-                                                    :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations"
-                                                    @summaryCardVariantDeselect="deselectVariant"
-                                                    ref="variantSummaryCardRef">
-                                            </variant-summary-card>
-                                        </v-container>
-                                    </v-tabs-content>
-                                    <v-tabs-content
-                                            :key="'filterTab'"
-                                            :id="'filter-tab'">
-                                        <v-container>
-                                            <filter-settings-menu
-                                                    v-if="filterModel"
-                                                    ref="filterSettingsMenuRef"
-                                                    :filterModel="filterModel"
-                                                    :showCoverageCutoffs="showCoverageCutoffs"
-                                                    @filter-settings-applied="onFilterSettingsApplied"
-                                                    @filter-settings-closed="$emit('filter-settings-closed')">
-                                            </filter-settings-menu>
-                                        </v-container>
-                                    </v-tabs-content>
-                                    <v-tabs-content
-                                            :key="'flagTab'"
-                                            :id="'flag-tab'">
-                                        <v-container>
-                                            <div style="text-align: center">
-                                                Coming Soon
-                                            </div>
-                                        </v-container>
-                                    </v-tabs-content>
-                                </v-tabs-items>
+                    <v-flex xs3>
+                        <v-card class="ml-1">
+                            <v-tabs centered icons-and-text>
+                                <v-tabs-slider color="cohortDarkBlue"></v-tabs-slider>
+                                <v-tab href="#summary-tab">
+                                    Summary
+                                    <v-icon style="margin-bottom: 0px;">bar_chart</v-icon>
+                                </v-tab>
+                                <v-tab href="#filter-tab">
+                                    Filters
+                                    <v-icon style="margin-bottom: 0px">bubble_chart</v-icon>
+                                </v-tab>
+                                <!--<v-tab href="#flag-tab">-->
+                                    <!--Flags-->
+                                    <!--<v-icon style="margin-bottom: 0px">outlined_flag</v-icon>-->
+                                <!--</v-tab>-->
                             </v-tabs>
+                            <v-tabs-items>
+                                <v-tab-item
+                                        :key="'summaryTab'"
+                                        :id="'summary-tab'">
+                                    <v-container>
+                                        <variant-summary-card
+                                                :selectedGene="selectedGene.gene_name"
+                                                :variant="selectedVariant"
+                                                :variantInfo="selectedVariantInfo"
+                                                :loadingExtraAnnotations="loadingExtraAnnotations"
+                                                :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations"
+                                                @summaryCardVariantDeselect="deselectVariant"
+                                                ref="variantSummaryCardRef">
+                                        </variant-summary-card>
+                                    </v-container>
+                                </v-tab-item>
+                                <v-tab-item
+                                        :key="'filterTab'"
+                                        :id="'filter-tab'">
+                                    <v-container>
+                                        <filter-settings-menu
+                                                v-if="filterModel"
+                                                ref="filterSettingsMenuRef"
+                                                :filterModel="filterModel"
+                                                :showCoverageCutoffs="showCoverageCutoffs"
+                                                @filter-settings-applied="onFilterSettingsApplied"
+                                                @filter-settings-closed="$emit('filter-settings-closed')">
+                                        </filter-settings-menu>
+                                    </v-container>
+                                </v-tab-item>
+                                <!--<v-tab-item-->
+                                        <!--:key="'flagTab'"-->
+                                        <!--:id="'flag-tab'">-->
+                                    <!--<v-container>-->
+                                        <!--<div style="text-align: center">-->
+                                            <!--Coming Soon-->
+                                        <!--</div>-->
+                                    <!--</v-container>-->
+                                <!--</v-tab-item>-->
+                            </v-tabs-items>
                         </v-card>
                     </v-flex>
                 </v-layout>
@@ -201,6 +200,7 @@ TD & SJG updated Jun2018 -->
 
                 allGenes: allGenesData,
                 simonsIdMap: simonsIdMap,
+                launchedFromHub: false,
 
                 variantModel: null,
                 geneModel: null,
@@ -668,6 +668,7 @@ TD & SJG updated Jun2018 -->
 
                     // If we have a project ID here, coming from Hub launch
                     if (projectId !== '0') {
+                        self.launchingFromHub = true;
                         let hubEndpoint = new HubEndpoint(source);
                         let initialLaunch = !(self.paramProjectId === '0');
                         self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch)
@@ -689,7 +690,8 @@ TD & SJG updated Jun2018 -->
                     }
                     // Otherwise launching stand alone
                     else {
-                        // TODO: put up splash screen like gene?
+                        // TODO: display some other splash screeen middle
+                        self.variantModel.promiseInitLocal();
                     }
                 });
             },

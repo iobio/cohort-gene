@@ -62,23 +62,20 @@
             <v-spacer></v-spacer>
             <files-menu
                     :variantModel="variantModel"
+                    :launchedFromHub="launchedFromHub"
                     @on-files-loaded="onFilesLoaded"
-                    @load-demo-data="onLoadDemoData"
-            >
+                    @load-demo-data="onLoadDemoData">
             </files-menu>
             <v-menu
                     offset-y
                     :close-on-content-click="false"
                     :nudge-width="400"
-                    v-model="showLegendMenu"
-            >
+                    v-model="showLegendMenu">
                 <v-btn flat slot="activator">
                     <v-icon>description</v-icon>
                     Legend
                 </v-btn>
-
-                <legend-panel>
-                </legend-panel>
+                <legend-panel></legend-panel>
             </v-menu>
 
 
@@ -142,7 +139,8 @@
             selectedGeneName: "",
             selectedChr: "",
             selectedBuild: '',
-            variantModel: null
+            variantModel: null,
+            launchedFromHub: false
         },
         computed: {
             selectedGeneDisplay: function () {
