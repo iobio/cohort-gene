@@ -79,10 +79,6 @@ TD & SJG updated Jun2018 -->
                                     Filters
                                     <v-icon style="margin-bottom: 0px">bubble_chart</v-icon>
                                 </v-tab>
-                                <!--<v-tab href="#flag-tab">-->
-                                    <!--Flags-->
-                                    <!--<v-icon style="margin-bottom: 0px">outlined_flag</v-icon>-->
-                                <!--</v-tab>-->
                             </v-tabs>
                             <v-tabs-items>
                                 <v-tab-item
@@ -114,15 +110,6 @@ TD & SJG updated Jun2018 -->
                                         </filter-settings-menu>
                                     </v-container>
                                 </v-tab-item>
-                                <!--<v-tab-item-->
-                                        <!--:key="'flagTab'"-->
-                                        <!--:id="'flag-tab'">-->
-                                    <!--<v-container>-->
-                                        <!--<div style="text-align: center">-->
-                                            <!--Coming Soon-->
-                                        <!--</div>-->
-                                    <!--</v-container>-->
-                                <!--</v-tab-item>-->
                             </v-tabs-items>
                         </v-card>
                     </v-flex>

@@ -14,7 +14,8 @@ class VariantModel {
         this.probandOnlyVars = {};
 
         // Data props
-        this.dataSet = null;            // The collection of files for analysis, organized into cohorts
+        this.mainDataSet = null;            // The main data set
+        this.otherDataSets = [];            // Any other data sets being compared to main data set
         this.totalProbandCount = 0;
         this.totalSubsetCount = 0;
         this.affectedProbandCount = 0;
@@ -86,7 +87,7 @@ class VariantModel {
         let demoDataSet = new DataSetModel();
         demoDataSet.name = 'Demo';
         demoDataSet.vcfUrl = self.userVcf;
-        self.dataSet = demoDataSet;
+        self.mainDataSet = demoDataSet;
 
         // Initialize proband model
         let allSampleCohort = new CohortModel(self);
@@ -120,7 +121,7 @@ class VariantModel {
         // Initialize hub data set
         let hubDataSet = new DataSetModel();
         hubDataSet.name = 'Hub';
-        self.dataSet = hubDataSet;
+        self.mainDataSet = hubDataSet;
 
         // Initialize proband model
         let probandCohort = new CohortModel(self);
@@ -247,7 +248,7 @@ class VariantModel {
         // Initialize local data set
         let localDataSet = new DataSetModel();
         localDataSet.name = 'Local';
-        self.dataSet = localDataSet;
+        self.mainDataSet = localDataSet;
 
         // Initialize proband model
         let probandCohort = new CohortModel(self);
@@ -538,12 +539,12 @@ class VariantModel {
 
         return new Promise(function (resolve, reject) {
             // Finish initializing cohort models
-            let subsetCohort = self.dataSet.getSubsetCohort();
+            let subsetCohort = self.mainDataSet.getSubsetCohort();
             subsetCohort.inProgress.verifyingVcfUrl = true;
             subsetCohort.init(self, vcfFileNames);
 
             // Check vcf urls and add samples
-            self.promiseAddSamples(subsetCohort, self.dataSet.vcfNames, self.dataSet.vcfUrls, self.dataSet.tbiUrls)
+            self.promiseAddSamples(subsetCohort, self.mainDataSet.vcfNames, self.mainDataSet.vcfUrls, self.mainDataSet.tbiUrls)
                 .then(function () {
                     subsetCohort.inProgress.verifyingVcfUrl = false;
                     self.inProgress.loadingDataSources = false;
@@ -566,11 +567,11 @@ class VariantModel {
                     .then((updatedListObj) => {
                         if (updatedListObj != null) {
                             // Assign updated, stably-sorted lists to data set model
-                            self.dataSet.vcfNames = updatedListObj['names'];
-                            self.dataSet.vcfUrls = updatedListObj['vcfs'];
-                            self.dataSet.tbiUrls = updatedListObj['tbis'];
-                            self.dataSet.invalidVcfNames = updatedListObj['invalidNames'];
-                            self.dataSet.invalidVcfReasons = updatedListObj['invalidReasons'];
+                            self.mainDataSet.vcfNames = updatedListObj['names'];
+                            self.mainDataSet.vcfUrls = updatedListObj['vcfs'];
+                            self.mainDataSet.tbiUrls = updatedListObj['tbis'];
+                            self.mainDataSet.invalidVcfNames = updatedListObj['invalidNames'];
+                            self.mainDataSet.invalidVcfReasons = updatedListObj['invalidReasons'];
                             resolve();
                         }
                         else {
@@ -585,6 +586,10 @@ class VariantModel {
 
     /* Adds a cohort based on model info input obtained from files menu */
     // TODO: left off refactoring here!
+    promiseAddEntry(modelInfo) {
+        // If we already have a data model w/ that url, don't need to create a new one
+        // Otherwise,
+    }
 
     promiseAddCohort(modelInfo) {
         let self = this;
@@ -655,7 +660,7 @@ class VariantModel {
         let promises = [];
 
         return new Promise(function (resolve, reject) {
-            if (self.dataSet == null) {
+            if (self.mainDataSet == null) {
                 resolve();
             } else {
                 // Load variants
@@ -714,8 +719,8 @@ class VariantModel {
             let probandCounts = null;
 
             // Annotate variants for cohort models that have specified IDs
-            if (self.dataSet.getSubsetCohort() != null) {
-                let cohortModel = self.dataSet.getSubsetCohort();
+            if (self.mainDataSet.getSubsetCohort() != null) {
+                let cohortModel = self.mainDataSet.getSubsetCohort();
                 cohortModel.inProgress.loadingVariants = true;
                 let p = cohortModel.promiseAnnotateVariantEnrichment(theGene,
                     theTranscript, [cohortModel],
@@ -764,7 +769,7 @@ class VariantModel {
 
         return new Promise(function (resolve, reject) {
             // Annotate all variants in both proband and subset groups
-            let subsetCohort = self.dataSet.getSubsetCohort();
+            let subsetCohort = self.mainDataSet.getSubsetCohort();
             subsetCohort.promiseAnnotateVariants(theGene,
                 theTranscript, [subsetCohort],
                 false, isBackground, self.keepVariantsCombined, false)
@@ -791,7 +796,7 @@ class VariantModel {
         let self = this;
         let fileNames = Object.keys(variantInfo);
         let updatedVarLookup = {};
-        let subsetModel = self.dataSet.getSubsetCohort();
+        let subsetModel = self.mainDataSet.getSubsetCohort();
         let existingVariants = [];
 
         // If we have multiple variants to combine
@@ -867,7 +872,7 @@ class VariantModel {
         });
 
         // Retrieve currently displayed variants, or singly clicked on variant
-        let subsetModel = self.dataSet.getSubsetCohort();
+        let subsetModel = self.mainDataSet.getSubsetCohort();
         let existingVariants = [];
         if (annotatedVars.length > 1) {
             existingVariants = subsetModel.loadedVariants.features;
@@ -944,8 +949,8 @@ class VariantModel {
         let self = this;
 
         self.extraAnnotationsLoaded = false;
-        if (self.dataSet != null) {
-            self.dataSet.getCohorts().forEach(function (cohort) {
+        if (self.mainDataSet != null) {
+            self.mainDataSet.getCohorts().forEach(function (cohort) {
                 cohort.loadedVariants = {
                     loadState: {},
                     features: [],
@@ -1009,7 +1014,7 @@ class VariantModel {
             return filteredVariants;
         };
 
-        let cohort = self.dataSet.getSubsetCohort();
+        let cohort = self.mainDataSet.getSubsetCohort();
         if (name == null || name === cohort.name) {
             if (cohort.vcfData && cohort.vcfData.features) {
                 let start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
@@ -1041,7 +1046,7 @@ class VariantModel {
             return filteredVariants;
         };
 
-        let cohort = self.dataSet.getSubsetCohort();
+        let cohort = self.mainDataSet.getSubsetCohort();
         if (cohort != null) {
             if (cohort.vcfData && cohort.vcfData.features) {
                 let start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
@@ -1180,12 +1185,12 @@ class VariantModel {
                 }
 
                 let refreshVariantsFunction = isClinvarOffline || clinvarSource === 'vcf'
-                    ? self.dataSet.getSubsetCohort()._refreshVariantsWithClinvarVCFRecs.bind(self.dataSet.getSubsetCohort(), unionVcfData)
-                    : self.dataSet.getSubsetCohort()._refreshVariantsWithClinvarEutils.bind(self.dataSet.getSubsetCohort(), unionVcfData);
+                    ? self.mainDataSet.getSubsetCohort()._refreshVariantsWithClinvarVCFRecs.bind(self.mainDataSet.getSubsetCohort(), unionVcfData)
+                    : self.mainDataSet.getSubsetCohort()._refreshVariantsWithClinvarEutils.bind(self.mainDataSet.getSubsetCohort(), unionVcfData);
 
-                self.dataSet.getSubsetCohort().getFirstVcf().promiseGetClinvarRecords(
+                self.mainDataSet.getSubsetCohort().getFirstVcf().promiseGetClinvarRecords(
                     unionVcfData,
-                    self.dataSet.getSubsetCohort()._stripRefName(geneObject.chr),
+                    self.mainDataSet.getSubsetCohort()._stripRefName(geneObject.chr),
                     geneObject,
                     self.geneModel.clinvarGenes,
                     refreshVariantsFunction)
@@ -1195,7 +1200,7 @@ class VariantModel {
                         unionVcfData.features.forEach(function (variant) {
                             var clinvarAnnot = {};
 
-                            for (var key in self.dataSet.getSubsetCohort().getFirstVcf().getClinvarAnnots()) {
+                            for (var key in self.mainDataSet.getSubsetCohort().getFirstVcf().getClinvarAnnots()) {
                                 clinvarAnnot[key] = variant[key];
                                 clinvarLookup[formatClinvarKey(variant)] = clinvarAnnot;
                             }
@@ -1277,7 +1282,7 @@ class VariantModel {
     /* Returns true if all cohorts within the data set are alignments only. */
     isAlignmentsOnly() {
         let self = this;
-        return self.dataSet.isAlignmentsOnly();
+        return self.mainDataSet.isAlignmentsOnly();
     }
 
     /* Assigns classes to each variant to control visual display in the DOM. */

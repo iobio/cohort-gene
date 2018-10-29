@@ -44,39 +44,65 @@
     .drag-handle {
         cursor: move;
     }
+
+    .vert-label {
+        -webkit-transform: rotate(-90deg);
+        -moz-transform: rotate(-90deg);
+        color: #516e87;
+        padding-top: 5px;
+        padding-left: 0;
+    }
+
     .vert-border {
         padding-left: 10px;
-        border-left: 1px solid #7f1010;
+        border-left: 1px solid #95b0c6;
+    }
+
+    .cont-left {
+        padding-right: 30px !important;
+        padding-top: 25px !important;
     }
 </style>
 
 <template>
     <v-layout id="sample-data-form" row wrap
               :class="{'mt-3': true}">
-        <v-flex d-flex xs12
-                :style="{'margin-left': '-17px'}">
+        <v-flex d-flex xs1>
+            <v-container height="100%" class="cont-left">
+                <div class="vert-label">
+                    {{hubLabel}}
+                </div>
+            </v-container>
+        </v-flex>
+        <v-flex d-flex xs11
+                :style="{'margin-left': '-19px'}">
             <v-layout row wrap class="vert-border">
-                <v-flex d-flex xs2 class="sample-label">
+                <v-flex d-flex xs3 class="sample-label">
                     <v-text-field class="pt-1"
-                                  color="cohortNavy"
-                                  placeholder="Enter nickname"
+                                  color="appColor"
+                                  placeholder="Enter name"
                                   hide-details
                                   v-model="modelInfo.displayName"
-                                  @change="onNameEntered"
+                                  @change="onNicknameEntered"
                     ></v-text-field>
                 </v-flex>
-                <v-flex d-flex xs8>
-                    <!--Spacing-->
+                <v-flex d-flex xs7>
+                    <!--space holder-->
                 </v-flex>
-                <v-flex d-flex xs2 style="padding-left: 30px">
+                <v-flex d-flex xs2 v-if="!isMainCohort" style="padding-left: 30px">
                     <v-btn small flat icon style="margin: 0 !important" class="drag-handle">
-                        <v-icon color="cohortNavy">reorder</v-icon>
+                        <v-icon color="appColor">reorder</v-icon>
                     </v-btn>
                     <v-btn small flat icon style="margin: 0 !important"
                            @click="removeSample">
-                        <v-icon color="cohortNavy">
+                        <v-icon color="appColor">
                             clear
                         </v-icon>
+                    </v-btn>
+                </v-flex>
+                <v-flex d-flex xs2 v-else style="padding-left: 70px">
+                    <v-btn small flat icon style="margin: 0 !important" class="drag-handle">
+                        <v-icon color="appColor">reorder</v-icon>
                     </v-btn>
                 </v-flex>
                 <v-flex d-flex xs12 class="ml-3" style="margin-top: -5px">
@@ -92,19 +118,7 @@
                             @file-selected="onVcfFilesSelected">
                     </sample-data-file>
                 </v-flex>
-                <v-flex xs4 id="sample-selection">
-                    <v-select
-                            v-bind:class="samples == null || samples.length === 0 ? 'hide' : ''"
-                            label="Sample"
-                            v-model="sample"
-                            :items="samples"
-                            color="appColor"
-                            autocomplete
-                            @input="onSampleSelected"
-                            hide-details
-                    ></v-select>
-                </v-flex>
-                <v-flex d-flex xs12 class="ml-3 ">
+                <v-flex d-flex xs12 class="ml-3">
                     <sample-data-file
                             :defaultUrl="modelInfo.bam"
                             :defaultIndexUrl="modelInfo.bai"
@@ -116,6 +130,24 @@
                             @url-entered="onBamUrlEntered"
                             @file-selected="onBamFilesSelected">
                     </sample-data-file>
+                </v-flex>
+                <v-flex d-flex xs6 class="ml-3">
+                    <!--TODO: want to pop up selection modal on click and fill in some ids on save/close-->
+                    <v-text-field
+                            v-bind:class="samples == null || samples.length === 0 ? 'hide' : ''"
+                            hide-details
+                            v-model="subsetSamples"
+                            color="cohortNavy"
+                    ></v-text-field>
+                </v-flex>
+                <v-flex d-flex xs6 class="ml-3">
+                    <v-text-field
+                            v-bind:class="samples == null || samples.length === 0 ? 'hide' : ''"
+                            v-bind:label="'Exclude samples'"
+                            hide-details
+                            v-model="excludeSamples"
+                            color="cohortNavy"
+                    ></v-text-field>
                 </v-flex>
             </v-layout>
         </v-flex>
@@ -136,8 +168,10 @@
         props: {
             modelInfo: null,
             separateUrlForIndex: null,
+            timeSeriesMode: false,
             dragId: '',
-            arrIndex: 0
+            arrIndex: 0,
+            launchedFromHub: false
         },
         data() {
             return {
@@ -151,18 +185,22 @@
                     'bam': '.bam, .bai'
                 },
                 samples: [],    // the available samples to choose from
-                sample: null,   // the selected sample
-                rowLabel: '',
+                subsetSamples: [],   // the selected subset sample
+                excludeSamples: [],     // samples to exclude from entire analysis
                 chipLabel: '',
-                isStaticSlot: false
+                isMainCohort: false,
+                hubLabel: 'LOCAL'
             }
         },
         watch: {
+            timeSeriesMode: function () {
+                let self = this;
+                self.updateLabel();
+            }
         },
-        computed: {
-        },
+        computed: {},
         methods: {
-            onNameEntered: function () {
+            onNicknameEntered: function () {
                 if (self.modelInfo && self.modelInfo.model) {
                     self.modelInfo.model.setDisplayName(self.modelInfo.displayName);
                 }
@@ -220,6 +258,11 @@
                         self.$emit("sample-data-changed");
                     })
             },
+            // onIsAffected: function () {
+            //     this.modelInfo.isTumor = this.isTumor;
+            //     this.modelInfo.model.isTumor = this.modelInfo.affectedStatus;
+            //     this.rowLabel = this.getRowLabel();
+            // },
             updateSamples: function (samples, sampleToSelect) {
                 this.samples = samples;
                 if (sampleToSelect) {
@@ -228,15 +271,15 @@
                     this.sample = null;
                 }
             },
-            onSampleSelected: function () {
-                let self = this;
-                self.modelInfo.sample = this.sample;
-                if (self.modelInfo.model) {
-                    self.modelInfo.model.sampleName = this.modelInfo.sample;
-                    self.modelInfo.model.setSelectedSample(this.modelInfo.sample);
-                }
-                self.$emit("sample-data-changed");
-            },
+            // onSampleSelected: function () {
+            //     let self = this;
+            //     self.modelInfo.sample = this.sample;
+            //     if (self.modelInfo.model) {
+            //         self.modelInfo.model.sampleName = this.modelInfo.sample;
+            //         self.modelInfo.model.setSelectedSample(this.modelInfo.sample);
+            //     }
+            //     self.$emit("sample-data-changed");
+            // },
             onBamUrlEntered: function (bamUrl, baiUrl) {
                 let self = this;
                 if (self.modelInfo && self.modelInfo.model) {
@@ -262,7 +305,7 @@
                 let self = this;
                 self.$emit("remove-sample", self.modelInfo.order);
             },
-            updateOrder: function(oldIndex, newIndex) {
+            updateOrder: function (oldIndex, newIndex) {
                 let self = this;
 
                 // Update order prop in view and model
@@ -277,7 +320,32 @@
                     && self.modelInfo.order > oldIndex) {
                     self.modelInfo.order--;
                 }
-            }
+                //self.updateLabel();
+            },
+            // getRowLabel: function() {
+            //     let self = this;
+            //     if (self.timeSeriesMode) {
+            //         return 'T' + self.modelInfo.order;
+            //     } else {
+            //         if (self.modelInfo.isTumor) {
+            //             return 'TUMOR';
+            //         } else {
+            //             return 'NORMAL';
+            //         }
+            //     }
+            // },
+            // updateLabel: function() {
+            //     let self = this;
+            //     self.rowLabel = self.getRowLabel();
+            // },
+            // setTumorStatus: function (status) {
+            //     let self = this;
+            //     self.isTumor = status;
+            //     self.modelInfo.isTumor = status;
+            //     if (self.modelInfo.model) {
+            //         self.modelInfo.model.isTumor = status;
+            //     }
+            // }
         },
         created: function () {
 
@@ -285,11 +353,16 @@
         mounted: function () {
             let self = this;
             self.samples = self.modelInfo.samples;
-            self.isStaticSlot = self.dragId === 's0' || self.dragId === 's1';
+            // self.isTumor = self.modelInfo.isTumor;
+            //self.rowLabel = self.getRowLabel();
+            // self.chipLabel = self.isTumor ? 'TUMOR' : 'NORMAL';
+            self.isMainCohort = self.dragId === 's0';
             if (self.modelInfo.vcf) {
                 self.onVcfUrlEntered(self.modelInfo.vcf, self.modelInfo.tbi);
             }
-
+            if (self.launchedFromHub) {
+                self.hubLabel = 'HUB DATA';
+            }
         }
     }
 

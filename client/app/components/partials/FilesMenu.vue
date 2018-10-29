@@ -152,6 +152,7 @@
                                 :dragId="sample"
                                 :arrIndex=sampleIds.indexOf(sample)
                                 :separateUrlForIndex="separateUrlForIndex"
+                                :launchedFromHub="launchedFromHub"
                                 @sample-data-changed="validate"
                                 @samples-available="onSamplesAvailable"
                                 @remove-sample="removeSample">
@@ -520,12 +521,10 @@
             init: function () {
                 let self = this;
                 // If we already have model information from Hub, we want to display that in the file loader
-                if (self.variantModel && self.launchedFromHub) {
-                    // TODO: fill in model info
+                if (self.variantModel && self.variantModel.getAllModels().length > 0) {
                     self.initModelInfo();
                 } else {
-                    // TODO: nothing?
-                    self.promiseAddCohort(false);
+                    self.promiseAddEntry(false);
                 }
             },
             initModelInfo: function () {
