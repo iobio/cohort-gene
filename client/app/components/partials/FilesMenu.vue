@@ -111,8 +111,8 @@
                             <v-list-tile>
                                 <v-list-tile-action>
                                     <v-btn flat color="appGray"
-                                           @click="loadDuoDemo">
-                                        {{ dualAutofill.display }}
+                                           @click="onAutoLoad(false)">
+                                        {{ autofill.display }}
                                     </v-btn>
                                 </v-list-tile-action>
                             </v-list-tile>
@@ -137,31 +137,26 @@
                         </v-list>
                     </v-menu>
                 </v-flex>
-                <draggable
-                        :options="{handle: '.drag-handle'}"
-                        @end="onDragEnd">
-                    <v-flex xs12
-                            v-for="sample in sampleIds"
-                            :key="sample"
-                            :id="sample"
-                            v-if="modelInfoMap && modelInfoMap[sample] && Object.keys(modelInfoMap[sample]).length > 0">
-                        <sample-data
-                                ref="sampleDataRef"
-                                v-if="modelInfoMap && modelInfoMap[sample] && Object.keys(modelInfoMap[sample]).length > 0"
-                                :modelInfo="modelInfoMap[sample]"
-                                :dragId="sample"
-                                :arrIndex=sampleIds.indexOf(sample)
-                                :separateUrlForIndex="separateUrlForIndex"
-                                :launchedFromHub="launchedFromHub"
-                                @sample-data-changed="validate"
-                                @samples-available="onSamplesAvailable"
-                                @remove-sample="removeSample">
-                        </sample-data>
-                    </v-flex>
-                </draggable>
+                <v-flex xs12
+                        v-for="entry in entryIds"
+                        :key="entry"
+                        :id="entry"
+                        v-if="modelInfoMap && modelInfoMap[entry]">
+                    <sample-data
+                            ref="sampleDataRef"
+                            v-if="modelInfoMap && modelInfoMap[entry]"
+                            :modelInfo="modelInfoMap[entry]"
+                            :dragId="entry"
+                            :arrIndex=entryIds.indexOf(entry)
+                            :separateUrlForIndex="separateUrlForIndex"
+                            :launchedFromHub="launchedFromHub"
+                            @sample-data-changed="validate"
+                            @remove-sample="removeSample">
+                    </sample-data>
+                </v-flex>
                 <v-flex xs6 class="mt-2 text-xs-left">
                     <v-btn small outline fab color="cohortNavy"
-                           @click="promiseAddCohort">
+                           @click="promiseAddEntry">
                         <v-icon>add</v-icon>
                     </v-btn>
                 </v-flex>
@@ -209,9 +204,9 @@
 
                 // TODO: these need to be modified for cohort style upload
                 modelInfoMap: {},
-                sampleIds: [],
+                entryIds: [],       // One per file menu entry
 
-                dualAutofill: {'display': 'Demo Data', 'value': 'dual'},
+                autofill: {'display': 'Demo Data', 'value': 'cohort'},
                 autofillAction: null,
                 separateUrlForIndex: false,
                 inProgress: false,
@@ -229,7 +224,7 @@
             }
         },
         methods: {
-            promiseAddCohort: function (stateChanged = true) {
+            promiseAddEntry: function (stateChanged = true) {
                 let self = this;
                 if (stateChanged) {
                     self.stateUnchanged = false;
@@ -242,30 +237,25 @@
 
                 return new Promise((resolve, reject) => {
                     let newId = self.findNextAvailableId();
-                    self.sampleIds.push(newId);
+                    self.entryIds.push(newId);
 
                     // Add entry to map
                     let newInfo = {};
                     newInfo.id = newId;
-                    newInfo.selectedSample = '';
-                    newInfo.samples = [];
                     newInfo.displayName = '';
-                    newInfo.vcf = null;
-                    newInfo.bam = null;
-                    newInfo.tbi = null;
-                    newInfo.bai = null;
-                    newInfo.order = self.sampleIds.length - 1;
+                    newInfo.samples = [];       // All samples in vcf provided
+                    newInfo.subsetSampleIds = [];
+                    newInfo.excludeSampleIds = [];
+                    newInfo.vcfs = [];
+                    newInfo.tbis = [];
+                    newInfo.bams = [];
+                    newInfo.bais = [];
                     self.modelInfoMap[newId] = newInfo;
 
                     // Add sample model for new entry
-                    self.variantModel.promiseAddCohort(newInfo)
-                        .then((model) => {
-                            newInfo.model = model;
-
-                            if (self.debugMe) {
-                                console.log('adding new sample');
-                                self.debugOrder();
-                            }
+                    self.variantModel.promiseAddEntry(newInfo)
+                        .then((dataSet) => {
+                            newInfo.dataSet = dataSet;
                             resolve();
                         })
                         .catch(() => {
@@ -276,9 +266,9 @@
             findNextAvailableId: function () {
                 let self = this;
                 let ids = [];
-                let arrLength = self.sampleIds.length;
+                let arrLength = self.entryIds.length;
                 for (let i = 0; i < arrLength; i++) {
-                    ids.push(parseInt(self.sampleIds[i].substring(1)));
+                    ids.push(parseInt(self.entryIds[i].substring(1)));
                 }
                 ids.sort();
                 let nextVal = arrLength;
@@ -348,7 +338,6 @@
                     newVal.tbi = val.tbi;
                     newVal.bam = val.bam;
                     newVal.bai = val.bai;
-                    newVal.order = val.order;
                     newVal.selectedSample = val.selectedSample;
                     newVal.displayName = val.displayName;
                     sampleArr.push(newVal);
@@ -364,38 +353,16 @@
                 e.initEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
                 a.dispatchEvent(e);
             },
-            loadDuoDemo: function () {
+            onAutoLoad: function (customInfos = false) {
                 let self = this;
-                self.onAutoLoad(false, 'demo', null);
-            },
-            loadTimeDemo: function () {
-                let self = this;
-                self.onAutoLoad(true, 'demo', null);
-            },
-            onAutoLoad: function (mode, customInfos) {
-                let self = this;
-
-                // Toggle switches
-                if (timeSeries) {
-                    self.timeSeriesMode = true;
-                } else {
-                    self.timeSeriesMode = false;
-                }
 
                 let infosToLoad = null;
-                let customHasSeparateIndices = false;
-                if (mode === 'demo') {
-                    let whichDemo = timeSeries ? 'timeSeries' : 'dual';
-                    infosToLoad = self.variantModel.demoModelInfos[whichDemo];
+                if (!customInfos) {
+                    self.separateUrlForIndex = false;
+                    infosToLoad = self.variantModel.demoInfo;
                 } else {
                     infosToLoad = customInfos;
-                    customHasSeparateIndices = self.checkCustomIndex(customInfos);
-                }
-
-                if (self.variantModel.demoCmmlFiles || customHasSeparateIndices) {
-                    self.separateUrlForIndex = true;
-                } else {
-                    self.separateUrlForIndex = false;
+                    self.separateUrlForIndex = self.checkCustomIndex(customInfos);
                 }
 
                 // Reset modelInfoMap to get rid of any added info extras
@@ -408,46 +375,34 @@
                     let id = modelInfo.id;
                     idList.push(id);
                     self.modelInfoMap[id] = modelInfo;
-                    self.sampleIds[arrIndex] = modelInfo.id;
+                    self.entryIds[arrIndex] = modelInfo.id;
                     arrIndex++;
                 });
 
                 // Get rid of any remaining extra samples names in array
-                if (self.sampleIds.length > arrIndex) {
-                    let numToDelete = self.sampleIds.length - arrIndex;
-                    self.sampleIds.splice(arrIndex, numToDelete);
+                if (self.entryIds.length > arrIndex) {
+                    let numToDelete = self.entryIds.length - arrIndex;
+                    self.entryIds.splice(arrIndex, numToDelete);
                 }
 
-                // Ensure orders are correct
-                for (let i = 0; i < self.sampleIds.length; i++) {
-                    let currInfo = self.modelInfoMap[self.sampleIds[i]];
-                    currInfo.order = i;
-                }
-
-                // Ensure models are synonymous with infos and in same order as viewd
-                self.variantModel.removeExtraModels(idList);
+                // Ensure models are synonymous with infos and in same order as view
+                self.variantModel.removeExtraneousDataSets(idList);
                 let addPromises = [];
-                for (let i = 0; i < self.sampleIds.length; i++) {
-                    let currKey = self.sampleIds[i];
-                    let currModel = self.cohortModel.getModel(currKey);
-                    if (currModel == null) {
-                        let corrInfo = self.modelInfoMap[currKey];
-                        let p = self.cohortModel.promiseAddSample(corrInfo, i); // Don't need to assign to map, done in promiseSetModel below
+                for (let i = 0; i < self.entryIds.length; i++) {
+                    let currId = self.entryIds[i];
+                    let currDataSet = self.variantModel.getDataSet(currId);
+                    if (currDataSet == null) {
+                        let corrInfo = self.modelInfoMap[currId];
+                        let p = self.variantModel.promiseAddEntry(corrInfo); // Don't need to assign to map, done in promiseSetModel below
                         addPromises.push(p);
-                    } else {
-                        self.cohortModel.sampleModels[i] = currModel;
                     }
                 }
 
                 Promise.all(addPromises)
                     .then(() => {
-                        self.variantModel.getCanonicalModels().forEach(function (model) {
-                            self.promiseSetModel(model);
+                        self.variantModel.getAllDataSets().forEach(function (dataSet) {
+                            self.promiseSetModel(dataSet);
                         });
-                        if (self.debugMe) {
-                            console.log('loading demo data');
-                            self.debugOrder();
-                        }
                     })
             },
             checkCustomIndex: function (infos) {
@@ -459,44 +414,52 @@
                 });
                 return areSeparate;
             },
-            /* Sets corresponding model for each info object; */
-            promiseSetModel: function (model) {
+            /* Sets corresponding data set for each info object, pulls out samples for associated vcf, validates all files. */
+            promiseSetModel: function (dataSet) {
                 let self = this;
                 return new Promise(function (resolve, reject) {
 
                     // Assign model prop in info object to model
-                    let theModel = model;
-                    let theModelInfo = self.modelInfoMap[theModel.id];
-                    theModelInfo.model = theModel;
+                    let theDataSet = dataSet;
+                    let theModelInfo = self.modelInfoMap[theDataSet.id];
+
+                    // TODO: do I need to keep track of dataset here?
+                    theModelInfo.dataSet = theDataSet;
 
                     // Trigger on vcf check in model
-                    theModel.onVcfUrlEntered(theModelInfo.vcf, theModelInfo.tbi, function (success, sampleNames) {
-                        if (success) {
-                            // Set samples prop
-                            theModelInfo.samples = sampleNames;
-                            self.$refs.sampleDataRef.forEach(function (ref) {
-                                if (ref.modelInfo.id === theModel.id) {
-                                    // Set selected sample in model and in child cmpnt
-                                    theModel.selectedSample = theModelInfo.selectedSample;
-                                    ref.updateSamples(sampleNames, theModelInfo.selectedSample);
+                    let theProbandModel = theDataSet.getProbandCohort();
+                    if (theProbandModel == null) {
+                        reject('Could not find associated proband model for the given data set.');
+                    }
+                    let nameList = [theModelInfo.id];
+                    theProbandModel.onVcfUrlEntered(nameList, theModelInfo.vcfs, theModelInfo.tbis)
+                        .then((successObj) => {
+                            if (successObj) {
+                                // Set samples prop
+                                theModelInfo.samples = successObj.samples;
+                                self.$refs.sampleDataRef.forEach(function (ref) {
+                                    if (ref.modelInfo.id === theDataSet.id) {
+                                        // Set selected sample in model and in child cmpnt
+                                        theDataSet.selectedSample = theModelInfo.selectedSample;
+                                        ref.updateSamples(successObj.samples, theModelInfo.selectedSample);
 
-                                    // Set display name in model
-                                    theModel.displayName = theModelInfo.displayName ? theModelInfo.displayName : theModelInfo.selectedSample;
+                                        // Set display name in model
+                                        theDataSet.displayName = theModelInfo.displayName ? theModelInfo.displayName : theModelInfo.selectedSample;
+                                        self.validate();
+                                    }
+                                });
+                                theProbandModel.onBamUrlEntered(theModelInfo.bam, theModelInfo.bai, function (success) {
                                     self.validate();
-                                }
-                            });
-                            theModel.onBamUrlEntered(theModelInfo.bam, theModelInfo.bai, function (success) {
-                                self.validate();
-                                if (success) {
-                                    resolve();
-                                } else {
-                                    reject();
-                                }
-                            })
-                        } else {
-                            reject();
-                        }
-                    })
+                                    if (success) {
+                                        resolve();
+                                    } else {
+                                        reject();
+                                    }
+                                })
+                            } else {
+                                reject();
+                            }
+                        })
                 })
             },
             validate: function () {
@@ -521,7 +484,7 @@
             init: function () {
                 let self = this;
                 // If we already have model information from Hub, we want to display that in the file loader
-                if (self.variantModel && self.variantModel.getAllModels().length > 0) {
+                if (self.variantModel && self.variantModel.getAllDataSets().length > 0) {
                     self.initModelInfo();
                 } else {
                     self.promiseAddEntry(false);
@@ -531,52 +494,30 @@
                 let self = this;
                 self.separateUrlForIndex = false;
                 self.timeSeries = false;
-                self.variantModel.getCanonicalModels().forEach(function (model) {
-                    let modelInfo = self.modelInfoMap[model.id];
+                self.variantModel.getAllDataSets().forEach((dataSet) => {
+
+                    let modelInfo = self.modelInfoMap[dataSet.id];
+                    let probandModel = dataSet.getProbandCohort();
+                    let subsetModel = dataSet.getSubsetCohort();
                     if (modelInfo == null) {
                         modelInfo = {};
-                        modelInfo.displayName = model.getDisplayName();
-                        modelInfo.isTumor = model.getTumorStatus();
-                        modelInfo.order = model.order;
-                        modelInfo.vcf = model.vcf ? model.vcf.getVcfURL() : null;
-                        modelInfo.tbi = model.vcf ? model.vcf.getTbiURL() : null;
-                        modelInfo.bam = model.bam ? model.bam.bamUri : null;
-                        modelInfo.bai = model.bam ? model.bam.baiUri : null;
-                        modelInfo.model = model;
+                        modelInfo.displayName = probandModel != null ? probandModel.trackName : '';
+                        modelInfo.subsetIds = subsetModel != null ? subsetModel.subsetIds : [];
+                        modelInfo.excludeIds = probandModel != null ? probandModel.excludeIds : [];
+                        modelInfo.vcfs = dataSet.vcfUrls != null ? dataSet.vcfUrls : dataSet.vcfFiles;
+                        modelInfo.tbis = dataSet.tbiUrls != null ? dataSet.tbiUrls : dataSet.tbiFiles;
+                        modelInfo.bams = dataSet.bamUrls != null ? dataSet.bamUrls : dataSet.bamFiles;
+                        modelInfo.bais = dataSet.baiUrls != null ? dataSet.baiUrls : dataSet.baiFiles;
+                        modelInfo.dataSet = dataSet;
                         if (modelInfo.tbi || modelInfo.bai) {
                             self.separateUrlForIndex = true;
                         }
-                        let key = 's' + self.sampleIds.length;
+                        let key = 's' + self.entryIds.length;
                         self.$set(self.modelInfoMap, key, modelInfo);
                     }
                 })
             },
-            // promiseInitMoreTumors: function () {
-            //     let self = this;
-            //
-            //     return new Promise((resolve, reject) => {
-            //         let promises = [];
-            //         if (self.stateUnchanged && self.sampleIds.length === 2) {
-            //             for (let i = 0; i < 2; i++) {
-            //                 promises.push(self.promiseAddSample(true, false));
-            //             }
-            //         }
-            //         Promise.all(promises)
-            //             .then(() => {
-            //                 resolve();
-            //             });
-            //     });
-            // },
-            // removeMoreTumors: function () {
-            //     let self = this;
-            //     if (self.stateUnchanged) {
-            //         let sampleLength = self.sampleIds.length;
-            //         for (let i = sampleLength - 1; i > 1; i--) {
-            //             self.removeSample(i, false, true);
-            //         }
-            //     }
-            // },
-            removeSample: function (sampleIndex, stateChanged = true, demoCall = false) {
+            removeSample: function (entryId, stateChanged = true, demoCall = false) {
                 let self = this;
                 if (stateChanged) {
                     self.stateUnchanged = false;
@@ -587,92 +528,11 @@
                     self.autofillAction = null;
                 }
 
-                // If we're deleting the first one on time series mode, must enforce next one normal
-                if (self.timeSeriesMode && sampleIndex === 0) {
-                    let key = self.sampleIds[1];
-                    self.modelInfoMap[key].isTumor = false;
-                    self.modelInfoMap[key].model.isTumor = false;
-                }
-
-                // Update order for any samples after deleted one
-                for (let i = sampleIndex + 1; i < self.sampleIds.length; i++) {
-                    let key = self.sampleIds[i];
-                    self.modelInfoMap[key].order--;
-                    self.modelInfoMap[key].model.order--;
-                }
-
                 // Remove sample and delete info
-                let id = self.sampleIds[sampleIndex];
-                self.sampleIds.splice(sampleIndex, 1);
-                delete self.modelInfoMap[id];
-                self.variantModel.removeSample(id);
-
-                // Update label
-                if (self.$refs.sampleDataRef != null) {
-                    self.$refs.sampleDataRef.forEach((ref) => {
-                        if (ref.modelInfo.order >= sampleIndex) {
-                            ref.updateLabel();
-                        }
-                    });
-                }
-                self.debugOrder();
-            },
-            onDragEnd: function (evt) {
-                let self = this;
-                self.stateUnchanged = false;
-
-                let oldIndex = evt.oldIndex;
-                let newIndex = evt.newIndex;
-
-                // Update order and isTumor props
-                self.updateSampleOrder(oldIndex, newIndex);
-            },
-            updateSampleOrder: function (oldIndex, newIndex, demoCall = false) {
-                let self = this;
-
-                if (self.autofillAction != null && !demoCall) {
-                    self.autofillAction = null;
-                }
-
-                if (self.$refs.sampleDataRef != null) {
-                    self.$refs.sampleDataRef.forEach((ref) => {
-                        ref.updateOrder(oldIndex, newIndex);
-                    });
-                }
-                // Order sample ids arrays for view and model accordingly
-                if (oldIndex < newIndex) {
-                    self.sampleIds.splice(newIndex + 1, 0, self.sampleIds[oldIndex]);
-                    self.sampleIds.splice(oldIndex, 1);
-                } else if (newIndex < oldIndex) {
-                    self.sampleIds.splice(newIndex, 0, self.sampleIds[oldIndex]);
-                    self.sampleIds.splice(oldIndex + 1, 1);
-                }
-                self.variantModel.updateSampleOrder(oldIndex, newIndex);
-
-                if (self.debugMe) {
-                    console.log('updating order');
-                    self.debugOrder();
-                }
-            },
-            debugOrder: function () {
-                let self = this;
-
-                console.log("sample id array: " + self.sampleIds.join(','));
-                console.log("modelInfoMap: " + (Object.keys(self.modelInfoMap)).join(','));
-                let modelInfoOrders = [];
-                (Object.values(self.modelInfoMap)).forEach((info) => {
-                    modelInfoOrders.push(info.order);
-                });
-                console.log('modelInfo orders: ' + modelInfoOrders.join(','));
-                let modelIds = [];
-                let modelOrders = [];
-                self.variantModel.sampleModels.forEach((model) => {
-                    modelIds.push(model.id);
-                    modelOrders.push(model.order);
-                });
-                console.log("cohort model list: " + modelIds.join(','));
-                console.log("cohort model map: " + (Object.keys(self.variantModel.sampleMap)).join(','));
-                console.log("cohort model orders: " + modelOrders.join(','));
+                let entryIndex = self.entryIds.indexOf(entryId);
+                self.entryIds.splice(entryIndex, 1);
+                delete self.modelInfoMap[entryId];
+                self.variantModel.removeEntry(entryId);
             }
         },
         computed: {

@@ -675,11 +675,11 @@ TD & SJG updated Jun2018 -->
                                 resolve();
                             })
                     }
-                    // Otherwise launching stand alone
-                    else {
-                        // TODO: display some other splash screeen middle
-                        self.variantModel.promiseInitLocal();
-                    }
+                    // // Otherwise launching stand alone
+                    // else {
+                    //     // TODO: display some other splash screeen middle
+                    //     self.variantModel.promiseInitLocal();
+                    // }
                 });
             },
             /* Returns array of phenotype objects {phenotypeName: phenotypeData} */

@@ -34,6 +34,9 @@ class CohortModel {
         this.subsetPhenotypes = [];     // Phrases describing phenotypic filtering data; displayed in track chips
         this.noMatchingSamples = false; // Flag to display No Matching Variants chip
 
+        // Optional exclude IDs
+        this.excludeIds = [];           // IDs we want to exclude from the entire analysis
+
         this.inProgress = {
             'fetchingHubData': false,
             'verifyingVcfUrl': false,
@@ -780,7 +783,7 @@ class CohortModel {
      *
      * Takes in three stably sorted lists of file names, vcf urls, and tbi urls.
      *
-     * Returns three stable sorted lists of vcf names, urls, and tbi urls.
+     * Returns three stable sorted lists of vcf names, urls, tbi urls, and array of sample names within file.
      * Each list only contains information relative to vcf files that may be found, successfully opened,
      * and were aligned with the majority reference build found in all of the provided files (i.e. GRCh38).
      *
@@ -804,21 +807,22 @@ class CohortModel {
                 me.isMultiSample = true;
                 let individualRefBuilds = {};
                 let openErrorFiles = [];
+                let sampleNames = [];       // Array of sample name arrays, in same order as vcfs
 
                 let openPromises = [];
-                let singleSuccess = true;
                 for (let i = 0; i < vcfUrls.length; i++) {
                     let p = new Promise((resolve, reject) => {
                         let currFileName = urlNames[i];
+                        debugger;   // is my vcfEndptHash setup?
                         let currVcfEndpt = me.vcfEndptHash[currFileName];
                         let currVcf = vcfUrls[i];
                         let currTbi = tbiUrls[i];
                         currVcfEndpt.openVcfUrl(currVcf, currTbi, function (success, errorMsg, hdrBuildResult) {
-                            singleSuccess |= success;
                             if (success) {
                                 // Get the sample names from the vcf header
-                                currVcfEndpt.getSampleNames(function (sampleNames) {
-                                    me.isMultiSample = !!(sampleNames && sampleNames.length > 1);   // TODO: this may be need to be moved to vcf model - not sure what fxnality is
+                                currVcfEndpt.getSampleNames(function (names) {
+                                    me.isMultiSample = !!(names && names.length > 1);
+                                    sampleNames.push(names);
                                 });
 
                                 // Get build version from vcf chromosome notation if can't get from header
@@ -849,6 +853,7 @@ class CohortModel {
                         updatedListObj['names'] = urlNames;
                         updatedListObj['vcfs'] = vcfUrls;
                         updatedListObj['tbis'] = tbiUrls;
+                        updatedListObj['samples'] = sampleNames;
                         let invalidVcfNames = [];
                         let invalidVcfReasons = []; // Must be in identical order as invalidVcfNames
 
@@ -867,10 +872,11 @@ class CohortModel {
                         else if (openErrorFiles.length > 0) {
                             errorMsg += 'The following files could not be found and will not be included in the analysis: ' + openErrorFiles.join(',');
                             me.removeEntriesFromHash(openErrorFiles);
-                            let updatedListObj = me.removeEntriesFromLists(openErrorFiles, urlNames, vcfUrls, tbiUrls);
+                            let updatedListObj = me.removeEntriesFromLists(openErrorFiles, urlNames, vcfUrls, tbiUrls, sampleNames);
                             urlNames = updatedListObj['names'];
                             vcfUrls = updatedListObj['vcfs'];
                             tbiUrls = updatedListObj['tbis'];
+                            sampleNames = updatedListObj['samples'];
 
                             openErrorFiles.forEach((file) => {
                                 invalidVcfNames.push(file);
@@ -904,10 +910,11 @@ class CohortModel {
                         // If we have some files we couldn't find a reference for, remove from lists
                         else if (unfoundRefFiles.length > 0) {
                             me.removeEntriesFromHash(unfoundRefFiles);
-                            updatedListObj = me.removeEntriesFromLists(unfoundRefFiles, urlNames, vcfUrls, tbiUrls);
+                            updatedListObj = me.removeEntriesFromLists(unfoundRefFiles, urlNames, vcfUrls, tbiUrls, sampleNames);
                             urlNames = updatedListObj['names'];
                             vcfUrls = updatedListObj['vcfs'];
                             tbiUrls = updatedListObj['tbis'];
+                            sampleNames = updatedListObj['samples'];
 
                             unfoundRefFiles.forEach((fileName) => {
                                 invalidVcfNames.push(fileName);
@@ -941,10 +948,11 @@ class CohortModel {
                             }
                             // Remove files with minority ref builds
                             me.removeEntriesFromHash(minorityRefKeyNames);
-                            updatedListObj = me.removeEntriesFromLists(minorityRefKeyNames, urlNames, vcfUrls, tbiUrls);
+                            updatedListObj = me.removeEntriesFromLists(minorityRefKeyNames, urlNames, vcfUrls, tbiUrls, sampleNames);
                             urlNames = updatedListObj['names'];
                             vcfUrls = updatedListObj['vcfs'];
                             tbiUrls = updatedListObj['tbis'];
+                            sampleNames = updatedListObj['samples'];
                             minorityRefKeyNames.forEach((fileName) => {
                                 invalidVcfNames.push(fileName);
                                 invalidVcfReasons.push('File aligned to different reference build than others');
@@ -971,7 +979,7 @@ class CohortModel {
     /* Takes in a list of file names and removes them from the subsequent three provided lists.
      * If a file name is provided that is not within nameList, vcfList, and/or tbiList, nothing is affected
      * Returns nameList, vcfList, and tbiList in a combined object. */
-    removeEntriesFromLists(fileNames, nameList, vcfList, tbiList) {
+    removeEntriesFromLists(fileNames, nameList, vcfList, tbiList, sampleNameList) {
         let self = this;
 
         // Create return object
@@ -983,11 +991,14 @@ class CohortModel {
             nameList.splice(fileIndex, 1);
             vcfList.splice(fileIndex, 1);
             tbiList.splice(fileIndex, 1);
+            sampleNameList.splice(fileIndex, 1);
+            debugger;   //Check that this works as expected
         });
 
         listObj['names'] = nameList;
         listObj['vcfs'] = vcfList;
         listObj['tbis'] = tbiList;
+        listObj['samples'] = sampleNameList;
         return listObj;
     }
 

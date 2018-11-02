@@ -3,12 +3,21 @@
 class DataSetModel {
     constructor() {
         // Public props
+        this.id = null;
         this.name = '';                 // Key for variant card
-        this.vcfNames = [];             // List of names corresponding to vcf urls - matching order as vcfUrls
-        this.vcfUrls = [];              // List of urls for phases vcfs
-        this.vcfFiles = null;
-        this.tbiUrls = [];              // List of urls for phases tbis - matching order as vcfUrls
-        this.tbiFiles = null;
+        this.vcfNames = [];             // List of names (or IDs for local) corresponding to vcf urls - matching order as vcfUrls
+
+        // Sources for data set
+        this.vcfUrls = [];
+        this.vcfFiles = [];
+        this.tbiUrls = [];
+        this.tbiFiles = [];
+        this.bamUrls = [];
+        this.bamFiles = [];
+        this.baiUrls = [];
+        this.baiFiles = [];
+
+        // For Hub launch issues
         this.invalidVcfNames = [];      // List of names corresponding to invalid vcfs
         this.invalidVcfReasons = [];   // List of reasons corresponding to invalid vcfs - matching order as invalidVcfNames
         this.annotationScheme = 'VEP';

@@ -31,8 +31,7 @@
                 margin-bottom: 2px
                 vertical-align: top
                 margin-left: 0px
-                font-size: 15px
-                color: $app-color
+                font-size: 18px
                 display: inline-block
                 margin-right: 20px
             .switch
@@ -77,10 +76,9 @@
         <v-flex d-flex xs11
                 :style="{'margin-left': '-19px'}">
             <v-layout row wrap class="vert-border">
-                <v-flex d-flex xs3 class="sample-label">
-                    <v-text-field class="pt-1"
-                                  color="appColor"
-                                  placeholder="Enter name"
+                <v-flex d-flex xs3 class="sample-label pb-1">
+                    <v-text-field color="cohortNavy"
+                                  label="Enter Track Name"
                                   hide-details
                                   v-model="modelInfo.displayName"
                                   @change="onNicknameEntered"
@@ -90,20 +88,16 @@
                     <!--space holder-->
                 </v-flex>
                 <v-flex d-flex xs2 v-if="!isMainCohort" style="padding-left: 30px">
-                    <v-btn small flat icon style="margin: 0 !important" class="drag-handle">
-                        <v-icon color="appColor">reorder</v-icon>
-                    </v-btn>
+
                     <v-btn small flat icon style="margin: 0 !important"
                            @click="removeSample">
-                        <v-icon color="appColor">
+                        <v-icon color="cohortNavy">
                             clear
                         </v-icon>
                     </v-btn>
                 </v-flex>
-                <v-flex d-flex xs2 v-else style="padding-left: 70px">
-                    <v-btn small flat icon style="margin: 0 !important" class="drag-handle">
-                        <v-icon color="appColor">reorder</v-icon>
-                    </v-btn>
+                <v-flex d-flex xs2 v-else>
+                    <!--space holder-->
                 </v-flex>
                 <v-flex d-flex xs12 class="ml-3" style="margin-top: -5px">
                     <sample-data-file
@@ -137,7 +131,7 @@
                             v-bind:class="samples == null || samples.length === 0 ? 'hide' : ''"
                             hide-details
                             v-model="subsetSamples"
-                            color="cohortNavy"
+                            color="cohortBlue"
                     ></v-text-field>
                 </v-flex>
                 <v-flex d-flex xs6 class="ml-3">
@@ -146,7 +140,7 @@
                             v-bind:label="'Exclude samples'"
                             hide-details
                             v-model="excludeSamples"
-                            color="cohortNavy"
+                            color="cohortBlue"
                     ></v-text-field>
                 </v-flex>
             </v-layout>
@@ -189,7 +183,7 @@
                 excludeSamples: [],     // samples to exclude from entire analysis
                 chipLabel: '',
                 isMainCohort: false,
-                hubLabel: 'LOCAL'
+                hubLabel: 'COHORT'
             }
         },
         watch: {
@@ -201,8 +195,8 @@
         computed: {},
         methods: {
             onNicknameEntered: function () {
-                if (self.modelInfo && self.modelInfo.model) {
-                    self.modelInfo.model.setDisplayName(self.modelInfo.displayName);
+                if (self.modelInfo && self.modelInfo.dataSet) {
+                    self.modelInfo.dataSet.getProbandCohort().trackName = self.modelInfo.displayName;
                 }
             },
             onVcfUrlEntered: function (vcfUrl, tbiUrl) {
@@ -226,7 +220,7 @@
                                 self.modelInfo.sample = null;
                                 self.modelInfo.model.sampleName = null;
                             }
-                            self.$emit("samples-available", self.modelInfo.order, self.samples);
+                            // self.$emit("samples-available", self.modelInfo.order, self.samples);
                         }
                         self.$emit("sample-data-changed");
                     })
@@ -303,24 +297,7 @@
             },
             removeSample: function () {
                 let self = this;
-                self.$emit("remove-sample", self.modelInfo.order);
-            },
-            updateOrder: function (oldIndex, newIndex) {
-                let self = this;
-
-                // Update order prop in view and model
-                if (self.modelInfo.order === oldIndex) {
-                    self.modelInfo.order = newIndex;
-                    self.modelInfo.model.order = newIndex;
-                } else if (oldIndex > newIndex && self.modelInfo.order >= newIndex
-                    && self.modelInfo.order < oldIndex) {
-                    self.modelInfo.order++;
-                    self.modelInfo.model.order++;
-                } else if (oldIndex < newIndex && self.modelInfo.order <= newIndex
-                    && self.modelInfo.order > oldIndex) {
-                    self.modelInfo.order--;
-                }
-                //self.updateLabel();
+                self.$emit("remove-sample", self.modelInfo.id);
             },
             // getRowLabel: function() {
             //     let self = this;

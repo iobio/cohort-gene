@@ -1,8 +1,5 @@
 /* Encapsulates logic for Variant Card and Variant Summary Card
    SJG & TS updated Apr2018 */
-
-// SJG_TIMING tag on all timing code
-
 class VariantModel {
     constructor(endpoint, genericAnnotation, translator, geneModel,
                 cacheHelper, genomeBuildHelper) {
@@ -60,7 +57,20 @@ class VariantModel {
         this.chrNameMap = ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8',
             'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16',
             'chr17', 'chr18', 'chr19', 'chr20', 'chr21', 'chr22', 'chrX', 'chrY'];
-        this.userVcf = "https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz";
+        this.demoVcf = "https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz";
+        this.demoInfo = [{
+                'id': 's0',
+                'displayName': 'Platinum Demo',
+                'vcfs': ['https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz'],
+                'tbis': null,
+                'bams': [   'https://s3.amazonaws.com/iobio/samples/bam/NA12878.exome.bam',
+                            'https://s3.amazonaws.com/iobio/samples/bam/NA12892.exome.bam',
+                            'https://s3.amazonaws.com/iobio/samples/bam/NA12891.exome.bam',
+                            'https://s3.amazonaws.com/iobio/samples/bam/NA12891.exome.bam'],
+                'bais': null,
+                'subsetSampleIds': ['NA12878', 'NA12892'],
+                'excludeSampleIds': []
+        }];
         this.demoGenes = ['RAI1', 'MYLK2', 'PDHA1', 'PDGFB', 'AIRE'];
     }
 
@@ -75,39 +85,80 @@ class VariantModel {
         self.extraAnnotationsLoaded = status;
     }
 
-    /* Sets up cohort and data set models, promises to initalize. */
-    promiseInitDemo() {
+    /* Returns data set based on provided ID. If data set with ID DNE, returns null. */
+    getDataSet(id) {
         let self = this;
 
-        // Set status
-        self.isLoaded = false;
-        self.inProgress.loadingDataSources = true;
-
-        // Initialize demo data set
-        let demoDataSet = new DataSetModel();
-        demoDataSet.name = 'Demo';
-        demoDataSet.vcfUrl = self.userVcf;
-        self.mainDataSet = demoDataSet;
-
-        // Initialize proband model
-        let allSampleCohort = new CohortModel(self);
-        allSampleCohort.isProbandCohort = true;
-        allSampleCohort.trackName = 'Variants for';
-        allSampleCohort.subsetIds.push(['NA12877', 'NA12878', 'NA12891', 'NA12892']);
-        allSampleCohort.subsetPhenotypes.push('Probands');
-        demoDataSet.addCohort(allSampleCohort, PROBAND_ID);
-
-        // Initialize subset model
-        let subsetCohort = new CohortModel(self);
-        subsetCohort.isSubsetCohort = true;
-        //subsetCohort.useUpdatedPileup = true;   // SJG get rid of after design finalization
-        subsetCohort.trackName = 'Variants for';
-        subsetCohort.subsetIds.push(['NA12878', 'NA12877']);
-        subsetCohort.subsetPhenotypes.push(['0 < IQ < 80', '40 < Paternal Age < 50']);
-        demoDataSet.addCohort(subsetCohort, SUBSET_ID);
-
-        return self.promiseInit();
+        if (id === 's0') {
+            return self.mainDataSet;
+        } else {
+            self.otherDataSets.forEach((dataSet) => {
+                if (dataSet.id === id) {
+                    return dataSet;
+                }
+            })
+        }
+        return null;
     }
+
+    getAllDataSets() {
+        let self = this;
+
+        let dataSets = [];
+        if (self.mainDataSet) {
+            dataSets.push(self.mainDataSet);
+        }
+        self.otherDataSets.forEach((dataSet) => {
+            dataSets.push(dataSet);
+        });
+        return dataSets;
+    }
+
+    /* Returns proband models corresponding to each data set model. */
+    getAllProbandModels() {
+        let self = this;
+
+        let models = [];
+        models.push(self.mainDataSet.getProbandCohort());
+        self.otherDataSets.forEach((dataSet) => {
+           models.push(dataSet.getProbandCohort());
+        });
+        return models;
+    }
+
+    // /* Sets up cohort and data set models, promises to initalize. */
+    // promiseInitDemo() {
+    //     let self = this;
+    //
+    //     // Set status
+    //     self.isLoaded = false;
+    //     self.inProgress.loadingDataSources = true;
+    //
+    //     // Initialize demo data set
+    //     let demoDataSet = new DataSetModel();
+    //     demoDataSet.name = 'Demo';
+    //     demoDataSet.vcfUrl = self.demoVcf;
+    //     self.mainDataSet = demoDataSet;
+    //
+    //     // Initialize proband model
+    //     let allSampleCohort = new CohortModel(self);
+    //     allSampleCohort.isProbandCohort = true;
+    //     allSampleCohort.trackName = 'Variants for';
+    //     allSampleCohort.subsetIds.push(['NA12877', 'NA12878', 'NA12891', 'NA12892']);
+    //     allSampleCohort.subsetPhenotypes.push('Probands');
+    //     demoDataSet.addCohort(allSampleCohort, PROBAND_ID);
+    //
+    //     // Initialize subset model
+    //     let subsetCohort = new CohortModel(self);
+    //     subsetCohort.isSubsetCohort = true;
+    //     //subsetCohort.useUpdatedPileup = true;   // SJG get rid of after design finalization
+    //     subsetCohort.trackName = 'Variants for';
+    //     subsetCohort.subsetIds.push(['NA12878', 'NA12877']);
+    //     subsetCohort.subsetPhenotypes.push(['0 < IQ < 80', '40 < Paternal Age < 50']);
+    //     demoDataSet.addCohort(subsetCohort, SUBSET_ID);
+    //
+    //     return self.promiseInit();
+    // }
 
     /* Sets up cohort and data set models.
        Retrieves urls and sample IDs from Hub, then promises to initialize.
@@ -222,6 +273,7 @@ class VariantModel {
 
                             self.promiseInit(hubDataSet.vcfNames)
                                 .then(function () {
+                                    debugger;       // What does vcfhash look like for proband model here?
                                     let idNumList = [];
                                     idNumList.push(probandCohort.subsetIds.length);
                                     idNumList.push(subsetCohort.subsetIds.length);
@@ -235,31 +287,6 @@ class VariantModel {
                     reject(error);
                 });
         })
-    }
-
-    /* Sets up models for file loader. */
-    promiseInitLocal() {
-        let self = this;
-
-        // Set status
-        self.isLoaded = false;
-        self.inProgress.loadingDataSources = true;
-
-        // Initialize local data set
-        let localDataSet = new DataSetModel();
-        localDataSet.name = 'Local';
-        self.mainDataSet = localDataSet;
-
-        // Initialize proband model
-        let probandCohort = new CohortModel(self);
-        probandCohort.isProbandCohort = true;
-        probandCohort.subsetPhenotypes.push('Probands');
-        localDataSet.addCohort(probandCohort, PROBAND_ID);
-
-        // Initialize subset model
-        let subsetCohort = new CohortModel(self);
-        subsetCohort.isSubsetCohort = true;
-        localDataSet.addCohort(subsetCohort, SUBSET_ID);
     }
 
     getRawIds(ids) {
@@ -584,33 +611,46 @@ class VariantModel {
         }
     }
 
-    /* Adds a cohort based on model info input obtained from files menu */
-    // TODO: left off refactoring here!
+    /* Adds data set model and cohort models to represent a single entry in file menu. Used when launching
+     * cohort-gene outside of Hub. */
     promiseAddEntry(modelInfo) {
-        // If we already have a data model w/ that url, don't need to create a new one
-        // Otherwise,
-    }
-
-    promiseAddCohort(modelInfo) {
         let self = this;
-        return new Promise(function (resolve, reject) {
-            let vm = new CohortModel();
-            vm.init(self);
-            vm.id = modelInfo.id;
-            vm.displayName = modelInfo.displayName;
-            // TODO: add ids and other necessary info here - figure out what that is
+
+        return new Promise((resolve, reject) => {
+            // Set status
+            self.isLoaded = false;
+            self.inProgress.loadingDataSources = true;
+
+            // Initialize local data set
+            let localDataSet = new DataSetModel();
+            localDataSet.id = modelInfo.id;
+            localDataSet.name = modelInfo.id;
+            // TODO: do I need to keep urls and files separate in data set model?
+            localDataSet.vcfUrls = modelInfo.vcfs;
+            localDataSet.tbiUrls = modelInfo.tbis;
+            localDataSet.bamUrls = modelInfo.bams;
+            localDataSet.baiUrls = modelInfo.bais;
+
+            // Initialize proband model
+            let probandCohort = new CohortModel(self);
+            probandCohort.isProbandCohort = true;
+            probandCohort.excludeIds = modelInfo.excludeIds;
+            localDataSet.addCohort(probandCohort, PROBAND_ID);
+
+            // Initialize subset model
+            let subsetCohort = new CohortModel(self);
+            subsetCohort.isSubsetCohort = true;
+            subsetCohort.subsetIds = modelInfo.subsetIds;
+            localDataSet.addCohort(subsetCohort, SUBSET_ID);
 
             let vcfPromise = null;
-            if (modelInfo.vcf) {
+            if (modelInfo.vcfs.length > 0) {
                 vcfPromise = new Promise(function (vcfResolve, vcfReject) {
-                        // TODO: make sure we don't need to set selected sample field for model here...
-                        vm.onVcfUrlEntered(modelInfo.vcf, modelInfo.tbi, function () {
+                        probandCohort.onVcfUrlEntered(modelInfo.vcfs, modelInfo.tbis, function () {
                             if (modelInfo.displayName && modelInfo.displayName !== '') {
-                                vm.setDisplayName(modelInfo.displayName);
-                            } else if (modelInfo.selectedSample != null) {
-                                vm.setDisplayName(modelInfo.selectedSample);
+                                probandCohort.trackName = modelInfo.displayName;
                             } else {
-                                vm.setDisplayName(modelInfo.id);
+                                probandCohort.trackName = modelInfo.id;
                             }
                             vcfResolve();
                         })
@@ -619,15 +659,16 @@ class VariantModel {
                         vcfReject(error);
                     });
             } else {
-                vm.selectedSample = null;
+                probandCohort.excludeIds = [];
+                subsetCohort.subsetIds = [];
                 vcfPromise = Promise.resolve();
             }
 
-            // TODO: incorporate bam coverage
+
             let bamPromise = null;
-            if (modelInfo.bam) {
+            if (modelInfo.bams.length > 0) {
                 bamPromise = new Promise(function (bamResolve, bamReject) {
-                        vm.onBamUrlEntered(modelInfo.bam, modelInfo.bai, function () {
+                        probandCohort.onBamUrlEntered(modelInfo.bams, modelInfo.bais, function () {
                             bamResolve();
                         })
                     },
@@ -635,22 +676,53 @@ class VariantModel {
                         bamReject(error);
                     });
             } else {
-                vm.bam = null;
+                localDataSet.bams = [];
+                localDataSet.bais = [];
                 bamPromise = Promise.resolve();
             }
 
             Promise.all([vcfPromise, bamPromise])
                 .then(function () {
-                    let theModel = {'model': vm};
-                    if (destIndex >= 0) {
-                        self.sampleModels[destIndex] = vm;
+                    if (self.mainDataSet == null) {
+                        self.mainDataSet = localDataSet;
                     } else {
-                        self.sampleModels.push(vm);
+                        self.otherDataSets.push(localDataSet);
                     }
-                    self.sampleMap[modelInfo.id] = theModel;
-                    resolve(vm);
+                    resolve(localDataSet);
                 });
-        })
+        });
+    }
+
+    /* Removes data set model and cohort models associated with the given ID from the optional other data set list. */
+    removeEntry(id) {
+        let self = this;
+
+        if (self.otherDataSets.length > 0) {
+            let removeIndex = -1;
+            for (let i = 0; i < self.otherDataSets.length; i++) {
+                if (self.otherDataSets[i].id === id) {
+                    removeIndex = i;
+                    break;
+                }
+            }
+            self.otherDataSets.splice(removeIndex, 1);
+        }
+    }
+
+    /* Removes any data set models from the optional other data set list with IDs other than the ones on the provided list. */
+    removeExtraneousDataSets(validIdList) {
+        let self = this;
+
+        let removeIndices = [];
+        for (let i = 0; i < self.otherDataSets.length; i++) {
+            let currDataSet = self.otherDataSets[i];
+            if (!validIdList.contains(currDataSet.id)) {
+                removeIndices.push(i);
+            }
+        }
+        removeIndices.forEach((index) => {
+            self.otherDataSets.splice(index, 1);
+        });
     }
 
     /* Promises to load variants for the selected gene.
