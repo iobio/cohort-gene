@@ -4,13 +4,7 @@ class VariantModel {
     constructor(endpoint, genericAnnotation, translator, geneModel,
                 cacheHelper, genomeBuildHelper) {
 
-        // Reference lookups used for pre-loading extra variant annotation
-        this.subsetEnrichedVars = {};
-        this.probandEnrichedVars = {};
-        this.nonEnrichedVars = {};
-        this.probandOnlyVars = {};
-
-        // Data props
+        // <editor-fold desc="DATA PROPERTIES">
         this.mainDataSet = null;            // The main data set
         this.otherDataSets = [];            // Any other data sets being compared to main data set
         this.totalProbandCount = 0;
@@ -19,71 +13,57 @@ class VariantModel {
         this.affectedSubsetCount = 0;
         this.probandZygMap = {};
         this.subsetZygMap = {};
+        // </editor-fold>
 
-        // Single helper classes
+        // <editor-fold desc="STATE & THRESHOLD PROPERTIES">
+        this.annotationScheme = 'vep';
+        this.maxDepth = 0;
+        this.keepVariantsCombined = true;           // True for multiple samples to be displayed on single track
+        this.efficiencyMode = true;                 // True to only pull back variant locations and not functional impacts
+        this.inProgress = {'loadingDataSources': false};
+        this.genesInProgress = [];
+        this.subsetEnrichmentThreshold = 2.0;
+        this.probandEnrichmentThreshold = 0.5;
+        this.extraAnnotationsLoaded = false;
+        // </editor-fold>
+
+        // <editor-fold desc="SINGLE HELPER CLASSES">
         this.endpoint = endpoint;
         this.hubEndpoint = {};
         this.genericAnnotation = genericAnnotation;
         this.translator = translator;
-
-
         this.geneModel = geneModel;
-        //this.cacheHelper = cacheHelper;
         this.genomeBuildHelper = genomeBuildHelper;
         this.filterModel = null;
         this.featureMatrixModel = null;
+        // </editor-fold>
 
-        // Settings/state props
-        this.annotationScheme = 'vep';
-        this.isLoaded = false;
-        this.maxAlleleCount = null;
-        this.maxDepth = 0;
-        this.keepVariantsCombined = true;       // True for multiple samples to be displayed on single track
-        this.efficiencyMode = true;              // True to only pull back variant locations and not functional impacts
-        this.inProgress = {'loadingDataSources': false};
-        this.genesInProgress = [];
-        this.hubIssue = false;
-        this.iobioServicesIssue = false;
-        this.subsetEnrichmentThreshold = 2.0;
-        this.probandEnrichmentThreshold = 0.5;
-        this.extraAnnotationsLoaded = false;
-
-        // Hub-specific props
+        // <editor-fold desc="MOSAIC PROPERTIES">
         this.projectId = '';                    // Hub project ID if we're sourcing data from there
         this.phenoFilters = {};                 // Hub filters applied to samples
         this.simonsIdMap = {};                  // Lookup table to convert Hub VCF IDs to Simons IDs
+        // </editor-fold>
 
-        // Const data
-        this.chrNameMap = ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8',
-            'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16',
-            'chr17', 'chr18', 'chr19', 'chr20', 'chr21', 'chr22', 'chrX', 'chrY'];
-        this.demoVcf = "https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz";
+        // <editor-fold desc="DEMO DATA">
         this.demoInfo = [{
-                'id': 's0',
-                'displayName': 'Platinum Demo',
-                'vcfs': ['https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz'],
-                'tbis': null,
-                'bams': [   'https://s3.amazonaws.com/iobio/samples/bam/NA12878.exome.bam',
-                            'https://s3.amazonaws.com/iobio/samples/bam/NA12892.exome.bam',
-                            'https://s3.amazonaws.com/iobio/samples/bam/NA12891.exome.bam',
-                            'https://s3.amazonaws.com/iobio/samples/bam/NA12891.exome.bam'],
-                'bais': null,
-                'subsetSampleIds': ['NA12878', 'NA12892'],
-                'excludeSampleIds': []
+            'id': 's0',
+            'displayName': 'Platinum Demo',
+            'vcfs': ['https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz'],
+            'tbis': null,
+            'bams': ['https://s3.amazonaws.com/iobio/samples/bam/NA12878.exome.bam',
+                'https://s3.amazonaws.com/iobio/samples/bam/NA12892.exome.bam',
+                'https://s3.amazonaws.com/iobio/samples/bam/NA12891.exome.bam',
+                'https://s3.amazonaws.com/iobio/samples/bam/NA12891.exome.bam'],
+            'bais': null,
+            'subsetSampleIds': ['NA12878', 'NA12892'],
+            'excludeSampleIds': []
         }];
         this.demoGenes = ['RAI1', 'MYLK2', 'PDHA1', 'PDGFB', 'AIRE'];
+        // </editor-fold>
     }
 
-    /* Setter for simons ID map. */
-    setIdMap(idMap) {
-        let self = this;
-        self.simonsIdMap = idMap;
-    }
 
-    setAnnotationStatus(status) {
-        let self = this;
-        self.extraAnnotationsLoaded = status;
-    }
+    //<editor-fold desc="DATASET GETTERS">
 
     /* Returns data set based on provided ID. If data set with ID DNE, returns null. */
     getDataSet(id) {
@@ -114,51 +94,50 @@ class VariantModel {
         return dataSets;
     }
 
-    /* Returns proband models corresponding to each data set model. */
-    getAllProbandModels() {
-        let self = this;
+    //</editor-fold>
 
-        let models = [];
-        models.push(self.mainDataSet.getProbandCohort());
-        self.otherDataSets.forEach((dataSet) => {
-           models.push(dataSet.getProbandCohort());
-        });
-        return models;
+    //<editor-fold desc="SIMONS ID MAPPING">
+
+    /* Setter for simons ID map. */
+    setIdMap(idMap) {
+        let self = this;
+        self.simonsIdMap = idMap;
     }
 
-    // /* Sets up cohort and data set models, promises to initalize. */
-    // promiseInitDemo() {
-    //     let self = this;
-    //
-    //     // Set status
-    //     self.isLoaded = false;
-    //     self.inProgress.loadingDataSources = true;
-    //
-    //     // Initialize demo data set
-    //     let demoDataSet = new DataSetModel();
-    //     demoDataSet.name = 'Demo';
-    //     demoDataSet.vcfUrl = self.demoVcf;
-    //     self.mainDataSet = demoDataSet;
-    //
-    //     // Initialize proband model
-    //     let allSampleCohort = new CohortModel(self);
-    //     allSampleCohort.isProbandCohort = true;
-    //     allSampleCohort.trackName = 'Variants for';
-    //     allSampleCohort.subsetIds.push(['NA12877', 'NA12878', 'NA12891', 'NA12892']);
-    //     allSampleCohort.subsetPhenotypes.push('Probands');
-    //     demoDataSet.addCohort(allSampleCohort, PROBAND_ID);
-    //
-    //     // Initialize subset model
-    //     let subsetCohort = new CohortModel(self);
-    //     subsetCohort.isSubsetCohort = true;
-    //     //subsetCohort.useUpdatedPileup = true;   // SJG get rid of after design finalization
-    //     subsetCohort.trackName = 'Variants for';
-    //     subsetCohort.subsetIds.push(['NA12878', 'NA12877']);
-    //     subsetCohort.subsetPhenotypes.push(['0 < IQ < 80', '40 < Paternal Age < 50']);
-    //     demoDataSet.addCohort(subsetCohort, SUBSET_ID);
-    //
-    //     return self.promiseInit();
-    // }
+    getRawIds(ids) {
+        let rawIds = [];
+        ids.forEach((idObj) => {
+            rawIds.push(idObj.id);
+        });
+        return rawIds;
+    }
+
+    /* Converts provide list of Hub encoded sample IDs to those found in the Phase 1 Simons VCF. */
+    convertSimonsIds(hubIds, cohortName) {
+        let self = this;
+        if (self.simonsIdMap == null) {
+            return hubIds;
+        }
+        let convertedIds = [];
+        let unmappedIds = [];
+        hubIds.forEach((idObj) => {
+            let simonsId = self.simonsIdMap[idObj.id];
+            if (simonsId == null) {
+                unmappedIds.push(simonsId);
+            } else {
+                convertedIds.push(simonsId);
+            }
+        });
+        // TODO: return number of unmappedIds and update chip
+        if (unmappedIds.length > 0) {
+            alert('Note: could not find translation for all sample IDs provided, not all samples from the ' + cohortName + ' cohort will be included in the analysis.');
+        }
+        return convertedIds;
+    }
+
+    //</editor-fold>
+
+    //<editor-fold desc="MOSAIC LAUNCH">
 
     /* Sets up cohort and data set models.
        Retrieves urls and sample IDs from Hub, then promises to initialize.
@@ -170,24 +149,13 @@ class VariantModel {
         self.inProgress.loadingDataSources = true;
 
         // Initialize hub data set
-        let hubDataSet = new DataSetModel();
+        let hubDataSet = new DataSetModel(self);
         hubDataSet.name = 'Hub';
         self.mainDataSet = hubDataSet;
-
-        // Initialize proband model
-        let probandCohort = new CohortModel(self);
-        probandCohort.isProbandCohort = true;
-        probandCohort.inProgress.fetchingHubData = true;
-        probandCohort.trackName = 'Variants for';
-        probandCohort.subsetPhenotypes.push('Probands');
-        hubDataSet.addCohort(probandCohort, PROBAND_ID);
-
-        // Initialize subset model
-        let subsetCohort = new CohortModel(self);
-        subsetCohort.isSubsetCohort = true;
-        subsetCohort.inProgress.fetchingHubData = true;
-        subsetCohort.trackName = 'Cohort Filters';
-        hubDataSet.addCohort(subsetCohort, SUBSET_ID);
+        hubDataSet.initCohorts();
+        let probandCohort = hubDataSet.getProbandCohort();
+        let subsetCohort = hubDataSet.getSubsetCohort();
+        // TODO: assign appropriate data to unaffected group here
 
         // Initialize hub endpoint
         self.hubEndpoint = hubEndpoint;
@@ -271,11 +239,11 @@ class VariantModel {
                             self.simonsIdMap = null;
                             // Get variant loading rolling
 
-                            self.promiseInit(hubDataSet.vcfNames)
-                                .then(function () {
+                            self.promiseInitMainDataSet(hubDataSet.vcfNames)
+                                .then(function (idLengthObj) {
                                     let idNumList = [];
-                                    idNumList.push(probandCohort.subsetIds.length);
-                                    idNumList.push(subsetCohort.subsetIds.length);
+                                    idNumList.push(idLengthObj.numProbandIds);
+                                    idNumList.push(idLengthObj.numSubsetIds);
                                     resolve(idNumList);
                                 })
                         })
@@ -288,35 +256,10 @@ class VariantModel {
         })
     }
 
-    getRawIds(ids) {
-        let rawIds = [];
-        ids.forEach((idObj) => {
-            rawIds.push(idObj.id);
-        });
-        return rawIds;
-    }
-
-    /* Converts provide list of Hub encoded sample IDs to those found in the Phase 1 Simons VCF. */
-    convertSimonsIds(hubIds, cohortName) {
+    /* Returns promise to check vcf url and finishes initializing cohort models. */
+    promiseInitMainDataSet(vcfFileNames) {
         let self = this;
-        if (self.simonsIdMap == null) {
-            return hubIds;
-        }
-        let convertedIds = [];
-        let unmappedIds = [];
-        hubIds.forEach((idObj) => {
-            let simonsId = self.simonsIdMap[idObj.id];
-            if (simonsId == null) {
-                unmappedIds.push(simonsId);
-            } else {
-                convertedIds.push(simonsId);
-            }
-        });
-        // TODO: return number of unmappedIds and update chip
-        if (unmappedIds.length > 0) {
-            alert ('Note: could not find translation for all sample IDs provided, not all samples from the ' + cohortName + ' cohort will be included in the analysis.');
-        }
-        return convertedIds;
+        return self.mainDataSet.promiseInit(vcfFileNames);
     }
 
     /* Retrieves all urls from Hub corresponding to the given project ID. Returns an object where keys are chromosome
@@ -332,9 +275,6 @@ class VariantModel {
             // Files coming back from Hub
             let vcfFiles = null,
                 tbiCsiFiles = null;
-
-            // TODO: for now can look in file name to see what build is
-            //
 
             // Retrieve file objects from Hub
             self.hubEndpoint.getFilesForProject(projectId, initialLaunch).done(data => {
@@ -410,6 +350,7 @@ class VariantModel {
 
             let vcfUrl = '',
                 tbiUrl = '';
+
             let urlPromises = [];
 
             // Get vcf url
@@ -461,25 +402,6 @@ class VariantModel {
                 }
             })
         })
-    }
-
-
-    /* Initializes global chromosome lookup table. For each chromosome, we'll have an object with a vcf and tbi field,
-       containing a stable list of vcf and tbi urls. */
-    _initUrlLookup() {
-        let self = this;
-
-        // Initialize url lookup to be organized by chromosome
-        let chrUrls = {};
-        for (let i = 0; i < 24; i++) {
-            let urlObj = {};
-            urlObj['vcf'] = [];
-            urlObj['tbi'] = [];
-
-            // Add to global variable
-            chrUrls[self.chrNameMap[i]] = urlObj;
-        }
-        return chrUrls;
     }
 
     /* Wrapper to retrieve sample IDs from Hub. */
@@ -559,32 +481,11 @@ class VariantModel {
         return filterObj;
     }
 
-    /* Returns promise to check vcf url and finishes initializing cohort models. */
-    promiseInit(vcfFileNames) {
-        let self = this;
+    //</editor-fold>
 
-        return new Promise(function (resolve, reject) {
-            // Finish initializing cohort models
-            let subsetCohort = self.mainDataSet.getSubsetCohort();
-            subsetCohort.inProgress.verifyingVcfUrl = true;
-            subsetCohort.init(self, vcfFileNames);
+    //<editor-fold desc="LOCAL LAUNCH">
 
-            // Check vcf urls and add samples
-            self.promiseAddSamples(subsetCohort, self.mainDataSet.vcfNames, self.mainDataSet.vcfUrls, self.mainDataSet.tbiUrls)
-                .then(function () {
-                    subsetCohort.inProgress.verifyingVcfUrl = false;
-                    self.inProgress.loadingDataSources = false;
-                    self.isLoaded = true;
-                    resolve();
-                })
-                .catch(function (error) {
-                    console.log("There was a problem initializing in VariantModel " + error);
-                    reject(error);
-                })
-        });
-    }
-
-    /* Promises to verify the vcf url and adds samples to vcf object - used when launching from Hub */
+    /* Promises to verify the vcf url and adds samples to vcf object */
     promiseAddSamples(subsetCohort, urlNames, vcfUrls, tbiUrls) {
         let self = this;
         if ((Object.keys(subsetCohort.vcfEndptHash)).length > 0) {
@@ -649,53 +550,53 @@ class VariantModel {
             localDataSet.addCohort(subsetCohort, SUBSET_ID);
 
             // TODO: this will never be called initially b/c no data entered yet
-        //     let vcfPromise = null;
-        //     if (modelInfo.vcfs.length > 0) {
-        //         vcfPromise = new Promise(function (vcfResolve, vcfReject) {
-        //                 probandCohort.onVcfUrlEntered(modelInfo.vcfs, modelInfo.tbis, function () {
-        //                     if (modelInfo.displayName && modelInfo.displayName !== '') {
-        //                         probandCohort.trackName = modelInfo.displayName;
-        //                     } else {
-        //                         probandCohort.trackName = modelInfo.id;
-        //                     }
-        //                     vcfResolve();
-        //                 })
-        //             },
-        //             function (error) {
-        //                 vcfReject(error);
-        //             });
-        //     } else {
-        //         probandCohort.excludeIds = [];
-        //         subsetCohort.subsetIds = [];
-        //         vcfPromise = Promise.resolve();
-        //     }
-        //
-        //
-        //     let bamPromise = null;
-        //     if (modelInfo.bams.length > 0) {
-        //         bamPromise = new Promise(function (bamResolve, bamReject) {
-        //                 probandCohort.onBamUrlEntered(modelInfo.bams, modelInfo.bais, function () {
-        //                     bamResolve();
-        //                 })
-        //             },
-        //             function (error) {
-        //                 bamReject(error);
-        //             });
-        //     } else {
-        //         localDataSet.bams = [];
-        //         localDataSet.bais = [];
-        //         bamPromise = Promise.resolve();
-        //     }
-        //
-        //     Promise.all([vcfPromise, bamPromise])
-        //         .then(function () {
-        //             if (self.mainDataSet == null) {
-        //                 self.mainDataSet = localDataSet;
-        //             } else {
-        //                 self.otherDataSets.push(localDataSet);
-        //             }
-        //             resolve(localDataSet);
-        //         });
+            //     let vcfPromise = null;
+            //     if (modelInfo.vcfs.length > 0) {
+            //         vcfPromise = new Promise(function (vcfResolve, vcfReject) {
+            //                 probandCohort.onVcfUrlEntered(modelInfo.vcfs, modelInfo.tbis, function () {
+            //                     if (modelInfo.displayName && modelInfo.displayName !== '') {
+            //                         probandCohort.trackName = modelInfo.displayName;
+            //                     } else {
+            //                         probandCohort.trackName = modelInfo.id;
+            //                     }
+            //                     vcfResolve();
+            //                 })
+            //             },
+            //             function (error) {
+            //                 vcfReject(error);
+            //             });
+            //     } else {
+            //         probandCohort.excludeIds = [];
+            //         subsetCohort.subsetIds = [];
+            //         vcfPromise = Promise.resolve();
+            //     }
+            //
+            //
+            //     let bamPromise = null;
+            //     if (modelInfo.bams.length > 0) {
+            //         bamPromise = new Promise(function (bamResolve, bamReject) {
+            //                 probandCohort.onBamUrlEntered(modelInfo.bams, modelInfo.bais, function () {
+            //                     bamResolve();
+            //                 })
+            //             },
+            //             function (error) {
+            //                 bamReject(error);
+            //             });
+            //     } else {
+            //         localDataSet.bams = [];
+            //         localDataSet.bais = [];
+            //         bamPromise = Promise.resolve();
+            //     }
+            //
+            //     Promise.all([vcfPromise, bamPromise])
+            //         .then(function () {
+            //             if (self.mainDataSet == null) {
+            //                 self.mainDataSet = localDataSet;
+            //             } else {
+            //                 self.otherDataSets.push(localDataSet);
+            //             }
+            //             resolve(localDataSet);
+            //         });
         });
     }
 
@@ -731,206 +632,10 @@ class VariantModel {
         });
     }
 
-    /* Promises to load variants for the selected gene.
-       Returns a map of annotated variant data. */
-    promiseLoadData(theGene, theTranscript, options) {
-        let self = this;
-        let promises = [];
 
-        return new Promise(function (resolve, reject) {
-            if (self.mainDataSet == null) {
-                resolve();
-            } else {
-                // Load variants
-                self.startGeneProgress(theGene.gene_name);
-                self.clearLoadedData();
+    //</editor-fold>
 
-                let dataSetResultMap = null;
-                let p1 = self.promiseLoadVariants(theGene, theTranscript, options)
-                    .then(function (data) {
-                        dataSetResultMap = data.resultMap;
-                        self.setLoadedVariants(data.gene);
-                    });
-                promises.push(p1);
-
-                Promise.all(promises)
-                    .then(function () {
-                        resolve(dataSetResultMap);
-                    })
-                    .catch(function (error) {
-                        console.log('There was a problem loading the data in VariantModel.');
-                        reject(error);
-                    })
-            }
-        })
-    }
-
-    /* Promises to annotate variants and returns a map of annotated variant data. */
-    promiseLoadVariants(theGene, theTranscript, options) {
-        let self = this;
-
-        return new Promise(function (resolve, reject) {
-            self.promiseAnnotateVariants(theGene, theTranscript, false, options)
-                .then(function (resultMap) {
-                    return self.promiseAnnotateInheritance(theGene, theTranscript, resultMap, {
-                        isBackground: false,
-                        cacheData: false
-                    })
-                })
-                .then(function (data) {
-                    resolve(data);
-                })
-                .catch(function (error) {
-                    reject(error);
-                })
-        })
-    }
-
-    /* Promises to annotate variants in each cohort model.
-       Updates cohort loading status as appropriate. */
-    promiseAnnotateVariants(theGene, theTranscript, isBackground, options = {}) {
-        let self = this;
-
-        return new Promise(function (resolve, reject) {
-            let annotatePromises = [];
-            let subsetResults = null;
-            let probandCounts = null;
-
-            // Annotate variants for cohort models that have specified IDs
-            if (self.mainDataSet.getSubsetCohort() != null) {
-                let cohortModel = self.mainDataSet.getSubsetCohort();
-                cohortModel.inProgress.loadingVariants = true;
-                let p = cohortModel.promiseAnnotateVariantEnrichment(theGene,
-                    theTranscript, [cohortModel],
-                    false, isBackground, self.keepVariantsCombined, true)
-                    .then(function (resultMap) {
-                        cohortModel.inProgress.loadingVariants = false;
-                        cohortModel.inProgress.drawingVariants = true;
-                        if (cohortModel.isSubsetCohort) {
-                            subsetResults = resultMap;
-                        }
-                        else {
-                            probandCounts = resultMap;
-                        }
-                        let unwrappedFeatures = resultMap['Subset'].features;
-                        self.promiseAssignCohortsToEnrichmentGroups(unwrappedFeatures);
-                    })
-                    .catch((error) => {
-                        console.log('Problem in promiseAnnotateVars ' + error);
-                    });
-                annotatePromises.push(p);
-            }
-            Promise.all(annotatePromises)
-                .then(function () {
-                    let quickLoad = options.efficiencyMode === true;
-                    if (!quickLoad) {
-                        self.promiseAnnotateWithClinvar(subsetResults, theGene, theTranscript, isBackground)
-                            .then(function (data) {
-                                resolve(data);
-                            })
-                    }
-                    else {
-                        resolve(subsetResults);
-                    }
-                })
-                .catch(function (error) {
-                    console.log("There was a problem in VariantModel promiseAnnotateVariants: " + error);
-                })
-        });
-    }
-
-    /* Used in cohort-gene to further annotate variants that have already come back
-       from a single positional annotation round. Options may be used to determine which outside
-       database annotations are called. */
-    promiseFurtherAnnotateVariants(theGene, theTranscript, isBackground, options = {}) {
-        let self = this;
-
-        return new Promise(function (resolve, reject) {
-            // Annotate all variants in both proband and subset groups
-            let subsetCohort = self.mainDataSet.getSubsetCohort();
-            subsetCohort.promiseAnnotateVariants(theGene,
-                theTranscript, [subsetCohort],
-                false, isBackground, self.keepVariantsCombined, false)
-                .then(function (resultMap) {
-                    // Wrap result to play nice with clinvar function
-                    let wrappedResultMap = [];
-                    wrappedResultMap[0] = resultMap;
-                    self.promiseAnnotateWithClinvar(wrappedResultMap, theGene, theTranscript, isBackground)
-                        .then(function (data) {
-                            resolve(data);
-                        })
-                })
-                .catch(function (error) {
-                    console.log("There was a problem with VariantModel promiseFurtherAnnotateVariants: " + error);
-                    reject();
-                })
-        })
-    }
-
-    /* Takes in a list of fully annotated variants, and appends existing, relative positional information from subset variants to them.
-       Reassigns loadedVariants in subset CohortModel.
-       Sets extraAnnotationsLoaded to true. */
-    combineVariantInfo(variantInfo) {
-        let self = this;
-        let fileNames = Object.keys(variantInfo);
-        let updatedVarLookup = {};
-        let subsetModel = self.mainDataSet.getSubsetCohort();
-        let existingVariants = [];
-
-        // If we have multiple variants to combine
-        if (Object.keys(variantInfo).length > 1) {
-            for (let i = 0; i < fileNames.length; i++) {
-                let currVars = variantInfo[fileNames[i]].features;
-                currVars.forEach((variant) => {
-                    updatedVarLookup[variant.id] = variant;
-                })
-            }
-            existingVariants = subsetModel.loadedVariants.features;
-        }
-        // If we have one variant to combine
-        else {
-            // Pull out reference to single variant
-            let singleVar = variantInfo[0];
-            updatedVarLookup[singleVar.id] = singleVar;
-            existingVariants = subsetModel.loadedVariants.features.filter(feature => feature.id === singleVar.id);
-        }
-
-        // Iterate through existing variants, find matching updated variant, transfer info
-        existingVariants.forEach(function (existingVar) {
-            let matchingVar = updatedVarLookup[existingVar.id];
-            if (matchingVar != null) {
-                // Copy counts and subset delta info
-                existingVar.af = matchingVar.af;
-                existingVar.af1000G = matchingVar.af1000G;
-                existingVar.afExAC = matchingVar.afExAC;
-                existingVar.afgnomAD = matchingVar.afgnomAD;
-
-                existingVar.effect = matchingVar.effect;
-                existingVar.impact = matchingVar.impact;
-
-                existingVar.vepConsequence = matchingVar.vepConsequence;
-                existingVar.vepImpact = matchingVar.vepImpact;
-                existingVar.vepExon = matchingVar.vepExon;
-                existingVar.vepSIFT = matchingVar.vepSIFT;
-                existingVar.sift = matchingVar.sift;
-                existingVar.vepPolyPhen = matchingVar.vepPolyPhen;
-                existingVar.polyphen = matchingVar.polyphen;
-                existingVar.vepAf = matchingVar.vepAf;
-
-                existingVar.highestImpactSnpeff = matchingVar.highestImpactSnpeff;
-                existingVar.highestImpactVep = matchingVar.highestImpactVep;
-                existingVar.highestSIFT = matchingVar.highestSIFT;
-                existingVar.highestPolyphen = matchingVar.highestPolyphen;
-            }
-        });
-
-        if (Object.keys(updatedVarLookup).length > 1) {
-            self.extraAnnotationsLoaded = true;
-        }
-        else {
-            return existingVariants[0];
-        }
-    }
+    //<editor-fold desc="CLINVAR">
 
     /* Takes in a list of ClinVar annotated variants, and appends their clinvar fields to the existing, currently displayed enriched variants.
      * The list of annotated variants may be longer or shorter than the currently displayed enriched variants.
@@ -976,238 +681,6 @@ class VariantModel {
 
         // Return singly clicked on variant
         return existingVariants[0];
-    }
-
-    promiseAnnotateInheritance(geneObject, theTranscript, resultMap, options = {
-        isBackground: false,
-        cacheData: true
-    }) {
-        let self = this;
-
-        let resolveIt = function (resolve, resultMap, geneObject, theTranscript, options) {
-            // SJG don't want to cache anything for now
-            // self.promiseCacheCohortVcfData(geneObject, theTranscript, CacheHelper.VCF_DATA, resultMap, options.cacheData)
-            // .then(function() {
-            resolve({'resultMap': resultMap, 'gene': geneObject, 'transcript': theTranscript});
-            //})
-        }
-
-        return new Promise(function (resolve, reject) {
-            if (self.isAlignmentsOnly() && !autocall && resultMap == null) {
-                resolve({
-                    'resultMap': {PROBAND_ID: {features: []}},
-                    'gene': geneObject,
-                    'transcript': theTranscript
-                });
-            } else {
-                resolveIt(resolve, resultMap, geneObject, theTranscript, options);
-            }
-        })
-    }
-
-    startGeneProgress(geneName) {
-        var idx = this.genesInProgress.indexOf(geneName);
-        if (idx < 0) {
-            this.genesInProgress.push(geneName);
-        }
-    }
-
-    endGeneProgress() {
-        // TODO: implement this? Called by cache helper...
-        alert("endGeneProgress in VariantModel not implemented yet");
-    }
-
-    promiseLoadKnownVariants() {
-        // TODO: implement this? Called by Home.Vue...
-        alert("promiseLoadKnownVariants in VariantModel not implemented yet");
-    }
-
-    /* Clears the variant data for each cohort. Falsifies flags used for chip display. */
-    clearLoadedData() {
-        let self = this;
-
-        self.extraAnnotationsLoaded = false;
-        if (self.mainDataSet != null) {
-            self.mainDataSet.getCohorts().forEach(function (cohort) {
-                cohort.loadedVariants = {
-                    loadState: {},
-                    features: [],
-                    maxPosLevel: 0,
-                    maxNegLevel: 0,
-                    maxSubLevel: 0,
-                    featureWidth: 0
-                };
-                cohort.calledVariants = {
-                    loadState: {},
-                    features: [],
-                    maxPosLevel: 0,
-                    maxNegLevel: 0,
-                    maxSubLevel: 0,
-                    featureWidth: 0
-                };
-                cohort.coverage = [[]];
-                cohort.noMatchingSamples = false;
-            })
-        }
-    }
-
-    clearCalledVariants() {
-        alert("not implemented yet");
-    }
-
-    /* Filters out homozygous ref variants for each cohort. Initializes pileup rendering of variants. */
-    setLoadedVariants(gene, name = null) {
-        let self = this;
-
-        let filterAndPileupVariants = function (model, start, end, target = 'loaded') {
-            let filteredVariants = $.extend({}, model.vcfData);
-            filteredVariants.features = model.vcfData.features.filter(function (feature) {
-                let isTarget = false;
-                if (target === 'loaded' && (!feature.fbCalled || feature.fbCalled !== 'Y')) {
-                    isTarget = true;
-                } else if (target === 'called' && feature.fbCalled && feature.fbCalled === 'Y') {
-                    isTarget = true;
-                }
-
-                let isHomRef = feature.zygosity == null
-                    || feature.zygosity.toUpperCase() === "HOMREF"
-                    || feature.zygosity.toUpperCase() === "NONE"
-                    || feature.zygosity === "";
-
-                let inRegion = true;
-                if (self.filterModel.regionStart && self.filterModel.regionEnd) {
-                    inRegion = feature.start >= self.filterModel.regionStart && feature.start <= self.filterModel.regionEnd;
-                }
-                let passesModelFilter = self.filterModel.passesModelFilter(model.name, feature);
-
-                return isTarget && !isHomRef && inRegion && passesModelFilter;
-            });
-
-            let pileupObject = model._enrichmentPileupVariants(filteredVariants.features, start, end);
-            filteredVariants.maxPosLevel = pileupObject.maxPosLevel;
-            filteredVariants.maxNegLevel = pileupObject.maxNegLevel;
-            filteredVariants.maxSubLevel = pileupObject.maxSubLevel;
-            filteredVariants.featureWidth = pileupObject.featureWidth;
-
-            return filteredVariants;
-        };
-
-        let cohort = self.mainDataSet.getSubsetCohort();
-        if (name == null || name === cohort.name) {
-            if (cohort.vcfData && cohort.vcfData.features) {
-                let start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
-                let end = self.filterModel.regionEnd ? self.filterModel.regionEnd : gene.end;
-                cohort.loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
-            }
-        }
-    }
-
-    setSelectedVariants(gene, selectedVarIds) {
-        let self = this;
-
-        // Populate lookup
-        let selectedVarLookup = {};
-        selectedVarIds.forEach((varId) => {
-            selectedVarLookup[varId] = true;
-        });
-
-        let filterAndPileupVariants = function (model, start, end, target = 'selected') {
-            let filteredVariants = $.extend({}, model.vcfData);
-            filteredVariants.features = model.vcfData.features.filter(function (feature) {
-                return selectedVarLookup[feature.id];
-            });
-
-            let pileupObject = model._pileupVariants(filteredVariants.features, start, end);
-            filteredVariants.maxLevel = pileupObject.maxLevel + 1;
-            filteredVariants.featureWidth = pileupObject.featureWidth;
-
-            return filteredVariants;
-        };
-
-        let cohort = self.mainDataSet.getSubsetCohort();
-        if (cohort != null) {
-            if (cohort.vcfData && cohort.vcfData.features) {
-                let start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
-                let end = self.filterModel.regionEnd ? self.filterModel.regionEnd : gene.end;
-                cohort.selectedVariants = filterAndPileupVariants(cohort, start, end, 'selected');
-            }
-        }
-    }
-
-    /* Reference assigns all features in provided parameter to enrichment groups. */
-    // TODO: change this to assign to enrichment groups based on p-value
-    promiseAssignCohortsToEnrichmentGroups(variants) {
-        let self = this;
-        return new Promise((resolve, reject) => {
-            if (variants == null || variants.length === 0) {
-                reject('No variants to assign to enrichment groups');
-            }
-            variants.forEach(function (variant) {
-                if (variant.subsetDelta >= self.subsetEnrichmentThreshold) {
-                    self.subsetEnrichedVars[variant.id] = variant;
-                }
-                else if (variant.subsetDelta <= self.probandEnrichmentThreshold) {
-                    self.probandEnrichedVars[variant.id] = variant;
-                }
-                else if (variant.affectedSubsetCount > 0) {
-                    self.nonEnrichedVars[variant.id] = variant;
-                }
-                else {
-                    self.probandOnlyVars[variant.id] = variant;
-                }
-            });
-            resolve();
-        });
-    }
-
-    /* Returns array of enrichment group variants to which the given variant is apart of.
-       The returned enrichment group will contain the given variant first,
-       followed by variants ordered by decreasing subset delta. */
-    getOrderedEnrichmentGroup(variant) {
-        let self = this;
-
-        let enrichGroup = null;
-        if (self.subsetEnrichedVars[variant.id] != null) {
-            enrichGroup = self.subsetEnrichedVars;
-        }
-        else if (self.probandEnrichedVars[variant.id] != null) {
-            enrichGroup = self.probandEnrichedVars;
-        }
-        else if (self.nonEnrichedVars[variant.id] != null) {
-            enrichGroup = self.nonEnrichedVars;
-        }
-        else {
-            enrichGroup = self.probandOnlyVars;
-        }
-
-        // Transform into an array of values ordered by subset delta (desc)
-        let clickedVar = variant.id;
-        let enrichArr = Object.values(enrichGroup);
-        enrichArr.sort(function (a, b) {
-            return b.subsetDelta - a.subsetDelta;
-        })
-
-        // Put selected variant first in list (rest of list is ordered spatially)
-        let i = enrichArr.map(function (e) {
-            return e.id
-        }).indexOf(variant.id);
-        enrichArr.splice(i, 1);
-        enrichArr.splice(0, 0, variant);
-
-        return enrichArr;
-    }
-
-    /* Filters out proband only features and returns array of filtered features. */
-    filterProbandsByDelta(probandFeatures) {
-        let self = this;
-
-        let filteredProbandFeatures = [];
-        probandFeatures.forEach(function (feature) {
-            if (feature.affectedSubsetCount > 0) {
-                filteredProbandFeatures.push(feature);
-            }
-        })
-        return filteredProbandFeatures;
     }
 
     promiseAnnotateWithClinvar(resultMap, geneObject, transcript, isBackground) {
@@ -1309,59 +782,9 @@ class VariantModel {
         })
     }
 
+    //</editor-fold>
 
-// promiseCacheCohortVcfData(geneObject, theTranscript, dataKind, resultMap, cacheIt) {
-//     let self = this;
-//     return new Promise(function (resolve, reject) {
-//         // Cache vcf data for trio
-//         var cachePromise = null;
-//         if (cacheIt) {
-//             var cachedPromises = [];
-//             self.dataSet.getCohorts().forEach(function (cohort) {
-//                 if (resultMap[cohort.getName()]) {
-//                     var p = cohort._promiseCacheData(resultMap[cohort.getName()], dataKind, geneObject.gene_name, theTranscript, self.cacheHelper);
-//                     cachedPromises.push(p);
-//                 }
-//             })
-//             Promise.all(cachedPromises).then(function () {
-//                 resolve();
-//             })
-//         } else {
-//             resolve();
-//         }
-//     })
-// }
-
-    promiseSummarizeError() {
-        alert("not implemented yet");
-    }
-
-    promiseSummarizeDanger() {
-        alert("not implemented yet");
-    }
-
-    getCurrentTrioVcfData() {
-        alert("not implemented yet");
-        // SJG TODO: how will I adapt this?
-    }
-
-    promiseJointCallVariants() {
-        alert("not implemented yet");
-    }
-
-    promiseHasCalledVariants() {
-        alert("not implemented yet");
-    }
-
-    promiseHasCachedCalledVariants() {
-        alert("not implemented yet");
-    }
-
-    /* Returns true if all cohorts within the data set are alignments only. */
-    isAlignmentsOnly() {
-        let self = this;
-        return self.mainDataSet.isAlignmentsOnly();
-    }
+    //<editor-fold desc="VARIANT CLASSIFICATION">
 
     /* Assigns classes to each variant to control visual display in the DOM. */
     classifyByEnrichment(d, annotationScheme) {
@@ -1467,39 +890,121 @@ class VariantModel {
         return 'variant ' + d.type.toLowerCase() + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' ' + sift + ' ' + polyphen + ' ' + regulatory + ' ' + +' ' + d.clinvar + ' ' + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts;
     }
 
-    getVepImpactClass(domVar) {
-        // Pull variant out of lookup
-        let self = this;
-        let varId = domVar.id;
-        let variant = self.subsetEnrichedVars[varId];
-        if (variant == null) variant = self.probandEnrichedVars[varId];
-        if (variant == null) variant = self.nonEnrichedVars[varId];
-        if (variant == null) variant = self.probandOnlyVars[varId];
-        if (variant == null) return '';
-
-        let toggleImpact = "";  // Grouping classes, added & removed based on impact mode
-        let impactObj = variant.vepImpact;
-        let vepImpact = '';
-        if (impactObj['LOW'] != null) vepImpact = 'LOW';
-        if (impactObj['MODIFIER'] != null) vepImpact = 'MODIFIER';
-        if (impactObj['MODERATE'] != null) vepImpact = 'MODERATE';
-        if (impactObj['HIGH'] != null) vepImpact = 'HIGH';
-        if (vepImpact !== '') {
-            toggleImpact += " " + 'i' + vepImpact;
-        }
-        else {
-            toggleImpact += "iNONE";
-        }
-        return toggleImpact;
-    }
-
     classifyByClinvar(d) {
         return 'variant ' + d.type.toLowerCase() + ' ' + d.clinvar + ' colorby_' + d.clinvar;
     }
 
-    _parseCalledVariants() {
-        alert("not implemented yet");
-    }
-}
+    //</editor-fold>
 
+    startGeneProgress(geneName) {
+        var idx = this.genesInProgress.indexOf(geneName);
+        if (idx < 0) {
+            this.genesInProgress.push(geneName);
+        }
+    }
+
+    /* Returns true if all cohorts within the data set are alignments only. */
+    isAlignmentsOnly() {
+        let self = this;
+        return self.mainDataSet.isAlignmentsOnly();
+    }
+
+    //<editor-fold desc="TO BE DEPRECIATED">
+// TODO: we don't need to annotate inheritance at level, more like on a per sample level in cohort model...
+    promiseAnnotateInheritance(geneObject, theTranscript, resultMap, options = {
+        isBackground: false,
+        cacheData: true
+    }) {
+        let self = this;
+
+        let resolveIt = function (resolve, resultMap, geneObject, theTranscript, options) {
+            // SJG don't want to cache anything for now
+            // self.promiseCacheCohortVcfData(geneObject, theTranscript, CacheHelper.VCF_DATA, resultMap, options.cacheData)
+            // .then(function() {
+            resolve({'resultMap': resultMap, 'gene': geneObject, 'transcript': theTranscript});
+            //})
+        }
+
+        return new Promise(function (resolve, reject) {
+            if (self.isAlignmentsOnly() && !autocall && resultMap == null) {
+                resolve({
+                    'resultMap': {PROBAND_ID: {features: []}},
+                    'gene': geneObject,
+                    'transcript': theTranscript
+                });
+            } else {
+                resolveIt(resolve, resultMap, geneObject, theTranscript, options);
+            }
+        })
+    }
+
+    // TODO: back end will eliminate need to combine variant infos
+    /* Takes in a list of fully annotated variants, and appends existing, relative positional information from subset variants to them.
+          Reassigns loadedVariants in subset CohortModel.
+          Sets extraAnnotationsLoaded to true. */
+    combineVariantInfo(variantInfo) {
+        let self = this;
+        let fileNames = Object.keys(variantInfo);
+        let updatedVarLookup = {};
+        let subsetModel = self.mainDataSet.getSubsetCohort();
+        let existingVariants = [];
+
+        // If we have multiple variants to combine
+        if (Object.keys(variantInfo).length > 1) {
+            for (let i = 0; i < fileNames.length; i++) {
+                let currVars = variantInfo[fileNames[i]].features;
+                currVars.forEach((variant) => {
+                    updatedVarLookup[variant.id] = variant;
+                })
+            }
+            existingVariants = subsetModel.loadedVariants.features;
+        }
+        // If we have one variant to combine
+        else {
+            // Pull out reference to single variant
+            let singleVar = variantInfo[0];
+            updatedVarLookup[singleVar.id] = singleVar;
+            existingVariants = subsetModel.loadedVariants.features.filter(feature => feature.id === singleVar.id);
+        }
+
+        // Iterate through existing variants, find matching updated variant, transfer info
+        existingVariants.forEach(function (existingVar) {
+            let matchingVar = updatedVarLookup[existingVar.id];
+            if (matchingVar != null) {
+                // Copy counts and subset delta info
+                existingVar.af = matchingVar.af;
+                existingVar.af1000G = matchingVar.af1000G;
+                existingVar.afExAC = matchingVar.afExAC;
+                existingVar.afgnomAD = matchingVar.afgnomAD;
+
+                existingVar.effect = matchingVar.effect;
+                existingVar.impact = matchingVar.impact;
+
+                existingVar.vepConsequence = matchingVar.vepConsequence;
+                existingVar.vepImpact = matchingVar.vepImpact;
+                existingVar.vepExon = matchingVar.vepExon;
+                existingVar.vepSIFT = matchingVar.vepSIFT;
+                existingVar.sift = matchingVar.sift;
+                existingVar.vepPolyPhen = matchingVar.vepPolyPhen;
+                existingVar.polyphen = matchingVar.polyphen;
+                existingVar.vepAf = matchingVar.vepAf;
+
+                existingVar.highestImpactSnpeff = matchingVar.highestImpactSnpeff;
+                existingVar.highestImpactVep = matchingVar.highestImpactVep;
+                existingVar.highestSIFT = matchingVar.highestSIFT;
+                existingVar.highestPolyphen = matchingVar.highestPolyphen;
+            }
+        });
+
+        if (Object.keys(updatedVarLookup).length > 1) {
+            self.extraAnnotationsLoaded = true;
+        }
+        else {
+            return existingVariants[0];
+        }
+    }
+
+    //</editor-fold>
+
+}
 export default VariantModel;

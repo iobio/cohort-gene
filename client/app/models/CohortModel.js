@@ -73,21 +73,6 @@ class CohortModel {
         return '';
     }
 
-    /* Returns sample name. Used in gene.iobio */
-    getSampleName() {
-        return this.sampleName;
-    }
-
-    /* Sets sample name. */
-    setSampleName(sampleName) {
-        this.sampleName = sampleName;
-    }
-
-    /* Returns a sample name if provided in the VCF header, otherwise returns null. */
-    getVcfSampleName() {
-        return !this.isGeneratedSampleName ? (this.sampleName === "" ? null : this.sampleName) : null;
-    }
-
     /* Returns gene model from parent variant model. */
     getGeneModel() {
         return this.getVariantModel().geneModel;
@@ -1859,48 +1844,6 @@ class CohortModel {
         else if (type === 'probands') {
             return self.getDataSet().getProbandCohort().subsetIds;
         }
-    }
-
-    _getSamplesToRetrieve() {
-        var me = this;
-        var samplesToRetrieve = [];
-
-        if (me.getVcfSampleName()) {
-            samplesToRetrieve.push({
-                vcfSampleName: me.getVcfSampleName(),
-                sampleName: me.getSampleName()
-            });
-
-            // Include all of the sample names for the proband
-            me.getAffectedInfo().forEach(function (info) {
-                if (info.model == me) {
-                    // ignore the affected info for this sample.  We already added it
-                    // to the list of samples to retrieve
-
-                } else if (info.model.getVcfSampleName() && me._otherSampleInThisVcf(info.model)) {
-                    // If the 'other' sample exists in the sample multi-sample vcf as this sample,
-                    // add it to the list of samples to retrieve.  For example, an affected sib could be in the
-                    // mother's vcf file.   In this case, we will retreive both the mother and affected sib at
-                    // the same time so we can obtain the genotype for the affected sib and sync up to the
-                    // proband later (when inheritance is determined)
-                    samplesToRetrieve.push({
-                        vcfSampleName: info.model.getVcfSampleName(),
-                        sampleName: info.model.getSampleName()
-                    });
-                }
-            })
-        } else {
-            samplesToRetrieve.push({
-                vcfSampleName: "",
-                sampleName: ""
-            });
-            // Might need this for cohort SJG NOTE
-            // me.subsetIds.forEach(function(sample) {
-            //   samplesToRetrieve.push( {vcfSampleName: "",
-            //                          sampleName: sample } );
-            //})
-        }
-        return samplesToRetrieve;
     }
 
     _otherSampleInThisVcf(otherModel) {
