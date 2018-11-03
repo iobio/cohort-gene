@@ -3,7 +3,7 @@
 class DataSetModel {
     constructor() {
         // Public props
-        this.id = null;
+        this.entryId = null;            // Coordinates with file upload dialog
         this.name = '';                 // Key for variant card
         this.vcfNames = [];             // List of names (or IDs for local) corresponding to vcf urls - matching order as vcfUrls
 
@@ -77,5 +77,29 @@ class DataSetModel {
             return cohort.isAlignmentsOnly();
         });
         return theCohorts.length === self._cohorts.length;
+    }
+
+    isLoaded() {
+        return this.vcf != null && this.vcfData != null;
+    }
+
+    isReadyToLoad() {
+        return this.isVcfReadyToLoad() || this.isBamReadyToLoad();
+    }
+
+    isBamReadyToLoad() {
+        return this.bam != null && (this.bamUrlEntered || this.bamFileOpened);
+    }
+
+    isVcfReadyToLoad() {
+        return this.vcf != null && (this.vcfUrlEntered || this.vcfFileOpened);
+    }
+
+    isBamLoaded() {
+        return this.bam && (this.bamUrlEntered || (this.bamFileOpened && this.getBamRefName));
+    }
+
+    isVcfLoaded() {
+        return this.vcf && (this.vcfUrlEntered || this.vcfFileOpened);
     }
 }

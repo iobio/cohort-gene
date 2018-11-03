@@ -187,10 +187,10 @@
             }
         },
         watch: {
-            timeSeriesMode: function () {
-                let self = this;
-                self.updateLabel();
-            }
+            // timeSeriesMode: function () {
+            //     let self = this;
+            //     self.updateLabel();
+            // }
         },
         computed: {},
         methods: {
@@ -199,15 +199,16 @@
                     self.modelInfo.dataSet.getProbandCohort().trackName = self.modelInfo.displayName;
                 }
             },
-            onVcfUrlEntered: function (vcfUrl, tbiUrl) {
+            onVcfUrlEntered: function (entryId, vcfUrl, tbiUrl) {
                 let self = this;
                 self.$set(self, "sample", null);
                 self.$set(self, "samples", []);
 
                 if (self.modelInfo && self.modelInfo.model) {
-                    self.modelInfo.model.onVcfUrlEntered(vcfUrl, tbiUrl, function (success, sampleNames) {
-                        if (success) {
-                            self.samples = sampleNames;
+                    self.modelInfo.model.onVcfUrlEntered([entryId], [vcfUrl], [tbiUrl])
+                        .then((listObj) => {
+                        if (listObj) {
+                            self.samples = listObj['samples'];
                             if (self.modelInfo.sample && self.samples.indexOf(self.modelInfo.sample) >= 0) {
                                 self.sample = self.modelInfo.sample;
                                 self.modelInfo.model.sampleName = self.modelInfo.sample;
@@ -246,7 +247,7 @@
                             self.modelInfo.model.sampleName = null;
                         }
                         self.$emit("sample-data-changed");
-                        self.$emit("samples-available", self.modelInfo.relationship, self.samples);
+                        self.$emit("samples-available", self.modelInfo.id, self.samples);
                     })
                     .catch(function (error) {
                         self.$emit("sample-data-changed");
@@ -335,7 +336,7 @@
             // self.chipLabel = self.isTumor ? 'TUMOR' : 'NORMAL';
             self.isMainCohort = self.dragId === 's0';
             if (self.modelInfo.vcf) {
-                self.onVcfUrlEntered(self.modelInfo.vcf, self.modelInfo.tbi);
+                self.onVcfUrlEntered(self.modelInfo.id, self.modelInfo.vcf, self.modelInfo.tbi);
             }
             if (self.launchedFromHub) {
                 self.hubLabel = 'HUB DATA';

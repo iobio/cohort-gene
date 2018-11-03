@@ -421,10 +421,8 @@
 
                     // Assign model prop in info object to model
                     let theDataSet = dataSet;
-                    let theModelInfo = self.modelInfoMap[theDataSet.id];
-
-                    // TODO: do I need to keep track of dataset here?
-                    theModelInfo.dataSet = theDataSet;
+                    let theModelInfo = self.modelInfoMap[theDataSet.entryId];
+                    theModelInfo.dataSet = theDataSet;  // TODO: do I need to keep track of dataSet or Model here (or neither?)
 
                     // Trigger on vcf check in model
                     let theProbandModel = theDataSet.getProbandCohort();
@@ -468,7 +466,7 @@
                 let keyList = Object.keys(this.modelInfoMap);
                 for (let i = 0; i < keyList.length; i++) {
                     let currKey = keyList[i];
-                    this.isValid &= (this.modelInfoMap[currKey] != null && this.modelInfoMap[currKey].model.isReadyToLoad());
+                    this.isValid &= (this.modelInfoMap[currKey] != null && this.modelInfoMap[currKey].dataSet.isReadyToLoad());
                 }
             },
             getModel: function (id) {
@@ -481,7 +479,8 @@
                 }
                 return theModel;
             },
-            init: function () {
+            // Called each time files menu opened
+            init: function() {
                 let self = this;
                 // If we already have model information from Hub, we want to display that in the file loader
                 if (self.variantModel && self.variantModel.getAllDataSets().length > 0) {

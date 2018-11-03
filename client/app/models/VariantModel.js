@@ -93,7 +93,7 @@ class VariantModel {
             return self.mainDataSet;
         } else {
             self.otherDataSets.forEach((dataSet) => {
-                if (dataSet.id === id) {
+                if (dataSet.entryId === id) {
                     return dataSet;
                 }
             })
@@ -273,7 +273,6 @@ class VariantModel {
 
                             self.promiseInit(hubDataSet.vcfNames)
                                 .then(function () {
-                                    debugger;       // What does vcfhash look like for proband model here?
                                     let idNumList = [];
                                     idNumList.push(probandCohort.subsetIds.length);
                                     idNumList.push(subsetCohort.subsetIds.length);
@@ -588,7 +587,7 @@ class VariantModel {
     /* Promises to verify the vcf url and adds samples to vcf object - used when launching from Hub */
     promiseAddSamples(subsetCohort, urlNames, vcfUrls, tbiUrls) {
         let self = this;
-        if ((Object.keys(subsetCohort.vcfEndptHash)).length > 0) {    // TODO: probably a more robust check to do here
+        if ((Object.keys(subsetCohort.vcfEndptHash)).length > 0) {
             return new Promise(function (resolve, reject) {
                 subsetCohort.onVcfUrlEntered(urlNames, vcfUrls, tbiUrls)
                     .then((updatedListObj) => {
@@ -612,7 +611,7 @@ class VariantModel {
     }
 
     /* Adds data set model and cohort models to represent a single entry in file menu. Used when launching
-     * cohort-gene outside of Hub. */
+    * cohort-gene outside of Hub. */
     promiseAddEntry(modelInfo) {
         let self = this;
 
@@ -623,18 +622,24 @@ class VariantModel {
 
             // Initialize local data set
             let localDataSet = new DataSetModel();
-            localDataSet.id = modelInfo.id;
+            localDataSet.entryId = modelInfo.id;
             localDataSet.name = modelInfo.id;
             // TODO: do I need to keep urls and files separate in data set model?
             localDataSet.vcfUrls = modelInfo.vcfs;
             localDataSet.tbiUrls = modelInfo.tbis;
             localDataSet.bamUrls = modelInfo.bams;
             localDataSet.baiUrls = modelInfo.bais;
+            if (modelInfo.id === 's0') {
+                self.mainDataSet = localDataSet;
+            } else {
+                self.otherDataSets.push(localDataSet);
+            }
 
             // Initialize proband model
             let probandCohort = new CohortModel(self);
             probandCohort.isProbandCohort = true;
             probandCohort.excludeIds = modelInfo.excludeIds;
+            probandCohort.init(self, [modelInfo.id]);
             localDataSet.addCohort(probandCohort, PROBAND_ID);
 
             // Initialize subset model
@@ -643,53 +648,54 @@ class VariantModel {
             subsetCohort.subsetIds = modelInfo.subsetIds;
             localDataSet.addCohort(subsetCohort, SUBSET_ID);
 
-            let vcfPromise = null;
-            if (modelInfo.vcfs.length > 0) {
-                vcfPromise = new Promise(function (vcfResolve, vcfReject) {
-                        probandCohort.onVcfUrlEntered(modelInfo.vcfs, modelInfo.tbis, function () {
-                            if (modelInfo.displayName && modelInfo.displayName !== '') {
-                                probandCohort.trackName = modelInfo.displayName;
-                            } else {
-                                probandCohort.trackName = modelInfo.id;
-                            }
-                            vcfResolve();
-                        })
-                    },
-                    function (error) {
-                        vcfReject(error);
-                    });
-            } else {
-                probandCohort.excludeIds = [];
-                subsetCohort.subsetIds = [];
-                vcfPromise = Promise.resolve();
-            }
-
-
-            let bamPromise = null;
-            if (modelInfo.bams.length > 0) {
-                bamPromise = new Promise(function (bamResolve, bamReject) {
-                        probandCohort.onBamUrlEntered(modelInfo.bams, modelInfo.bais, function () {
-                            bamResolve();
-                        })
-                    },
-                    function (error) {
-                        bamReject(error);
-                    });
-            } else {
-                localDataSet.bams = [];
-                localDataSet.bais = [];
-                bamPromise = Promise.resolve();
-            }
-
-            Promise.all([vcfPromise, bamPromise])
-                .then(function () {
-                    if (self.mainDataSet == null) {
-                        self.mainDataSet = localDataSet;
-                    } else {
-                        self.otherDataSets.push(localDataSet);
-                    }
-                    resolve(localDataSet);
-                });
+            // TODO: this will never be called initially b/c no data entered yet
+        //     let vcfPromise = null;
+        //     if (modelInfo.vcfs.length > 0) {
+        //         vcfPromise = new Promise(function (vcfResolve, vcfReject) {
+        //                 probandCohort.onVcfUrlEntered(modelInfo.vcfs, modelInfo.tbis, function () {
+        //                     if (modelInfo.displayName && modelInfo.displayName !== '') {
+        //                         probandCohort.trackName = modelInfo.displayName;
+        //                     } else {
+        //                         probandCohort.trackName = modelInfo.id;
+        //                     }
+        //                     vcfResolve();
+        //                 })
+        //             },
+        //             function (error) {
+        //                 vcfReject(error);
+        //             });
+        //     } else {
+        //         probandCohort.excludeIds = [];
+        //         subsetCohort.subsetIds = [];
+        //         vcfPromise = Promise.resolve();
+        //     }
+        //
+        //
+        //     let bamPromise = null;
+        //     if (modelInfo.bams.length > 0) {
+        //         bamPromise = new Promise(function (bamResolve, bamReject) {
+        //                 probandCohort.onBamUrlEntered(modelInfo.bams, modelInfo.bais, function () {
+        //                     bamResolve();
+        //                 })
+        //             },
+        //             function (error) {
+        //                 bamReject(error);
+        //             });
+        //     } else {
+        //         localDataSet.bams = [];
+        //         localDataSet.bais = [];
+        //         bamPromise = Promise.resolve();
+        //     }
+        //
+        //     Promise.all([vcfPromise, bamPromise])
+        //         .then(function () {
+        //             if (self.mainDataSet == null) {
+        //                 self.mainDataSet = localDataSet;
+        //             } else {
+        //                 self.otherDataSets.push(localDataSet);
+        //             }
+        //             resolve(localDataSet);
+        //         });
         });
     }
 

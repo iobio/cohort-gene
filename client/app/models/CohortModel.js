@@ -149,33 +149,33 @@ class CohortModel {
         return this.vcf ? this.vcf.getAnnotators() : [];
     }
 
-    isLoaded() {
-        return this.vcf != null && this.vcfData != null;
-    }
-
-    isReadyToLoad() {
-        return (this.isVcfReadyToLoad() && this.isSampleSelected()) || this.isBamReadyToLoad();
-    }
-
-    isBamReadyToLoad() {
-        return this.bam != null && (this.bamUrlEntered || this.bamFileOpened);
-    }
-
-    isVcfReadyToLoad() {
-        return this.vcf != null && (this.vcfUrlEntered || this.vcfFileOpened);
-    }
-
-    isSampleSelected() {
-        return !this.isMultiSample || (this.sampleName && this.sampleName.length > 0);
-    }
-
-    isBamLoaded() {
-        return this.bam && (this.bamUrlEntered || (this.bamFileOpened && this.getBamRefName));
-    }
-
-    isVcfLoaded() {
-        return this.vcf && (this.vcfUrlEntered || this.vcfFileOpened);
-    }
+    // isLoaded() {
+    //     return this.vcf != null && this.vcfData != null;
+    // }
+    //
+    // isReadyToLoad() {
+    //     return (this.isVcfReadyToLoad() && this.isSampleSelected()) || this.isBamReadyToLoad();
+    // }
+    //
+    // isBamReadyToLoad() {
+    //     return this.bam != null && (this.bamUrlEntered || this.bamFileOpened);
+    // }
+    //
+    // isVcfReadyToLoad() {
+    //     return this.vcf != null && (this.vcfUrlEntered || this.vcfFileOpened);
+    // }
+    //
+    // isSampleSelected() {
+    //     return !this.isMultiSample || (this.sampleName && this.sampleName.length > 0);
+    // }
+    //
+    // isBamLoaded() {
+    //     return this.bam && (this.bamUrlEntered || (this.bamFileOpened && this.getBamRefName));
+    // }
+    //
+    // isVcfLoaded() {
+    //     return this.vcf && (this.vcfUrlEntered || this.vcfFileOpened);
+    // }
 
     isInheritanceLoaded() {
         return (this.vcfData != null && this.vcfData.loadState != null && this.vcfData.loadState['inheritance']);
@@ -655,11 +655,6 @@ class CohortModel {
             currEndpt.setGenericAnnotation(variantModel.genericAnnotation);
             currEndpt.setGenomeBuildHelper(variantModel.genomeBuildHelper);
         });
-        // TODO: get rid of once refactor done
-        // me.vcf = vcfiobio();
-        // me.vcf.setEndpoint(variantModel.endpoint);
-        // me.vcf.setGenericAnnotation(variantModel.genericAnnotation);
-        // me.vcf.setGenomeBuildHelper(variantModel.genomeBuildHelper);
     };
 
     // promiseBamFilesSelected(event) {
@@ -813,10 +808,12 @@ class CohortModel {
                 for (let i = 0; i < vcfUrls.length; i++) {
                     let p = new Promise((resolve, reject) => {
                         let currFileName = urlNames[i];
-                        debugger;   // is my vcfEndptHash setup?
                         let currVcfEndpt = me.vcfEndptHash[currFileName];
                         let currVcf = vcfUrls[i];
-                        let currTbi = tbiUrls[i];
+                        let currTbi = null;
+                        if (tbiUrls) {
+                            currTbi = tbiUrls[i];
+                        }
                         currVcfEndpt.openVcfUrl(currVcf, currTbi, function (success, errorMsg, hdrBuildResult) {
                             if (success) {
                                 // Get the sample names from the vcf header
@@ -974,6 +971,44 @@ class CohortModel {
                     });
             }
         });
+    }
+
+    onBamUrlEntered(bamUrl, baiUrl, callback) {
+        var me = this;
+        this.bamData = null;
+        this.fbData = null;
+
+        if (bamUrl == null || bamUrl.trim() === "") {
+            this.bamUrlEntered = false;
+            this.bam = null;
+            if (callback) {
+                callback(false)
+            }
+
+        } else {
+
+            this.bamUrlEntered = true;
+            this.bam = new Bam(this.globalApp, this.cohort.endpoint, bamUrl, baiUrl);
+
+            this.bam.checkBamUrl(bamUrl, baiUrl, function (success, errorMsg) {
+                if (me.lastBamAlertify) {
+                    me.lastBamAlertify.dismiss();
+                }
+                if (!success) {
+                    me.bamUrlEntered = false;
+                    me.bam = null;
+                    var msg = "<span style='font-size:18px'>" + errorMsg + "</span><br><span style='font-size:12px'>" + bamUrl + "</span>";
+                    alertify.set('notifier', 'position', 'top-right');
+                    me.lastBamAlertify = alertify.error(msg, 15);
+                }
+                if (callback) {
+
+                    callback(success);
+                }
+            });
+
+        }
+        this.getBamRefName = this._stripRefName;
     }
 
     /* Takes in a list of file names and removes them from the subsequent three provided lists.
