@@ -30,8 +30,8 @@ class CohortModel {
         this.coverage = [[]];
 
         // Optional subset IDs
-        this.subsetIds = [];            // IDs that compose this cohort (filled for proband cohort also)
-        this.subsetPhenotypes = [];     // Phrases describing phenotypic filtering data; displayed in track chips
+        this.sampleIds = [];            // Sample IDs that compose this cohort
+        this.cohortPhenotypes = [];     // Phrases describing phenotypic filtering data; displayed in track chips
         this.noMatchingSamples = false; // Flag to display No Matching Variants chip
 
         // Optional exclude IDs
@@ -133,34 +133,6 @@ class CohortModel {
     getAnnotators() {
         return this.vcf ? this.vcf.getAnnotators() : [];
     }
-
-    // isLoaded() {
-    //     return this.vcf != null && this.vcfData != null;
-    // }
-    //
-    // isReadyToLoad() {
-    //     return (this.isVcfReadyToLoad() && this.isSampleSelected()) || this.isBamReadyToLoad();
-    // }
-    //
-    // isBamReadyToLoad() {
-    //     return this.bam != null && (this.bamUrlEntered || this.bamFileOpened);
-    // }
-    //
-    // isVcfReadyToLoad() {
-    //     return this.vcf != null && (this.vcfUrlEntered || this.vcfFileOpened);
-    // }
-    //
-    // isSampleSelected() {
-    //     return !this.isMultiSample || (this.sampleName && this.sampleName.length > 0);
-    // }
-    //
-    // isBamLoaded() {
-    //     return this.bam && (this.bamUrlEntered || (this.bamFileOpened && this.getBamRefName));
-    // }
-    //
-    // isVcfLoaded() {
-    //     return this.vcf && (this.vcfUrlEntered || this.vcfFileOpened);
-    // }
 
     isInheritanceLoaded() {
         return (this.vcfData != null && this.vcfData.loadState != null && this.vcfData.loadState['inheritance']);
@@ -1102,8 +1074,8 @@ class CohortModel {
     * in preparation for getting data.
     */
     wipeGeneData() {
-        if (this.subsetPhenotypes.length > 3) {
-            this.subsetPhenotypes.pop();
+        if (this.cohortPhenotypes.length > 3) {
+            this.cohortPhenotypes.pop();
         }
         this.loadedVariants = null;
     }
@@ -1375,7 +1347,7 @@ class CohortModel {
                                 combinedResults.features = me.filterVarsOnPVal(combinedResults.features);
                             }
                             // Add variant number to chips
-                            me.subsetPhenotypes.push(combinedResults.features.length + ' variants');
+                            me.cohortPhenotypes.push(combinedResults.features.length + ' variants');
 
                             // Assign data parameter
                             if (combinedResults) {
@@ -1835,14 +1807,16 @@ class CohortModel {
         self.getCacheHelper().promiseRemoveCacheItem(dataKind, key);
     }
 
+    // TODO: refactor this
     /* Only called by subset model for now */
     getFormattedSampleIds(type) {
         let self = this;
+
         if (type === 'subset') {
-            return self.subsetIds;
+            return self.sampleIds;
         }
         else if (type === 'probands') {
-            return self.getDataSet().getProbandCohort().subsetIds;
+            return self.getDataSet().getProbandCohort().sampleIds;
         }
     }
 

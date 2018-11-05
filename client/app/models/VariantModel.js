@@ -1,5 +1,5 @@
 /* Encapsulates logic for Variant Card and Variant Summary Card
-   SJG & TS updated Apr2018 */
+   SJG & TS updated Nov2018 */
 class VariantModel {
     constructor(endpoint, genericAnnotation, translator, geneModel,
                 cacheHelper, genomeBuildHelper) {
@@ -18,10 +18,7 @@ class VariantModel {
         // <editor-fold desc="STATE & THRESHOLD PROPERTIES">
         this.annotationScheme = 'vep';
         this.maxDepth = 0;
-        this.keepVariantsCombined = true;           // True for multiple samples to be displayed on single track
-        this.efficiencyMode = true;                 // True to only pull back variant locations and not functional impacts
         this.inProgress = {'loadingDataSources': false};
-        this.genesInProgress = [];
         this.subsetEnrichmentThreshold = 2.0;
         this.probandEnrichmentThreshold = 0.5;
         this.extraAnnotationsLoaded = false;
@@ -145,7 +142,6 @@ class VariantModel {
     promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch) {
         let self = this;
         // Set status
-        self.isLoaded = false;
         self.inProgress.loadingDataSources = true;
 
         // Initialize hub data set
@@ -172,8 +168,8 @@ class VariantModel {
                     }
                     // Store urls in data set model
                     hubDataSet.vcfNames = urlObj.names;
-                    hubDataSet.vcfUrls = urlObj.vcfs;
-                    hubDataSet.tbiUrls = urlObj.tbis;
+                    hubDataSet.vcfs = urlObj.vcfs;
+                    hubDataSet.tbis = urlObj.tbis;
 
                     // Format filter to send to Hub to get all proband IDs (via 'affected status' metric)
                     let probandFilter = self.getProbandPhenoFilter();
@@ -189,13 +185,13 @@ class VariantModel {
                             }
                             // Coming from SSC data set
                             if (!((ids[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
-                                probandCohort.subsetIds = self.convertSimonsIds(ids, 'proband');
+                                probandCohort.sampleIds = self.convertSimonsIds(ids, 'proband');
                             }
                             // Coming from SPARK or other
                             else {
-                                probandCohort.subsetIds = self.getRawIds(ids);
+                                probandCohort.sampleIds = self.getRawIds(ids);
                             }
-                            probandCohort.subsetPhenotypes.push('n = ' + ids.length);
+                            probandCohort.cohortPhenotypes.push('n = ' + ids.length);
                         });
                     promises.push(probandP);
 
@@ -219,9 +215,9 @@ class VariantModel {
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                         .then(function (ids) {
                             if (ids.length > 0 && !((ids[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
-                                subsetCohort.subsetIds = self.convertSimonsIds(ids, 'subset');
+                                subsetCohort.sampleIds = self.convertSimonsIds(ids, 'subset');
                             } else {
-                                subsetCohort.subsetIds = self.getRawIds(ids);
+                                subsetCohort.sampleIds = self.getRawIds(ids);
                             }
                         });
                     promises.push(subsetP);
@@ -230,8 +226,8 @@ class VariantModel {
                     Promise.all(promises)
                         .then(function () {
                             // Assign chip display numbers (on left side)
-                            subsetCohort.subsetPhenotypes.splice(0, 0, ('Proband n = ' + probandCohort.subsetIds.length));
-                            subsetCohort.subsetPhenotypes.splice(1, 0, ('Subset n = ' + subsetCohort.subsetIds.length));
+                            subsetCohort.cohortPhenotypes.splice(0, 0, ('Proband n = ' + probandCohort.sampleIds.length));
+                            subsetCohort.cohortPhenotypes.splice(1, 0, ('Subset n = ' + subsetCohort.sampleIds.length));
                             // Flip hub flags
                             subsetCohort.inProgress.fetchingHubData = false;
                             probandCohort.inProgress.fetchingHubData = false;
@@ -430,13 +426,13 @@ class VariantModel {
         if (Object.keys(self.phenoFilters).length > 0) {
             Object.keys(self.phenoFilters).forEach(function (filter) {
                 if (self.phenoFilters[filter] != null && self.phenoFilters[filter].data != null) {
-                    subsetCohort.subsetPhenotypes.push(self.formatPhenotypeFilterDisplay(filter, self.phenoFilters[filter].data));
+                    subsetCohort.cohortPhenotypes.push(self.formatPhenotypeFilterDisplay(filter, self.phenoFilters[filter].data));
                 }
             })
         }
 
         // If we aren't filtering on affected status already, add a proband filter
-        // Add this after setting up subsetPhenotype array to preserve 'Probands' chip displaying first
+        // Add this after setting up cohortPhenotype array to preserve 'Probands' chip displaying first
         if (self.phenoFilters['affected_status'] == null) {
             self.phenoFilters['affected_status'] = probandFilter;
         }
@@ -485,32 +481,6 @@ class VariantModel {
 
     //<editor-fold desc="LOCAL LAUNCH">
 
-    /* Promises to verify the vcf url and adds samples to vcf object */
-    promiseAddSamples(subsetCohort, urlNames, vcfUrls, tbiUrls) {
-        let self = this;
-        if ((Object.keys(subsetCohort.vcfEndptHash)).length > 0) {
-            return new Promise(function (resolve, reject) {
-                subsetCohort.onVcfUrlEntered(urlNames, vcfUrls, tbiUrls)
-                    .then((updatedListObj) => {
-                        if (updatedListObj != null) {
-                            // Assign updated, stably-sorted lists to data set model
-                            self.mainDataSet.vcfNames = updatedListObj['names'];
-                            self.mainDataSet.vcfUrls = updatedListObj['vcfs'];
-                            self.mainDataSet.tbiUrls = updatedListObj['tbis'];
-                            self.mainDataSet.invalidVcfNames = updatedListObj['invalidNames'];
-                            self.mainDataSet.invalidVcfReasons = updatedListObj['invalidReasons'];
-                            resolve();
-                        }
-                        else {
-                            reject('There was a problem checking vcf/tbi urls and adding samples.');
-                        }
-                    });
-            });
-        } else {
-            return Promise.reject('No vcf data to open in promiseAddSamples');
-        }
-    }
-
     /* Adds data set model and cohort models to represent a single entry in file menu. Used when launching
     * cohort-gene outside of Hub. */
     promiseAddEntry(modelInfo) {
@@ -518,18 +488,16 @@ class VariantModel {
 
         return new Promise((resolve, reject) => {
             // Set status
-            self.isLoaded = false;
             self.inProgress.loadingDataSources = true;
 
             // Initialize local data set
             let localDataSet = new DataSetModel();
             localDataSet.entryId = modelInfo.id;
             localDataSet.name = modelInfo.id;
-            // TODO: do I need to keep urls and files separate in data set model?
-            localDataSet.vcfUrls = modelInfo.vcfs;
-            localDataSet.tbiUrls = modelInfo.tbis;
-            localDataSet.bamUrls = modelInfo.bams;
-            localDataSet.baiUrls = modelInfo.bais;
+            localDataSet.vcfs = modelInfo.vcfs;
+            localDataSet.tbis = modelInfo.tbis;
+            localDataSet.bams = modelInfo.bams;
+            localDataSet.bais = modelInfo.bais;
             if (modelInfo.id === 's0') {
                 self.mainDataSet = localDataSet;
             } else {
@@ -546,7 +514,7 @@ class VariantModel {
             // Initialize subset model
             let subsetCohort = new CohortModel(self);
             subsetCohort.isSubsetCohort = true;
-            subsetCohort.subsetIds = modelInfo.subsetIds;
+            subsetCohort.sampleIds = modelInfo.sampleIds;
             localDataSet.addCohort(subsetCohort, SUBSET_ID);
 
             // TODO: this will never be called initially b/c no data entered yet
@@ -567,7 +535,7 @@ class VariantModel {
             //             });
             //     } else {
             //         probandCohort.excludeIds = [];
-            //         subsetCohort.subsetIds = [];
+            //         subsetCohort.sampleIds = [];
             //         vcfPromise = Promise.resolve();
             //     }
             //
@@ -634,6 +602,35 @@ class VariantModel {
 
 
     //</editor-fold>
+
+    // <editor-fold desc="ALL LAUNCH">
+
+    /* Promises to being loading process for each data set. */
+    promiseLoadData(theGene, theTranscript, options) {
+        let self = this;
+
+        if (self.otherDataSets.length === 0) {
+            return self.mainDataSet.promiseLoadData(theGene, theTranscript, options);
+        } else {
+            return new Promise((resolve, reject) => {
+                let loadPromises = [];
+                loadPromises.push(self.mainDataSet.promiseLoadData(theGene, theTranscript, options));
+                self.otherDataSets.forEach((dataSet) => {
+                    loadPromises.push(dataSet.promiseLoadData(theGene, theTranscript, options));
+                });
+
+                Promise.all(loadPromises)
+                    .then(() => {
+                        resolve();
+                    })
+                    .catch((error) => {
+                        reject("Error in promiseLoadData in VariantModel: " + error);
+                    })
+            });
+        }
+    }
+
+    // </editor-fold>
 
     //<editor-fold desc="CLINVAR">
 
@@ -896,12 +893,7 @@ class VariantModel {
 
     //</editor-fold>
 
-    startGeneProgress(geneName) {
-        var idx = this.genesInProgress.indexOf(geneName);
-        if (idx < 0) {
-            this.genesInProgress.push(geneName);
-        }
-    }
+    // <editor-fold desc="HELPERS">
 
     /* Returns true if all cohorts within the data set are alignments only. */
     isAlignmentsOnly() {
@@ -909,35 +901,9 @@ class VariantModel {
         return self.mainDataSet.isAlignmentsOnly();
     }
 
+    // </editor-fold>
+
     //<editor-fold desc="TO BE DEPRECIATED">
-// TODO: we don't need to annotate inheritance at level, more like on a per sample level in cohort model...
-    promiseAnnotateInheritance(geneObject, theTranscript, resultMap, options = {
-        isBackground: false,
-        cacheData: true
-    }) {
-        let self = this;
-
-        let resolveIt = function (resolve, resultMap, geneObject, theTranscript, options) {
-            // SJG don't want to cache anything for now
-            // self.promiseCacheCohortVcfData(geneObject, theTranscript, CacheHelper.VCF_DATA, resultMap, options.cacheData)
-            // .then(function() {
-            resolve({'resultMap': resultMap, 'gene': geneObject, 'transcript': theTranscript});
-            //})
-        }
-
-        return new Promise(function (resolve, reject) {
-            if (self.isAlignmentsOnly() && !autocall && resultMap == null) {
-                resolve({
-                    'resultMap': {PROBAND_ID: {features: []}},
-                    'gene': geneObject,
-                    'transcript': theTranscript
-                });
-            } else {
-                resolveIt(resolve, resultMap, geneObject, theTranscript, options);
-            }
-        })
-    }
-
     // TODO: back end will eliminate need to combine variant infos
     /* Takes in a list of fully annotated variants, and appends existing, relative positional information from subset variants to them.
           Reassigns loadedVariants in subset CohortModel.

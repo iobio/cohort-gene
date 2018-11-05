@@ -291,7 +291,6 @@
                 self.variantModel.promiseAddClinvarSample()
                     .then(function () {
                         //self.cohortModel.setTumorInfo(true);
-                        self.variantModel.isLoaded = true;
                         self.variantModel.getCanonicalModels().forEach(function (model) {
                             if (model.displayName == null || model.displayName.length === 0) {
                                 model.displayName = model.id;
@@ -501,12 +500,12 @@
                     if (modelInfo == null) {
                         modelInfo = {};
                         modelInfo.displayName = probandModel != null ? probandModel.trackName : '';
-                        modelInfo.subsetIds = subsetModel != null ? subsetModel.subsetIds : [];
+                        modelInfo.sampleIds = subsetModel != null ? subsetModel.sampleIds : [];
                         modelInfo.excludeIds = probandModel != null ? probandModel.excludeIds : [];
-                        modelInfo.vcfs = dataSet.vcfUrls != null ? dataSet.vcfUrls : dataSet.vcfFiles;
-                        modelInfo.tbis = dataSet.tbiUrls != null ? dataSet.tbiUrls : dataSet.tbiFiles;
-                        modelInfo.bams = dataSet.bamUrls != null ? dataSet.bamUrls : dataSet.bamFiles;
-                        modelInfo.bais = dataSet.baiUrls != null ? dataSet.baiUrls : dataSet.baiFiles;
+                        modelInfo.vcfs = dataSet.vcfs;
+                        modelInfo.tbis = dataSet.tbis;
+                        modelInfo.bams = dataSet.bams;
+                        modelInfo.bais = dataSet.bais;
                         modelInfo.dataSet = dataSet;
                         if (modelInfo.tbi || modelInfo.bai) {
                             self.separateUrlForIndex = true;

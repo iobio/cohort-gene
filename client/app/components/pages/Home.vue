@@ -311,17 +311,17 @@ TD & SJG updated Jun2018 -->
                 let self = this;
                 return self.cacheHelper._promiseClearCache(self.cacheHelper.launchTimestampToClear);
             },
-            onLoadDemoData: function () {
-                let self = this;
-                self.geneModel.copyPasteGenes(self.variantModel.demoGenes.join(", "));
-                self.onGeneSelected(self.DEMO_GENE);
-                self.variantModel.promiseInitDemo()
-                    .then(function () {
-                        if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
-                            self.promiseLoadData();
-                        }
-                    })
-            },
+            // onLoadDemoData: function () {
+            //     let self = this;
+            //     self.geneModel.copyPasteGenes(self.variantModel.demoGenes.join(", "));
+            //     self.onGeneSelected(self.DEMO_GENE);
+            //     self.variantModel.promiseInitDemo()
+            //         .then(function () {
+            //             if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
+            //                 self.promiseLoadData();
+            //             }
+            //         })
+            // },
             promiseLoadData: function () {
                 let self = this;
 
@@ -329,10 +329,8 @@ TD & SJG updated Jun2018 -->
                     if (self.variantModel.dataSet) {
                         let options = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': true};
                         // Load positional information for quick display
-                        self.variantModel.promiseLoadData(self.selectedGene,
-                            self.selectedTranscript,
-                            options)
-                            .then(function () {
+                        self.variantModel.promiseLoadData(self.selectedGene, self.selectedTranscript, options)
+                            .then(() => {
                                 self.doneLoadingData = true;  // Display variants
                                 self.variantModel.promiseFurtherAnnotateVariants(self.selectedGene,
                                     self.selectedTranscript,
