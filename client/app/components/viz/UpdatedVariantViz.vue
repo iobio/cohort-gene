@@ -268,7 +268,7 @@
                 this.variantChart = scaledVariantD3()
                     .width(this.width)
                     .clazz(function (variant) {
-                        return self.classifySymbolFunc(variant, self.annotationScheme, self.model.isSubsetCohort);
+                        return self.classifySymbolFunc(variant, self.annotationScheme);
                     })
                     .margin(self.margin)
                     .showXAxis(self.showXAxis)

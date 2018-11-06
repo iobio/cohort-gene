@@ -180,8 +180,6 @@ class DataSetModel {
         let parentVarModel = self.getVariantModel();
         let probandCohort = new CohortModel(self, parentVarModel);
         probandCohort.isProbandCohort = true;
-        //probandCohort.trackName = 'Variants for';
-        //self.cohortPhenotypes.push('Probands');
         self.addCohort(probandCohort, PROBAND_ID);
 
         let subsetCohort = new CohortModel(self, parentVarModel);
@@ -202,16 +200,28 @@ class DataSetModel {
 
 
     promiseInit(vcfFileNames) {
+        let self = this;
+
         return new Promise(function (resolve, reject) {
             // Finish initializing cohort models
-            let subsetCohort = self.getSubsetCohort();
-            subsetCohort.inProgress.verifyingVcfUrl = true;
-            subsetCohort.init(self, vcfFileNames);
+            //let subsetCohort = self.getSubsetCohort();
+            self.inProgress.verifyingVcfUrl = true;
+
+
+            // Set up individual endpoint per file
+            vcfFileNames.forEach((name) => {
+               self.vcfEndptHash[name] = vcfiobio();
+                let currEndpt = self.vcfEndptHash[name];
+                let varModel = self.getVariantModel();
+                currEndpt.setEndpoint(varModel.endpoint);
+                currEndpt.setGenericAnnotation(varModel.genericAnnotation);
+                currEndpt.setGenomeBuildHelper(varModel.genomeBuildHelper);
+            });
 
             // Check vcf urls and add samples
-            self.promiseAddSamples(subsetCohort, self.vcfNames, self.vcfs, self.tbis)
+            self.promiseAddSamples(self.vcfNames, self.vcfs, self.tbis)
                 .then(function () {
-                    subsetCohort.inProgress.verifyingVcfUrl = false;
+                    self.inProgress.verifyingVcfUrl = false;
                     self.inProgress.loadingDataSources = false;
                     self.isLoaded = true;
 
@@ -228,9 +238,9 @@ class DataSetModel {
     }
 
     /* Promises to verify the vcf url and adds samples to vcf object - utilized in HUB launch */
-    promiseAddSamples(cohortModel, entryNames, vcfs, tbis) {
+    promiseAddSamples(entryNames, vcfs, tbis) {
         let self = this;
-        if ((Object.keys(cohortModel.vcfEndptHash)).length > 0) {
+        if ((Object.keys(self.vcfEndptHash)).length > 0) {
             return new Promise(function (resolve, reject) {
                 self.onVcfUrlEntered(entryNames, vcfs, tbis)
                     .then((updatedListObj) => {

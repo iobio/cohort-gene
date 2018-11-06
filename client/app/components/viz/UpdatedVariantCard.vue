@@ -94,13 +94,13 @@ Updated: SJG Apr2018
             </v-layout>
             <div style="width:100%">
                 <updated-variant-viz
-                        v-if="(showVariantViz && subsetCohort != null && probandCohort != null)"
+                        v-if="dataSetModel"
                         ref="subsetVizRef"
-                        :id="subsetCohort.getName()"
-                        :model="subsetCohort"
-                        :data="subsetCohort.loadedVariants"
-                        :title="probandCohort.trackName"
-                        :phenotypes="subsetCohort.subsetPhenotypes"
+                        :id="dataSetModel.getName()"
+                        :model="dataSetModel"
+                        :data="dataSetModel.loadedVariants"
+                        :title="dataSetModel.getName()"
+                        :phenotypes="dataSetModel.getSubsetCohort().phenotypes"
                         :validSourceFiles="formattedValidFiles"
                         :invalidSourceFiles="formattedInvalidFiles"
                         :invalidSourceReasons="formattedInvalidReasons"

@@ -39,7 +39,7 @@ TD & SJG updated Jun2018 -->
                         <updated-variant-card
                                 v-if="variantModel"
                                 ref="variantCardRef"
-                                :dataSetModel="variantModel.dataSet"
+                                :dataSetModel="variantModel.mainDataSet"
                                 :filterModel="filterModel"
                                 :annotationScheme="variantModel.annotationScheme"
                                 :classifyVariantSymbolFunc="variantModel.classifyByEnrichment"

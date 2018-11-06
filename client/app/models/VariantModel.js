@@ -160,7 +160,6 @@ class VariantModel {
         self.phenoFilters = phenoFilters;
 
         return new Promise(function (resolve, reject) {
-
             // Get URLs from Hub
             self.promiseGetUrlsFromHub(projectId, initialLaunch)
                 .then(function (urlObj) {
@@ -184,14 +183,7 @@ class VariantModel {
                             if (ids.length === 0) {
                                 reject('No samples found for proband filtering from Hub');
                             }
-                            // Coming from SSC data set
-                            if (!((ids[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
-                                probandCohort.sampleIds = self.convertSimonsIds(ids, 'proband');
-                            }
-                            // Coming from SPARK or other
-                            else {
-                                probandCohort.sampleIds = self.getRawIds(ids);
-                            }
+                            probandCohort.sampleIds = self.getRawIds(ids);
                             probandCohort.phenotypes.push('n = ' + ids.length);
                         });
                     promises.push(probandP);
@@ -215,11 +207,7 @@ class VariantModel {
                     // Retrieve subset sample IDs from Hub
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                         .then(function (ids) {
-                            if (ids.length > 0 && !((ids[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
-                                subsetCohort.sampleIds = self.convertSimonsIds(ids, 'subset');
-                            } else {
-                                subsetCohort.sampleIds = self.getRawIds(ids);
-                            }
+                            subsetCohort.sampleIds = self.getRawIds(ids);
                         });
                     promises.push(subsetP);
 
@@ -230,8 +218,7 @@ class VariantModel {
                             subsetCohort.phenotypes.splice(0, 0, ('Proband n = ' + probandCohort.sampleIds.length));
                             subsetCohort.phenotypes.splice(1, 0, ('Subset n = ' + subsetCohort.sampleIds.length));
                             // Flip hub flags
-                            subsetCohort.inProgress.fetchingHubData = false;
-                            probandCohort.inProgress.fetchingHubData = false;
+                            hubDataSet.inProgress.fetchingHubData = false;
                             // Free up some space
                             self.simonsIdMap = null;
                             // Get variant loading rolling

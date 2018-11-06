@@ -68,7 +68,7 @@ HubEndpoint.prototype.getSamplesForProject = function (projectId, sampleFilters)
     }
 
     let params = Qs.stringify(queryParams, {addQueryPrefix: true, arrayFormat: 'brackets'});
-    let urlParam = self.api + '/projects/' + projectId + '/samples' + params;
+    let urlParam = self.api + '/projects/' + projectId + '/samples/list' + params;
     let authToken = localStorage.getItem('hub-iobio-tkn');
 
     return $.ajax({
