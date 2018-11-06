@@ -210,8 +210,8 @@ export default {
         let self = this;
         if (self.data == null) return false;
         if (self.data.features == null) return false;
-        if (self.data.features.length == 0) {
-          var loading = self.model.inProgress.loadingVariants || self.model.inProgress.drawingVariants || self.model.inProgress.fetchingHubData;
+        if (self.data.features.length === 0) {
+          let loading = self.model.inProgress.loadingVariants || self.model.inProgress.drawingVariants || self.model.inProgress.fetchingHubData;
           if (!loading && self.doneLoadingData) return true;
         }
         return false;

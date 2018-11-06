@@ -172,22 +172,20 @@ class DataSetModel {
     initCohorts() {
         let self = this;
 
+        debugger;
         let parentVarModel = self.getVariantModel();
         let probandCohort = new CohortModel(self, parentVarModel);
         probandCohort.isProbandCohort = true;
-        probandCohort.inProgress.fetchingHubData = true;
         //probandCohort.trackName = 'Variants for';
         //self.cohortPhenotypes.push('Probands');
         self.addCohort(probandCohort, PROBAND_ID);
 
         let subsetCohort = new CohortModel(self, parentVarModel);
         subsetCohort.isSubsetCohort = true;
-        subsetCohort.inProgress.fetchingHubData = true;
         self.addCohort(subsetCohort, SUBSET_ID);
 
         let unaffectedCohort = new CohortModel(self, parentVarModel);
         unaffectedCohort.isUnaffectedCohort = true;
-        unaffectedCohort.inProgress.fetchingHubData = true;
         self.addCohort(unaffectedCohort, UNAFFECTED_ID);
     }
 
