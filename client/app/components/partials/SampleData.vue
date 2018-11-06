@@ -205,7 +205,7 @@
                 self.$set(self, "samples", []);
 
                 if (self.modelInfo && self.modelInfo.model) {
-                    self.modelInfo.model.onVcfUrlEntered([entryId], [vcfUrl], [tbiUrl])
+                    self.modelInfo.dataSet.onVcfUrlEntered([entryId], [vcfUrl], [tbiUrl])
                         .then((listObj) => {
                         if (listObj) {
                             self.samples = listObj['samples'];

@@ -517,54 +517,7 @@ class VariantModel {
             subsetCohort.sampleIds = modelInfo.sampleIds;
             localDataSet.addCohort(subsetCohort, SUBSET_ID);
 
-            // TODO: this will never be called initially b/c no data entered yet
-            //     let vcfPromise = null;
-            //     if (modelInfo.vcfs.length > 0) {
-            //         vcfPromise = new Promise(function (vcfResolve, vcfReject) {
-            //                 probandCohort.onVcfUrlEntered(modelInfo.vcfs, modelInfo.tbis, function () {
-            //                     if (modelInfo.displayName && modelInfo.displayName !== '') {
-            //                         probandCohort.trackName = modelInfo.displayName;
-            //                     } else {
-            //                         probandCohort.trackName = modelInfo.id;
-            //                     }
-            //                     vcfResolve();
-            //                 })
-            //             },
-            //             function (error) {
-            //                 vcfReject(error);
-            //             });
-            //     } else {
-            //         probandCohort.excludeIds = [];
-            //         subsetCohort.sampleIds = [];
-            //         vcfPromise = Promise.resolve();
-            //     }
-            //
-            //
-            //     let bamPromise = null;
-            //     if (modelInfo.bams.length > 0) {
-            //         bamPromise = new Promise(function (bamResolve, bamReject) {
-            //                 probandCohort.onBamUrlEntered(modelInfo.bams, modelInfo.bais, function () {
-            //                     bamResolve();
-            //                 })
-            //             },
-            //             function (error) {
-            //                 bamReject(error);
-            //             });
-            //     } else {
-            //         localDataSet.bams = [];
-            //         localDataSet.bais = [];
-            //         bamPromise = Promise.resolve();
-            //     }
-            //
-            //     Promise.all([vcfPromise, bamPromise])
-            //         .then(function () {
-            //             if (self.mainDataSet == null) {
-            //                 self.mainDataSet = localDataSet;
-            //             } else {
-            //                 self.otherDataSets.push(localDataSet);
-            //             }
-            //             resolve(localDataSet);
-            //         });
+            resolve();
         });
     }
 
@@ -885,10 +838,6 @@ class VariantModel {
         }
 
         return 'variant ' + d.type.toLowerCase() + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' ' + sift + ' ' + polyphen + ' ' + regulatory + ' ' + +' ' + d.clinvar + ' ' + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts;
-    }
-
-    classifyByClinvar(d) {
-        return 'variant ' + d.type.toLowerCase() + ' ' + d.clinvar + ' colorby_' + d.clinvar;
     }
 
     //</editor-fold>

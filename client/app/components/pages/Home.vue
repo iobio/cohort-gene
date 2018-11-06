@@ -27,7 +27,6 @@ TD & SJG updated Jun2018 -->
                 :variantModel="variantModel"
                 :launchedFromHub="launchedFromHub"
                 @input="onGeneSelected"
-                @load-demo-data="onLoadDemoData"
                 @clear-cache="clearCache"
                 @apply-genes="onApplyGenes"
                 @on-files-loaded="onFilesLoaded"

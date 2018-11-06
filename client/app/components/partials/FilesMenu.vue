@@ -418,18 +418,14 @@
                 let self = this;
                 return new Promise(function (resolve, reject) {
 
-                    // Assign model prop in info object to model
+                    // Assign data set prop in info object to model
                     let theDataSet = dataSet;
                     let theModelInfo = self.modelInfoMap[theDataSet.entryId];
                     theModelInfo.dataSet = theDataSet;  // TODO: do I need to keep track of dataSet or Model here (or neither?)
 
-                    // Trigger on vcf check in model
-                    let theProbandModel = theDataSet.getProbandCohort();
-                    if (theProbandModel == null) {
-                        reject('Could not find associated proband model for the given data set.');
-                    }
+                    // Check files in data set model
                     let nameList = [theModelInfo.id];
-                    theProbandModel.onVcfUrlEntered(nameList, theModelInfo.vcfs, theModelInfo.tbis)
+                    theDataSet.onVcfUrlEntered(nameList, theModelInfo.vcfs, theModelInfo.tbis)
                         .then((successObj) => {
                             if (successObj) {
                                 // Set samples prop
@@ -445,7 +441,7 @@
                                         self.validate();
                                     }
                                 });
-                                theProbandModel.onBamUrlEntered(theModelInfo.bam, theModelInfo.bai, function (success) {
+                                theDataSet.onBamUrlEntered(theModelInfo.bam, theModelInfo.bai, function (success) {
                                     self.validate();
                                     if (success) {
                                         resolve();
