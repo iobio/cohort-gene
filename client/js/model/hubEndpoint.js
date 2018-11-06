@@ -14,12 +14,12 @@ HubEndpoint.prototype.assignParameters = function (source, projectId) {
 
 /* First call to Hub from client to get files.
    If token expires, will prompt user to renew. */
-HubEndpoint.prototype.getFilesForProject = function (project_uuid, initialLaunch) {
+HubEndpoint.prototype.getFilesForProject = function (projectId, initialLaunch) {
     let self = this;
     let key = localStorage.getItem('hub-iobio-tkn');
 
     let fileQuery = $.ajax({
-        url: self.api + '/projects/' + project_uuid + '/files',
+        url: self.api + '/projects/' + projectId + '/files',
         type: 'GET',
         contentType: 'application/json',
         headers: {
@@ -48,10 +48,10 @@ HubEndpoint.prototype.getFilesForProject = function (project_uuid, initialLaunch
     return fileQuery;
 };
 
-HubEndpoint.prototype.getProject = function (project_uuid) {
+HubEndpoint.prototype.getProject = function (projectId) {
     let self = this;
     return $.ajax({
-        url: self.api + '/projects/' + project_uuid,
+        url: self.api + '/projects/' + projectId,
         type: 'GET',
         contentType: 'application/json',
         headers: {
@@ -60,7 +60,7 @@ HubEndpoint.prototype.getProject = function (project_uuid) {
     });
 }
 
-HubEndpoint.prototype.getSamplesForProject = function (project_uuid, sampleFilters) {
+HubEndpoint.prototype.getSamplesForProject = function (projectId, sampleFilters) {
     let self = this;
     let queryParams = {include: 'files'};
     if (sampleFilters) {
@@ -68,7 +68,7 @@ HubEndpoint.prototype.getSamplesForProject = function (project_uuid, sampleFilte
     }
 
     let params = Qs.stringify(queryParams, {addQueryPrefix: true, arrayFormat: 'brackets'});
-    let urlParam = self.api + '/projects/' + project_uuid + '/samples' + params;
+    let urlParam = self.api + '/projects/' + projectId + '/samples' + params;
     let authToken = localStorage.getItem('hub-iobio-tkn');
 
     return $.ajax({
@@ -83,10 +83,10 @@ HubEndpoint.prototype.getSamplesForProject = function (project_uuid, sampleFilte
     });
 }
 
-HubEndpoint.prototype.getSignedUrlForFile = function (file) {
+HubEndpoint.prototype.getSignedUrlForFile = function (projectId, fileId) {
     let self = this;
     return $.ajax({
-        url: self.api + '/files/' + file.uuid + '/url',
+        url: self.api + '/projects/' + projectId + '/files/' + fileId + '/url',
         type: 'GET',
         contentType: 'application/json',
         headers: {

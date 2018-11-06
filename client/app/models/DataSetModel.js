@@ -131,6 +131,11 @@ class DataSetModel {
         return self.affectedInfo;
     }
 
+    getName() {
+        let self = this;
+        return self.name;
+    }
+
     //</editor-fold>
 
     //<editor-fold desc="STATUS GETTERS">
@@ -172,7 +177,6 @@ class DataSetModel {
     initCohorts() {
         let self = this;
 
-        debugger;
         let parentVarModel = self.getVariantModel();
         let probandCohort = new CohortModel(self, parentVarModel);
         probandCohort.isProbandCohort = true;

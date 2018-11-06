@@ -310,7 +310,7 @@ export default {
         this.variantChart.hideCircle()(container);
       },
       setVariantChart: function() {
-        this.$emit('updateVariantChart', this.model);
+        this.$emit('updateVariantChart', this.model); // TODO: no event catcher for this...
       },
       showFlaggedVariant: function(variant, container) {
         this.variantChart.showFlaggedVariant(container, variant);

@@ -162,7 +162,7 @@ class VariantModel {
         return new Promise(function (resolve, reject) {
 
             // Get URLs from Hub
-            self.promiseGetUrlsFromHub(self.projectId, initialLaunch)
+            self.promiseGetUrlsFromHub(projectId, initialLaunch)
                 .then(function (urlObj) {
                     if (urlObj == null || urlObj.names == null || urlObj.names.length === 0) {
                         reject('Did not retrieve any matching files for given criteria');
@@ -192,7 +192,7 @@ class VariantModel {
                             else {
                                 probandCohort.sampleIds = self.getRawIds(ids);
                             }
-                            probandCohort.cohortPhenotypes.push('n = ' + ids.length);
+                            probandCohort.phenotypes.push('n = ' + ids.length);
                         });
                     promises.push(probandP);
 
@@ -227,8 +227,8 @@ class VariantModel {
                     Promise.all(promises)
                         .then(function () {
                             // Assign chip display numbers (on left side)
-                            subsetCohort.cohortPhenotypes.splice(0, 0, ('Proband n = ' + probandCohort.sampleIds.length));
-                            subsetCohort.cohortPhenotypes.splice(1, 0, ('Subset n = ' + subsetCohort.sampleIds.length));
+                            subsetCohort.phenotypes.splice(0, 0, ('Proband n = ' + probandCohort.sampleIds.length));
+                            subsetCohort.phenotypes.splice(1, 0, ('Subset n = ' + subsetCohort.sampleIds.length));
                             // Flip hub flags
                             subsetCohort.inProgress.fetchingHubData = false;
                             probandCohort.inProgress.fetchingHubData = false;
@@ -319,7 +319,7 @@ class VariantModel {
                 for (let i = 0; i < sortedVcfFiles.length; i++) {
                     let currVcf = sortedVcfFiles[i];
                     let currTbi = sortedTbiCsiFiles[i];
-                    let urlP = self.promiseGetSignedUrls(currVcf, currTbi)
+                    let urlP = self.promiseGetSignedUrls(currVcf, currTbi, projectId)
                         .then((urlObj) => {
                             nameList.push(urlObj.name);
                             vcfUrlList.push(urlObj.vcf);
@@ -341,7 +341,7 @@ class VariantModel {
 
     /* Returns an object with a vcf url corresponding to the given vcf, and a tbi url corresponding to the given tbi.
      * It is assumed that the provided vcf and tbi file correspond to the same data. */
-    promiseGetSignedUrls(vcf, tbi) {
+    promiseGetSignedUrls(vcf, tbi, projectId) {
         let self = this;
         return new Promise((resolve, reject) => {
 
@@ -351,7 +351,7 @@ class VariantModel {
             let urlPromises = [];
 
             // Get vcf url
-            let vcfP = self.promiseGetSignedUrl(vcf)
+            let vcfP = self.promiseGetSignedUrl(projectId, vcf.id)
                 .then((url) => {
                     if (url == null || url.length === 0) {
                         reject('Empty vcf url returned from hub for ' + vcf.name);
@@ -363,7 +363,7 @@ class VariantModel {
             urlPromises.push(vcfP);
 
             // Get tbi url
-            let tbiP = self.promiseGetSignedUrl(tbi)
+            let tbiP = self.promiseGetSignedUrl(projectId, tbi.id)
                 .then((url) => {
                     if (url == null || url.length === 0) {
                         reject('Empty tbi url returned from hub for ' + tbi.name);
@@ -386,10 +386,10 @@ class VariantModel {
     }
 
     /* Returns a single url given a tbi or vcf file. */
-    promiseGetSignedUrl(file) {
+    promiseGetSignedUrl(projectId, fileId) {
         let self = this;
         return new Promise((resolve, reject) => {
-            self.hubEndpoint.getSignedUrlForFile(file).done((urlData) => {
+            self.hubEndpoint.getSignedUrlForFile(projectId, fileId).done((urlData) => {
                 let url = urlData.url;
                 if (url == null || url.length === 0) {
                     reject("Empty url returned from hub for " + file.name);
@@ -427,7 +427,7 @@ class VariantModel {
         if (Object.keys(self.phenoFilters).length > 0) {
             Object.keys(self.phenoFilters).forEach(function (filter) {
                 if (self.phenoFilters[filter] != null && self.phenoFilters[filter].data != null) {
-                    subsetCohort.cohortPhenotypes.push(self.formatPhenotypeFilterDisplay(filter, self.phenoFilters[filter].data));
+                    subsetCohort.phenotypes.push(self.formatPhenotypeFilterDisplay(filter, self.phenoFilters[filter].data));
                 }
             })
         }
