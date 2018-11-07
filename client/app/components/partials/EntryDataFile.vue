@@ -55,8 +55,8 @@
         <v-flex xs3 class="mt-2">
             or
             <file-chooser class="ml-1"
-                          title="Choose files"
-                          :isMultiple="true"
+                          title="Choose file"
+                          :isMultiple="false"
                           :showLabel="false"
                           @file-selected="onFileSelected">
             </file-chooser>
@@ -81,7 +81,7 @@
     import FileChooser from '../partials/FileChooser.vue'
 
     export default {
-        name: 'sample-data-file',
+        name: 'entry-data-file',
         components: {
             Typeahead,
             FileChooser
@@ -93,7 +93,8 @@
             indexLabel: null,
             filePlaceholder: null,
             fileAccept: null,
-            separateUrlForIndex: null
+            separateUrlForIndex: null,
+            isSampleEntry: true     // Can be cohort or sample entry
         },
         data() {
             return {

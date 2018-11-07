@@ -1,7 +1,7 @@
 <style lang="sass">
     @import ../../../assets/sass/variables
-    #cohort-data-form
-        #cohort-selection
+    #sample-data-form
+        #sample-selection
             .input-group--select
                 .input-group__selections__comma
                     font-size: 12px
@@ -27,7 +27,7 @@
 
         .sample-label
             span
-                margin-top: 2px
+                margin-top: 0px
                 margin-bottom: 2px
                 vertical-align: top
                 margin-left: 0px
@@ -48,7 +48,7 @@
         -webkit-transform: rotate(-90deg);
         -moz-transform: rotate(-90deg);
         color: #516e87;
-        padding-top: 5px;
+        padding-top: 2px;
         padding-left: 0;
     }
 
@@ -64,12 +64,12 @@
 </style>
 
 <template>
-    <v-layout id="cohort-data-form" row wrap
+    <v-layout id="sample-data-form" row wrap
               :class="{'mt-3': true}">
         <v-flex d-flex xs1>
             <v-container height="100%" class="cont-left">
                 <div class="vert-label">
-                    {{hubLabel}}
+                    {{entryLabel}}
                 </div>
             </v-container>
         </v-flex>
@@ -84,8 +84,17 @@
                                   @change="onNicknameEntered"
                     ></v-text-field>
                 </v-flex>
-                <v-flex d-flex xs7>
-                    <!--space holder-->
+                <v-flex d-flex xs7 v-if="launchedFromHub">
+                    <v-container>
+                        <div>
+                            <v-chip small outline color="appColor">
+                                {{chipLabel}}
+                            </v-chip>
+                        </div>
+                    </v-container>
+                </v-flex>
+                <v-flex d-flex xs7 v-else>
+                    <!--Spacing-->
                 </v-flex>
                 <v-flex d-flex xs2 v-if="!isMainCohort" style="padding-left: 30px">
 
@@ -97,52 +106,58 @@
                     </v-btn>
                 </v-flex>
                 <v-flex d-flex xs2 v-else>
-                    <!--space holder-->
+                    <!--Spacing-->
                 </v-flex>
-                <v-flex d-flex xs12 class="ml-3" style="margin-top: -5px">
-                    <cohort-data-file
-                            :defaultUrl="firstVcf"
-                            :defaultIndexUrl="firstTbi"
-                            :label="`vcf directory`"
-                            :indexLabel="`tbi directory`"
+                <v-flex d-flex xs12 class="ml-3">
+                    <entry-data-file
+                            :defaultUrl="modelInfo.vcfs[0]"
+                            :defaultIndexUrl="modelInfo.tbis[0]"
+                            :label="`vcf`"
+                            :indexLabel="`tbi`"
                             :filePlaceholder="filePlaceholder.vcf"
                             :fileAccept="fileAccept.vcf"
                             :separateUrlForIndex="separateUrlForIndex"
+                            :isSampleEntry="false"
                             @url-entered="onVcfUrlEntered"
                             @file-selected="onVcfFilesSelected">
-                    </cohort-data-file>`
+                    </entry-data-file>
                 </v-flex>
-                <v-flex d-flex xs12 class="ml-3">
-                    <cohort-data-file
-                            :defaultUrl="firstBam"
-                            :defaultIndexUrl="firstBai"
-                            :label="`bam directory`"
-                            :indexLabel="`bai directory`"
-                            :filePlaceholder="filePlaceholder.bam"
-                            :fileAccept="fileAccept.bam"
-                            :separateUrlForIndex="separateUrlForIndex"
-                            @url-entered="onBamUrlEntered"
-                            @file-selected="onBamFilesSelected">
-                    </cohort-data-file>
+                <v-flex xs6 id="subset-selection">
+                    <v-flex d-flex xs2>
+                        <v-btn outline
+                               small
+                               color="cohortNavy"
+                               v-bind:class="samples == null || samples.length === 0 ? 'hide' : ''">
+                            Select Subset Samples
+                        </v-btn>
+                    </v-flex>
+                    <v-flex d-flex xs4>
+                        <span>{{subsetSampleIdDisplay}}</span>
+                    </v-flex>
                 </v-flex>
-                <v-flex d-flex xs6 class="ml-3">
-                    <!--TODO: want to pop up selection modal on click and fill in some ids on save/close-->
-                    <v-text-field
-                            v-bind:class="samples == null || samples.length === 0 ? 'hide' : ''"
-                            hide-details
-                            v-model="subsetSamples"
-                            color="cohortBlue"
-                    ></v-text-field>
+                <v-flex xs6 id="exclude-selection">
+                    <v-flex d-flex xs2>
+                        <v-btn outline
+                               small
+                               color="cohortNavy"
+                               v-bind:class="samples == null || samples.length === 0 ? 'hide' : ''">
+                            Exclude Samples
+                        </v-btn>
+                    </v-flex>
                 </v-flex>
-                <v-flex d-flex xs6 class="ml-3">
-                    <v-text-field
-                            v-bind:class="samples == null || samples.length === 0 ? 'hide' : ''"
-                            v-bind:label="'Exclude samples'"
-                            hide-details
-                            v-model="excludeSamples"
-                            color="cohortBlue"
-                    ></v-text-field>
-                </v-flex>
+                <!--<v-flex d-flex xs12 class="ml-3">-->
+                    <!--<entry-data-file-->
+                            <!--:defaultUrl="firstBam"-->
+                            <!--:defaultIndexUrl="firstBai"-->
+                            <!--:label="`bam`"-->
+                            <!--:indexLabel="`bai`"-->
+                            <!--:filePlaceholder="filePlaceholder.bam"-->
+                            <!--:fileAccept="fileAccept.bam"-->
+                            <!--:separateUrlForIndex="separateUrlForIndex"-->
+                            <!--@url-entered="onBamUrlEntered"-->
+                            <!--@file-selected="onBamFilesSelected">-->
+                    <!--</entry-data-file>-->
+                <!--</v-flex>-->
             </v-layout>
         </v-flex>
     </v-layout>
@@ -150,21 +165,22 @@
 
 <script>
 
-    import SampleDataFile from '../partials/SampleDataFile.vue'
+    import EntryDataFile from './EntryDataFile.vue'
     import draggable from 'vuedraggable'
 
     export default {
-        name: 'cohort-data',
+        name: 'entry-data',
         components: {
             draggable,
-            CohortDataFile
+            EntryDataFile
         },
         props: {
             modelInfo: null,
             separateUrlForIndex: null,
             dragId: '',
             arrIndex: 0,
-            launchedFromHub: false
+            launchedFromHub: false,
+            isSampleEntry: false
         },
         data() {
             return {
@@ -177,16 +193,14 @@
                     'vcf': '.vcf.gz, .tbi',
                     'bam': '.bam, .bai'
                 },
-                samples: [],            // the available samples to choose from
-                subsetSamples: [],      // the selected subset sample
-                excludeSamples: [],     // samples to exclude from entire analysis
-                chipLabel: '',
+                samples: [],                    // the available samples to choose from
+                subsetSampleIds: null,          // the samples composing the subset
+                excludeSampleIds: null,         // the samples to exclude from all cohorts
+                selectedSample: null,           // if isSampleEntry, user must select single sample for track
                 isMainCohort: false,
-                hubLabel: 'COHORT',
-                firstVcf: '',
-                firstTbi: '',
-                firstBam: '',
-                firstBai: ''
+                subsetSampleIdDisplay: '',
+                entryLabel: '',
+                chipLabel: 'Hub Sourced'
             }
         },
         watch: {},
@@ -199,7 +213,7 @@
             },
             onVcfUrlEntered: function (entryId, vcfUrl, tbiUrl) {
                 let self = this;
-                self.$set(self, "sample", null);    // TODO: change this...
+                self.$set(self, "sample", null);
                 self.$set(self, "samples", []);
 
                 if (self.modelInfo && self.modelInfo.model) {
@@ -227,7 +241,7 @@
             },
             onVcfFilesSelected: function (fileSelection) {
                 let self = this;
-                self.$set(self, "sample", null);        // TODO: change this...
+                self.$set(self, "sample", null);
                 self.$set(self, "samples", []);
                 self.modelInfo.model.promiseVcfFilesSelected(fileSelection)
                     .then(function (data) {
@@ -296,27 +310,8 @@
             },
             removeSample: function () {
                 let self = this;
-                self.$emit("remove-sample", self.modelInfo.id);
-            },
-            fillEntryFields: function() {
-                let self = this;
-                self.firstVcf = self.modelInfo.vcfs[0];
-                self.firstTbi = self.modelInfo.tbis[0];
-                self.firstBam = self.modelInfo.bams[0];
-                self.firstBai = self.modelInfo.bais[0];
+                self.$emit("remove-entry", self.modelInfo.id);
             }
-            // getRowLabel: function() {
-            //     let self = this;
-            //     if (self.timeSeriesMode) {
-            //         return 'T' + self.modelInfo.order;
-            //     } else {
-            //         if (self.modelInfo.isTumor) {
-            //             return 'TUMOR';
-            //         } else {
-            //             return 'NORMAL';
-            //         }
-            //     }
-            // },
             // updateLabel: function() {
             //     let self = this;
             //     self.rowLabel = self.getRowLabel();
@@ -336,15 +331,18 @@
         mounted: function () {
             let self = this;
             self.samples = self.modelInfo.samples;
-            // self.isTumor = self.modelInfo.isTumor;
-            //self.rowLabel = self.getRowLabel();
-            // self.chipLabel = self.isTumor ? 'TUMOR' : 'NORMAL';
             self.isMainCohort = self.dragId === 's0';
+
+            // Start loading process if mounting with data
             if (self.modelInfo.vcf) {
                 self.onVcfUrlEntered(self.modelInfo.id, self.modelInfo.vcf, self.modelInfo.tbi);
             }
-            if (self.launchedFromHub) {
-                self.hubLabel = 'HUB DATA';
+
+            // Assign side bar label
+            if (self.modelInfo.isSampleEntry) {
+                self.entryLabel = 'SAMPLE';
+            } else {
+                self.entryLabel = 'COHORT';
             }
         }
     }

@@ -84,7 +84,10 @@
             <v-layout row wrap class="mt-2">
                 <v-flex xs6 class="mt-2">
                     <v-container>
-                        <v-switch label="Separate index URL" hide-details v-model="separateUrlForIndex">
+                        <v-switch label="Separate index URL"
+                                  hide-details
+                                  color="cohortNavy"
+                                  v-model="separateUrlForIndex">
                         </v-switch>
                     </v-container>
                 </v-flex>
@@ -142,17 +145,18 @@
                         :key="entry"
                         :id="entry"
                         v-if="modelInfoMap && modelInfoMap[entry]">
-                    <sample-data
-                            ref="sampleDataRef"
+                    <entry-data
+                            ref="entryDataRef"
                             v-if="modelInfoMap && modelInfoMap[entry]"
                             :modelInfo="modelInfoMap[entry]"
                             :dragId="entry"
                             :arrIndex=entryIds.indexOf(entry)
                             :separateUrlForIndex="separateUrlForIndex"
                             :launchedFromHub="launchedFromHub"
+                            :isSampleEntry="modelInfoMap[entry].isSampleEntry"
                             @sample-data-changed="validate"
-                            @remove-sample="removeSample">
-                    </sample-data>
+                            @remove-entry="removeEntry">
+                    </entry-data>
                 </v-flex>
                 <v-flex xs6 class="mt-2 text-xs-left">
                     <v-btn small outline fab color="cohortNavy"
@@ -180,13 +184,13 @@
 </template>
 <script>
 
-    import SampleData from '../partials/SampleData.vue'
+    import EntryData from './EntryData.vue'
     import draggable from 'vuedraggable'
 
     export default {
         name: 'files-menu',
         components: {
-            SampleData,
+            EntryData,
             draggable
         },
         props: {
@@ -224,7 +228,7 @@
             }
         },
         methods: {
-            promiseAddEntry: function (stateChanged = true) {
+            promiseAddEntry: function (stateChanged = true, isSampleEntry = true) {
                 let self = this;
                 if (stateChanged) {
                     self.stateUnchanged = false;
@@ -250,6 +254,7 @@
                     newInfo.tbis = [];
                     newInfo.bams = [];
                     newInfo.bais = [];
+                    newInfo.isSampleEntry = isSampleEntry;
                     self.modelInfoMap[newId] = newInfo;
 
                     // Add sample model for new entry
@@ -398,9 +403,6 @@
                 }
                 Promise.all(addPromises)
                     .then(() => {
-                        // if (self.$refs.sampleDataRef) {
-                        //     self.$refs.sampleDataRef[0].fillEntryFields();
-                        // }
                         self.variantModel.getAllDataSets().forEach(function (dataSet) {
                             self.promiseSetModel(dataSet);
                         });
@@ -432,7 +434,7 @@
                             if (successObj) {
                                 // Set samples prop
                                 theModelInfo.samples = successObj.samples;
-                                self.$refs.sampleDataRef.forEach(function (ref) {
+                                self.$refs.entryDataRef.forEach(function (ref) {
                                     if (ref.modelInfo.id === theDataSet.id) {
                                         // Set selected sample in model and in child cmpnt
                                         theDataSet.selectedSample = theModelInfo.selectedSample;
@@ -484,7 +486,7 @@
                     self.initModelInfo();
                 // Otherwise add single entry for initial launch
                 } else {
-                    self.promiseAddEntry(false);
+                    self.promiseAddEntry(false, false);
                 }
             },
             initModelInfo: function () {
@@ -514,7 +516,7 @@
                     }
                 })
             },
-            removeSample: function (entryId, stateChanged = true, demoCall = false) {
+            removeEntry: function (entryId, stateChanged = true, demoCall = false) {
                 let self = this;
                 if (stateChanged) {
                     self.stateUnchanged = false;
