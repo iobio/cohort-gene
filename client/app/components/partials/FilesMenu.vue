@@ -253,7 +253,7 @@
                     self.modelInfoMap[newId] = newInfo;
 
                     // Add sample model for new entry
-                    self.variantModel.promiseAddEntry(newInfo)
+                    self.variantModel.promiseAddLocalEntry(newInfo)
                         .then((dataSet) => {
                             newInfo.dataSet = dataSet;
                             resolve();
@@ -396,13 +396,15 @@
                         addPromises.push(p);
                     }
                 }
-
                 Promise.all(addPromises)
                     .then(() => {
+                        // if (self.$refs.sampleDataRef) {
+                        //     self.$refs.sampleDataRef[0].fillEntryFields();
+                        // }
                         self.variantModel.getAllDataSets().forEach(function (dataSet) {
                             self.promiseSetModel(dataSet);
                         });
-                    })
+                    });
             },
             checkCustomIndex: function (infos) {
                 let areSeparate = false;
@@ -421,7 +423,7 @@
                     // Assign data set prop in info object to model
                     let theDataSet = dataSet;
                     let theModelInfo = self.modelInfoMap[theDataSet.entryId];
-                    theModelInfo.dataSet = theDataSet;  // TODO: do I need to keep track of dataSet or Model here (or neither?)
+                    theModelInfo.dataSet = theDataSet;
 
                     // Check files in data set model
                     let nameList = [theModelInfo.id];
@@ -480,6 +482,7 @@
                 // If we already have model information from Hub, we want to display that in the file loader
                 if (self.variantModel && self.variantModel.getAllDataSets().length > 0) {
                     self.initModelInfo();
+                // Otherwise add single entry for initial launch
                 } else {
                     self.promiseAddEntry(false);
                 }

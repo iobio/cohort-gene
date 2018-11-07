@@ -101,10 +101,10 @@
                 </v-flex>
                 <v-flex d-flex xs12 class="ml-3" style="margin-top: -5px">
                     <sample-data-file
-                            :defaultUrl="modelInfo.vcf"
-                            :defaultIndexUrl="modelInfo.tbi"
-                            :label="`vcf`"
-                            :indexLabel="`tbi`"
+                            :defaultUrl="firstVcf"
+                            :defaultIndexUrl="firstTbi"
+                            :label="`vcf directory`"
+                            :indexLabel="`tbi directory`"
                             :filePlaceholder="filePlaceholder.vcf"
                             :fileAccept="fileAccept.vcf"
                             :separateUrlForIndex="separateUrlForIndex"
@@ -114,10 +114,10 @@
                 </v-flex>
                 <v-flex d-flex xs12 class="ml-3">
                     <sample-data-file
-                            :defaultUrl="modelInfo.bam"
-                            :defaultIndexUrl="modelInfo.bai"
-                            :label="`bam`"
-                            :indexLabel="`bai`"
+                            :defaultUrl="firstBam"
+                            :defaultIndexUrl="firstBai"
+                            :label="`bam directory`"
+                            :indexLabel="`bai directory`"
                             :filePlaceholder="filePlaceholder.bam"
                             :fileAccept="fileAccept.bam"
                             :separateUrlForIndex="separateUrlForIndex"
@@ -162,7 +162,6 @@
         props: {
             modelInfo: null,
             separateUrlForIndex: null,
-            timeSeriesMode: false,
             dragId: '',
             arrIndex: 0,
             launchedFromHub: false
@@ -178,20 +177,18 @@
                     'vcf': '.vcf.gz, .tbi',
                     'bam': '.bam, .bai'
                 },
-                samples: [],    // the available samples to choose from
-                subsetSamples: [],   // the selected subset sample
-                excludeSamples: [],     // samples to exclude from entire analysis
+                samples: [],                // the available samples to choose from
+                selectedSample: null,       // the selected individual sample
                 chipLabel: '',
                 isMainCohort: false,
-                hubLabel: 'COHORT'
+                hubLabel: 'COHORT',
+                firstVcf: '',
+                firstTbi: '',
+                firstBam: '',
+                firstBai: ''
             }
         },
-        watch: {
-            // timeSeriesMode: function () {
-            //     let self = this;
-            //     self.updateLabel();
-            // }
-        },
+        watch: {},
         computed: {},
         methods: {
             onNicknameEntered: function () {
@@ -300,6 +297,13 @@
                 let self = this;
                 self.$emit("remove-sample", self.modelInfo.id);
             },
+            fillEntryFields: function() {
+                let self = this;
+                self.firstVcf = self.modelInfo.vcfs[0];
+                self.firstTbi = self.modelInfo.tbis[0];
+                self.firstBam = self.modelInfo.bams[0];
+                self.firstBai = self.modelInfo.bais[0];
+            }
             // getRowLabel: function() {
             //     let self = this;
             //     if (self.timeSeriesMode) {

@@ -199,31 +199,24 @@ class DataSetModel {
     }
 
 
-    promiseInit(vcfFileNames) {
+    /* Adds an individual vcf.iobio model for each of the files within this dataset.
+     * Returns promise to begin file checking process. */
+    promiseInitFromHub() {
         let self = this;
 
+        self.inProgress.verifyingVcfUrl = true;
         return new Promise(function (resolve, reject) {
-            // Finish initializing cohort models
-            //let subsetCohort = self.getSubsetCohort();
-            self.inProgress.verifyingVcfUrl = true;
-
 
             // Set up individual endpoint per file
-            vcfFileNames.forEach((name) => {
-               self.vcfEndptHash[name] = vcfiobio();
-                let currEndpt = self.vcfEndptHash[name];
-                let varModel = self.getVariantModel();
-                currEndpt.setEndpoint(varModel.endpoint);
-                currEndpt.setGenericAnnotation(varModel.genericAnnotation);
-                currEndpt.setGenomeBuildHelper(varModel.genomeBuildHelper);
+            self.vcfNames.forEach((name) => {
+                self.addVcfEndpoint(name);
             });
 
             // Check vcf urls and add samples
-            self.promiseAddSamples(self.vcfNames, self.vcfs, self.tbis)
+            self.promiseAddVcfs(self.vcfNames, self.vcfs, self.tbis)
                 .then(function () {
                     self.inProgress.verifyingVcfUrl = false;
                     self.inProgress.loadingDataSources = false;
-                    self.isLoaded = true;
 
                     let retObj = {};
                     retObj['numProbandIds'] = self.getProbandCohort().sampleIds;
@@ -237,8 +230,20 @@ class DataSetModel {
         });
     }
 
+    /* Creates & initializes a vcf.iobio model and adds it to this dataset's hash with the given key. */
+    addVcfEndpoint(endptKey) {
+        let self = this;
+
+        self.vcfEndptHash[endptKey] = vcfiobio();
+        let theEndpt = self.vcfEndptHash[endptKey];
+        let varModel = self.getVariantModel();
+        theEndpt.setEndpoint(varModel.endpoint);
+        theEndpt.setGenericAnnotation(varModel.genericAnnotation);
+        theEndpt.setGenomeBuildHelper(varModel.genomeBuildHelper);
+    }
+
     /* Promises to verify the vcf url and adds samples to vcf object - utilized in HUB launch */
-    promiseAddSamples(entryNames, vcfs, tbis) {
+    promiseAddVcfs(entryNames, vcfs, tbis) {
         let self = this;
         if ((Object.keys(self.vcfEndptHash)).length > 0) {
             return new Promise(function (resolve, reject) {
@@ -259,7 +264,7 @@ class DataSetModel {
                     });
             });
         } else {
-            return Promise.reject('No vcf data to open in promiseAddSamples');
+            return Promise.reject('No vcf data to open in promiseAddVcfs');
         }
     }
 

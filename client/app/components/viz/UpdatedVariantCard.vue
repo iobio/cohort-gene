@@ -94,7 +94,7 @@ Updated: SJG Apr2018
             </v-layout>
             <div style="width:100%">
                 <updated-variant-viz
-                        v-if="dataSetModel"
+                        v-if="dataSetModel && dataSetModel.getSubsetCohort()"
                         ref="subsetVizRef"
                         :id="dataSetModel.getName()"
                         :model="dataSetModel"

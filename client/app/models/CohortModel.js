@@ -72,24 +72,6 @@ class CohortModel {
 
     // </editor-fold>
 
-    // <editor-fold desc="ADD & INITIALIZE">
-
-    /* Setup VCF fields & direct access to endpoint */
-    // TODO: get rid of this after testing
-    // init(variantModel, vcfFileNames) {
-    //     let me = this;
-    //
-    //     vcfFileNames.forEach((fileName) => {
-    //         me.vcfEndptHash[fileName] = vcfiobio();
-    //         let currEndpt = me.vcfEndptHash[fileName];
-    //         currEndpt.setEndpoint(variantModel.endpoint);
-    //         currEndpt.setGenericAnnotation(variantModel.genericAnnotation);
-    //         currEndpt.setGenomeBuildHelper(variantModel.genomeBuildHelper);
-    //     });
-    // };
-
-    // </editor-fold>
-
     // <editor-fold desc="FREEBAYES FXNS">
 
     reconstituteFbData(theVcfData) {

@@ -217,13 +217,11 @@ class VariantModel {
                             // Assign chip display numbers (on left side)
                             subsetCohort.phenotypes.splice(0, 0, ('Proband n = ' + probandCohort.sampleIds.length));
                             subsetCohort.phenotypes.splice(1, 0, ('Subset n = ' + subsetCohort.sampleIds.length));
-                            // Flip hub flags
                             hubDataSet.inProgress.fetchingHubData = false;
-                            // Free up some space
                             self.simonsIdMap = null;
-                            // Get variant loading rolling
 
-                            self.promiseInitMainDataSet(hubDataSet.vcfNames)
+                            // Get variant loading rolling
+                            self.mainDataSet.promiseInitFromHub()
                                 .then(function (idLengthObj) {
                                     let idNumList = [];
                                     idNumList.push(idLengthObj.numProbandIds);
@@ -238,12 +236,6 @@ class VariantModel {
                     reject(error);
                 });
         })
-    }
-
-    /* Returns promise to check vcf url and finishes initializing cohort models. */
-    promiseInitMainDataSet(vcfFileNames) {
-        let self = this;
-        return self.mainDataSet.promiseInit(vcfFileNames);
     }
 
     /* Retrieves all urls from Hub corresponding to the given project ID. Returns an object where keys are chromosome
@@ -469,9 +461,8 @@ class VariantModel {
 
     //<editor-fold desc="LOCAL LAUNCH">
 
-    /* Adds data set model and cohort models to represent a single entry in file menu. Used when launching
-    * cohort-gene outside of Hub. */
-    promiseAddEntry(modelInfo) {
+    /* Adds data set model and cohort models to represent a single entry in file menu. */
+    promiseAddLocalEntry(modelInfo) {
         let self = this;
 
         return new Promise((resolve, reject) => {
@@ -479,7 +470,7 @@ class VariantModel {
             self.inProgress.loadingDataSources = true;
 
             // Initialize local data set
-            let localDataSet = new DataSetModel();
+            let localDataSet = new DataSetModel(self);
             localDataSet.entryId = modelInfo.id;
             localDataSet.name = modelInfo.id;
             localDataSet.vcfs = modelInfo.vcfs;
@@ -492,20 +483,11 @@ class VariantModel {
                 self.otherDataSets.push(localDataSet);
             }
 
-            // Initialize proband model
-            let probandCohort = new CohortModel(self);
-            probandCohort.isProbandCohort = true;
-            probandCohort.excludeIds = modelInfo.excludeIds;
-            probandCohort.init(self, [modelInfo.id]);
-            localDataSet.addCohort(probandCohort, PROBAND_ID);
-
-            // Initialize subset model
-            let subsetCohort = new CohortModel(self);
-            subsetCohort.isSubsetCohort = true;
-            subsetCohort.sampleIds = modelInfo.sampleIds;
-            localDataSet.addCohort(subsetCohort, SUBSET_ID);
-
-            resolve();
+            localDataSet.initCohorts();
+            localDataSet.getProbandCohort().excludeIds = modelInfo.excludeIds;
+            localDataSet.getSubsetCohort().sampleIds = modelInfo.sampleIds;
+            localDataSet.addVcfEndpoint(modelInfo.id)
+            resolve(localDataSet);
         });
     }
 
