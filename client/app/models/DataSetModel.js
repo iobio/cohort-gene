@@ -460,25 +460,29 @@ class DataSetModel {
                                 // Get the sample names from the vcf header
                                 currVcfEndpt.getSampleNames(function (names) {
                                     me.isMultiSample = !!(names && names.length > 1);
-                                    sampleNames.push(names);
+                                    names.forEach((name) => {
+                                        sampleNames.push(name);
+                                    });
+                                    resolve();
                                 });
 
-                                // Get build version from vcf chromosome notation if can't get from header
-                                if (hdrBuildResult === '') {
-                                    // Look at chrom notation if we couldn't determine here
-                                    currVcfEndpt.getChromosomesFromVcf(currVcf, currTbi, function (success, errorMsg, chrBuildResult) {
-                                        if (success) {
-                                            individualRefBuilds[currFileName] = chrBuildResult;
-                                        }
-                                    })
-                                } else {
-                                    individualRefBuilds[currFileName] = hdrBuildResult;
-                                }
+                                // TODO: we shouldn't need this anymore since ref is parameter sent from Hub
+                                // // Get build version from vcf chromosome notation if can't get from header
+                                // if (hdrBuildResult === '') {
+                                //     // Look at chrom notation if we couldn't determine here
+                                //     currVcfEndpt.getChromosomesFromVcf(currVcf, currTbi, function (success, errorMsg, chrBuildResult) {
+                                //         if (success) {
+                                //             individualRefBuilds[currFileName] = chrBuildResult;
+                                //         }
+                                //     })
+                                // } else {
+                                //     individualRefBuilds[currFileName] = hdrBuildResult;
+                                // }
                             } else {
                                 openErrorFiles.push(currFileName);
                                 console.log('Could not open either: ' + vcfUrls[i] + 'or ' + tbiUrls[i] + ' - ' + errorMsg);
+                                reject(errorMsg);
                             }
-                            resolve();
                         });
                     });
                     openPromises.push(p);

@@ -122,12 +122,11 @@
                             @file-selected="onVcfFilesSelected">
                     </entry-data-file>
                 </v-flex>
-                <v-flex xs6 id="subset-selection">
+                <v-flex xs6 id="subset-selection" v-if="samples && samples.length > 0">
                     <v-flex d-flex xs2>
                         <v-btn outline
                                small
-                               color="cohortNavy"
-                               v-bind:class="samples == null || samples.length === 0 ? 'hide' : ''">
+                               color="cohortNavy">
                             Select Subset Samples
                         </v-btn>
                     </v-flex>
@@ -231,6 +230,7 @@
                     self.modelInfo.dataSet.onVcfUrlEntered([entryId], [vcfUrl], [tbiUrl])
                         .then((listObj) => {
                         if (listObj) {
+                            debugger;   // TODO: Are we hitting this?
                             self.samples = listObj['samples'];
                             if (self.modelInfo.sample && self.samples.indexOf(self.modelInfo.sample) >= 0) {
                                 self.sample = self.modelInfo.sample;
@@ -281,12 +281,18 @@
             //     this.modelInfo.model.isTumor = this.modelInfo.affectedStatus;
             //     this.rowLabel = this.getRowLabel();
             // },
-            updateSamples: function (samples, sampleToSelect) {
+
+            /* Fills in samples field with all sample IDs seen when checking provided vcf urls.
+             * If this is a cohort entry, fills in subset and exclude sample ID arrays.
+             * Else if this is a sample entry, fills in selected sample ID. */
+            fillSampleFields: function (samples, sampleToSelect, subsetSampleIds, excludeSampleIds) {
                 this.samples = samples;
                 if (sampleToSelect) {
-                    this.sample = sampleToSelect;
+                    this.selectedSample = sampleToSelect;
                 } else {
-                    this.sample = null;
+                    this.subsetSampleIds = subsetSampleIds;
+                    this.excludeSampleIds = excludeSampleIds;
+                    this.selectedSample = null;
                 }
             },
             // onSampleSelected: function () {

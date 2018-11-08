@@ -44,6 +44,7 @@ class VariantModel {
         // <editor-fold desc="DEMO DATA">
         this.demoInfo = [{
             'id': 's0',
+            'isSampleEntry': false,
             'displayName': 'Platinum Demo',
             'vcfs': ['https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz'],
             'tbis': null,

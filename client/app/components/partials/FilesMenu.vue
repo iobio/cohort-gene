@@ -402,19 +402,14 @@
                 }
                 Promise.all(addPromises)
                     .then(() => {
-                        // debugger;
-                        // if (self.$refs.entryDataRef) {
-                        //     self.$refs.entryDataRef.forEach((entryRef) => {
-                        //         entryRef.fillFirstFiles();
-                        //     })
-                        // }
-
                         let setPromises = [];
                         self.variantModel.getAllDataSets().forEach(function (dataSet) {
                             setPromises.push(self.promiseSetModel(dataSet));
                         });
                         Promise.all(setPromises)
                             .then(() => {
+                                // TODO: LEFT OFF HERE - NOT RETURNING FROM THIS PROMISE - FIX THIS, THEN DISPLAY ID SELECTION OPTIONS
+                                debugger;
                                 resolve();
                             })
                             .catch((error) => {
@@ -443,30 +438,36 @@
 
                     // Check files in data set model
                     let nameList = [theModelInfo.id];
+
+                    // Check all vcfs at same time for single entry
                     theDataSet.onVcfUrlEntered(nameList, theModelInfo.vcfs, theModelInfo.tbis)
                         .then((successObj) => {
                             if (successObj) {
                                 // Set samples prop
                                 theModelInfo.samples = successObj.samples;
-                                self.$refs.entryDataRef.forEach(function (ref) {
-                                    if (ref.modelInfo.id === theDataSet.id) {
+                                for (let i = 0; i < self.$refs.entryDataRef.length; i++) {
+                                    let currEntryRef = self.$refs.entryDataRef[i];
+                                    if (currEntryRef.modelInfo.id === theDataSet.entryId) {
                                         // Set selected sample in model and in child cmpnt
-                                        theDataSet.selectedSample = theModelInfo.selectedSample;
-                                        ref.updateSamples(successObj.samples, theModelInfo.selectedSample);
+                                        if (theModelInfo.isSampleEntry) {
+                                            theDataSet.sampleIds.push(theModelInfo.selectedSample);
+                                        }
+                                        currEntryRef.fillSampleFields(successObj.samples, theModelInfo.selectedSample, theModelInfo.subsetSampleIds, theModelInfo.excludeSampleIds);
 
                                         // Set display name in model
                                         theDataSet.displayName = theModelInfo.displayName ? theModelInfo.displayName : theModelInfo.selectedSample;
                                         self.validate();
                                     }
-                                });
-                                theDataSet.onBamUrlEntered(theModelInfo.bam, theModelInfo.bai, function (success) {
-                                    self.validate();
-                                    if (success) {
-                                        resolve();
-                                    } else {
-                                        reject();
-                                    }
-                                })
+                                }
+                                // TODO: incorporate bam functionality
+                                // theDataSet.onBamUrlEntered(theModelInfo.bam, theModelInfo.bai, function (success) {
+                                //     self.validate();
+                                //     if (success) {
+                                //         resolve();
+                                //     } else {
+                                //         reject();
+                                //     }
+                                // })
                             } else {
                                 reject();
                             }

@@ -1196,7 +1196,7 @@ vcfiobio = function module() {
 
 
     exports.getSampleNames = function (callback) {
-        if (sourceType == SOURCE_TYPE_URL) {
+        if (sourceType === SOURCE_TYPE_URL) {
             this._getRemoteSampleNames(callback);
         } else {
             this._getLocalSampleNames(callback);
@@ -1245,9 +1245,9 @@ vcfiobio = function module() {
         cmd.on('end', function (data) {
             var headerRecords = headerData.split("\n");
             headerRecords.forEach(function (headerRec) {
-                if (headerRec.indexOf("#CHROM") == 0) {
-                    var headerFields = headerRec.split("\t");
-                    var sampleNames = headerFields.slice(9);
+                if (headerRec.indexOf("#CHROM") === 0) {
+                    let headerFields = headerRec.split("\t");
+                    let sampleNames = headerFields.slice(9);
                     callback(sampleNames);
                 }
             });
