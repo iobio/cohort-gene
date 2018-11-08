@@ -194,7 +194,7 @@
             draggable
         },
         props: {
-            variantModel: null,
+            variantModel: null, // TODO: can I get away with only passing dataset model now?
             launchedFromHub: false
         },
         data() {
@@ -206,7 +206,6 @@
                 buildName: null,
                 activeTab: null,
 
-                // TODO: these need to be modified for cohort style upload
                 modelInfoMap: {},
                 entryIds: [],       // One per file menu entry
 
@@ -338,10 +337,10 @@
                     let newVal = {};
                     newVal.id = val.id;
                     newVal.isTumor = val.isTumor;
-                    newVal.vcf = val.vcf;
-                    newVal.tbi = val.tbi;
-                    newVal.bam = val.bam;
-                    newVal.bai = val.bai;
+                    newVal.vcfs = val.vcf;
+                    newVal.tbis = val.tbi;
+                    newVal.bams = val.bam;
+                    newVal.bais = val.bai;
                     newVal.selectedSample = val.selectedSample;
                     newVal.displayName = val.displayName;
                     sampleArr.push(newVal);
@@ -403,9 +402,24 @@
                 }
                 Promise.all(addPromises)
                     .then(() => {
+                        // debugger;
+                        // if (self.$refs.entryDataRef) {
+                        //     self.$refs.entryDataRef.forEach((entryRef) => {
+                        //         entryRef.fillFirstFiles();
+                        //     })
+                        // }
+
+                        let setPromises = [];
                         self.variantModel.getAllDataSets().forEach(function (dataSet) {
-                            self.promiseSetModel(dataSet);
+                            setPromises.push(self.promiseSetModel(dataSet));
                         });
+                        Promise.all(setPromises)
+                            .then(() => {
+                                resolve();
+                            })
+                            .catch((error) => {
+                                reject(error);
+                            })
                     });
             },
             checkCustomIndex: function (infos) {

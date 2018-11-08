@@ -110,8 +110,8 @@
                 </v-flex>
                 <v-flex d-flex xs12 class="ml-3">
                     <entry-data-file
-                            :defaultUrl="modelInfo.vcfs[0]"
-                            :defaultIndexUrl="modelInfo.tbis[0]"
+                            :defaultUrl="firstVcf"
+                            :defaultIndexUrl="firstTbi"
                             :label="`vcf`"
                             :indexLabel="`tbi`"
                             :filePlaceholder="filePlaceholder.vcf"
@@ -200,10 +200,21 @@
                 isMainCohort: false,
                 subsetSampleIdDisplay: '',
                 entryLabel: '',
-                chipLabel: 'Hub Sourced'
+                chipLabel: 'Hub Sourced',
+                firstVcf: null,
+                firstTbi: null
             }
         },
-        watch: {},
+        watch: {
+            'modelInfo.vcfs': function(newVal, oldVal) {
+                let self = this;
+                self.firstVcf = newVal[0];
+            },
+            'modelInfo.tbis': function(newVal, oldVal) {
+                let self = this;
+                self.firstTbi = newVal;
+            }
+        },
         computed: {},
         methods: {
             onNicknameEntered: function () {
@@ -311,17 +322,19 @@
             removeSample: function () {
                 let self = this;
                 self.$emit("remove-entry", self.modelInfo.id);
-            }
+            },
             // updateLabel: function() {
             //     let self = this;
             //     self.rowLabel = self.getRowLabel();
             // },
-            // setTumorStatus: function (status) {
+            // fillFirstFiles: function() {
             //     let self = this;
-            //     self.isTumor = status;
-            //     self.modelInfo.isTumor = status;
-            //     if (self.modelInfo.model) {
-            //         self.modelInfo.model.isTumor = status;
+            //
+            //     if (self.modelInfo && self.modelInfo.vcfs) {
+            //         self.firstVcf = self.modelInfo.vcfs[0];
+            //     }
+            //     if (self.modelInfo && self.modelInfo.tbis) {
+            //         self.firstTbi = self.modelInfo.tbis[0];
             //     }
             // }
         },
@@ -334,10 +347,9 @@
             self.isMainCohort = self.dragId === 's0';
 
             // Start loading process if mounting with data
-            if (self.modelInfo.vcf) {
-                self.onVcfUrlEntered(self.modelInfo.id, self.modelInfo.vcf, self.modelInfo.tbi);
-            }
-
+            // if (self.modelInfo.vcfs) {
+            //     self.onVcfUrlEntered(self.modelInfo.id, self.modelInfo.vcf, self.modelInfo.tbi);
+            // }
             // Assign side bar label
             if (self.modelInfo.isSampleEntry) {
                 self.entryLabel = 'SAMPLE';
