@@ -1,5 +1,6 @@
-<style>
-
+<style lang="sass">
+.dragArea
+    min-height: 50px
 </style>
 <template>
     <v-layout row justify-center>
@@ -10,14 +11,14 @@
                     <v-layout row>
                         <v-flex xs6>
                             <div>Available Samples</div>
-                            <draggable v-model="unselectedSamples" @start="drag=true" @end="drag=false">
-                                <div v-for="element in unselectedSamples" :key="element.id">{{element.id}}</div>
+                            <draggable id="unselectedDiv" v-model="currUnselectedSamples" :options="{group:'samples', sort: true}" class="dragArea" @onAdd="addToList">
+                                <div v-for="element in currUnselectedSamples" :key="element">{{element}}</div>
                             </draggable>
                         </v-flex>
                         <v-flex xs6>
                             <div>Selected Samples</div>
-                            <draggable v-model="selectedSamples" @start="drag=true" @end="drag=false">
-                                <div v-for="element in selectedSamples" :key="element.id">{{element.id}}</div>
+                            <draggable id="selectedDiv" v-model="currSelectedSamples" :options="{group:'samples', sort: true}" class="dragArea" @onAdd="addToList">
+                                <div v-for="element in currSelectedSamples" :key="element">{{element}}</div>
                             </draggable>
                         </v-flex>
                     </v-layout>
@@ -42,18 +43,6 @@
             idType: {
                 type: String,
                 default: ''
-            },
-            unselectedSamples: {
-                type: Array,
-                default: function() {
-                    return [];
-                }
-            },
-            selectedSamples: {
-                type: Array,
-                default: function() {
-                    return [];
-                }
             }
         },
         data() {
@@ -72,8 +61,30 @@
             // deselectAll: function() {
             //
             // },
-            displayDialog: function() {
+            addToList: function(evt) {
                 let self = this;
+
+                let newList = evt.to.id;
+                let oldList = evt.from.id;
+                if (newList === oldList) {
+                    return;
+                }
+
+                if (newList === 'unselectedDiv') {
+                    self.currUnselectedSamples.push(evt.item.textContent);
+
+                    let index = self.currSelectedSamples.indexOf(evt.item.textContent);
+                    self.currSelectedSamples.splice(index, 1);
+                } else {
+                    let index = self.currUnselectedSamples.indexOf(evt.item.textContent);
+                    self.currUnselectedSamples.splice(index, 1);
+                    self.currSelectedSamples.push(evt.item.textContent);
+                }
+            },
+            displayDialog: function(unselectedSamples, selectedSamples) {
+                let self = this;
+                self.currUnselectedSamples = unselectedSamples;
+                self.currSelectedSamples = selectedSamples;
                 self.dialog = true;
             },
             hideDialog: function() {
@@ -81,12 +92,8 @@
                 self.dialog = false;
             }
         },
-        mounted: function() {
-            let self = this;
-            self.currUnselectedSamples = self.unselectedSamples;
-            self.currSelectedSamples = self.selectedSamples;
-        },
-        created: function() {}
+        created: function() {},
+        mounted: function() {}
     }
 
 </script>

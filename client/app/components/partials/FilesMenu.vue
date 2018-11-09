@@ -183,9 +183,7 @@
             </v-layout>
             <sample-select-dialog
                     ref="sampleDialogRef"
-                    :idType="dialogType"
-                    :unselectedSamples="unselectedSamples"
-                    :selectedSamples="selectedSamples">
+                    :idType="dialogType">
             </sample-select-dialog>
         </v-form>
     </v-menu>
@@ -227,11 +225,7 @@
                 arrId: 0,
                 debugMe: false,
                 inputClass: 'fileSelect',
-
-                // Dialog specific
-                dialogType: '',
-                unselectedSamples: [],
-                selectedSamples: []
+                dialogType: ''
             }
         },
         watch: {
@@ -564,18 +558,21 @@
             openSubsetDialog: function(entryId) {
                 let self = this;
 
+                let selectedSamples = [];
+                let unselectedSamples = [];
                 self.dialogType = 'Subset';
                 let dataSet = self.variantModel.getDataSet(entryId);
-                if (dataSet && dataSet.getSubsetCohort()) {
-                    self.selectedSamples = dataSet.getSubsetCohort().sampleIds ? dataSet.getSubsetCohort().sampleIds : [];
+                if (dataSet && dataSet.getSubsetCohort() && dataSet.getSubsetCohort().sampleIds) {
+                    selectedSamples = dataSet.getSubsetCohort().sampleIds;
                 }
 
+
                 let allSamples = self.modelInfoMap[entryId].samples;
-                self.unselectedSamples = allSamples.slice();
-                self.unselectedSamples.filter((sample) => {
-                    return !self.selectedSamples.includes(sample);
+                unselectedSamples = allSamples.slice();
+                unselectedSamples.filter((sample) => {
+                    return !selectedSamples.includes(sample);
                 });
-                self.$refs.sampleDialogRef.displayDialog();
+                self.$refs.sampleDialogRef.displayDialog(unselectedSamples, selectedSamples);
             },
             openExcludeDialog: function(entryId) {
                 let self = this;
