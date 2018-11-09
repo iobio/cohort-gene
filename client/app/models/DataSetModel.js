@@ -25,6 +25,7 @@ class DataSetModel {
         this.selectedVariants = null;   // Selected in zoom panel
         this.majorityBuild = '';        // Represents the build found in most uploaded files to the application (i.e., GRCh37 or GRCh38)
         this.trackName = '';            // Displays in italics before chips
+        this.excludedSampleIds = [];    // Samples from any vcf file to be removed from analysis
 
         // TODO: these might be depreciated if color scheme is no longer used...
         this.subsetEnrichedVars = {};
@@ -460,9 +461,7 @@ class DataSetModel {
                                 // Get the sample names from the vcf header
                                 currVcfEndpt.getSampleNames(function (names) {
                                     me.isMultiSample = !!(names && names.length > 1);
-                                    names.forEach((name) => {
-                                        sampleNames.push(name);
-                                    });
+                                    sampleNames.push(names);
                                     resolve();
                                 });
 
@@ -609,7 +608,16 @@ class DataSetModel {
                         me.vcfUrlEntered = true;
                         me.vcfFileOpened = false;
                         me.getVcfRefName = null;
-                        // TODO: not getting reassinged in data set model
+
+                        // Turn array of arrays into a single list after we've verified files
+                        let combinedSamples = [];
+                        sampleNames.forEach((nameArr) => {
+                            nameArr.forEach((name) => {
+                                combinedSamples.push(name);
+                            });
+                        });
+                        updatedListObj['samples'] = combinedSamples;
+
                         updatedListObj['invalidNames'] = invalidVcfNames;
                         updatedListObj['invalidReasons'] = invalidVcfReasons;
                         resolve(updatedListObj);

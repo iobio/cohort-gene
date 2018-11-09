@@ -26,17 +26,23 @@
                     transform: translate(0, -18px) scale(0.95)
 
         .sample-label
-            span
-                margin-top: 0px
-                margin-bottom: 2px
-                vertical-align: top
-                margin-left: 0px
-                font-size: 18px
-                display: inline-block
-                margin-right: 20px
+            input
+                font-size: 14px
             .switch
                 display: inline-block
                 width: 100px
+
+        .sample-select-button
+            label
+                font-style: italic !important
+                font-size: 12px !important
+                font-weight: lighter !important
+                padding-left: 3px !important
+
+        .sample-select-label
+            font-size: 12px !important
+            font-weight: bold !important
+            color: rgba(0,0,0,0.54) !important
 
 </style>
 <style lang="css">
@@ -122,27 +128,34 @@
                             @file-selected="onVcfFilesSelected">
                     </entry-data-file>
                 </v-flex>
-                <v-flex xs6 id="subset-selection" v-if="samples && samples.length > 0">
-                    <v-flex d-flex xs2>
-                        <v-btn outline
-                               small
-                               color="cohortNavy">
-                            Select Subset Samples
-                        </v-btn>
-                    </v-flex>
-                    <v-flex d-flex xs4>
-                        <span>{{subsetSampleIdDisplay}}</span>
-                    </v-flex>
-                </v-flex>
-                <v-flex xs6 id="exclude-selection">
-                    <v-flex d-flex xs2>
-                        <v-btn outline
-                               small
-                               color="cohortNavy"
-                               v-bind:class="samples == null || samples.length === 0 ? 'hide' : ''">
-                            Exclude Samples
-                        </v-btn>
-                    </v-flex>
+                <v-flex d-flex xs12 id="subset-selection" v-if="samples && samples.length > 0">
+                    <v-layout row wrap>
+                        <v-flex d-flex xs2 class="pt-3">
+                            <span class="pl-3 pt-2 sample-select-label">Subset Samples:</span>
+                        </v-flex>
+                        <v-flex d-flex xs3>
+                            <v-text-field label="click to edit"
+                                          single-line
+                                          v-bind:class="'sample-select-button'"
+                                          v-on:click="openSubsetDialog">
+                            {{subsetSampleDisplay}}
+                            </v-text-field>
+                        </v-flex>
+                        <v-flex d-flex xs1>
+                            <!--spacing-->
+                        </v-flex>
+                        <v-flex d-flex xs2 class="pt-3">
+                            <span class="pl-3 pt-2 sample-select-label">Exclude Samples:</span>
+                        </v-flex>
+                        <v-flex d-flex xs3>
+                            <v-text-field label="click to edit"
+                                            single-line
+                                            v-bind:class="'sample-select-button'"
+                                            v-on:click="openExcludeDialog">
+                                {{excludeSampleDisplay}}
+                            </v-text-field>
+                        </v-flex>
+                    </v-layout>
                 </v-flex>
                 <!--<v-flex d-flex xs12 class="ml-3">-->
                     <!--<entry-data-file-->
@@ -197,7 +210,8 @@
                 excludeSampleIds: null,         // the samples to exclude from all cohorts
                 selectedSample: null,           // if isSampleEntry, user must select single sample for track
                 isMainCohort: false,
-                subsetSampleIdDisplay: '',
+                subsetSampleDisplay: 'click to select',
+                excludeSampleDisplay: 'click to select',
                 entryLabel: '',
                 chipLabel: 'Hub Sourced',
                 firstVcf: null,
@@ -230,7 +244,6 @@
                     self.modelInfo.dataSet.onVcfUrlEntered([entryId], [vcfUrl], [tbiUrl])
                         .then((listObj) => {
                         if (listObj) {
-                            debugger;   // TODO: Are we hitting this?
                             self.samples = listObj['samples'];
                             if (self.modelInfo.sample && self.samples.indexOf(self.modelInfo.sample) >= 0) {
                                 self.sample = self.modelInfo.sample;
@@ -329,20 +342,14 @@
                 let self = this;
                 self.$emit("remove-entry", self.modelInfo.id);
             },
-            // updateLabel: function() {
-            //     let self = this;
-            //     self.rowLabel = self.getRowLabel();
-            // },
-            // fillFirstFiles: function() {
-            //     let self = this;
-            //
-            //     if (self.modelInfo && self.modelInfo.vcfs) {
-            //         self.firstVcf = self.modelInfo.vcfs[0];
-            //     }
-            //     if (self.modelInfo && self.modelInfo.tbis) {
-            //         self.firstTbi = self.modelInfo.tbis[0];
-            //     }
-            // }
+            openSubsetDialog: function() {
+                let self = this;
+                self.$emit('open-subset-dialog', self.modelInfo.id);
+            },
+            openExcludeDialog: function() {
+                let self = this;
+                self.$emit('open-exclude-dialog', self.modelInfo.id);
+            }
         },
         created: function () {
 

@@ -137,6 +137,17 @@ class VariantModel {
 
     //<editor-fold desc="MOSAIC LAUNCH">
 
+    /* Returns true if launched from Mosaic. */
+    launchedFromMosaic() {
+        let self = this;
+        if (self.projectId && self.projectId !== '') {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
     /* Sets up cohort and data set models.
        Retrieves urls and sample IDs from Hub, then promises to initialize.
        Assumes a project ID has been mapped and assigned to this model. */

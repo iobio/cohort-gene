@@ -75,6 +75,7 @@
             id="files-menu"
             offset-y
             :close-on-content-click="false"
+            :close-on-click="false"
             :nudge-width="500"
             v-model="showFilesMenu">
         <v-btn id="files-menu-button" flat slot="activator">
@@ -155,7 +156,9 @@
                             :launchedFromHub="launchedFromHub"
                             :isSampleEntry="modelInfoMap[entry].isSampleEntry"
                             @sample-data-changed="validate"
-                            @remove-entry="removeEntry">
+                            @remove-entry="removeEntry"
+                            @open-subset-dialog="openSubsetDialog"
+                            @open-exclude-dialog="openExcludeDialog">
                     </entry-data>
                 </v-flex>
                 <v-flex xs6 class="mt-2 text-xs-left">
@@ -173,12 +176,17 @@
                             :disabled="!isValid">
                         Load
                     </v-btn>
-
                     <v-btn @click="onCancel">
                         Cancel
                     </v-btn>
                 </v-flex>
             </v-layout>
+            <sample-select-dialog
+                    ref="sampleDialogRef"
+                    :idType="dialogType"
+                    :unselectedSamples="unselectedSamples"
+                    :selectedSamples="selectedSamples">
+            </sample-select-dialog>
         </v-form>
     </v-menu>
 </template>
@@ -186,10 +194,12 @@
 
     import EntryData from './EntryData.vue'
     import draggable from 'vuedraggable'
+    import SampleSelectDialog from "./SampleSelectDialog.vue";
 
     export default {
         name: 'files-menu',
         components: {
+            SampleSelectDialog,
             EntryData,
             draggable
         },
@@ -216,7 +226,12 @@
                 stateUnchanged: true,
                 arrId: 0,
                 debugMe: false,
-                inputClass: 'fileSelect'
+                inputClass: 'fileSelect',
+
+                // Dialog specific
+                dialogType: '',
+                unselectedSamples: [],
+                selectedSamples: []
             }
         },
         watch: {
@@ -408,8 +423,6 @@
                         });
                         Promise.all(setPromises)
                             .then(() => {
-                                // TODO: LEFT OFF HERE - NOT RETURNING FROM THIS PROMISE - FIX THIS, THEN DISPLAY ID SELECTION OPTIONS
-                                debugger;
                                 resolve();
                             })
                             .catch((error) => {
@@ -547,6 +560,37 @@
                 self.entryIds.splice(entryIndex, 1);
                 delete self.modelInfoMap[entryId];
                 self.variantModel.removeEntry(entryId);
+            },
+            openSubsetDialog: function(entryId) {
+                let self = this;
+
+                self.dialogType = 'Subset';
+                let dataSet = self.variantModel.getDataSet(entryId);
+                if (dataSet && dataSet.getSubsetCohort()) {
+                    self.selectedSamples = dataSet.getSubsetCohort().sampleIds ? dataSet.getSubsetCohort().sampleIds : [];
+                }
+
+                let allSamples = self.modelInfoMap[entryId].samples;
+                self.unselectedSamples = allSamples.slice();
+                self.unselectedSamples.filter((sample) => {
+                    return !self.selectedSamples.includes(sample);
+                });
+                self.$refs.sampleDialogRef.displayDialog();
+            },
+            openExcludeDialog: function(entryId) {
+                let self = this;
+                self.dialogType = 'Excluded';
+                let dataSet = self.variantModel.getDataSet(entryId);
+                if (dataSet) {
+                    self.selectedSamples = dataSet.excludeIds ? dataSet.excludeIds : [];
+                }
+
+                let allSamples = self.modelInfoMap[entryId].samples;
+                self.unselectedSamples = allSamples.slice();
+                self.unselectedSamples.filter((sample) => {
+                    return !self.selectedSamples.includes(sample);
+                });
+                self.$refs.sampleDialogRef.displayDialog();
             }
         },
         computed: {
