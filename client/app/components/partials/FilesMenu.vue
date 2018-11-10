@@ -146,7 +146,7 @@
                         :key="entry"
                         :id="entry"
                         v-if="modelInfoMap && modelInfoMap[entry]">
-                    <entry-data
+                    <entry-data :id="entry"
                             ref="entryDataRef"
                             v-if="modelInfoMap && modelInfoMap[entry]"
                             :modelInfo="modelInfoMap[entry]"
@@ -156,9 +156,7 @@
                             :launchedFromHub="launchedFromHub"
                             :isSampleEntry="modelInfoMap[entry].isSampleEntry"
                             @sample-data-changed="validate"
-                            @remove-entry="removeEntry"
-                            @open-subset-dialog="openSubsetDialog"
-                            @open-exclude-dialog="openExcludeDialog">
+                            @remove-entry="removeEntry">
                     </entry-data>
                 </v-flex>
                 <v-flex xs6 class="mt-2 text-xs-left">
@@ -181,10 +179,6 @@
                     </v-btn>
                 </v-flex>
             </v-layout>
-            <sample-select-dialog
-                    ref="sampleDialogRef"
-                    :idType="dialogType">
-            </sample-select-dialog>
         </v-form>
     </v-menu>
 </template>
@@ -192,12 +186,10 @@
 
     import EntryData from './EntryData.vue'
     import draggable from 'vuedraggable'
-    import SampleSelectDialog from "./SampleSelectDialog.vue";
 
     export default {
         name: 'files-menu',
         components: {
-            SampleSelectDialog,
             EntryData,
             draggable
         },
@@ -224,8 +216,7 @@
                 stateUnchanged: true,
                 arrId: 0,
                 debugMe: false,
-                inputClass: 'fileSelect',
-                dialogType: ''
+                inputClass: 'fileSelect'
             }
         },
         watch: {
@@ -554,40 +545,6 @@
                 self.entryIds.splice(entryIndex, 1);
                 delete self.modelInfoMap[entryId];
                 self.variantModel.removeEntry(entryId);
-            },
-            openSubsetDialog: function(entryId) {
-                let self = this;
-
-                let selectedSamples = [];
-                let unselectedSamples = [];
-                self.dialogType = 'Subset';
-                let dataSet = self.variantModel.getDataSet(entryId);
-                if (dataSet && dataSet.getSubsetCohort() && dataSet.getSubsetCohort().sampleIds) {
-                    selectedSamples = dataSet.getSubsetCohort().sampleIds;
-                }
-
-
-                let allSamples = self.modelInfoMap[entryId].samples;
-                unselectedSamples = allSamples.slice();
-                unselectedSamples.filter((sample) => {
-                    return !selectedSamples.includes(sample);
-                });
-                self.$refs.sampleDialogRef.displayDialog(unselectedSamples, selectedSamples);
-            },
-            openExcludeDialog: function(entryId) {
-                let self = this;
-                self.dialogType = 'Excluded';
-                let dataSet = self.variantModel.getDataSet(entryId);
-                if (dataSet) {
-                    self.selectedSamples = dataSet.excludeIds ? dataSet.excludeIds : [];
-                }
-
-                let allSamples = self.modelInfoMap[entryId].samples;
-                self.unselectedSamples = allSamples.slice();
-                self.unselectedSamples.filter((sample) => {
-                    return !self.selectedSamples.includes(sample);
-                });
-                self.$refs.sampleDialogRef.displayDialog();
             }
         },
         computed: {

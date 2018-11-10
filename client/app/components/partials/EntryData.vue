@@ -33,7 +33,7 @@
                 width: 100px
 
         .sample-select-button
-            label
+            input
                 font-style: italic !important
                 font-size: 12px !important
                 font-weight: lighter !important
@@ -134,11 +134,10 @@
                             <span class="pl-3 pt-2 sample-select-label">Subset Samples:</span>
                         </v-flex>
                         <v-flex d-flex xs3>
-                            <v-text-field label="click to edit"
+                            <v-text-field :value="subsetSampleDisplay"
                                           single-line
                                           v-bind:class="'sample-select-button'"
                                           v-on:click="openSubsetDialog">
-                            {{subsetSampleDisplay}}
                             </v-text-field>
                         </v-flex>
                         <v-flex d-flex xs1>
@@ -148,11 +147,10 @@
                             <span class="pl-3 pt-2 sample-select-label">Exclude Samples:</span>
                         </v-flex>
                         <v-flex d-flex xs3>
-                            <v-text-field label="click to edit"
-                                            single-line
-                                            v-bind:class="'sample-select-button'"
-                                            v-on:click="openExcludeDialog">
-                                {{excludeSampleDisplay}}
+                            <v-text-field :value="excludeSampleDisplay"
+                                          single-line
+                                          v-bind:class="'sample-select-button'"
+                                          v-on:click="openExcludeDialog">
                             </v-text-field>
                         </v-flex>
                     </v-layout>
@@ -172,6 +170,11 @@
                 <!--</v-flex>-->
             </v-layout>
         </v-flex>
+        <sample-select-dialog
+                ref="sampleDialogRef"
+                :idType="dialogType"
+                @save-sample-selection="saveSampleSelection">
+        </sample-select-dialog>
     </v-layout>
 </template>
 
@@ -179,10 +182,12 @@
 
     import EntryDataFile from './EntryDataFile.vue'
     import draggable from 'vuedraggable'
+    import SampleSelectDialog from "./SampleSelectDialog.vue";
 
     export default {
         name: 'entry-data',
         components: {
+            SampleSelectDialog,
             draggable,
             EntryDataFile
         },
@@ -209,13 +214,14 @@
                 subsetSampleIds: null,          // the samples composing the subset
                 excludeSampleIds: null,         // the samples to exclude from all cohorts
                 selectedSample: null,           // if isSampleEntry, user must select single sample for track
+                subsetSampleDisplay: 'click to edit',
+                excludeSampleDisplay: 'click to edit',
                 isMainCohort: false,
-                subsetSampleDisplay: 'click to select',
-                excludeSampleDisplay: 'click to select',
                 entryLabel: '',
                 chipLabel: 'Hub Sourced',
                 firstVcf: null,
-                firstTbi: null
+                firstTbi: null,
+                dialogType: ''
             }
         },
         watch: {
@@ -228,7 +234,24 @@
                 self.firstTbi = newVal;
             }
         },
-        computed: {},
+        computed: {
+            // subsetSampleDisplay: function() {
+            //     let self = this;
+            //     if (self.subsetSampleIds.length === 0) {
+            //         return 'click to select';
+            //     } else {
+            //         return self.subsetSampleIds.join(',');
+            //     }
+            // },
+            // excludeSampleDisplay: function() {
+            //     let self = this;
+            //     if (self.excludeSampleIds.length === 0) {
+            //         return 'click to select';
+            //     } else {
+            //         return self.excludeSampleIds.join(',');
+            //     }
+            // }
+        },
         methods: {
             onNicknameEntered: function () {
                 if (self.modelInfo && self.modelInfo.dataSet) {
@@ -344,11 +367,54 @@
             },
             openSubsetDialog: function() {
                 let self = this;
-                self.$emit('open-subset-dialog', self.modelInfo.id);
+
+                let selectedSamples = [];
+                let unselectedSamples = [];
+                self.dialogType = 'Subset';
+                let dataSet = self.modelInfo.dataSet;
+                selectedSamples = dataSet.getSubsetIds();
+
+                let allSamples = self.modelInfo.samples;
+                unselectedSamples = allSamples.filter((sample) => {
+                    return !selectedSamples.includes(sample);
+                });
+                self.$refs.sampleDialogRef.displayDialog(unselectedSamples, selectedSamples);
             },
             openExcludeDialog: function() {
                 let self = this;
-                self.$emit('open-exclude-dialog', self.modelInfo.id);
+
+                let selectedSamples = [];
+                let unselectedSamples = [];
+                self.dialogType = 'Excluded';
+                let dataSet = self.modelInfo.dataSet;
+                if (dataSet) {
+                    selectedSamples = dataSet.getExcludeIds();
+                }
+
+                let allSamples = self.modelInfo.samples;
+                unselectedSamples = allSamples.filter((sample) => {
+                    return !selectedSamples.includes(sample);
+                });
+                self.$refs.sampleDialogRef.displayDialog(unselectedSamples, selectedSamples);
+            },
+            saveSampleSelection: function(dialogType, selectedSamples) {
+                let self = this;
+
+                if (dialogType === 'Subset') {
+                    if (selectedSamples.length > 0) {
+                        self.subsetSampleDisplay = selectedSamples.join(', ');
+                    } else {
+                        self.subsetSampleDisplay = "click to edit";
+                    }
+                    self.modelInfo.dataSet.setSubsetIds(selectedSamples);
+                } else if (dialogType === "Excluded") {
+                    if (selectedSamples.length > 0) {
+                        self.excludeSampleDisplay = selectedSamples.join(', ');
+                    } else {
+                        self.excludeSampleDisplay = "click to edit";
+                    }
+                    self.modelInfo.dataSet.setExcludeIds(selectedSamples);
+                }
             }
         },
         created: function () {

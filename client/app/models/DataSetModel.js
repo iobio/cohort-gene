@@ -71,7 +71,7 @@ class DataSetModel {
         this.coverage = [[]];
     }
 
-    //<editor-fold desc="GETTERS">
+    //<editor-fold desc="GETTERS & SETTERS">
 
     getVariantModel() {
         let self = this;
@@ -135,6 +135,34 @@ class DataSetModel {
     getName() {
         let self = this;
         return self.name;
+    }
+
+    getSubsetIds() {
+        let self = this;
+        if (self.getSubsetCohort() && self.getSubsetCohort().sampleIds && self.getSubsetCohort().sampleIds.length > 0) {
+            return self.getSubsetCohort().sampleIds;
+        } else {
+            return [];
+        }
+    }
+
+    setSubsetIds(theIds) {
+        let self = this;
+        self.getSubsetCohort().sampleIds = theIds;
+    }
+
+    getExcludeIds() {
+        let self = this;
+        if (self.excludeIds && self.excludeIds.length > 0) {
+            return self.excludeIds;
+        } else {
+            return [];
+        }
+    }
+
+    setExcludeIds(theIds) {
+        let self = this;
+        self.excludeIds = theIds;
     }
 
     //</editor-fold>
