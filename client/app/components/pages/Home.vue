@@ -157,7 +157,11 @@ TD & SJG updated Jun2018 -->
             FilterSettingsMenu
         },
         props: {
-            paramProjectName: {
+            paramProjectId: {
+                default: '0',
+                type: String
+            },
+            paramOldProjectId: {
                 default: '0',
                 type: String
             },
@@ -613,22 +617,31 @@ TD & SJG updated Jun2018 -->
                 let self = this;
                 return new Promise((resolve, reject) => {
                     let source = self.paramSource;
-                    let projectId = self.paramProjectName;
+                    let projectId = self.paramProjectId;
                     let selectedGene = self.paramGene;
                     let phenoFilters = self.getHubPhenoFilters();
+                    let usingNewApi = true;
+
                     // If we can't map project id with Vue Router, may be coming from Hub OAuth
                     if (projectId === '0') {
                         let queryParams = Qs.parse(window.location.search.substring(1)); // if query params before the fragment
                         Object.assign(queryParams, self.$route.query);
                         source = queryParams.source;
-                        projectId = queryParams.project_uuid;
+                        projectId = queryParams.project_id;
                         selectedGene = queryParams.gene;
                         phenoFilters = queryParams.filter;
                     }
+
+                    // If we still don't have a project id, we might be using the old API
+                    if (projectId === '0') {
+                        projectId = self.paramOldProjectId;
+                        usingNewApi = false;
+                    }
+
                     // If we have a project ID here, coming from Hub launch
                     if (projectId !== '0') {
-                        let hubEndpoint = new HubEndpoint(source);
-                        let initialLaunch = !(self.paramProjectName === '0');
+                        let hubEndpoint = new HubEndpoint(source, usingNewApi);
+                        let initialLaunch = !(self.paramProjectId === '0');
                         self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch)
                             .then(function (idNumList) {
                                 let probandN = idNumList[0];

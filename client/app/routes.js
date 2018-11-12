@@ -42,7 +42,8 @@ const routes = [
         path: '/',
         component: Home,
         props: (route) => ({
-            paramProjectName: route.query.project_id,
+            paramProjectId: route.query.project_id,
+            paramOldProjectId: route.query.project_uuid,
             paramSource: route.query.source,
             paramGene: route.query.gene,
             paramRef: route.query.reference
