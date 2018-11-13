@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="17d38fed-e0f5-492f-b455-1d8321fb2586" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/client/app/components/pages/Home.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/pages/Home.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/app/models/VariantModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/models/VariantModel.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/client/dist/" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -20,7 +20,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="Home.vue" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Home.vue" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/app/components/pages/Home.vue">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="343">
@@ -37,20 +37,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="hubEndpoint.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/client/js/model/hubEndpoint.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="160">
-              <caret line="10" column="20" selection-start-line="10" selection-start-column="20" selection-end-line="10" selection-end-column="20" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="VariantModel.js" pinned="false" current-in-tab="false">
+      <file leaf-file-name="VariantModel.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client/app/models/VariantModel.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="304">
-              <caret line="119" column="34" lean-forward="true" selection-start-line="119" selection-start-column="34" selection-end-line="119" selection-end-column="34" />
+            <state relative-caret-position="568">
+              <caret line="269" column="8" selection-start-line="269" selection-start-column="8" selection-end-line="269" selection-end-column="8" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
@@ -162,8 +153,8 @@
       <find>ws</find>
       <find>ssl</find>
       <find>useSSL</find>
-      <find>convertSimonsIds</find>
       <find>promiseinitfromhub</find>
+      <find>convertSimonsIds</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/client/js/model</dir>
@@ -211,8 +202,8 @@
         <option value="$PROJECT_DIR$/client/app/components/viz/UpdatedVariantCard.vue" />
         <option value="$PROJECT_DIR$/client/app/routes.js" />
         <option value="$PROJECT_DIR$/client/js/model/hubEndpoint.js" />
-        <option value="$PROJECT_DIR$/client/app/models/VariantModel.js" />
         <option value="$PROJECT_DIR$/client/app/components/pages/Home.vue" />
+        <option value="$PROJECT_DIR$/client/app/models/VariantModel.js" />
       </list>
     </option>
   </component>
@@ -273,6 +264,12 @@
               <item name="client" type="462c0819:PsiDirectoryNode" />
               <item name="app" type="462c0819:PsiDirectoryNode" />
               <item name="models" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="cohort-gene" type="b2602c69:ProjectViewProjectNode" />
+              <item name="cohort-gene" type="462c0819:PsiDirectoryNode" />
+              <item name="client" type="462c0819:PsiDirectoryNode" />
+              <item name="data" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="cohort-gene" type="b2602c69:ProjectViewProjectNode" />
@@ -345,12 +342,12 @@
       <workItem from="1538698101122" duration="1761000" />
       <workItem from="1539878098020" duration="1801000" />
       <workItem from="1540577512719" duration="1489000" />
-      <workItem from="1542068199749" duration="6822000" />
+      <workItem from="1542068199749" duration="7718000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="569305000" />
+    <option name="totallyTimeSpent" value="570201000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1841" height="1057" extended-state="0" />
@@ -614,13 +611,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/data/new_id_map.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="464">
-          <caret line="29" column="25" lean-forward="true" selection-start-line="29" selection-start-column="25" selection-end-line="29" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/client/data/auth.json">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -749,16 +739,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/models/VariantModel.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="304">
-          <caret line="119" column="34" lean-forward="true" selection-start-line="119" selection-start-column="34" selection-end-line="119" selection-end-column="34" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/client/app/components/pages/Home.vue">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="343">
@@ -770,6 +750,23 @@
             <element signature="e#7274#7325#0" expanded="true" />
             <element signature="e#7708#7757#0" expanded="true" />
             <element signature="e#7899#7950#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/data/new_id_map.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="16">
+          <caret line="1" selection-start-line="1" selection-end-line="1" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/models/VariantModel.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="568">
+          <caret line="269" column="8" selection-start-line="269" selection-start-column="8" selection-end-line="269" selection-end-column="8" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
           </folding>
         </state>
       </provider>

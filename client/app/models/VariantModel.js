@@ -167,12 +167,12 @@ class VariantModel {
                             if (sampleObjs.length === 0) {
                                 reject('No samples found for proband filtering from Hub');
                             }
-                            // Coming from SSC data set
-                            if (!((sampleObjs[0].name).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
-                                probandCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'proband', usingNewApi);
-                            }
-                            // Coming from SPARK or other
-                            else {
+                            // Coming from SSC data set and old database
+                            if (!usingNewApi && !((sampleObjs[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
+                                probandCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'proband');
+                            } else if (!usingNewApi) {
+                                probandCohort.subsetIds = self.getRawIds(sampleObjs, usingNewApi);
+                            } else {
                                 probandCohort.subsetIds = self.getRawIds(sampleObjs, usingNewApi);
                             }
                             probandCohort.subsetPhenotypes.push('n = ' + sampleObjs.length);
@@ -251,7 +251,7 @@ class VariantModel {
     }
 
     /* Converts provide list of Hub encoded sample IDs to those found in the Phase 1 Simons VCF. */
-    convertSimonsIds(hubIds, cohortName, usingNewApi) {
+    convertSimonsIds(hubIds, cohortName) {
         let self = this;
         if (self.simonsIdMap == null) {
             return hubIds;
@@ -259,25 +259,14 @@ class VariantModel {
         let convertedIds = [];
         let unmappedIds = [];
 
-        if (usingNewApi) {
-            hubIds.forEach((idObj) => {
-                let simonsId = self.simonsIdMap[idObj.name];
-                if (simonsId == null) {
-                    unmappedIds.push(simonsId);
-                } else {
-                    convertedIds.push(simonsId);
-                }
-            });
-        } else {
-            hubIds.forEach((idObj) => {
-                let simonsId = self.simonsIdMap[idObj.id];
-                if (simonsId == null) {
-                    unmappedIds.push(simonsId);
-                } else {
-                    convertedIds.push(simonsId);
-                }
-            });
-        }
+        hubIds.forEach((idObj) => {
+            let simonsId = self.simonsIdMap[idObj.id];
+            if (simonsId == null) {
+                unmappedIds.push(simonsId);
+            } else {
+                convertedIds.push(simonsId);
+            }
+        });
 
         // TODO: return number of unmappedIds and update chip
         if (unmappedIds.length > 0) {
