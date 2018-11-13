@@ -199,8 +199,9 @@ class VariantModel {
                         .then(function (sampleObjs) {
                             if (sampleObjs.length > 0 && !usingNewApi && !((sampleObjs[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
                                 subsetCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'subset', usingNewApi);
-                            } else if (sampleObjs.length > 0 && usingNewApi && !((sampleObjs[0].name).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz')
-                            else {
+                            } else if (sampleObjs.length > 0 && usingNewApi && !((sampleObjs[0].name).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
+                                subsetCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'subset', usingNewApi);
+                            } else {
                                 subsetCohort.subsetIds = self.getRawIds(sampleObjs, usingNewApi);
                             }
                         });
