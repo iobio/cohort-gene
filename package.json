@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "start": "./node_modules/webpack/bin/webpack.js && DEBUG=http ./node_modules/nodemon/bin/nodemon.js --inspect --ignore client/ www.js",
+    "build": "./node_modules/webpack/bin/webpack.js",
     "webpack": "./node_modules/webpack/bin/webpack.js --watch",
     "test": "mocha-webpack --webpack-config webpack.test.config.js --require client/spec/spec_helper.js \"client/spec/**/*_spec.js\"",
     "build:dev": "webpack-dev-server --content-base ./server/views"

@@ -1,0 +1,45 @@
+#!/bin/bash
+
+rm -rf deploy
+mkdir deploy
+mkdir deploy/js
+mkdir deploy/app
+mkdir deploy/dist
+
+# build vue app
+if [[ $1 == "prod" ]]; then
+  echo "** Building prod **"
+  NODE_ENV=production npm run build
+else
+  echo "** Building dev **"
+  npm run build
+fi
+
+# link to files needed for static page
+ln -s ~/Documents/Code/cohort-gene/server/views/index.html ~/Documents/Code/cohort-gene/deploy/index.html
+ln -s ~/Documents/Code/cohort-gene/client/assets ~/Documents/Code/cohort-gene/deploy/assets
+ln -s ~/Documents/Code/cohort-gene/client/js/thirdparty ~/Documents/Code/cohort-gene/deploy/js/thirdparty
+ln -s ~/Documents/Code/cohort-gene/client/app/third-party ~/Documents/Code/cohort-gene/deploy/app/third-party
+ln -s ~/Documents/Code/cohort-gene/client/dist/build.js ~/Documents/Code/cohort-gene/deploy/dist/build.js
+if [[ $1 == "prod" ]]; then
+  ln -s ~/Documents/Code/cohort-gene/client/dist/build.js.map ~/Documents/Code/cohort-gene/deploy/dist/build.js.map
+fi
+
+# upload to cloudfront
+if [[ $1 == "prod" ]]; then
+  #aws s3 cp ./deploy/  s3://static.iobio.io/cohortgene.iobio.io/ --recursive
+  #aws cloudfront create-invalidation --distribution-id EPK0TTL11YUW --paths /
+
+  echo "** Uploaded to prod s3 bucket **"
+  aws s3 cp ./deploy/  s3://static.iobio.io/dev/cohortgene.iobio.io/ --recursive
+  echo "** Renew cloudfrount cache **"
+  #aws cloudfront create-invalidation --distribution-id E331YTF25OIVP7 --paths /\*
+
+
+else
+  echo "** Syncing to dev s3 bucket **"
+  #aws s3 sync ./deploy/  s3://static.iobio.io/dev/cohortgene.iobio.io/
+  aws s3 cp ./deploy/  s3://static.iobio.io/dev/cohortgene.iobio.io/ --recursive
+  echo "** Renew cloudfrount cache **"
+  #aws cloudfront create-invalidation --distribution-id E1RAE4AL1ULL9A --paths /\*
+fi
