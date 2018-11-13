@@ -167,7 +167,6 @@ class VariantModel {
                             if (sampleObjs.length === 0) {
                                 reject('No samples found for proband filtering from Hub');
                             }
-                            console.log(sampleObjs);
                             // Coming from SSC data set and old database
                             if (!usingNewApi && !((sampleObjs[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
                                 probandCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'proband');
@@ -199,7 +198,7 @@ class VariantModel {
                     // Retrieve subset sample IDs from Hub
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                         .then(function (sampleObjs) {
-                            if (sampleObjs.length > 0 && !((sampleObjs[0].name).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
+                            if (sampleObjs.length > 0 && !usingNewApi && !((sampleObjs[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
                                 subsetCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'subset', usingNewApi);
                             } else {
                                 subsetCohort.subsetIds = self.getRawIds(sampleObjs, usingNewApi);
@@ -464,7 +463,8 @@ class VariantModel {
                 if (self.phenoFilters[filter] != null && self.phenoFilters[filter].data != null) {
                     subsetCohort.subsetPhenotypes.push(self.formatPhenotypeFilterDisplay(filter, self.phenoFilters[filter].data));
                 }
-            })
+            });
+            console.log(subsetCohort.subsetPhenotypes);
         }
 
         // If we aren't filtering on affected status already, add a proband filter
