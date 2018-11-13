@@ -615,12 +615,13 @@ TD & SJG updated Jun2018 -->
             },
             promiseDetermineSourceAndInit: function () {
                 let self = this;
+                let usingNewApi = true;
+
                 return new Promise((resolve, reject) => {
                     let source = self.paramSource;
                     let projectId = self.paramProjectId;
                     let selectedGene = self.paramGene;
                     let phenoFilters = self.getHubPhenoFilters();
-                    let usingNewApi = true;
 
                     // If we can't map project id with Vue Router, may be coming from Hub OAuth
                     if (projectId === '0') {

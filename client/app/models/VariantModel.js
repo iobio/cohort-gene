@@ -111,7 +111,7 @@ class VariantModel {
     /* Sets up cohort and data set models.
        Retrieves urls and sample IDs from Hub, then promises to initialize.
        Assumes a project ID has been mapped and assigned to this model. */
-    promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch, usingNewApi) {
+    promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch, usingNewApi = true) {
         let self = this;
         // Set status
         self.isLoaded = false;
