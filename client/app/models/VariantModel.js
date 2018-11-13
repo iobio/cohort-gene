@@ -167,7 +167,9 @@ class VariantModel {
                             if (sampleObjs.length === 0) {
                                 reject('No samples found for proband filtering from Hub');
                             }
-                            if (!((sampleObjs[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
+                            if (!usingNewApi && !((sampleObjs[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
+                                probandCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'proband');
+                            } else if (usingNewApi && !((sampleObjs[0].name).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
                                 probandCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'proband');
                             } else {
                                 probandCohort.subsetIds = self.getRawIds(sampleObjs, usingNewApi);
@@ -195,9 +197,10 @@ class VariantModel {
                     // Retrieve subset sample IDs from Hub
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                         .then(function (sampleObjs) {
-                            if (sampleObjs.length > 0 && !((sampleObjs[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
+                            if (sampleObjs.length > 0 && !usingNewApi && !((sampleObjs[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
                                 subsetCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'subset', usingNewApi);
-                            } else {
+                            } else if (sampleObjs.length > 0 && usingNewApi && !((sampleObjs[0].name).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz')
+                            else {
                                 subsetCohort.subsetIds = self.getRawIds(sampleObjs, usingNewApi);
                             }
                         });
