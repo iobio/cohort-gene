@@ -464,7 +464,6 @@ class VariantModel {
                     subsetCohort.subsetPhenotypes.push(self.formatPhenotypeFilterDisplay(filter, self.phenoFilters[filter].data));
                 }
             });
-            console.log(subsetCohort.subsetPhenotypes);
         }
 
         // If we aren't filtering on affected status already, add a proband filter
