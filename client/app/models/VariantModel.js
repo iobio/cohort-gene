@@ -111,7 +111,7 @@ class VariantModel {
     /* Sets up cohort and data set models.
        Retrieves urls and sample IDs from Hub, then promises to initialize.
        Assumes a project ID has been mapped and assigned to this model. */
-    promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch) {
+    promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch, usingNewApi) {
         let self = this;
         // Set status
         self.isLoaded = false;
@@ -169,11 +169,11 @@ class VariantModel {
                             }
                             // Coming from SSC data set
                             if (!((sampleObjs[0].name).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
-                                probandCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'proband');
+                                probandCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'proband', usingNewApi);
                             }
                             // Coming from SPARK or other
                             else {
-                                probandCohort.subsetIds = self.getRawIds(sampleObjs);
+                                probandCohort.subsetIds = self.getRawIds(sampleObjs, usingNewApi);
                             }
                             probandCohort.subsetPhenotypes.push('n = ' + sampleObjs.length);
                         });
@@ -199,9 +199,9 @@ class VariantModel {
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                         .then(function (sampleObjs) {
                             if (sampleObjs.length > 0 && !((sampleObjs[0].name).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
-                                subsetCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'subset');
+                                subsetCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'subset', usingNewApi);
                             } else {
-                                subsetCohort.subsetIds = self.getRawIds(sampleObjs);
+                                subsetCohort.subsetIds = self.getRawIds(sampleObjs, usingNewApi);
                             }
                         });
                     promises.push(subsetP);
@@ -236,32 +236,49 @@ class VariantModel {
         })
     }
 
-    getRawIds(ids) {
+    getRawIds(ids, usingNewApi) {
         let rawIds = [];
-        ids.forEach((idObj) => {
-            // TODO: test change from id-> name
-            rawIds.push(idObj.name);
-        });
+        if (usingNewApi) {
+            ids.forEach((idObj) => {
+                rawIds.push(idObj.name);
+            });
+        } else {
+            ids.forEach((idObj) => {
+                rawIds.push(idObj.id);
+            });
+        }
         return rawIds;
     }
 
     /* Converts provide list of Hub encoded sample IDs to those found in the Phase 1 Simons VCF. */
-    convertSimonsIds(hubIds, cohortName) {
+    convertSimonsIds(hubIds, cohortName, usingNewApi) {
         let self = this;
         if (self.simonsIdMap == null) {
             return hubIds;
         }
         let convertedIds = [];
         let unmappedIds = [];
-        hubIds.forEach((idObj) => {
-            // TODO: test this id -> name change
-            let simonsId = self.simonsIdMap[idObj.name];
-            if (simonsId == null) {
-                unmappedIds.push(simonsId);
-            } else {
-                convertedIds.push(simonsId);
-            }
-        });
+
+        if (usingNewApi) {
+            hubIds.forEach((idObj) => {
+                let simonsId = self.simonsIdMap[idObj.name];
+                if (simonsId == null) {
+                    unmappedIds.push(simonsId);
+                } else {
+                    convertedIds.push(simonsId);
+                }
+            });
+        } else {
+            hubIds.forEach((idObj) => {
+                let simonsId = self.simonsIdMap[idObj.id];
+                if (simonsId == null) {
+                    unmappedIds.push(simonsId);
+                } else {
+                    convertedIds.push(simonsId);
+                }
+            });
+        }
+
         // TODO: return number of unmappedIds and update chip
         if (unmappedIds.length > 0) {
             alert ('Note: could not find translation for all sample IDs provided, not all samples from the ' + cohortName + ' cohort will be included in the analysis.');
