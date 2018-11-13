@@ -76,10 +76,6 @@ TD & SJG updated Jun2018 -->
                                         <v-icon style="margin-bottom: 0px">bubble_chart</v-icon>
                                         Filters
                                     </v-tabs-item>
-                                    <v-tabs-item href="#flag-tab">
-                                        <v-icon style="margin-bottom: 0px">outlined_flag</v-icon>
-                                        Flags
-                                    </v-tabs-item>
                                 </v-tabs-bar>
                                 <v-tabs-items>
                                     <v-tabs-content

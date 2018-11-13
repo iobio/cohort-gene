@@ -237,7 +237,12 @@ class VariantModel {
         let rawIds = [];
         if (usingNewApi) {
             ids.forEach((idObj) => {
-                rawIds.push(idObj.vcf_sample_name);
+                let vcf = idObj.files.filter((file) => {
+                   return file.type === 'vcf';
+                });
+                if (vcf != null) {
+                    rawIds.push(vcf.vcf_sample_name);
+                }
             });
         } else {
             ids.forEach((idObj) => {
