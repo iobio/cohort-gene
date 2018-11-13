@@ -169,8 +169,6 @@ class VariantModel {
                             }
                             if (!usingNewApi && !((sampleObjs[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
                                 probandCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'proband');
-                            } else if (usingNewApi && !((sampleObjs[0].name).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
-                                probandCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'proband');
                             } else {
                                 probandCohort.subsetIds = self.getRawIds(sampleObjs, usingNewApi);
                             }
@@ -198,8 +196,6 @@ class VariantModel {
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
                         .then(function (sampleObjs) {
                             if (sampleObjs.length > 0 && !usingNewApi && !((sampleObjs[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
-                                subsetCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'subset', usingNewApi);
-                            } else if (sampleObjs.length > 0 && usingNewApi && !((sampleObjs[0].name).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
                                 subsetCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'subset', usingNewApi);
                             } else {
                                 subsetCohort.subsetIds = self.getRawIds(sampleObjs, usingNewApi);
@@ -241,7 +237,7 @@ class VariantModel {
         let rawIds = [];
         if (usingNewApi) {
             ids.forEach((idObj) => {
-                rawIds.push(idObj.name);
+                rawIds.push(idObj.vcf_sample_name);
             });
         } else {
             ids.forEach((idObj) => {
