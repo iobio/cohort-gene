@@ -167,6 +167,7 @@ class VariantModel {
                             if (sampleObjs.length === 0) {
                                 reject('No samples found for proband filtering from Hub');
                             }
+                            console.log(sampleObjs);
                             // Coming from SSC data set and old database
                             if (!usingNewApi && !((sampleObjs[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
                                 probandCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'proband');
