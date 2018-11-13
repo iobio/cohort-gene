@@ -240,8 +240,8 @@ class VariantModel {
                 let vcf = idObj.files.filter((file) => {
                    return file.type === 'vcf';
                 });
-                if (vcf != null) {
-                    rawIds.push(vcf.vcf_sample_name);
+                if (vcf != null && vcf[0] != null) {
+                    rawIds.push(vcf[0].vcf_sample_name);
                 }
             });
         } else {
