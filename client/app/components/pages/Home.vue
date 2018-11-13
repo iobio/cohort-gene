@@ -615,13 +615,19 @@ TD & SJG updated Jun2018 -->
             },
             promiseDetermineSourceAndInit: function () {
                 let self = this;
-                let usingNewApi = true;
 
                 return new Promise((resolve, reject) => {
-                    let source = self.paramSource;
-                    let projectId = self.paramProjectId;
-                    let selectedGene = self.paramGene;
-                    let phenoFilters = self.getHubPhenoFilters();
+                    var source = self.paramSource;
+                    var projectId = self.paramProjectId;
+                    var selectedGene = self.paramGene;
+                    var usingNewApi = true;
+                    var phenoFilters = self.getHubPhenoFilters();
+
+                    // If we still don't have a project id, we might be using the old API
+                    if (projectId === '0') {
+                        projectId = self.paramOldProjectId;
+                        usingNewApi = false;
+                    }
 
                     // If we can't map project id with Vue Router, may be coming from Hub OAuth
                     if (projectId === '0') {
@@ -631,12 +637,7 @@ TD & SJG updated Jun2018 -->
                         projectId = queryParams.project_id;
                         selectedGene = queryParams.gene;
                         phenoFilters = queryParams.filter;
-                    }
-
-                    // If we still don't have a project id, we might be using the old API
-                    if (projectId === '0' || projectId == null) {
-                        projectId = self.paramOldProjectId;
-                        usingNewApi = false;
+                        usingNewApi = true;
                     }
 
                     // If we have a project ID here, coming from Hub launch
