@@ -634,7 +634,7 @@ TD & SJG updated Jun2018 -->
                     }
 
                     // If we still don't have a project id, we might be using the old API
-                    if (projectId === '0') {
+                    if (projectId === '0' || projectId == null) {
                         projectId = self.paramOldProjectId;
                         usingNewApi = false;
                     }
