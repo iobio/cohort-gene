@@ -28,7 +28,6 @@
                 padding-left: 5px
 
     #files-form
-
         .radio-group
             .input-group__input
                 min-height: 25px
@@ -54,14 +53,20 @@
             .switch
                 display: inline-block
                 width: 100px
+    .menu-selection
+        .btn__content
+            color: #888888 !important
+            font-weight: 400
+            font-size: 14px
+
 </style>
-<!--Taken from https://alligator.io/vuejs/file-select-component/-->
 <style scoped>
     .file-select > .select-button {
         text-align: left;
-        padding-left: 15px;
+        padding-left: 14px;
         cursor: pointer;
-        font-weight: 500;
+        font-weight: 400;
+        color: #888888;
     }
 
     /* Don't forget to hide the original file input! */
@@ -114,7 +119,7 @@
                         <v-list>
                             <v-list-tile>
                                 <v-list-tile-action>
-                                    <v-btn flat color="appGray"
+                                    <v-btn flat v-bind:class="'menu-selection'"
                                            @click="onAutoLoad(false)">
                                         {{ autofill.display }}
                                     </v-btn>
@@ -124,7 +129,7 @@
                                 <label class="file-select">
                                     <!-- We can't use a normal button element here, it would become the target of the label. -->
                                     <div class="select-button">
-                                        <span style="color: #888888">Upload Config</span>
+                                        <span>Upload Config</span>
                                     </div>
                                     <!-- Hidden file input -->
                                     <input type="file" @change="onUploadCustomFile"/>
@@ -132,7 +137,7 @@
                             </v-list-tile>
                             <v-list-tile>
                                 <v-list-tile-action>
-                                    <v-btn flat color="appGray" :disabled="!isValid"
+                                    <v-btn flat :disabled="!isValid"
                                            @click="onDownloadCustomFile">
                                         Download Config
                                     </v-btn>
@@ -156,7 +161,9 @@
                             :launchedFromHub="launchedFromHub"
                             :isSampleEntry="modelInfoMap[entry].isSampleEntry"
                             @sample-data-changed="validate"
-                            @remove-entry="removeEntry">
+                            @remove-entry="removeEntry"
+                            @subset-ids-entered="subsetIdsEntered"
+                            @exclude-ids-entered="excludeIdsEntered">
                     </entry-data>
                 </v-flex>
                 <v-flex xs6 class="mt-2 text-xs-left">
@@ -257,7 +264,7 @@
                     self.modelInfoMap[newId] = newInfo;
 
                     // Add sample model for new entry
-                    self.variantModel.promiseAddLocalEntry(newInfo)
+                    self.variantModel.promiseAddEntry(newInfo)
                         .then((dataSet) => {
                             newInfo.dataSet = dataSet;
                             resolve();
@@ -285,29 +292,24 @@
                 return 's' + nextVal;
             },
             onLoad: function () {
+                // TODO: have to assign sampleIds in proband cohort
+
                 let self = this;
                 self.inProgress = true;
 
                 self.variantModel.genomeBuildHelper.setCurrentBuild(self.buildName);
                 self.variantModel.genomeBuildHelper.setCurrentSpecies(self.speciesName);
-
-                // TODO: remove loading clinvar here? or get this working
-                self.variantModel.promiseAddClinvarSample()
-                    .then(function () {
-                        //self.cohortModel.setTumorInfo(true);
-                        self.variantModel.getCanonicalModels().forEach(function (model) {
-                            if (model.displayName == null || model.displayName.length === 0) {
-                                model.displayName = model.id;
-                            }
-                        });
-                    })
-                    .then(function () {
-                        let performAnalyzeAll = self.autofillAction ? true : false;
-                        self.inProgress = false;
-
-                        self.$emit("on-files-loaded", performAnalyzeAll);
-                        self.showFilesMenu = false;
-                    });
+                // self.variantModel.promiseAddClinvarSample()
+                //     .then(function () {
+                self.variantModel.getAllDataSets().forEach(function (dataSet) {
+                    if (dataSet.trackName == null || dataSet.trackName.length === 0) {
+                        dataSet.trackName = dataSet.id;
+                    }
+                });
+                let performAnalyzeAll = self.autofillAction ? true : false;
+                self.inProgress = false;
+                self.$emit("on-files-loaded", performAnalyzeAll);
+                self.showFilesMenu = false;
             },
             onCancel: function () {
                 this.showFilesMenu = false;
@@ -473,12 +475,13 @@
                 })
             },
             validate: function () {
-                this.isValid = true;
+                let self = this;
+                self.isValid = true;
 
-                let keyList = Object.keys(this.modelInfoMap);
+                let keyList = Object.keys(self.modelInfoMap);
                 for (let i = 0; i < keyList.length; i++) {
                     let currKey = keyList[i];
-                    this.isValid &= (this.modelInfoMap[currKey] != null && this.modelInfoMap[currKey].dataSet.isReadyToLoad());
+                    self.isValid &= (self.modelInfoMap[currKey] != null && self.modelInfoMap[currKey].dataSet.isReadyToLoad());
                 }
             },
             getModel: function (id) {
@@ -545,6 +548,14 @@
                 self.entryIds.splice(entryIndex, 1);
                 delete self.modelInfoMap[entryId];
                 self.variantModel.removeEntry(entryId);
+            },
+            subsetIdsEntered: function() {
+                let self = this;
+                self.validate();
+            },
+            excludeIdsEntered: function() {
+                let self = this;
+                self.validate();
             }
         },
         computed: {

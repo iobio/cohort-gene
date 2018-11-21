@@ -474,7 +474,7 @@ class VariantModel {
     //<editor-fold desc="LOCAL LAUNCH">
 
     /* Adds data set model and cohort models to represent a single entry in file menu. */
-    promiseAddLocalEntry(modelInfo) {
+    promiseAddEntry(modelInfo) {
         let self = this;
 
         return new Promise((resolve, reject) => {
@@ -498,7 +498,7 @@ class VariantModel {
             localDataSet.initCohorts();
             localDataSet.getProbandCohort().excludeIds = modelInfo.excludeIds;
             localDataSet.getSubsetCohort().sampleIds = modelInfo.sampleIds;
-            localDataSet.addVcfEndpoint(modelInfo.id)
+            localDataSet.addVcfEndpoint(modelInfo.id);
             resolve(localDataSet);
         });
     }
@@ -565,6 +565,39 @@ class VariantModel {
         }
     }
 
+    /* Promises to fully annotate variants for each data set. */
+    promiseFurtherAnnotateVariants(theGene, theTranscript, isBackground, options = {}) {
+        let self = this;
+
+        return new Promise((resolve, reject) => {
+            let promises = [];
+            let mapList = {};
+            self.getAllDataSets().forEach((dataSet) => {
+                let p = dataSet.promiseFurtherAnnotateVariants(theGene, theTranscript, isBackground, options)
+                    .then((resultMap) => {
+                        mapList.push(resultMap);
+                    });
+                promises.push(p);
+            });
+            Promise.all(promises)
+                .then(() => {
+                    resolve(mapList);
+                })
+                .catch((error) => {
+                    reject(error);
+                })
+        });
+    }
+
+    /* Clears any data in existing datasets. */
+    clearLoadedData() {
+        let self = this;
+        self.getAllDataSets().forEach((dataSet) => {
+            dataSet.clearLoadedData();
+        })
+    }
+
+
     // </editor-fold>
 
     //<editor-fold desc="CLINVAR">
@@ -613,105 +646,6 @@ class VariantModel {
 
         // Return singly clicked on variant
         return existingVariants[0];
-    }
-
-    promiseAnnotateWithClinvar(resultMap, geneObject, transcript, isBackground) {
-        let self = this;
-        var formatClinvarKey = function (variant) {
-            var delim = '^^';
-            return variant.chrom + delim + variant.ref + delim + variant.alt + delim + variant.start + delim + variant.end;
-        }
-
-        var formatClinvarThinVariant = function (key) {
-            var delim = '^^';
-            var tokens = key.split(delim);
-            return {'chrom': tokens[0], 'ref': tokens[1], 'alt': tokens[2], 'start': tokens[3], 'end': tokens[4]};
-        }
-
-        var refreshVariantsWithClinvarLookup = function (theVcfData, clinvarLookup) {
-            theVcfData.features.forEach(function (variant) {
-                var clinvarAnnot = clinvarLookup[formatClinvarKey(variant)];
-                if (clinvarAnnot) {
-                    for (var key in clinvarAnnot) {
-                        variant[key] = clinvarAnnot[key];
-                    }
-                }
-            })
-            if (theVcfData.loadState == null) {
-                theVcfData.loadState = {};
-            }
-            theVcfData.loadState['clinvar'] = true;
-        }
-
-        return new Promise(function (resolve, reject) {
-            // Combine the variants from multiple files into one set of variants so that we can access clinvar once
-            // instead of on a per phase file basis
-            let uniqueVariants = {};
-            let unionVcfData = {features: []};
-            let fileMap = resultMap[0];
-            let fileNames = Object.keys(fileMap);
-            for (let i = 0; i < fileNames.length; i++) {
-                let vcfData = fileMap[fileNames[i]];
-                if (!vcfData.loadState['clinvar'] && fileNames[i] !== 'known-variants') {
-                    vcfData.features.forEach(function (feature) {
-                        uniqueVariants[formatClinvarKey(feature)] = true;
-                    })
-                }
-
-            }
-            if (Object.keys(uniqueVariants).length === 0) {
-                resolve(resultMap);
-            } else {
-
-                for (let key in uniqueVariants) {
-                    unionVcfData.features.push(formatClinvarThinVariant(key));
-                }
-
-                let refreshVariantsFunction = isClinvarOffline || clinvarSource === 'vcf'
-                    ? self.mainDataSet.getSubsetCohort()._refreshVariantsWithClinvarVCFRecs.bind(self.mainDataSet.getSubsetCohort(), unionVcfData)
-                    : self.mainDataSet.getSubsetCohort()._refreshVariantsWithClinvarEutils.bind(self.mainDataSet.getSubsetCohort(), unionVcfData);
-
-                self.mainDataSet.getSubsetCohort().getFirstVcf().promiseGetClinvarRecords(
-                    unionVcfData,
-                    self.mainDataSet.getSubsetCohort()._stripRefName(geneObject.chr),
-                    geneObject,
-                    self.geneModel.clinvarGenes,
-                    refreshVariantsFunction)
-                    .then(function () {
-                        // Create a hash lookup of all clinvar variants
-                        var clinvarLookup = {};
-                        unionVcfData.features.forEach(function (variant) {
-                            var clinvarAnnot = {};
-
-                            for (var key in self.mainDataSet.getSubsetCohort().getFirstVcf().getClinvarAnnots()) {
-                                clinvarAnnot[key] = variant[key];
-                                clinvarLookup[formatClinvarKey(variant)] = clinvarAnnot;
-                            }
-                        })
-
-                        let refreshPromises = [];
-
-                        // Use the clinvar variant lookup to initialize variants with clinvar annotations
-                        for (let j = 0; j < fileNames.length; j++) {
-                            let updatedData = fileMap[fileNames[j]];
-                            if (!updatedData.loadState['clinvar']) {
-                                let p = refreshVariantsWithClinvarLookup(updatedData, clinvarLookup);
-                                if (!isBackground) {
-                                    self.combineClinVarInfo(updatedData.features);
-                                }
-                                refreshPromises.push(p);
-                            }
-                        }
-                        Promise.all(refreshPromises)
-                            .then(function () {
-                                resolve(resultMap);
-                            })
-                            .catch(function (error) {
-                                reject(error);
-                            })
-                    })
-            }
-        })
     }
 
     //</editor-fold>
@@ -833,6 +767,7 @@ class VariantModel {
     }
 
     // </editor-fold>
+
 
     //<editor-fold desc="TO BE DEPRECIATED">
     // TODO: back end will eliminate need to combine variant infos

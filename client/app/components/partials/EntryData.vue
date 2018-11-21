@@ -407,6 +407,7 @@
                         self.subsetSampleDisplay = "click to edit";
                     }
                     self.modelInfo.dataSet.setSubsetIds(selectedSamples);
+                    self.$emit('subset-ids-entered');
                 } else if (dialogType === "Excluded") {
                     if (selectedSamples.length > 0) {
                         self.excludeSampleDisplay = selectedSamples.join(', ');
@@ -414,6 +415,7 @@
                         self.excludeSampleDisplay = "click to edit";
                     }
                     self.modelInfo.dataSet.setExcludeIds(selectedSamples);
+                    self.$emit('exclude-ids-entered');
                 }
             }
         },

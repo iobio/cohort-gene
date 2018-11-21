@@ -227,10 +227,10 @@ TD & SJG updated Jun2018 -->
                 .then(function () {
                     return self.promiseInitCache();
                 })
-                .then(function () {
-                    // SJG NOTE: not doing anything currently? Not marking stale sessions currently
-                    return self.cacheHelper.promiseClearStaleCache();
-                })
+                // .then(function () {
+                //     // SJG NOTE: not doing anything currently? Not marking stale sessions currently
+                //     return self.cacheHelper.promiseClearStaleCache();
+                // })
                 .then(function () {
                     let glyph = new Glyph();
                     let translator = new Translator(glyph);
@@ -289,10 +289,10 @@ TD & SJG updated Jun2018 -->
                 let self = this;
                 return new Promise(function (resolve, reject) {
                     self.cacheHelper = new CacheHelper();
-                    // self.cacheHelper.on("geneAnalyzed", function(geneName) {
-                    //   self.$refs.genesCardRef.determineFlaggedGenes();
-                    //   self.$refs.navRef.onShowFlaggedVariants();
-                    // })
+                    self.cacheHelper.on("geneAnalyzed", function(geneName) {
+                      self.$refs.genesCardRef.determineFlaggedGenes();
+                      self.$refs.navRef.onShowFlaggedVariants();
+                    });
                     globalCacheHelper = self.cacheHelper;
                     self.cacheHelper.promiseInit()
                         .then(function () {
@@ -325,19 +325,22 @@ TD & SJG updated Jun2018 -->
                 let self = this;
 
                 return new Promise((resolve, reject) => {
-                    if (self.variantModel.dataSet) {
+                    if (self.variantModel) {
                         let options = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': true};
                         // Load positional information for quick display
                         self.variantModel.promiseLoadData(self.selectedGene, self.selectedTranscript, options)
                             .then(() => {
                                 self.doneLoadingData = true;  // Display variants
+                                let nextOptions = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': false};
                                 self.variantModel.promiseFurtherAnnotateVariants(self.selectedGene,
                                     self.selectedTranscript,
                                     false,  // isBackground
                                     options)
-                                    .then((resultMap) => {
-                                        let unwrappedResultMap = resultMap[0];
-                                        self.variantModel.combineVariantInfo(unwrappedResultMap);
+                                    .then((resultMaps) => {
+                                        resultMaps.forEach((map) => {
+                                            let unwrappedMap = map[0];
+                                            self.variantModel.combineVariantInfo(unwrappedMap);
+                                        });
                                         self.updateClasses();
                                         self.doneLoadingExtras = true;
                                     })
@@ -404,9 +407,10 @@ TD & SJG updated Jun2018 -->
                     if (self.variantModel) {
                         self.variantModel.clearLoadedData();
                     }
-                    if (self.featureMatrixModel) {
-                        self.featureMatrixModel.clearRankedVariants();
-                    }
+                    // TODO: get rid of feature matrix model
+                    // if (self.featureMatrixModel) {
+                    //     self.featureMatrixModel.clearRankedVariants();
+                    // }
 
                     self.geneModel.addGeneName(geneName);
                     self.geneModel.promiseGetGeneObject(geneName)

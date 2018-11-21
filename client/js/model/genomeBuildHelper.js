@@ -25,6 +25,7 @@ GenomeBuildHelper.prototype.promiseInit = function(options) {
   if (options && options.hasOwnProperty('DEFAULT_BUILD')) {
     me.DEFAULT_BUILD = options.DEFAULT_BUILD;
   }
+
   return new Promise(function(resolve, reject) {
     $.ajax({
           url: genomeBuildServer,

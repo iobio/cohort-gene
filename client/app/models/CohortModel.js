@@ -365,313 +365,314 @@ class CohortModel {
 
     // </editor-fold>
 
-    // <editor-fold desc="ANNOTATION">
-
-    /* Sends enricher commands into vcf model to retrieve combined counts and p-values. */
-    _getCombinedResults(gtenricherCmds, fileNames, theGene, theTranscript) {
-        let me = this;
-
-        let aVcf = me.getDataSetModel().getFirstVcf();
-        return aVcf.combineCalcEnrichment(
-            gtenricherCmds,
-            fileNames,
-            me.getVcfRefName(theGene.chr),
-            theGene,
-            theTranscript,
-            null,   // regions
-            false,   //isMultiSample
-            me.getFormattedSampleIds('subset'),
-            me.getFormattedSampleIds('proband'),
-            me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
-            me.getTranslator().clinvarMap,
-            me.getGeneModel().geneSource === 'refseq',
-            false,      // hgvs notation
-            false,      // rsid
-            true,       // vep af
-            null,
-            true,       // keepVariantsCombined
-            true);      // enrichment mode (aka subset delta calculations only - no annotation)
-    }
-
-// Take in single variant, navigate to variant in vcf, annotate, return variant result
-    promiseGetVariantExtraAnnotations(theGene, theTranscript, variant, format, getHeader = false, sampleNames) {
-        let me = this;
-
-        return new Promise(function (resolve, reject) {
-
-            // Create a gene object with start and end reduced to the variants coordinates.
-            let fakeGeneObject = $().extend({}, theGene);
-            fakeGeneObject.start = variant.start;
-            fakeGeneObject.end = variant.end;
-
-            if ((variant.fbCalled === 'Y' || variant.extraAnnot) && format !== "vcf") {
-                // We already have the hgvs and rsid for this variant, so there is
-                // no need to call the services again.  Just return the
-                // variant.  However, if we are returning raw vcf records, the
-                // services need to be called so that the info field is formatted
-                // with all of the annotations.
-                if (format && format === 'csv') {
-                    // Exporting data requires additional data to be returned to link
-                    // the extra annotations back to the original bookmarked entries.
-                    resolve([variant, variant, ""]);
-                } else {
-                    resolve(variant);
-                }
-            } else {
-                let containingVcf = me.getContainingVcf(variant.id);
-                me._promiseVcfRefName(theGene.chr)
-                    .then(function () {
-                        containingVcf.promiseGetVariants(
-                            me.getVcfRefName(theGene.chr),
-                            fakeGeneObject,
-                            theTranscript,
-                            null,   // regions
-                            false,   //isMultiSample
-                            me.getFormattedSampleIds('subset'),
-                            me.getFormattedSampleIds('proband'),
-                            me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
-                            me.getTranslator().clinvarMap,
-                            me.getGeneModel().geneSource === 'refseq',
-                            false,      // hgvs notation
-                            false,      // rsid
-                            true,       // vep af
-                            null,
-                            true,      // keepVariantsCombined
-                            false       // enrichment mode (aka subset delta calculations only - no annotation)
-                        )
-                            .then(function (singleVarData) {
-                                // TODO: need to test this when variant overlap
-                                if (singleVarData != null && singleVarData.features != null) {
-                                    let matchingVariants = [];
-                                    let featureList = [];
-                                    // If we have multiple variants at site
-                                    if (singleVarData.features.length > 0) {
-                                        featureList = singleVarData.features;
-                                    }
-                                    // If only one variant, format in list
-                                    else {
-                                        featureList.push(singleVarData.features);
-                                    }
-                                    // Pull out features matching position
-                                    let matchingVar = featureList.filter(function (aVariant) {
-                                        let matches =
-                                            (variant.start === aVariant.start &&
-                                                variant.alt === aVariant.alt &&
-                                                variant.ref === aVariant.ref);
-                                        return matches;
-                                    });
-                                    if (matchingVar.length > 0)
-                                        matchingVariants.push(matchingVar);
-
-                                    // Return matching features
-                                    if (matchingVariants.length > 0) {
-                                        let v = matchingVariants[0];
-                                        if (format && format === 'csv') {
-                                            resolve([v, variant]);
-                                        } else if (format && format === 'vcf') {
-                                            resolve([v, variant]);
-                                        } else {
-                                            me._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript, cacheHelper)
-                                                .then(function (cachedVcfData) {
-                                                    if (cachedVcfData) {
-                                                        let theVariants = cachedVcfData.features.filter(function (d) {
-                                                            if (d.start === v.start &&
-                                                                d.alt === v.alt &&
-                                                                d.ref === v.ref) {
-                                                                return true;
-                                                            } else {
-                                                                return false;
-                                                            }
-                                                        });
-                                                        if (theVariants && theVariants.length > 0) {
-                                                            let theVariant = theVariants[0];
-
-                                                            // set the hgvs and rsid on the existing variant
-                                                            theVariant.extraAnnot = true;
-                                                            theVariant.vepHGVSc = v.vepHGVSc;
-                                                            theVariant.vepHGVSp = v.vepHGVSp;
-                                                            theVariant.vepVariationIds = v.vepVariationIds;
-                                                        } else {
-                                                            let msg = "Cannot find corresponding variant to update HGVS notation for variant " + v.chrom + " " + v.start + " " + v.ref + "->" + v.alt;
-                                                            console.log(msg);
-                                                            reject(msg);
-                                                        }
-                                                    } else {
-                                                        let msg = "Unable to update gene vcfData cache with updated HGVS notation for variant " + v.chrom + " " + v.start + " " + v.ref + "->" + v.alt;
-                                                        console.log(msg);
-                                                        reject(msg);
-                                                    }
-                                                })
-                                        }
-                                    } else {
-                                        reject('Cannot find vcf record for variant ' + theGene.gene_name + " " + variant.start + " " + variant.ref + "->" + variant.alt);
-                                    }
-                                } else {
-                                    var msg = "Empty results returned from CohortModel.promiseGetVariantExtraAnnotations() for variant " + variant.chrom + " " + variant.start + " " + variant.ref + "->" + variant.alt;
-                                    console.log(msg);
-                                    if (format === 'csv' || format === 'vcf') {
-                                        resolve([variant, variant, []]);
-                                    }
-                                    reject(msg);
-                                }
-                            });
-                    });
-            }
-        });
-    }
-
-    promiseAnnotateVariants(theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, enrichMode = false) {
-        let me = this;
-
-        return new Promise(function (resolve, reject) {
-            me._promiseVcfRefName(theGene.chr)
-                .then(function () {
-                    let urlNames = Object.keys(me.vcfEndptHash);
-                    let annotationResults = {};
-                    let annotationPromises = [];
-                    for (let i = 0; i < urlNames.length; i++) {
-                        let currFileName = urlNames[i];
-                        let currVcfEndpt = me.vcfEndptHash[currFileName];
-                        if (currVcfEndpt != null) {
-                            let subsetIds = me.getFormattedSampleIds('subset');
-                            let probandIds = me.getFormattedSampleIds('probands');
-                            let annoP = currVcfEndpt.promiseGetVariants(
-                                me.getVcfRefName(theGene.chr),
-                                theGene,
-                                theTranscript,
-                                null,       // regions
-                                isMultiSample,
-                                subsetIds,
-                                probandIds,
-                                me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
-                                me.getTranslator().clinvarMap,
-                                me.getGeneModel().geneSource === 'refseq',
-                                false,      // hgvs notation
-                                false,      // rsid
-                                true,      // vep af
-                                null,
-                                keepVariantsCombined,
-                                enrichMode)
-                                .then((results) => {
-                                    annotationResults[currFileName] = results;
-                                });
-                            annotationPromises.push(annoP);
-
-                        } else {
-                            console.log('Problem in CohortModel promoiseAnnotateVariants: Could not retrieve endpoint for the file: ' + urlNames[i]);
-                        }
-                    }
-                    Promise.all(annotationPromises)
-                        .then(() => {
-                            resolve(annotationResults);
-                        })
-                        .catch((error) => {
-                            console.log('Problem in cohort model ' + error);
-                        });
-                });
-        });
-    }
-
-    /* Promises to obtain enrichment values for all variants within all urls within the provided cohort model. */
-    promiseAnnotateVariantEnrichment(theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, enrichmentMode = true) {
-        let me = this;
-        return new Promise(function (resolve, reject) {
-            me._promiseVcfRefName(theGene.chr)
-                .then(function () {
-                    let urlNames = Object.keys(me.vcfEndptHash);
-                    let enrichResults = {};
-                    let enrichCmds = [];
-                    let fileNames = []; // Stable sorted to enrichCmds
-                    let enrichCmdPromises = [];
-                    for (let i = 0; i < urlNames.length; i++) {
-                        let currFileName = urlNames[i];
-                        let currVcfEndpt = me.vcfEndptHash[currFileName];
-                        if (currVcfEndpt != null) {
-                            let subsetIds = me.getFormattedSampleIds('subset');
-                            let probandIds = me.getFormattedSampleIds('probands');
-                            let enrichCmdP = currVcfEndpt.promiseGetEnrichCmd(
-                                me.getVcfRefName(theGene.chr),
-                                theGene,
-                                theTranscript,
-                                null,       // regions
-                                isMultiSample,
-                                subsetIds,
-                                probandIds)
-                                .then((cmd) => {
-                                    enrichCmds.push(cmd);
-                                    fileNames.push(currFileName);
-                                });
-
-                            // TODO: move this below once we get results
-                            // .then((results) => {
-                            //     // Add variant ids to map correlated with file
-                            //     me.varsInFileHash[currFileName] = results.features.map((feature) => {
-                            //         return feature.id;
-                            //     });
-                            //     // Add results to return object
-                            //     enrichResults[urlNames[i]] = results;
-                            // });
-                            enrichCmdPromises.push(enrichCmdP);
-                            //enrichPromises.push(enrichP);
-                        }
-                        else {
-                            console.log('Problem in CohortModel promoiseAnnotateVariants: Could not retrieve endpoint for the file: ' + urlNames[i]);
-                        }
-                    }
-                    Promise.all(enrichCmdPromises)
-                        .then(() => {
-                            // TODO: send enrich commands into combiner here - write separate method that interacts w/ endpoint directly
-                            let combinedResults = me._getCombinedResults(enrichCmds, fileNames, theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, enrichmentMode);
-
-                            // TODO: then will have combined results already
-
-                            //let combinedResults = me._combineEnrichmentCounts(enrichResults);
-                            if (combinedResults.features.length > me.TOTAL_VAR_CUTOFF) {
-                                combinedResults.features = me.filterVarsOnPVal(combinedResults.features);
-                            }
-                            // Add variant number to chips
-                            me.phenotypes.push(combinedResults.features.length + ' variants');
-
-                            // Assign data parameter
-                            if (combinedResults) {
-                                let theGeneObject = me.getGeneModel().geneObjects[combinedResults.gene];
-                                if (theGeneObject) {
-                                    let resultMap = {};
-                                    let model = cohortModels[0];
-                                    let theVcfData = combinedResults;
-                                    if (theVcfData == null) {
-                                        if (callback) {
-                                            callback();
-                                        }
-                                        return;
-                                    }
-                                    theVcfData.gene = theGeneObject;
-                                    let cohortName = me.getName();
-                                    resultMap[cohortName] = theVcfData;
-
-                                    if (!isBackground) {
-                                        model.vcfData = theVcfData;
-                                    }
-                                    resolve(resultMap);
-                                } else {
-                                    let error = "ERROR - cannot locate gene object to match with vcf data " + data.ref + " " + data.start + "-" + data.end;
-                                    console.log(error);
-                                    reject(error);
-                                }
-                            } else {
-                                let error = "ERROR - empty vcf results for " + theGene.gene_name;
-                                console.log(error);
-                                reject(error);
-                            }
-                        })
-                        .catch((error) => {
-                            console.log('Problem in cohort model ' + error);
-                        });
-                })
-        });
-    }
-
-    // </editor-fold>
+    // // <editor-fold desc="ANNOTATION">
+    //
+    // /* Sends enricher commands into vcf model to retrieve combined counts and p-values. */
+    // _getCombinedResults(gtenricherCmds, fileNames, theGene, theTranscript) {
+    //     let me = this;
+    //
+    //     let aVcf = me.getDataSetModel().getFirstVcf();
+    //     return aVcf.combineCalcEnrichment(
+    //         gtenricherCmds,
+    //         fileNames,
+    //         me.getVcfRefName(theGene.chr),
+    //         theGene,
+    //         theTranscript,
+    //         null,   // regions
+    //         false,   //isMultiSample
+    //         me.getFormattedSampleIds('subset'),
+    //         me.getFormattedSampleIds('proband'),
+    //         me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
+    //         me.getTranslator().clinvarMap,
+    //         me.getGeneModel().geneSource === 'refseq',
+    //         false,      // hgvs notation
+    //         false,      // rsid
+    //         true,       // vep af
+    //         null,
+    //         true,       // keepVariantsCombined
+    //         true);      // enrichment mode (aka subset delta calculations only - no annotation)
+    // }
+    //
+    // // Take in single variant, navigate to variant in vcf, annotate, return variant result
+    // promiseGetVariantExtraAnnotations(theGene, theTranscript, variant, format, getHeader = false, sampleNames) {
+    //     let me = this;
+    //
+    //     return new Promise(function (resolve, reject) {
+    //
+    //         // Create a gene object with start and end reduced to the variants coordinates.
+    //         let fakeGeneObject = $().extend({}, theGene);
+    //         fakeGeneObject.start = variant.start;
+    //         fakeGeneObject.end = variant.end;
+    //
+    //         if ((variant.fbCalled === 'Y' || variant.extraAnnot) && format !== "vcf") {
+    //             // We already have the hgvs and rsid for this variant, so there is
+    //             // no need to call the services again.  Just return the
+    //             // variant.  However, if we are returning raw vcf records, the
+    //             // services need to be called so that the info field is formatted
+    //             // with all of the annotations.
+    //             if (format && format === 'csv') {
+    //                 // Exporting data requires additional data to be returned to link
+    //                 // the extra annotations back to the original bookmarked entries.
+    //                 resolve([variant, variant, ""]);
+    //             } else {
+    //                 resolve(variant);
+    //             }
+    //         } else {
+    //             let containingVcf = me.getContainingVcf(variant.id);
+    //             me._promiseVcfRefName(theGene.chr)
+    //                 .then(function () {
+    //                     containingVcf.promiseGetVariants(
+    //                         me.getVcfRefName(theGene.chr),
+    //                         fakeGeneObject,
+    //                         theTranscript,
+    //                         null,   // regions
+    //                         false,   //isMultiSample
+    //                         me.getFormattedSampleIds('subset'),
+    //                         me.getFormattedSampleIds('proband'),
+    //                         me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
+    //                         me.getTranslator().clinvarMap,
+    //                         me.getGeneModel().geneSource === 'refseq',
+    //                         false,      // hgvs notation
+    //                         false,      // rsid
+    //                         true,       // vep af
+    //                         null,
+    //                         true,      // keepVariantsCombined
+    //                         false       // enrichment mode (aka subset delta calculations only - no annotation)
+    //                     )
+    //                         .then(function (singleVarData) {
+    //                             // TODO: need to test this when variant overlap
+    //                             if (singleVarData != null && singleVarData.features != null) {
+    //                                 let matchingVariants = [];
+    //                                 let featureList = [];
+    //                                 // If we have multiple variants at site
+    //                                 if (singleVarData.features.length > 0) {
+    //                                     featureList = singleVarData.features;
+    //                                 }
+    //                                 // If only one variant, format in list
+    //                                 else {
+    //                                     featureList.push(singleVarData.features);
+    //                                 }
+    //                                 // Pull out features matching position
+    //                                 let matchingVar = featureList.filter(function (aVariant) {
+    //                                     let matches =
+    //                                         (variant.start === aVariant.start &&
+    //                                             variant.alt === aVariant.alt &&
+    //                                             variant.ref === aVariant.ref);
+    //                                     return matches;
+    //                                 });
+    //                                 if (matchingVar.length > 0)
+    //                                     matchingVariants.push(matchingVar);
+    //
+    //                                 // Return matching features
+    //                                 if (matchingVariants.length > 0) {
+    //                                     let v = matchingVariants[0];
+    //                                     if (format && format === 'csv') {
+    //                                         resolve([v, variant]);
+    //                                     } else if (format && format === 'vcf') {
+    //                                         resolve([v, variant]);
+    //                                     } else {
+    //                                         me._promiseGetData(CacheHelper.VCF_DATA, theGene.gene_name, theTranscript, cacheHelper)
+    //                                             .then(function (cachedVcfData) {
+    //                                                 if (cachedVcfData) {
+    //                                                     let theVariants = cachedVcfData.features.filter(function (d) {
+    //                                                         if (d.start === v.start &&
+    //                                                             d.alt === v.alt &&
+    //                                                             d.ref === v.ref) {
+    //                                                             return true;
+    //                                                         } else {
+    //                                                             return false;
+    //                                                         }
+    //                                                     });
+    //                                                     if (theVariants && theVariants.length > 0) {
+    //                                                         let theVariant = theVariants[0];
+    //
+    //                                                         // set the hgvs and rsid on the existing variant
+    //                                                         theVariant.extraAnnot = true;
+    //                                                         theVariant.vepHGVSc = v.vepHGVSc;
+    //                                                         theVariant.vepHGVSp = v.vepHGVSp;
+    //                                                         theVariant.vepVariationIds = v.vepVariationIds;
+    //                                                     } else {
+    //                                                         let msg = "Cannot find corresponding variant to update HGVS notation for variant " + v.chrom + " " + v.start + " " + v.ref + "->" + v.alt;
+    //                                                         console.log(msg);
+    //                                                         reject(msg);
+    //                                                     }
+    //                                                 } else {
+    //                                                     let msg = "Unable to update gene vcfData cache with updated HGVS notation for variant " + v.chrom + " " + v.start + " " + v.ref + "->" + v.alt;
+    //                                                     console.log(msg);
+    //                                                     reject(msg);
+    //                                                 }
+    //                                             })
+    //                                     }
+    //                                 } else {
+    //                                     reject('Cannot find vcf record for variant ' + theGene.gene_name + " " + variant.start + " " + variant.ref + "->" + variant.alt);
+    //                                 }
+    //                             } else {
+    //                                 var msg = "Empty results returned from CohortModel.promiseGetVariantExtraAnnotations() for variant " + variant.chrom + " " + variant.start + " " + variant.ref + "->" + variant.alt;
+    //                                 console.log(msg);
+    //                                 if (format === 'csv' || format === 'vcf') {
+    //                                     resolve([variant, variant, []]);
+    //                                 }
+    //                                 reject(msg);
+    //                             }
+    //                         });
+    //                 });
+    //         }
+    //     });
+    // }
+    //
+    // promiseAnnotateVariants(theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, enrichMode = false) {
+    //     let me = this;
+    //
+    //     return new Promise(function (resolve, reject) {
+    //         me._promiseVcfRefName(theGene.chr)
+    //             .then(function () {
+    //                 let urlNames = Object.keys(me.vcfEndptHash);
+    //                 let annotationResults = {};
+    //                 let annotationPromises = [];
+    //                 for (let i = 0; i < urlNames.length; i++) {
+    //                     let currFileName = urlNames[i];
+    //                     let currVcfEndpt = me.vcfEndptHash[currFileName];
+    //                     if (currVcfEndpt != null) {
+    //                         let subsetIds = me.getFormattedSampleIds('subset');
+    //                         let probandIds = me.getFormattedSampleIds('probands');
+    //                         let annoP = currVcfEndpt.promiseGetVariants(
+    //                             me.getVcfRefName(theGene.chr),
+    //                             theGene,
+    //                             theTranscript,
+    //                             null,       // regions
+    //                             isMultiSample,
+    //                             subsetIds,
+    //                             probandIds,
+    //                             me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
+    //                             me.getTranslator().clinvarMap,
+    //                             me.getGeneModel().geneSource === 'refseq',
+    //                             false,      // hgvs notation
+    //                             false,      // rsid
+    //                             true,      // vep af
+    //                             null,
+    //                             keepVariantsCombined,
+    //                             enrichMode)
+    //                             .then((results) => {
+    //                                 annotationResults[currFileName] = results;
+    //                             });
+    //                         annotationPromises.push(annoP);
+    //
+    //                     } else {
+    //                         console.log('Problem in CohortModel promoiseAnnotateVariants: Could not retrieve endpoint for the file: ' + urlNames[i]);
+    //                     }
+    //                 }
+    //                 Promise.all(annotationPromises)
+    //                     .then(() => {
+    //                         resolve(annotationResults);
+    //                     })
+    //                     .catch((error) => {
+    //                         console.log('Problem in cohort model ' + error);
+    //                     });
+    //             });
+    //     });
+    // }
+    //
+    // /* Promises to obtain enrichment values for all variants within all urls within the provided cohort model. */
+    // promiseAnnotateVariantEnrichment(theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, enrichmentMode = true) {
+    //     let me = this;
+    //     return new Promise(function (resolve, reject) {
+    //
+    //         me.getDataSetModel()._promiseVcfRefName(theGene.chr)
+    //             .then(function () {
+    //                 let urlNames = Object.keys(me.vcfEndptHash);
+    //                 let enrichResults = {};
+    //                 let enrichCmds = [];
+    //                 let fileNames = []; // Stable sorted to enrichCmds
+    //                 let enrichCmdPromises = [];
+    //                 for (let i = 0; i < urlNames.length; i++) {
+    //                     let currFileName = urlNames[i];
+    //                     let currVcfEndpt = me.vcfEndptHash[currFileName];
+    //                     if (currVcfEndpt != null) {
+    //                         let subsetIds = me.getFormattedSampleIds('subset');
+    //                         let probandIds = me.getFormattedSampleIds('probands');
+    //                         let enrichCmdP = currVcfEndpt.promiseGetEnrichCmd(
+    //                             me.getVcfRefName(theGene.chr),
+    //                             theGene,
+    //                             theTranscript,
+    //                             null,       // regions
+    //                             isMultiSample,
+    //                             subsetIds,
+    //                             probandIds)
+    //                             .then((cmd) => {
+    //                                 enrichCmds.push(cmd);
+    //                                 fileNames.push(currFileName);
+    //                             });
+    //
+    //                         // TODO: move this below once we get results
+    //                         // .then((results) => {
+    //                         //     // Add variant ids to map correlated with file
+    //                         //     me.varsInFileHash[currFileName] = results.features.map((feature) => {
+    //                         //         return feature.id;
+    //                         //     });
+    //                         //     // Add results to return object
+    //                         //     enrichResults[urlNames[i]] = results;
+    //                         // });
+    //                         enrichCmdPromises.push(enrichCmdP);
+    //                         //enrichPromises.push(enrichP);
+    //                     }
+    //                     else {
+    //                         console.log('Problem in CohortModel promoiseAnnotateVariants: Could not retrieve endpoint for the file: ' + urlNames[i]);
+    //                     }
+    //                 }
+    //                 Promise.all(enrichCmdPromises)
+    //                     .then(() => {
+    //                         // TODO: send enrich commands into combiner here - write separate method that interacts w/ endpoint directly
+    //                         let combinedResults = me._getCombinedResults(enrichCmds, fileNames, theGene, theTranscript, cohortModels, isMultiSample, isBackground, keepVariantsCombined, enrichmentMode);
+    //
+    //                         // TODO: then will have combined results already
+    //
+    //                         //let combinedResults = me._combineEnrichmentCounts(enrichResults);
+    //                         if (combinedResults.features.length > me.TOTAL_VAR_CUTOFF) {
+    //                             combinedResults.features = me.filterVarsOnPVal(combinedResults.features);
+    //                         }
+    //                         // Add variant number to chips
+    //                         me.phenotypes.push(combinedResults.features.length + ' variants');
+    //
+    //                         // Assign data parameter
+    //                         if (combinedResults) {
+    //                             let theGeneObject = me.getGeneModel().geneObjects[combinedResults.gene];
+    //                             if (theGeneObject) {
+    //                                 let resultMap = {};
+    //                                 let model = cohortModels[0];
+    //                                 let theVcfData = combinedResults;
+    //                                 if (theVcfData == null) {
+    //                                     if (callback) {
+    //                                         callback();
+    //                                     }
+    //                                     return;
+    //                                 }
+    //                                 theVcfData.gene = theGeneObject;
+    //                                 let cohortName = me.getName();
+    //                                 resultMap[cohortName] = theVcfData;
+    //
+    //                                 if (!isBackground) {
+    //                                     model.vcfData = theVcfData;
+    //                                 }
+    //                                 resolve(resultMap);
+    //                             } else {
+    //                                 let error = "ERROR - cannot locate gene object to match with vcf data " + data.ref + " " + data.start + "-" + data.end;
+    //                                 console.log(error);
+    //                                 reject(error);
+    //                             }
+    //                         } else {
+    //                             let error = "ERROR - empty vcf results for " + theGene.gene_name;
+    //                             console.log(error);
+    //                             reject(error);
+    //                         }
+    //                     })
+    //                     .catch((error) => {
+    //                         console.log('Problem in cohort model ' + error);
+    //                     });
+    //             })
+    //     });
+    // }
+    //
+    // // </editor-fold>
 
     // <editor-fold desc="FILTER & CLASSIFY">
 

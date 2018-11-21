@@ -533,21 +533,18 @@ vcfiobio = function module() {
         var buffer = "";
         var refName;
 
-        var cmd = me.getEndpoint().getVcfDepth(vcfURL, tbiUrl)
+        var cmd = me.getEndpoint().getVcfDepth(vcfURL, tbiUrl);
 
         cmd.on('data', function (data) {
 
             if (data == undefined) {
                 return;
             }
-
             buffer += data;
-
-        })
+        });
 
         // All data has been streamed.
         cmd.on('end', function () {
-
 
             var recs = buffer.split("\n");
             if (recs.length > 0) {
