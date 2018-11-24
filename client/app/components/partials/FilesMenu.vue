@@ -299,8 +299,6 @@
 
                 self.variantModel.genomeBuildHelper.setCurrentBuild(self.buildName);
                 self.variantModel.genomeBuildHelper.setCurrentSpecies(self.speciesName);
-                // self.variantModel.promiseAddClinvarSample()
-                //     .then(function () {
                 self.variantModel.getAllDataSets().forEach(function (dataSet) {
                     if (dataSet.trackName == null || dataSet.trackName.length === 0) {
                         dataSet.trackName = dataSet.id;
@@ -569,8 +567,6 @@
                 }
             }
         },
-        created: function () {
-        },
         mounted: function () {
             if (this.variantModel) {
                 this.speciesName = this.variantModel.genomeBuildHelper.getCurrentSpeciesName();
@@ -581,8 +577,6 @@
                     return name === 'Human';
                 });
             }
-
-
         }
     }
 </script>

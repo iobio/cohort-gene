@@ -332,7 +332,7 @@ TD & SJG updated Jun2018 -->
                             .then(() => {
                                 self.doneLoadingData = true;  // Display variants
                                 let nextOptions = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': false};
-                                self.variantModel.promiseFurtherAnnotateVariants(self.selectedGene,
+                                self.variantModel.promiseFullyAnnotateVariants(self.selectedGene,
                                     self.selectedTranscript,
                                     false,  // isBackground
                                     options)

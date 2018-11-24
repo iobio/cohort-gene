@@ -53,7 +53,7 @@ class VariantModel {
                 'https://s3.amazonaws.com/iobio/samples/bam/NA12891.exome.bam',
                 'https://s3.amazonaws.com/iobio/samples/bam/NA12891.exome.bam'],
             'bais': null,
-            'subsetSampleIds': ['NA12878', 'NA12892'],
+            'subsetSampleIds': ['NA12877'],
             'excludeSampleIds': []
         }];
         this.demoGenes = ['RAI1', 'MYLK2', 'PDHA1', 'PDGFB', 'AIRE'];
@@ -496,8 +496,8 @@ class VariantModel {
             }
 
             localDataSet.initCohorts();
-            localDataSet.getProbandCohort().excludeIds = modelInfo.excludeIds;
-            localDataSet.getSubsetCohort().sampleIds = modelInfo.sampleIds;
+            localDataSet.setExcludeIds(modelInfo.excludeSampleIds);
+            localDataSet.setSubsetIds(modelInfo.subsetSampleIds);
             localDataSet.addVcfEndpoint(modelInfo.id);
             resolve(localDataSet);
         });
@@ -565,15 +565,15 @@ class VariantModel {
         }
     }
 
-    /* Promises to fully annotate variants for each data set. */
-    promiseFurtherAnnotateVariants(theGene, theTranscript, isBackground, options = {}) {
+    /* Promises to completely annotate variants for each data set. */
+    promiseFullyAnnotateVariants(theGene, theTranscript, isBackground, options = {}) {
         let self = this;
 
         return new Promise((resolve, reject) => {
             let promises = [];
             let mapList = {};
             self.getAllDataSets().forEach((dataSet) => {
-                let p = dataSet.promiseFurtherAnnotateVariants(theGene, theTranscript, isBackground, options)
+                let p = dataSet.promiseFullyAnnotateVariants(theGene, theTranscript, isBackground, options)
                     .then((resultMap) => {
                         mapList.push(resultMap);
                     });

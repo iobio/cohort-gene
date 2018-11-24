@@ -234,24 +234,7 @@
                 self.firstTbi = newVal;
             }
         },
-        computed: {
-            // subsetSampleDisplay: function() {
-            //     let self = this;
-            //     if (self.subsetSampleIds.length === 0) {
-            //         return 'click to select';
-            //     } else {
-            //         return self.subsetSampleIds.join(',');
-            //     }
-            // },
-            // excludeSampleDisplay: function() {
-            //     let self = this;
-            //     if (self.excludeSampleIds.length === 0) {
-            //         return 'click to select';
-            //     } else {
-            //         return self.excludeSampleIds.join(',');
-            //     }
-            // }
-        },
+        computed: {},
         methods: {
             onNicknameEntered: function () {
                 if (self.modelInfo && self.modelInfo.dataSet) {
@@ -322,13 +305,21 @@
              * If this is a cohort entry, fills in subset and exclude sample ID arrays.
              * Else if this is a sample entry, fills in selected sample ID. */
             fillSampleFields: function (samples, sampleToSelect, subsetSampleIds, excludeSampleIds) {
-                this.samples = samples;
+                let self = this;
+
+                self.samples = samples;
                 if (sampleToSelect) {
-                    this.selectedSample = sampleToSelect;
+                    self.selectedSample = sampleToSelect;
                 } else {
-                    this.subsetSampleIds = subsetSampleIds;
-                    this.excludeSampleIds = excludeSampleIds;
-                    this.selectedSample = null;
+                    self.subsetSampleIds = subsetSampleIds;
+                    self.excludeSampleIds = excludeSampleIds;
+                    self.selectedSample = null;
+                }
+                if (self.subsetSampleIds.length > 0) {
+                    self.subsetSampleDisplay = self.subsetSampleIds.join();
+                }
+                if (self.excludeSampleIds.length > 0) {
+                    self.excludeSampleDisplay = self.excludeSampleIds.join();
                 }
             },
             // onSampleSelected: function () {
@@ -369,38 +360,39 @@
                 let self = this;
 
                 let selectedSamples = [];
-                let unselectedSamples = [];
                 self.dialogType = 'Subset';
                 let dataSet = self.modelInfo.dataSet;
-                selectedSamples = dataSet.getSubsetIds();
 
-                let allSamples = self.modelInfo.samples;
-                unselectedSamples = allSamples.filter((sample) => {
-                    return !selectedSamples.includes(sample);
-                });
+                if (self.subsetSampleIds.length > 0) {
+                    selectedSamples = self.subsetSampleIds;
+                } else if (dataSet) {
+                    selectedSamples = dataSet.getSubsetIds();
+                }
+
+                let unselectedSamples = self.getAvailableSamples(selectedSamples, self.dialogType);
                 self.$refs.sampleDialogRef.displayDialog(unselectedSamples, selectedSamples);
             },
             openExcludeDialog: function() {
                 let self = this;
 
                 let selectedSamples = [];
-                let unselectedSamples = [];
-                self.dialogType = 'Excluded';
+                self.dialogType = 'Exclude';
                 let dataSet = self.modelInfo.dataSet;
-                if (dataSet) {
+
+                if (self.excludeSampleIds.length > 0) {
+                    selectedSamples = self.excludeSampleIds;
+                } else if (dataSet) {
                     selectedSamples = dataSet.getExcludeIds();
                 }
 
-                let allSamples = self.modelInfo.samples;
-                unselectedSamples = allSamples.filter((sample) => {
-                    return !selectedSamples.includes(sample);
-                });
+                let unselectedSamples = self.getAvailableSamples(selectedSamples, self.dialogType);
                 self.$refs.sampleDialogRef.displayDialog(unselectedSamples, selectedSamples);
             },
             saveSampleSelection: function(dialogType, selectedSamples) {
                 let self = this;
 
                 if (dialogType === 'Subset') {
+                    self.subsetSampleIds = selectedSamples;
                     if (selectedSamples.length > 0) {
                         self.subsetSampleDisplay = selectedSamples.join(', ');
                     } else {
@@ -408,7 +400,8 @@
                     }
                     self.modelInfo.dataSet.setSubsetIds(selectedSamples);
                     self.$emit('subset-ids-entered');
-                } else if (dialogType === "Excluded") {
+                } else if (dialogType === "Exclude") {
+                    self.excludeSampleIds = selectedSamples;
                     if (selectedSamples.length > 0) {
                         self.excludeSampleDisplay = selectedSamples.join(', ');
                     } else {
@@ -417,20 +410,48 @@
                     self.modelInfo.dataSet.setExcludeIds(selectedSamples);
                     self.$emit('exclude-ids-entered');
                 }
-            }
-        },
-        created: function () {
+                self.modelInfo.dataSet.setProbandIds(self.getProbandIds());
+            },
+            /* Returns unselected samples that are not within the opposite dialogType group.
+             * For instance, if the selected dialog is a subset selection dialog,
+             * returns all samples that are not already selected in the subset group,
+             * or in the exclude samples group.*/
+            getAvailableSamples: function(selectedSamples, dialogType) {
+                let self = this;
 
+                let allSamples = self.modelInfo.samples;
+                let availableSamples = [];
+
+                if (dialogType === 'Subset') {
+                    availableSamples = allSamples.filter((sample) => {
+                        return !self.excludeSampleIds.includes(sample);
+                    })
+                } else {
+                    availableSamples = allSamples.filter((sample) => {
+                        return !self.subsetSampleIds.includes(sample);
+                    })
+                }
+                return availableSamples.filter((sample) => {
+                    return !selectedSamples.includes(sample);
+                });
+            },
+            /* Returns all samples IDs that are not excluded. */
+            getProbandIds: function() {
+                let self = this;
+                let allSamples = self.modelInfo.samples;
+                return allSamples.filter((sample) => {
+                    !self.excludeSampleIds.includes(sample);
+                })
+            }
         },
         mounted: function () {
             let self = this;
             self.samples = self.modelInfo.samples;
+            self.subsetSampleIds = self.modelInfo.subsetSampleIds;
+            self.excludeSampleIds = self.modelInfo.excludeSampleIds;
+
             self.isMainCohort = self.dragId === 's0';
 
-            // Start loading process if mounting with data
-            // if (self.modelInfo.vcfs) {
-            //     self.onVcfUrlEntered(self.modelInfo.id, self.modelInfo.vcf, self.modelInfo.tbi);
-            // }
             // Assign side bar label
             if (self.modelInfo.isSampleEntry) {
                 self.entryLabel = 'SAMPLE';

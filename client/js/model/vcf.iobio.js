@@ -664,12 +664,12 @@ vcfiobio = function module() {
     };
 
     /* Returns iobio command that calls gtenricher on the vcf file which this model represents. */
-    exports.promiseGetEnrichCmd = function(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache) {
+    exports.promiseGetEnrichCmd = function(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve) {
         let self = this;
 
         return new Promise(function(resolve, reject) {
             if (sourceType === SOURCE_TYPE_URL) {
-                self._getRemoteEnrichCmd(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
+                self._getRemoteEnrichCmd(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve,
                     function (resultMapList) {
                         if (resultMapList) {
                             resolve(resultMapList);
