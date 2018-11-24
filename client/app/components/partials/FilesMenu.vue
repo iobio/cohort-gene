@@ -450,11 +450,12 @@
                                         if (theModelInfo.isSampleEntry) {
                                             theDataSet.sampleIds.push(theModelInfo.selectedSample);
                                         }
+                                        // Set view state
                                         currEntryRef.fillSampleFields(successObj.samples, theModelInfo.selectedSample, theModelInfo.subsetSampleIds, theModelInfo.excludeSampleIds);
+                                        self.validate();
 
                                         // Set display name in model
                                         theDataSet.displayName = theModelInfo.displayName ? theModelInfo.displayName : theModelInfo.selectedSample;
-                                        self.validate();
                                     }
                                 }
                                 // TODO: incorporate bam functionality

@@ -302,8 +302,9 @@
             // },
 
             /* Fills in samples field with all sample IDs seen when checking provided vcf urls.
-             * If this is a cohort entry, fills in subset and exclude sample ID arrays.
-             * Else if this is a sample entry, fills in selected sample ID. */
+             * If this is a cohort entry, fills in subset, proband, and exclude sample ID arrays.
+             * Else if this is a sample entry, fills in selected sample ID.
+             * Fills sample fields in both view and model. */
             fillSampleFields: function (samples, sampleToSelect, subsetSampleIds, excludeSampleIds) {
                 let self = this;
 
@@ -314,12 +315,16 @@
                     self.subsetSampleIds = subsetSampleIds;
                     self.excludeSampleIds = excludeSampleIds;
                     self.selectedSample = null;
+                    debugger;
+                    self.modelInfo.dataSet.setProbandIds(self.getProbandIds());
                 }
-                if (self.subsetSampleIds.length > 0) {
-                    self.subsetSampleDisplay = self.subsetSampleIds.join();
+                if (subsetSampleIds.length > 0) {
+                    self.modelInfo.dataSet.setSubsetIds(subsetSampleIds);
+                    self.subsetSampleDisplay = subsetSampleIds.join();
                 }
-                if (self.excludeSampleIds.length > 0) {
-                    self.excludeSampleDisplay = self.excludeSampleIds.join();
+                if (excludeSampleIds.length > 0) {
+                    self.modelInfo.dataSet.setExcludeIds(excludeSampleIds);
+                    self.excludeSampleDisplay = excludeSampleIds.join();
                 }
             },
             // onSampleSelected: function () {
@@ -440,8 +445,8 @@
                 let self = this;
                 let allSamples = self.modelInfo.samples;
                 return allSamples.filter((sample) => {
-                    !self.excludeSampleIds.includes(sample);
-                })
+                    return !self.excludeSampleIds.includes(sample);
+                });
             }
         },
         mounted: function () {

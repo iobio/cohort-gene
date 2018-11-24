@@ -166,9 +166,9 @@ class DataSetModel {
         self.excludeIds = theIds;
     }
 
-    setProbandIds() {
+    setProbandIds(theIds) {
         let self = this;
-
+        self.getProbandCohort().sampleIds = theIds;
     }
 
     getTranslator() {
