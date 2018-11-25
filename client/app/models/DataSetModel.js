@@ -423,7 +423,6 @@ class DataSetModel {
                                     resultMap[entryName] = theVcfData;
 
                                     // Assign each variant to enrichment groups
-                                    debugger;
                                     me.promiseAssignCohortsToEnrichmentGroups(theVcfData.features);
 
                                     // Flip status flags
@@ -481,7 +480,6 @@ class DataSetModel {
 
         return new Promise(function (resolve, reject) {
             // Annotate variants for cohort models that have specified IDs
-            self.inProgress.loadingVariants = true;
             let urlNames = Object.keys(self.vcfEndptHash);
             let annotationResults = {};
             let annotationPromises = [];
