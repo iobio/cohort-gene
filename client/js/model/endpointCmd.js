@@ -103,7 +103,7 @@ EndpointCmd.prototype.annotateEnrichmentCounts = function (vcfSource, refName, r
     }
 
     // Only use variants that have passed all Simons filters
-    cmd = cmd.pipe(self.IOBIO.vt, ['filter', '-f', 'PASS', '-t', '\"SSC_PASS\"', '-d', '\"Variants passing all SSC filters\"', '-'], {ssl: self.useSSL});
+    //cmd = cmd.pipe(self.IOBIO.vt, ['filter', '-f', 'PASS', '-t', '\"SSC_PASS\"', '-d', '\"Variants passing all SSC filters\"', '-'], {ssl: self.useSSL});
 
     // Filter out alleles with <25% frequency - TODO: don't use info field, calculate this on a per sample basis and use some percentage cutoff
     //cmd = cmd.pipe(self.IOBIO.bcftools, ['filter', '-i', '\"AVG(INFO/AF)>0.25\"'], {ssl: self.useSSL});

@@ -35,6 +35,9 @@ class DataSetModel {
         this.probandEnrichedVars = {};
         this.nonEnrichedVars = {};
         this.probandOnlyVars = {};
+        this.subsetEnrichmentThreshold = 2.0;
+        this.probandEnrichmentThreshold = 0.5;
+        this.extraAnnotationsLoaded = false;
         // </editor-fold>
 
         // <editor-fold desc="STATE PROPS">
@@ -393,7 +396,7 @@ class DataSetModel {
                     }
                     Promise.all(enrichPromises)
                         .then(() => {
-                            // Combine data and assign cumulative to proband cohort
+                            // Combine data and assign cumulative to subset cohort
                             let destCohort = me.getSubsetCohort();
                             let combinedResults = destCohort._combineEnrichmentCounts(enrichResults);
                             if (combinedResults.features.length > destCohort.TOTAL_VAR_CUTOFF) {
@@ -418,6 +421,14 @@ class DataSetModel {
                                     theVcfData.gene = theGeneObject;
                                     let entryName = me.getName();
                                     resultMap[entryName] = theVcfData;
+
+                                    // Assign each variant to enrichment groups
+                                    debugger;
+                                    me.promiseAssignCohortsToEnrichmentGroups(theVcfData.features);
+
+                                    // Flip status flags
+                                    me.inProgress.loadingVariants = false;
+                                    me.inProgress.drawingVariants = true;
 
                                     if (!isBackground) {
                                         destCohort.vcfData = theVcfData;
@@ -469,8 +480,6 @@ class DataSetModel {
         let self = this;
 
         return new Promise(function (resolve, reject) {
-            let annotatePromises = [];
-
             // Annotate variants for cohort models that have specified IDs
             self.inProgress.loadingVariants = true;
             let urlNames = Object.keys(self.vcfEndptHash);
@@ -505,10 +514,8 @@ class DataSetModel {
                     console.log('Problem in CohortModel promoiseAnnotateVariants: Could not retrieve endpoint for the file: ' + urlNames[i]);
                 }
             }
-            Promise.all(annotatePromises)
+            Promise.all(annotationPromises)
                 .then(function () {
-                    self.inProgress.loadingVariants = false;
-                    self.inProgress.drawingVariants = true;
                     let quickLoad = options.efficiencyMode === true;
                     if (!quickLoad) {
                         self.promiseAnnotateWithClinvar(annotationResults, theGene, theTranscript, isBackground)
@@ -664,7 +671,6 @@ class DataSetModel {
             // instead of on a per phase file basis
             let uniqueVariants = {};
             let unionVcfData = {features: []};
-            debugger;
             let fileMap = resultMap[0];
             let fileNames = Object.keys(fileMap);
             for (let i = 0; i < fileNames.length; i++) {
@@ -1183,7 +1189,7 @@ class DataSetModel {
         });
     }
 
-    // TODO: refactor this for dataset model
+    // TODO: refactor this for dataset model - this will be used with new backend
     _getCombinedResults(gtenricherCmds, fileNames, theGene, theTranscript) {
         let self = this;
 
@@ -1502,7 +1508,6 @@ class DataSetModel {
     }
 
     /* Reference assigns all features in provided parameter to enrichment groups. */
-
     // TODO: change this to assign to enrichment groups based on p-value
     promiseAssignCohortsToEnrichmentGroups(variants) {
         let self = this;

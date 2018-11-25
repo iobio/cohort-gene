@@ -382,7 +382,6 @@
             data: function () {
                 let self = this;
                 self.$emit('clearVariants');
-                debugger;
                 self.update();
                 console.log("Drawing variants...");
             }

@@ -19,9 +19,6 @@ class VariantModel {
         this.annotationScheme = 'vep';
         this.maxDepth = 0;
         this.inProgress = {'loadingDataSources': false};
-        this.subsetEnrichmentThreshold = 2.0;
-        this.probandEnrichmentThreshold = 0.5;
-        this.extraAnnotationsLoaded = false;
         // </editor-fold>
 
         // <editor-fold desc="SINGLE HELPER CLASSES">

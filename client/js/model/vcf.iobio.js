@@ -1770,7 +1770,7 @@ vcfiobio = function module() {
                     let clinvarResult = me.parseClinvarInfo(rec.info, clinvarMap);
                     let enrichResult = null;
                     if (enrichMode) {
-                        enrichResult = me.parseEnrichmentInfo(rec.enrichment, rec.pValue, i, alts.length);
+                        enrichResult = me.parseEnrichmentInfo(rec.enrichment, rec.pValue, (i + 1), alts.length);
                     }
 
                     let highestImpactSnpeff = me._getHighestImpact(annot.snpEff.allSnpeff, me._cullTranscripts, selectedTranscriptID);
@@ -1920,20 +1920,21 @@ vcfiobio = function module() {
     };
 
     /* Parses out enrichment info for alternate variant at the provided index. */
-    exports.parseEnrichmentInfo = function (enrichArr, pValArr, altIndex, numAlts) {
+    exports.parseEnrichmentInfo = function (stringArr, pValArr, altIndex, numAlts) {
         let enrichObj = {};
         let offset = (2 * numAlts) + 2;
+        let enrichArr = stringArr.split(',');
 
         // Populate counts array values relative to given alt
         let counts = [];
-        counts[0] = enrichArr[0];
-        counts[1] = enrichArr[(altIndex * 2) - 1];
-        counts[2] = enrichArr[(altIndex * 2)];
-        counts[3] = enrichArr[(numAlts * 2) + 1];
-        counts[4] = enrichArr[offset];
-        counts[5] = enrichArr[((altIndex * 2) - 1) + offset];
-        counts[6] = enrichArr[(altIndex * 2) + offset];
-        counts[7] = enrichArr[((numAlts * 2) + 1) + offset];
+        counts[0] = +enrichArr[0];
+        counts[1] = +enrichArr[(altIndex * 2) - 1];
+        counts[2] = +enrichArr[(altIndex * 2)];
+        counts[3] = +enrichArr[(numAlts * 2) + 1];
+        counts[4] = +enrichArr[offset];
+        counts[5] = +enrichArr[((altIndex * 2) - 1) + offset];
+        counts[6] = +enrichArr[(altIndex * 2) + offset];
+        counts[7] = +enrichArr[((numAlts * 2) + 1) + offset];
         enrichObj['counts'] = counts;
 
         // Assign gx - splitting up multiallelic sites into individual variants, so no ambiguity here
