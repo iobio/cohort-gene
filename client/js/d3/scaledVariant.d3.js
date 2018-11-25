@@ -603,9 +603,7 @@ function scaledVariantD3() {
                     divider.append("text").attr("x", width / 2)
                         .attr("y", -10)
                         .text("Homozygous");
-
                 }
-
 
                 // add tooltip div
                 var tooltip = container.selectAll(".tooltip").data([0])

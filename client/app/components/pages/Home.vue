@@ -227,10 +227,6 @@ TD & SJG updated Jun2018 -->
                 .then(function () {
                     return self.promiseInitCache();
                 })
-                // .then(function () {
-                //     // SJG NOTE: not doing anything currently? Not marking stale sessions currently
-                //     return self.cacheHelper.promiseClearStaleCache();
-                // })
                 .then(function () {
                     let glyph = new Glyph();
                     let translator = new Translator(glyph);
@@ -267,10 +263,7 @@ TD & SJG updated Jun2018 -->
                         self.genomeBuildHelper);
                 })
                 .then(function () {
-                        self.promiseDetermineSourceAndInit()
-                            .then(() => {
-                                self.initializeFiltering();
-                            })
+                        self.promiseDetermineSourceAndInit();
                     },
                     function (error) {
                         console.log(error);
@@ -280,7 +273,7 @@ TD & SJG updated Jun2018 -->
         methods: {
             initializeFiltering: function () {
                 let self = this;
-                let affectedInfo = self.variantModel.dataSet.affectedInfo;
+                let affectedInfo = self.variantModel.mainDataSet.affectedInfo;
                 let isBasicMode = true; // Aka not educational mode
                 self.filterModel = new FilterModel(affectedInfo, isBasicMode);
                 self.variantModel.filterModel = self.filterModel;
@@ -335,7 +328,7 @@ TD & SJG updated Jun2018 -->
                                 self.variantModel.promiseFullyAnnotateVariants(self.selectedGene,
                                     self.selectedTranscript,
                                     false,  // isBackground
-                                    options)
+                                    nextOptions)
                                     .then((resultMaps) => {
                                         resultMaps.forEach((map) => {
                                             let unwrappedMap = map[0];
@@ -355,8 +348,14 @@ TD & SJG updated Jun2018 -->
             },
             updateClasses: function () {
                 let self = this;
+
+                // TODO: NOTE THIS IS A BANDAID
+                // TODO: variants need to be classified by what data set they belong to (add dataset id class?)
+                // TODO: and iterate through each dataset - pull variants by 'variant' and 'sN' classes
+
                 $('.variant').each(function (i, v) {
-                    let impactClass = self.variantModel.getVepImpactClass(v, 'vep');
+                    let mainDataSetId = 's0';
+                    let impactClass = self.variantModel.getDataSet(mainDataSetId).getVepImpactClass(v, 'vep');
                     $(v).addClass(impactClass);
                 })
             },
@@ -369,8 +368,18 @@ TD & SJG updated Jun2018 -->
             },
             onFilesLoaded: function () {
                 let self = this;
+
+                // Set loading status for tracks
+                if (self.variantModel) {
+                    let dataSets = self.variantModel.getAllDataSets();
+                    dataSets.forEach((dataSet) => {
+                        dataSet.inProgress.loadingVariants = true;
+                    });
+                }
                 self.promiseClearCache()
-                    .then(function () {
+                    .then(function() {
+                        // NOTE: moved filter model initialization here from mounting b/c models not ready on local launch
+                        self.initializeFiltering();
                         if (self.selectedGene && self.selectedGene.gene_name) {
                             self.promiseLoadGene(self.selectedGene.gene_name);
                         } else if (self.geneModel.sortedGeneNames && self.geneModel.sortedGeneNames.length > 0) {
@@ -379,7 +388,7 @@ TD & SJG updated Jun2018 -->
                             alertify.set('notifier', 'position', 'top-left');
                             alertify.warning("Please enter a gene name");
                         }
-                    })
+                    });
             },
             onGeneSelected: function (geneName) {
                 let self = this;
@@ -671,12 +680,16 @@ TD & SJG updated Jun2018 -->
                                     alert('Could not obtain selected gene from Hub. Initializing with demo gene.');
                                     selectedGene = loadGene;
                                 }
+                                // NOTE: moved here b/c can't do on mount for local file flow
+                                self.initializeFiltering();
                                 self.geneModel.addGeneName(selectedGene);
                                 self.onGeneSelected(selectedGene);
                                 resolve();
                             })
+                    } else {
+                        // Otherwise, wait for user to launch files menu
+                        resolve();
                     }
-                    // Otherwise, wait for user to launch files menu
                 });
             },
             /* Returns array of phenotype objects {phenotypeName: phenotypeData} */

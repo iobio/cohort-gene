@@ -571,7 +571,7 @@ class VariantModel {
 
         return new Promise((resolve, reject) => {
             let promises = [];
-            let mapList = {};
+            let mapList = [];
             self.getAllDataSets().forEach((dataSet) => {
                 let p = dataSet.promiseFullyAnnotateVariants(theGene, theTranscript, isBackground, options)
                     .then((resultMap) => {
@@ -776,6 +776,7 @@ class VariantModel {
           Sets extraAnnotationsLoaded to true. */
     combineVariantInfo(variantInfo) {
         let self = this;
+
         let fileNames = Object.keys(variantInfo);
         let updatedVarLookup = {};
         let subsetModel = self.mainDataSet.getSubsetCohort();
@@ -792,7 +793,7 @@ class VariantModel {
             existingVariants = subsetModel.loadedVariants.features;
         }
         // If we have one variant to combine
-        else {
+        else if (Object.keys(variantInfo).length > 0) {
             // Pull out reference to single variant
             let singleVar = variantInfo[0];
             updatedVarLookup[singleVar.id] = singleVar;

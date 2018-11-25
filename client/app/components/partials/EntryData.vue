@@ -315,7 +315,6 @@
                     self.subsetSampleIds = subsetSampleIds;
                     self.excludeSampleIds = excludeSampleIds;
                     self.selectedSample = null;
-                    debugger;
                     self.modelInfo.dataSet.setProbandIds(self.getProbandIds());
                 }
                 if (subsetSampleIds.length > 0) {
@@ -454,7 +453,6 @@
             self.samples = self.modelInfo.samples;
             self.subsetSampleIds = self.modelInfo.subsetSampleIds;
             self.excludeSampleIds = self.modelInfo.excludeSampleIds;
-
             self.isMainCohort = self.dragId === 's0';
 
             // Assign side bar label

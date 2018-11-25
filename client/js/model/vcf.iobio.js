@@ -1951,8 +1951,8 @@ vcfiobio = function module() {
         }
 
         // Assign p-value
-        let pVal = pValArr[altIndex];
-        enrichObj['pVal'] = pVal;
+        // let pVal = pValArr[altIndex];
+        // enrichObj['pVal'] = pVal;
 
         return enrichObj;
     };

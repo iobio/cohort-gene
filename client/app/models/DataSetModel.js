@@ -359,7 +359,6 @@ class DataSetModel {
                         let currFileName = urlNames[i];
                         let currVcfEndpt = me.vcfEndptHash[currFileName];
                         if (currVcfEndpt != null) {
-                            debugger;
                             let ref = me.getVcfRefName(theGene.chr, currVcfEndpt);
                             let enrichP = currVcfEndpt.promiseGetVariants(
                                 ref,
@@ -395,13 +394,13 @@ class DataSetModel {
                     Promise.all(enrichPromises)
                         .then(() => {
                             // Combine data and assign cumulative to proband cohort
-                            let destCohort = me.getProbandCohort();
+                            let destCohort = me.getSubsetCohort();
                             let combinedResults = destCohort._combineEnrichmentCounts(enrichResults);
                             if (combinedResults.features.length > destCohort.TOTAL_VAR_CUTOFF) {
                                 combinedResults.features = destCohort.filterVarsOnPVal(combinedResults.features);
                             }
                             // Add variant number to chips
-                            me.phenotypes.push(combinedResults.features.length + ' variants');
+                            me.getSubsetCohort().phenotypes.push(combinedResults.features.length + ' variants');
 
                             // Assign data parameter
                             if (combinedResults) {
@@ -474,7 +473,6 @@ class DataSetModel {
 
             // Annotate variants for cohort models that have specified IDs
             self.inProgress.loadingVariants = true;
-
             let urlNames = Object.keys(self.vcfEndptHash);
             let annotationResults = {};
             let annotationPromises = [];
@@ -666,6 +664,7 @@ class DataSetModel {
             // instead of on a per phase file basis
             let uniqueVariants = {};
             let unionVcfData = {features: []};
+            debugger;
             let fileMap = resultMap[0];
             let fileNames = Object.keys(fileMap);
             for (let i = 0; i < fileNames.length; i++) {
@@ -1383,10 +1382,11 @@ class DataSetModel {
                     || feature.zygosity === "";
 
                 let inRegion = true;
-                if (self.filterModel.regionStart && self.filterModel.regionEnd) {
-                    inRegion = feature.start >= self.filterModel.regionStart && feature.start <= self.filterModel.regionEnd;
+                let filterModel = self.getFilterModel();
+                if (filterModel.regionStart && filterModel.regionEnd) {
+                    inRegion = feature.start >= filterModel.regionStart && feature.start <= filterModel.regionEnd;
                 }
-                let passesModelFilter = self.filterModel.passesModelFilter(model.name, feature);
+                let passesModelFilter = filterModel.passesModelFilter(model.name, feature);
 
                 return isTarget && !isHomRef && inRegion && passesModelFilter;
             });
@@ -1406,7 +1406,7 @@ class DataSetModel {
             if (cohort.vcfData && cohort.vcfData.features) {
                 let start = filterModel.regionStart ? filterModel.regionStart : gene.start;
                 let end = filterModel.regionEnd ? filterModel.regionEnd : gene.end;
-                cohort.loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
+                self.loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
             }
         }
     }
