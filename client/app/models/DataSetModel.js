@@ -492,7 +492,7 @@ class DataSetModel {
                         theGene,
                         theTranscript,
                         null,       // regions
-                        self.isMultiSample,
+                        false, // isMultiSample
                         self.getSubsetCohort().sampleIds,
                         self.getProbandCohort().sampleIds,
                         self.getName() === 'known-variants' ? 'none' : self.getAnnotationScheme().toLowerCase(),
@@ -503,7 +503,7 @@ class DataSetModel {
                         true,       // vep af
                         null,
                         self.keepVariantsCombined,
-                        true)       // enrichMode
+                        false)       // enrichMode
                         .then((results) => {
                             annotationResults[currFileName] = results;
                         });
@@ -514,16 +514,7 @@ class DataSetModel {
             }
             Promise.all(annotationPromises)
                 .then(function () {
-                    let quickLoad = options.efficiencyMode === true;
-                    if (!quickLoad) {
-                        self.promiseAnnotateWithClinvar(annotationResults, theGene, theTranscript, isBackground)
-                            .then(function (data) {
-                                resolve(data);
-                            })
-                    }
-                    else {
-                        resolve(annotationResults);
-                    }
+                    resolve(annotationResults);
                 })
                 .catch(function (error) {
                     reject("There was a problem in DataSetModel promiseAnnotateVariants: " + error);
@@ -692,11 +683,11 @@ class DataSetModel {
                     ? self.getSubsetCohort()._refreshVariantsWithClinvarVCFRecs.bind(self.getSubsetCohort(), unionVcfData)
                     : self.getSubsetCohort()._refreshVariantsWithClinvarEutils.bind(self.getSubsetCohort(), unionVcfData);
 
-                self.getSubsetCohort().getFirstVcf().promiseGetClinvarRecords(
+                self.getFirstVcf().promiseGetClinvarRecords(
                     unionVcfData,
-                    self.getSubsetCohort()._stripRefName(geneObject.chr),
+                    self._stripRefName(geneObject.chr),
                     geneObject,
-                    self.geneModel.clinvarGenes,
+                    self.getVariantModel().geneModel.clinvarGenes,
                     refreshVariantsFunction)
                     .then(function () {
                         // Create a hash lookup of all clinvar variants
@@ -704,7 +695,7 @@ class DataSetModel {
                         unionVcfData.features.forEach(function (variant) {
                             var clinvarAnnot = {};
 
-                            for (var key in self.getSubsetCohort().getFirstVcf().getClinvarAnnots()) {
+                            for (var key in self.getFirstVcf().getClinvarAnnots()) {
                                 clinvarAnnot[key] = variant[key];
                                 clinvarLookup[formatClinvarKey(variant)] = clinvarAnnot;
                             }
@@ -718,7 +709,7 @@ class DataSetModel {
                             if (!updatedData.loadState['clinvar']) {
                                 let p = refreshVariantsWithClinvarLookup(updatedData, clinvarLookup);
                                 if (!isBackground) {
-                                    self.combineClinVarInfo(updatedData.features);
+                                    self.getVariantModel().combineClinVarInfo(updatedData.features);
                                 }
                                 refreshPromises.push(p);
                             }

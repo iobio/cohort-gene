@@ -331,6 +331,7 @@ TD & SJG updated Jun2018 -->
                                     nextOptions)
                                     .then((resultMaps) => {
                                         resultMaps.forEach((map) => {
+                                            debugger;   //TODO: left off here
                                             let unwrappedMap = map[0];
                                             self.variantModel.combineVariantInfo(unwrappedMap);
                                         });

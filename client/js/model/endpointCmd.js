@@ -198,7 +198,7 @@ EndpointCmd.prototype.annotateVariants = function (vcfSource, refName, regions, 
         // VEP
         var vepArgs = [];
         vepArgs.push(" --assembly");
-        vepArgs.push(me.genomeBuildHelper.getCurrentBuildName());   // TODO: debug - is grch38 a problem?
+        vepArgs.push(me.genomeBuildHelper.getCurrentBuildName());
         vepArgs.push(" --format vcf");
         vepArgs.push(" --allele_number");
         if (vepAF) {
