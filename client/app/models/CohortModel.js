@@ -29,29 +29,10 @@ class CohortModel {
     }
 
     // <editor-fold desc="GETTERS">
-    // getVariantModel() {
-    //     let self = this;
-    //     return self._variantModel;
-    // }
-
     getDataSetModel() {
         let self = this;
         return self._dataSetModel;
     }
-
-    // /* Returns gene model from parent variant model. */
-    // getGeneModel() {
-    //     return this.getVariantModel().geneModel;
-    // }
-    //
-    // /* Returns translator from parent variant model. */
-    // getTranslator() {
-    //     return this.getVariantModel().translator;
-    // }
-    //
-    // getCacheHelper() {
-    //     return this.getVariantModel().cacheHelper;
-    // }
 
     /* Returns descriptive name depending on the ID flags, or empty string if none set. */
     getName() {
@@ -63,7 +44,7 @@ class CohortModel {
     }
 
     getAnnotationScheme() {
-        if (this.getGeneModel().geneSource === 'refseq') {
+        if (this.getDataSetModel().getGeneModel().geneSource === 'refseq') {
             return "VEP";
         } else {
             return this.getDataSetModel().getAnnotationScheme();

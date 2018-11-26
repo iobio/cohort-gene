@@ -23,7 +23,6 @@ class DataSetModel {
         this.calledVariants = null;
         this.loadedVariants = null;
         this.selectedVariants = null;   // Selected in zoom panel
-        this.majorityBuild = '';        // Represents the build found in most uploaded files to the application (i.e., GRCh37 or GRCh38)
         this.trackName = '';            // Displays in italics before chips
         this.excludeIds = [];    // Samples from any vcf file to be removed from analysis
         this.getVcfRefName = null;      // The chromosome name for the selected gene
@@ -55,7 +54,6 @@ class DataSetModel {
             'loadingVariants': false,
             'drawingVariants': false
         };
-        this.isMultiSample = true;
         // </editor-fold>
 
         // <editor-fold desc="MODEL PROPS">
@@ -853,30 +851,6 @@ class DataSetModel {
             }
         });
     }
-
-    // TODO: delete after testing
-    // promiseAnnotateInheritance(geneObject, theTranscript, resultMap, options = {
-    //     isBackground: false,
-    //     cacheData: true
-    // }) {
-    //     let self = this;
-    //
-    //     let resolveIt = function (resolve, resultMap, geneObject, theTranscript, options) {
-    //         resolve({'resultMap': resultMap, 'gene': geneObject, 'transcript': theTranscript});
-    //     };
-    //
-    //     return new Promise(function (resolve, reject) {
-    //         if (self.isAlignmentsOnly() && !autocall && resultMap == null) {
-    //             resolve({
-    //                 'resultMap': {PROBAND_ID: {features: []}},
-    //                 'gene': geneObject,
-    //                 'transcript': theTranscript
-    //             });
-    //         } else {
-    //             resolveIt(resolve, resultMap, geneObject, theTranscript, options);
-    //         }
-    //     })
-    // }
 
     // </editor-fold>
 

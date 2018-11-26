@@ -1,5 +1,5 @@
 <!-- Main application page holding all cards.
-TD & SJG updated Jun2018 -->
+TD & SJG updated Nov2018 -->
 
 <style lang="sass">
     @import ../../../assets/sass/variables
@@ -78,8 +78,6 @@ TD & SJG updated Jun2018 -->
                                     Filters
                                     <v-icon style="margin-bottom: 0px">bubble_chart</v-icon>
                                 </v-tab>
-                            </v-tabs>
-                            <v-tabs-items>
                                 <v-tab-item
                                         :key="'summaryTab'"
                                         :id="'summary-tab'">
@@ -109,7 +107,7 @@ TD & SJG updated Jun2018 -->
                                         </filter-settings-menu>
                                     </v-container>
                                 </v-tab-item>
-                            </v-tabs-items>
+                            </v-tabs>
                         </v-card>
                     </v-flex>
                 </v-layout>
