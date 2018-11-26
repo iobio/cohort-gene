@@ -36,7 +36,7 @@ TD & SJG updated Jun2018 -->
             <v-container fluid style="padding-top: 3px">
                 <v-layout>
                     <v-flex xs9>
-                        <updated-variant-card
+                        <enrichment-variant-card
                                 v-if="variantModel"
                                 ref="variantCardRef"
                                 :dataSetModel="variantModel.mainDataSet"
@@ -64,7 +64,7 @@ TD & SJG updated Jun2018 -->
                                 @knownVariantsVizChange="onKnownVariantsVizChange"
                                 @knownVariantsFilterChange="onKnownVariantsFilterChange"
                                 @zoomModeStart="startZoomMode">
-                        </updated-variant-card>
+                        </enrichment-variant-card>
                     </v-flex>
                     <v-flex xs3>
                         <v-card class="ml-1">
@@ -123,7 +123,7 @@ TD & SJG updated Jun2018 -->
     import Navigation from '../partials/Navigation.vue'
     import GeneCard from '../viz/GeneCard.vue'
     import VariantCard from '../viz/VariantCard.vue'
-    import UpdatedVariantCard from '../viz/UpdatedVariantCard.vue'
+    import EnrichmentVariantCard from '../viz/EnrichmentVariantCard.vue'
     import VariantSummaryCard from '../viz/VariantSummaryCard.vue'
     import VariantZoomCard from '../viz/ZoomModalViz.vue'
     import FilterSettingsMenu from '../partials/FilterSettingsMenu.vue'
@@ -145,7 +145,7 @@ TD & SJG updated Jun2018 -->
             VariantSummaryCard,
             VariantZoomCard,
             VariantCard,
-            UpdatedVariantCard,
+            EnrichmentVariantCard,
             FilterSettingsMenu
         },
         props: {

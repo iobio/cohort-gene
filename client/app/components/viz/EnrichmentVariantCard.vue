@@ -93,7 +93,7 @@ Updated: SJG Apr2018
                 </v-flex>
             </v-layout>
             <div style="width:100%">
-                <updated-variant-viz
+                <enrichment-variant-viz
                         v-if="dataSetModel && dataSetModel.getSubsetCohort()"
                         ref="subsetVizRef"
                         :id="dataSetModel.getName()"
@@ -123,7 +123,7 @@ Updated: SJG Apr2018
                         @variantHoverEnd="onVariantHoverEnd"
                         @trackRendered="switchColorScheme"
                         @clearVariants="clearVariants">
-                </updated-variant-viz>
+                </enrichment-variant-viz>
                 <gene-viz id="gene-viz"
                           v-bind:class="{ hide: !showGeneViz }"
                           :data="[selectedTranscript]"
@@ -162,7 +162,7 @@ Updated: SJG Apr2018
     </v-card>
 </template>
 <script>
-    import UpdatedVariantViz from './UpdatedVariantViz.vue'
+    import EnrichmentVariantViz from './EnrichmentVariantViz.vue'
     import VariantViz from './VariantViz.vue'
     import GeneViz from './GeneViz.vue'
     import ZoomModalViz from './ZoomModalViz.vue'
@@ -172,7 +172,7 @@ Updated: SJG Apr2018
         name: 'updated-variant-card',
         components: {
             VariantViz,
-            UpdatedVariantViz,
+            EnrichmentVariantViz,
             GeneViz,
             ZoomModalViz,
             FilterSettingsMenu
