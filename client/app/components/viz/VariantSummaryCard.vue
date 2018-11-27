@@ -493,7 +493,11 @@
             },
             selectedVariantLocation: function () {
                 if (this.variant != null) {
-                    return this.variant.chrom + ' ' + this.variant.start.toLocaleString() + ' - ' + this.variant.end.toLocaleString();
+                    let location = this.variant.chrom + ' ' + this.variant.start.toLocaleString() + ' - ' + this.variant.end.toLocaleString();
+                    if (!location.startsWith('c')) {
+                        location = 'chr' + location;
+                    }
+                    return location;
                 }
                 return '';
             },
