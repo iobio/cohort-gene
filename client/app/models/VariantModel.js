@@ -492,8 +492,10 @@ class VariantModel {
             }
 
             if (isSampleEntry) {
+                localDataSet.isSingleSample = true;
                 localDataSet.initSample();
             } else {
+                localDataSet.isSingleSample = false;
                 localDataSet.initCohorts();
                 localDataSet.setExcludeIds(modelInfo.excludeSampleIds);
                 localDataSet.setSubsetIds(modelInfo.subsetSampleIds);

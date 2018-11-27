@@ -40,6 +40,7 @@ class DataSetModel {
         // </editor-fold>
 
         // <editor-fold desc="STATE PROPS">
+        this.isSingleSample = false;     // True if we this model represents a single sample in a single vcf file
         this.vcfUrlsEntered = false;
         this.vcfFilesOpened = false;
         this.bamUrlsEntered = false;

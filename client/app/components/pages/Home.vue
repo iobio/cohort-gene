@@ -35,10 +35,9 @@ TD & SJG updated Nov2018 -->
             <div id="warning-authorize" class="warning-authorize"></div>
             <v-container fluid style="padding-top: 3px">
                 <v-layout>
-                    <v-flex xs9>
+                    <v-flex xs9 v-for="dataSet in allDataSets">
                         <enrichment-variant-card
-                                v-if="variantModel"
-                                v-for="dataSet in allDataSets"
+                                v-if="dataSet.isSingleSample"
                                 ref="variantCardRef"
                                 :key="dataSet.id"
                                 :dataSetModel="dataSet"
@@ -67,6 +66,36 @@ TD & SJG updated Nov2018 -->
                                 @knownVariantsFilterChange="onKnownVariantsFilterChange"
                                 @zoomModeStart="startZoomMode">
                         </enrichment-variant-card>
+                        <variant-card
+                                v-else
+                                ref="variantCardRef"
+                                :key="dataSet.id"
+                                :dataSetModel="dataSet"
+                                :filterModel="filterModel"
+                                :annotationScheme="variantModel.annotationScheme"
+                                :classifyVariantSymbolFunc="variantModel.classifyByImpact"
+                                :classifyZoomSymbolFunc="variantModel.classifyByImpact"
+                                :variantTooltip="variantTooltip"
+                                :selectedGene="selectedGene"
+                                :selectedTranscript="selectedTranscript"
+                                :selectedVariant="selectedVariant"
+                                :regionStart="geneRegionStart"
+                                :regionEnd="geneRegionEnd"
+                                :width="cardWidth"
+                                :showGeneViz="true"
+                                :showVariantViz="true"
+                                :geneVizShowXAxis="true"
+                                :doneLoadingData="doneLoadingData"
+                                :doneLoadingExtras="doneLoadingExtras"
+                                :doubleMode="true"
+                                @dataSetVariantClick="onDataSetVariantClick"
+                                @dataSetVariantClickEnd="onDataSetVariantClickEnd"
+                                @dataSetVariantHover="onDataSetVariantHover"
+                                @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
+                                @knownVariantsVizChange="onKnownVariantsVizChange"
+                                @knownVariantsFilterChange="onKnownVariantsFilterChange"
+                                @zoomModeStart="startZoomMode">
+                        </variant-card>
                     </v-flex>
                     <v-flex xs3>
                         <v-card class="ml-1">
@@ -275,7 +304,8 @@ TD & SJG updated Nov2018 -->
                     },
                     function (error) {
                         console.log(error);
-                        alert("There was a problem contacting our iobio services. Please refresh the application, or contact iobioproject@gmail.com if the problem persists.");
+                        alertify.set('notifier', 'position', 'top-center');
+                        alertify.warning("There was a problem contacting our iobio services. Please refresh the application, or contact iobioproject@gmail.com if the problem persists.");
                     })
         },
         methods: {
