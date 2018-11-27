@@ -434,10 +434,6 @@ function variantD3() {
                         return tx;
                     });
 
-
-
-
-
                 g.selectAll('.variant')
                     .on("click", function(d) {
                         dispatch.d3click(d);

@@ -5,6 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="17d38fed-e0f5-492f-b455-1d8321fb2586" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/js/d3/variant.d3.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/js/d3/variant.d3.js" afterDir="false" />
     </list>
@@ -68,8 +69,8 @@
       <file leaf-file-name="scaledVariant.d3.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="368">
-              <caret line="23" column="61" lean-forward="true" selection-start-line="23" selection-start-column="61" selection-end-line="23" selection-end-column="61" />
+            <state relative-caret-position="404">
+              <caret line="199" column="38" lean-forward="true" selection-start-line="199" selection-start-column="38" selection-end-line="199" selection-end-column="38" />
             </state>
           </provider>
         </entry>
@@ -77,8 +78,8 @@
       <file leaf-file-name="variant.d3.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client/js/d3/variant.d3.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="64">
-              <caret line="4" column="18" selection-start-line="4" selection-start-column="8" selection-end-line="4" selection-end-column="18" />
+            <state relative-caret-position="253">
+              <caret line="437" column="46" lean-forward="true" selection-start-line="437" selection-start-column="46" selection-end-line="437" selection-end-column="46" />
             </state>
           </provider>
         </entry>
@@ -146,12 +147,9 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>formattedValidFiles</find>
-      <find>validSourceFiles</find>
       <find>wipe</find>
       <find>watcbh</find>
       <find>data</find>
-      <find>debugger</find>
       <find>watch</find>
       <find>debugg</find>
       <find>computed</find>
@@ -160,7 +158,6 @@
       <find>onDataSetVariantClick</find>
       <find>showvariantcircle</find>
       <find>name</find>
-      <find>show</find>
       <find>click</find>
       <find>cohortkey</find>
       <find>promiseGetVariantExtraAnnotations</find>
@@ -172,10 +169,14 @@
       <find>genomebuildhelper</find>
       <find>build</find>
       <find>hidebrush</find>
-      <find>showcircle</find>
       <find>chart</find>
       <find>yAxisWidth</find>
       <find>yaxiswidth</find>
+      <find>show</find>
+      <find>indicatemiss</find>
+      <find>d3click</find>
+      <find>showcircle</find>
+      <find>debugger</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/client/js/model</dir>
@@ -417,7 +418,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="799423000" />
+    <option name="totallyTimeSpent" value="800952000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="877" extended-state="6" />
@@ -859,15 +860,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="368">
-          <caret line="23" column="61" lean-forward="true" selection-start-line="23" selection-start-column="61" selection-end-line="23" selection-end-column="61" />
+        <state relative-caret-position="404">
+          <caret line="199" column="38" lean-forward="true" selection-start-line="199" selection-start-column="38" selection-end-line="199" selection-end-column="38" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/client/js/d3/variant.d3.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="64">
-          <caret line="4" column="18" selection-start-line="4" selection-start-column="8" selection-end-line="4" selection-end-column="18" />
+        <state relative-caret-position="253">
+          <caret line="437" column="46" lean-forward="true" selection-start-line="437" selection-start-column="46" selection-end-line="437" selection-end-column="46" />
         </state>
       </provider>
     </entry>

@@ -199,8 +199,9 @@ function scaledVariantD3() {
 
         // Get the x for this position
         if (matchingVariant) {
+            debugger;
             var mousex = x(matchingVariant.start);    // Have to offset this by y-axis
-            var mousey = y(d.adjustedLevel);
+            var mousey = y(matchingVariant.adjustedLevel);
 
             var circle = svgContainer.select(".circle");
             circle.transition()
