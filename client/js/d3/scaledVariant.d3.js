@@ -229,20 +229,16 @@ function scaledVariantD3() {
             //showCoordinateFrame(matchingVariant.screenX);
 
         } else if (indicateMissingVariant) {
-            var mousex = d3.round(x(d.start));
-
-            // TODO: this will not work b/c variant being clicked on in sample model will not have adjusted level info
-            //var mousey = height - ((d.adjustedLevel) * (variantHeight + verticalPadding));
+            var mousex = x(d.start - yAxisWidth);
             var mousey = height - verticalPadding;
 
             var garrow = svgContainer.select("g.arrow");
-            garrow.attr("transform", "translate(" + (mousex + margin.left + yAxisWidth - variantHeight / 2) + "," + (mousey + margin.top - 6) + ")");
+            garrow.attr("transform", "translate(" + (mousex + margin.left - variantHeight / 2) + "," + (mousey + margin.top - 6) + ")");
             garrow.selectAll('.arrow').transition()
                 .duration(200)
                 .style("opacity", 1);
 
-
-            svgContainer.select(".circle").classed("emphasize", false);
+            // svgContainer.select(".circle").classed("emphasize", false);
         }
 
 

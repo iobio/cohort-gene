@@ -109,46 +109,33 @@ function variantD3() {
         } else if (indicateMissingVariant) {
             var mousex = x(d.start - yAxisWidth);
             var mousey = height - verticalPadding;
-            // debugger;
-            // var xAxis = svgContainer.selectAll('.x.axis');
-
-
             var arrowClazz = pinned ? 'g.pinned.arrow' : 'g.hover.arrow';
             var garrow = svgContainer.select(arrowClazz);
             garrow.attr("transform", "translate(" +(mousex + margin.left - (variantHeight / 2)) + "," + (mousey + margin.top - 6) + ")");
-
-//            garrow.attr("transform", "translate(" + (mousex + margin.left - variantHeight/2) + "," + (mousey + margin.top - 6) + ")");
             garrow.selectAll('.arrow').transition()
                 .duration(200)
                 .style("opacity", 1);
-
-
         }
-
 
         return matchingVariant;
     };
 
 
 
-    var hideCircle = function(svgContainer, parentContainer, pinned) {
-        var circleClazz = pinned ? '.pinned.circle' : '.hover.circle';
-        var arrowClazz = pinned ? 'g.pinned.arrow' : 'g.hover.arrow';
-        svgContainer.select(circleClazz).transition()
-            .duration(500)
+    var hideCircle = function (svgContainer, parentContainer) {
+        svgContainer.select(".circle").transition()
+            .duration(100)
             .style("opacity", 0);
-        svgContainer.select(arrowClazz).selectAll(".arrow").transition()
-            .duration(500)
+        svgContainer.selectAll("g.arrow").selectAll('.arrow').transition()
+            .duration(100)
             .style("opacity", 0);
-        /*
         if (parentContainer) {
-          parentContainer.select('.tooltip').transition()
-                       .duration(500)
-                       .style("opacity", 0)
-                       .style("z-index", 0)
-                       .style("pointer-events", "none");
+            parentContainer.select('.tooltip').transition()
+                .duration(500)
+                .style("opacity", 0)
+                .style("z-index", 0)
+                .style("pointer-events", "none");
         }
-        */
     }
 
 

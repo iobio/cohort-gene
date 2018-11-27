@@ -373,10 +373,6 @@ Updated: SJG Apr2018
                 }
             },
             onVariantClick: function (variant, dataSetKey) {
-                if (this.showVariantViz) {
-                    this.hideVariantCircle();
-                    this.showVariantCircle(variant);
-                }
                 this.$emit('dataSetVariantClick', variant, this, dataSetKey);
             },
             onVariantZoom: function (selectedVarIds, xStart, yStart, drawBelow, graphWidth) {

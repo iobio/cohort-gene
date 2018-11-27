@@ -351,12 +351,14 @@
                 //self.$emit("variantHoverEnd", variant);
             },
             showVariantCircle: function (variant, container, lock) {
+                this.hideVariantCircle(container);
                 this.variantChart.showCircle()(variant,
                     container,
-                    variant.fbCalled && variant.fbCalled === 'Y',
+                    true,   // show missing variants
                     lock);
             },
             hideVariantCircle: function (container) {
+                debugger;
                 this.variantChart.hideCircle()(container);
             },
             setVariantChart: function () {

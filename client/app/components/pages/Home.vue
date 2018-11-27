@@ -498,11 +498,9 @@ TD & SJG updated Nov2018 -->
 
                 if (variant) {
                     // Circle selected variant
-                    if (sourceComponent == null || self.$refs.variantCardRef) {
+                    if (self.$refs.variantCardRef) {
                         self.$refs.variantCardRef.forEach((cardRef) => {
-                            if (cardRef != sourceComponent) {
-                                cardRef.showVariantCircle(variant);
-                            }
+                            cardRef.showVariantCircle(variant);
                         });
                     }
                     // Query service for single variant annotation if we don't have details yet

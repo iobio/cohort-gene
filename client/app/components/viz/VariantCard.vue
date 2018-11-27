@@ -253,10 +253,6 @@ TD & SJG updated Apr2018 -->
                 }
             },
             onVariantClick: function (variant, dataSetKey) {
-                if (this.showVariantViz) {
-                    this.hideVariantCircle();
-                    this.showVariantCircle(variant);
-                }
                 this.$emit('dataSetVariantClick', variant, this, dataSetKey);
             },
             onVariantHover: function (variant, cohortKey, showTooltip = true) {
@@ -334,6 +330,7 @@ TD & SJG updated Apr2018 -->
             showVariantCircle: function (variant) {
                 let self = this;
                 if (self.showVariantViz && self.$refs.subsetVizRef != null) {
+                    debugger;
                     self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
                 }
             },
