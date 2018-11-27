@@ -640,7 +640,17 @@ vcfiobio = function module() {
         let me = this;
 
         return new Promise(function (resolve, reject) {
-            if (sourceType === SOURCE_TYPE_URL) {
+            if (sourceType === SOURCE_TYPE_URL && singleMode) {
+                me._getRemoteVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
+                    function (resultMapList) {
+                        if (resultMapList) {
+                            resolve(resultMapList);
+                        }
+                        else {
+                            reject();
+                        }
+                    }, null, keepVariantsCombined, enrichMode, singleMode);
+            } else if (sourceType === SOURCE_TYPE_URL) {
                 me._updatedGetRemoteVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
                     function (resultMapList) {
                         if (resultMapList) {
@@ -773,6 +783,7 @@ vcfiobio = function module() {
             });
 
             // Parse the vcf object into a variant object that is visualized by the client.
+            // TODO: left off here - need to pull back zygosities for variants - what's easiest way to do this?
             let results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, expSampleNames, null, vepAF, keepVariantsCombined, enrichMode);
             results.features = results.features[0];     // Unwrap feature array
             callback(results);
@@ -930,86 +941,156 @@ vcfiobio = function module() {
         cmd.run();
     }
 
-    exports._getRemoteVariantsImpl = function (refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false, enrichMode = false) {
-        let me = this;
+    // TODO: may be used for drawing variants across the screen piecemeal in the future
+    // exports._getRemoteVariantsImpl = function (refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false, enrichMode = false, singleMode = false) {
+    //     let me = this;
+    //
+    //     if (regions == null || regions.length === 0) {
+    //         regions = [];
+    //         regions.push({'name': refName, 'start': geneObject.start, 'end': geneObject.end});
+    //     }
+    //
+    //     let serverCacheKey = me._getServerCacheKey(vcfURL, annotationEngine, refName, geneObject, vcfSampleNames, {
+    //         refseq: isRefSeq,
+    //         hgvs: hgvsNotation,
+    //         rsid: getRsId
+    //     });
+    //
+    //     let cmd = me.getEndpoint().annotateVariants({
+    //         'vcfUrl': vcfURL,
+    //         'tbiUrl': tbiUrl
+    //     }, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey, enrichMode);
+    //
+    //     // Accumulation vars
+    //     let remainingBuffer = '';
+    //     let subsetResults = null;
+    //     let featureCount = 0;
+    //     let probandCountsLookup = {};
+    //
+    //     // Get the results from the iobio command
+    //     cmd.on('data', function (data) {
+    //         if (data != null) {
+    //             // Append any partial lines from last stream piece
+    //             let combinedData = remainingBuffer + data;
+    //             remainingBuffer = '';
+    //
+    //             // Pull out full lines
+    //             let lastLineDelim = combinedData.lastIndexOf("\n");
+    //             let fullLines = combinedData.substring(0, lastLineDelim);
+    //             let splitLines = fullLines.split("\n");
+    //
+    //             // Keep any partial lines for next buffer flow
+    //             if (lastLineDelim < (combinedData.length - 1)) {
+    //                 remainingBuffer = combinedData.substring(lastLineDelim + 1);
+    //             }
+    //
+    //             // Process full lines
+    //             splitLines.forEach(function (line) {
+    //                 if (line.charAt(0) === '#') {
+    //                     me._parseHeaderForInfoFields(line);
+    //                 }
+    //                 else if (line.length > 0) {
+    //                     let result = me._processVcfLine(line, refName, geneObject, selectedTranscript, clinvarMap, hgvsNotation, getRsId, isMultiSample, sampleNamesToGenotype, vepAF, keepVariantsCombined, enrichMode);
+    //                     featureCount++;
+    //                     // if we're looking at probands, just tally counts
+    //                     if (!isSubset) {
+    //                         probandCountsLookup[result['features'][0][0].id] = result['features'][0][0].probandZygCounts;
+    //                     }
+    //                     else {
+    //                         if (subsetResults != null) {
+    //                             subsetResults.features[0].push(result.features[0][0]);
+    //                         }
+    //                         else {
+    //                             subsetResults = result;
+    //                         }
+    //                     }
+    //                 }
+    //             })
+    //         }
+    //     });
+    //
+    //     // We have all of the annotated vcf recs.  Now parse them into vcf objects
+    //     cmd.on('end', function (data) {
+    //         // For subset, will return populated variant map - for probands, will return only counts map
+    //         callback([subsetResults, probandCountsLookup]);
+    //     });
+    //     cmd.on('error', function (error) {
+    //         console.log(error);
+    //     });
+    //     cmd.run();
+    // }
+
+    exports._getRemoteVariantsImpl = function(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false, enrichMode = false, singleMode = false) {
+
+        var me = this;
+
 
         if (regions == null || regions.length === 0) {
             regions = [];
             regions.push({'name': refName, 'start': geneObject.start, 'end': geneObject.end});
         }
 
-        let serverCacheKey = me._getServerCacheKey(vcfURL, annotationEngine, refName, geneObject, vcfSampleNames, {
-            refseq: isRefSeq,
-            hgvs: hgvsNotation,
-            rsid: getRsId
-        });
+        var serverCacheKey = me._getServerCacheKey(vcfURL, annotationEngine, refName, geneObject, vcfSampleNames, {refseq: isRefSeq, hgvs: hgvsNotation, rsid: getRsId});
 
-        let cmd = me.getEndpoint().annotateVariants({
-            'vcfUrl': vcfURL,
-            'tbiUrl': tbiUrl
-        }, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey, enrichMode);
+        var cmd = me.getEndpoint().annotateVariants({'vcfUrl': vcfURL, 'tbiUrl': tbiUrl}, refName, regions, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, serverCacheKey);
 
-        // Accumulation vars
-        let remainingBuffer = '';
-        let subsetResults = null;
-        let featureCount = 0;
-        let probandCountsLookup = {};
 
+        var annotatedData = "";
         // Get the results from the iobio command
-        cmd.on('data', function (data) {
-            if (data != null) {
-                // Append any partial lines from last stream piece
-                let combinedData = remainingBuffer + data;
-                remainingBuffer = '';
-
-                // Pull out full lines
-                let lastLineDelim = combinedData.lastIndexOf("\n");
-                let fullLines = combinedData.substring(0, lastLineDelim);
-                let splitLines = fullLines.split("\n");
-
-                // Keep any partial lines for next buffer flow
-                if (lastLineDelim < (combinedData.length - 1)) {
-                    remainingBuffer = combinedData.substring(lastLineDelim + 1);
-                }
-
-                // Process full lines
-                splitLines.forEach(function (line) {
-                    if (line.charAt(0) === '#') {
-                        me._parseHeaderForInfoFields(line);
-                    }
-                    else if (line.length > 0) {
-                        let result = me._processVcfLine(line, refName, geneObject, selectedTranscript, clinvarMap, hgvsNotation, getRsId, isMultiSample, sampleNamesToGenotype, vepAF, keepVariantsCombined, enrichMode);
-                        featureCount++;
-                        // if we're looking at probands, just tally counts
-                        if (!isSubset) {
-                            probandCountsLookup[result['features'][0][0].id] = result['features'][0][0].probandZygCounts;
-                        }
-                        else {
-                            if (subsetResults != null) {
-                                subsetResults.features[0].push(result.features[0][0]);
-                            }
-                            else {
-                                subsetResults = result;
-                            }
-                        }
-                    }
-                })
+        cmd.on('data', function(data) {
+            if (data == null) {
+                return;
             }
+            annotatedData += data;
         });
 
         // We have all of the annotated vcf recs.  Now parse them into vcf objects
-        cmd.on('end', function (data) {
-            // SJG TODO: perpetuate the single annotations through callback and beyond so that drawing will be piecemeal
-            let t1 = performance.now();
-            console.log('Annotating ' + featureCount + ' variants took ' + (t1 - t0) + ' ms');
-            // For subset, will return populated variant map - for probands, will return only counts map
-            callback([subsetResults, probandCountsLookup]);
+        cmd.on('end', function(data) {
+            var annotatedRecs = annotatedData.split("\n");
+            var vcfObjects = [];
+            var contigHdrRecFound = false;
+
+            annotatedRecs.forEach(function(record) {
+                if (record.charAt(0) === "#") {
+                    me._parseHeaderForInfoFields(record);
+
+                } else {
+
+                    // Parse the vcf record into its fields
+                    var fields = record.split('\t');
+                    var pos    = fields[1];
+                    var id     = fields[2];
+                    var ref    = fields[3];
+                    var alt    = fields[4];
+                    var qual   = fields[5];
+                    var filter = fields[6];
+                    var info   = fields[7];
+                    var format = fields[8];
+                    var genotypes = [];
+                    for (var i = 9; i < fields.length; i++) {
+                        genotypes.push(fields[i]);
+                    }
+
+                    // Turn vcf record into a JSON object and add it to an array
+                    var vcfObject = {'pos': pos, 'id': 'id', 'ref': ref, 'alt': alt,
+                        'qual': qual, 'filter': filter, 'info': info, 'format':format, 'genotypes': genotypes};
+                    vcfObjects.push(vcfObject);
+                }
+            });
+
+            // Parse the vcf object into a variant object that is visualized by the client.
+            var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined, enrichMode, singleMode);
+
+
+            callback(annotatedRecs, results);
         });
-        cmd.on('error', function (error) {
+
+        cmd.on('error', function(error) {
             console.log(error);
         });
-        let t0 = performance.now();
+
         cmd.run();
+
     }
 
     /* PIECEMEAL parses raw vcf line into vcfObject and then sends to _parseVcfRecords
@@ -1857,8 +1938,8 @@ vcfiobio = function module() {
                                 variant.subsetZygCounts = [+enrichResult.counts[4], +enrichResult.counts[5], +enrichResult.counts[6], +enrichResult.counts[7]];
                                 variant.pVal = +enrichResult.pVal;
                             } else if (singleMode) {
-                                debugger;
-                                variant.zygosity = gtResult[0].zygosity;
+                                // Take first genotype from list
+                                variant.zygosity = gtResult.genotype.zygosity;
                             }
 
                             for (let key in clinvarResult) {
@@ -2413,12 +2494,12 @@ vcfiobio = function module() {
     }
 
 
-    /*
+/*
  *
  * Parse the genotype field from in the vcf rec
  *
  */
-    exports._parseGenotypes = function (rec, alt, altIdx, sampleIndices, sampleNames) {
+    exports._parseGenotypes = function(rec, alt, altIdx, sampleIndices, sampleNames) {
         var me = this;
 
         // The result returned will be an object representing all
@@ -2435,13 +2516,13 @@ vcfiobio = function module() {
         //
         //
         var result = {
-            alt: alt,
-            keep: false,
-            gtNumber: altIdx + 1,
-            genotype: {},
-            genotypes: [],
-            genotypeMap: {}
-        };
+            alt:         alt,
+            keep:        false,
+            gtNumber:    altIdx +1,
+            genotype:    {},
+            genotypes:   [],
+            genotypeMap: {} };
+
 
 
         // The results will contain an array of genotype objects for
@@ -2450,14 +2531,14 @@ vcfiobio = function module() {
         // if we are parsing the genotypes for a trio, the first
         // genotype will be for the proband, followed by 2 more elements
         // for the mother and father's genotypes.
-        result.genotypes = sampleIndices.map(function (sampleIndex) {
-            return {sampleIndex: sampleIndex, zygosity: null, phased: null};
+        result.genotypes = sampleIndices.map( function(sampleIndex) {
+            return { sampleIndex: sampleIndex, zygosity: null, phased: null};
         });
 
         // The results will also contain a map to obtain
         // the genotype by sample name.  If sample names were not provided,
         // we will use the index as the key to the map.
-        result.genotypes.forEach(function (gt) {
+        result.genotypes.forEach(function(gt) {
             var key = sampleNames ? sampleNames[gt.sampleIndex] : gt.sampleIndex.toString();
             result.genotypeMap[key] = gt;
         })
@@ -2467,7 +2548,7 @@ vcfiobio = function module() {
         var idx = 0;
         if (rec.format && rec.format != '') {
             var tokens = rec.format.split(":");
-            tokens.forEach(function (token) {
+            tokens.forEach(function(token) {
                 gtTokens[token] = idx;
                 idx++;
             })
@@ -2491,17 +2572,17 @@ vcfiobio = function module() {
         //    eduGenotype         - The simplified format for showing genotype (e.g. C->T)
         //    eduGenotypeReversed - For reverse strand, show the compliment of the simplified genotype (e.g. A->G)
         //
-        result.genotypes.forEach(function (gt) {
-            var genotype = rec.genotypes.length > gt.sampleIndex ? rec.genotypes[gt.sampleIndex] : null;
+        result.genotypes.forEach( function(gt) {
+            var genotype = (rec.genotypes.length > gt.sampleIndex) ? rec.genotypes[gt.sampleIndex] : null;
 
-            if (genotype == null || genotype == "" || genotype == '.') {
+            if (genotype == null  || genotype == "" || genotype == '.') {
                 gt.zygosity = 'gt_unknown';
-                gt.keep = rec.genotypes.length == 0 ? true : false;
-                gt.absent = rec.genotypes.length == 0 ? true : false;
+                gt.keep      = rec.genotypes.length == 0 ? true : false;
+                gt.absent   =  rec.genotypes.length == 0 ? true : false;
             } else {
 
                 var tokens = genotype.split(":");
-                gtFieldIndex = gtTokens["GT"];
+                var gtFieldIndex = gtTokens["GT"];
                 gt.gt = tokens[gtFieldIndex];
 
                 var gtDepthIndex = gtTokens["DP"];
@@ -2518,23 +2599,23 @@ vcfiobio = function module() {
                     // GATK allele counts
                     //
                     var countTokens = tokens[gtAlleleCountIndex].split(",");
-                    if (countTokens.length >= 2) {
+                    if (countTokens.length >= 2 ) {
                         var refAlleleCount = countTokens[0];
                         var altAlleleCounts = countTokens.slice(1).join(",");
 
                         var totalAllelicDepth = 0;
-                        countTokens.forEach(function (allelicDepth) {
+                        countTokens.forEach(function(allelicDepth) {
                             if (allelicDepth) {
                                 totalAllelicDepth += +allelicDepth;
                             }
                         })
 
-                        gt.altCount = altAlleleCounts;
-                        gt.refCount = refAlleleCount;
+                        gt.altCount      = altAlleleCounts;
+                        gt.refCount      = refAlleleCount;
                         gt.genotypeDepth = totalAllelicDepth;
                     } else {
-                        gt.altCount = null;
-                        gt.refCount = null;
+                        gt.altCount      = null;
+                        gt.refCount      = null;
                         gt.genotypeDepth = null;
                     }
                 } else if (gtAltCountIndex) {
@@ -2547,7 +2628,7 @@ vcfiobio = function module() {
                     gt.altCount = tokens[gtAltCountIndex];
 
                     var altCountTokens = gt.altCount.split(",");
-                    altCountTokens.forEach(function (allelicDepth) {
+                    altCountTokens.forEach(function(allelicDepth) {
                         if (allelicDepth) {
                             totalAllelicDepth += +allelicDepth;
                         }
@@ -2555,8 +2636,7 @@ vcfiobio = function module() {
 
                     var gtRefCountIndex = gtTokens["RO"];
                     if (gtRefCountIndex) {
-                        gt.refCount = tokens[gtRefCountIndex];
-                        ;
+                        gt.refCount = tokens[gtRefCountIndex];;
                         totalAllelicDepth += +gt.refCount;
                     } else {
                         gt.refCount = null;
@@ -2570,14 +2650,14 @@ vcfiobio = function module() {
                     gt.refCount = null;
                 }
 
-                gt.altCount = me._parseMultiAllelic(result.gtNumber - 1, gt.altCount, ",");
+                gt.altCount = me._parseMultiAllelic(result.gtNumber-1, gt.altCount, ",");
 
 
                 var strandAlleleCountIndex = gtTokens["SAC"]; // GATK
-                var strandRefForwardIndex = gtTokens["SRF"]; // Freebayes
-                var strandRefReverseIndex = gtTokens["SRR"]; // Freebayes
-                var strandAltForwardIndex = gtTokens["SAF"]; // Freebayes
-                var strandAltReverseIndex = gtTokens["SAR"]; // Freebayes
+                var strandRefForwardIndex  = gtTokens["SRF"]; // Freebayes
+                var strandRefReverseIndex  = gtTokens["SRR"]; // Freebayes
+                var strandAltForwardIndex  = gtTokens["SAF"]; // Freebayes
+                var strandAltReverseIndex  = gtTokens["SAR"]; // Freebayes
                 if (strandAlleleCountIndex) {
                     //
                     // GATK Strand allele counts, comma separated
@@ -2594,7 +2674,7 @@ vcfiobio = function module() {
                         gt.altForwardCount = null;
                         gt.altReverseCount = null;
                     }
-                } else if (strandRefForwardIndex && strandRefReverseIndex && strandAltForwardIndex && strandAltReverseIndex) {
+                } else if (strandRefForwardIndex && strandRefReverseIndex && strandAltForwardIndex && strandAltReverseIndex ) {
                     //
                     // Freebayes Strand bias counts (SRF, SRR, SAF, SAR)
                     //
@@ -2610,6 +2690,7 @@ vcfiobio = function module() {
                 }
 
 
+
                 // Only keep the alt if we have a genotype that matches.
                 // For example
                 // A->G    0|1 keep
@@ -2622,7 +2703,7 @@ vcfiobio = function module() {
                 if (gt.gt.indexOf("|") > 0) {
                     delim = "|";
                     gt.phased = true;
-                } else if (gt.gt.indexOf("/") > 0) {
+                } else if (gt.gt.indexOf("/") > 0){
                     delim = "/";
                     gt.phased = false;
                 } else {
@@ -2632,66 +2713,26 @@ vcfiobio = function module() {
                 if (delim) {
                     var tokens = gt.gt.split(delim);
                     if (tokens.length == 2) {
-                        if (isLevelEdu && alt.indexOf(",") > 0) {
-                            if ((tokens[0] == 1) && (tokens[1] == 2)) {
-                                gt.keep = true;
-                            }
-                            if (tokens[0] == tokens[1]) {
-                                gt.keep = true;
-                                var theAltIdx = tokens[0] - 1;
-                                result.alt = alt.split(',')[theAltIdx] + ',' + alt.split(',')[theAltIdx];
-                            } else if (tokens[0] == 0 && tokens[1] != 0) {
-                                var theAltIdx = +tokens[1] - 1;
-                                result.alt = alt.split(',')[theAltIdx]
-                            } else if (tokens[1] == 0 && tokens[0] != 0) {
-                                var theAltIdx = +tokens[0] - 1;
-                                result.alt = alt.split(',')[theAltIdx]
-                            }
-                            if (gt.keep) {
-                                if (tokens[0] == tokens[1]) {
-                                    gt.zygosity = "HOM";
-                                } else {
-                                    gt.zygosity = "HET";
-                                }
-                            }
-
-                        } else if (tokens[0] == result.gtNumber || tokens[1] == result.gtNumber) {
+                        if (tokens[0] == result.gtNumber || tokens[1] == result.gtNumber) {
                             gt.keep = true;
                             if (tokens[0] == tokens[1]) {
                                 gt.zygosity = "HOM";
                             } else {
                                 gt.zygosity = "HET";
                             }
-                        } else if (tokens[0] == "0" && tokens[1] == "0") {
+                        } else if (tokens[0] == "0" && tokens[1] == "0" ) {
                             gt.keep = false;
                             gt.zygosity = "HOMREF"
                         }
                     }
-
-                    gt.eduGenotype = "";
-                    if (isLevelEdu) {
-                        var alts = alt.split(",");
-                        var gtIdx1 = +tokens[0];
-                        var gtIdx2 = +tokens[1];
-                        if (gt.zygosity == "HET" && gtIdx1 == 0) {
-                            gt.eduGenotype = rec.ref + " " + alts[altIdx];
-                        } else if (gt.zygosity == "HET" && gtIdx1 > 0) {
-                            gt.eduGenotype = alts[gtIdx1 - 1] + " " + alts[gtIdx2 - 1];
-                        } else if (gt.zygosity == "HOM") {
-                            gt.eduGenotype = alts[gtIdx1 - 1] + " " + alts[gtIdx1 - 1];
-                        } else if (gt.zygosity == "HOMREF") {
-                            gt.eduGenotype = rec.ref + " " + rec.ref;
-                        }
-                    }
-                    gt.eduGenotypeReversed = utility.switchGenotype(gt.eduGenotype);
-
                 }
             }
 
         });
 
 
-        result.genotypes.forEach(function (gt) {
+
+        result.genotypes.forEach(function(gt) {
             if (gt.keep) {
                 result.keep = true;
             }
