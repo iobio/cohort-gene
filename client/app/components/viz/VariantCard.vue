@@ -252,12 +252,12 @@ TD & SJG updated Apr2018 -->
                     return val + "x";
                 }
             },
-            onVariantClick: function (variant, cohortKey) {
+            onVariantClick: function (variant, dataSetKey) {
                 if (this.showVariantViz) {
                     this.hideVariantCircle();
                     this.showVariantCircle(variant);
                 }
-                this.$emit('dataSetVariantClick', variant, this, cohortKey);
+                this.$emit('dataSetVariantClick', variant, this, dataSetKey);
             },
             onVariantHover: function (variant, cohortKey, showTooltip = true) {
                 if (this.selectedVariant == null) {

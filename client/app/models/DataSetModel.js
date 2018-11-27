@@ -793,13 +793,11 @@ class DataSetModel {
         })
     }
 
-    // TODO: refactor this for data set model
     // Take in single variant, navigate to variant in vcf, annotate, return variant result
     promiseGetVariantExtraAnnotations(theGene, theTranscript, variant, format, getHeader = false, sampleNames) {
         let me = this;
 
         return new Promise(function (resolve, reject) {
-
             // Create a gene object with start and end reduced to the variants coordinates.
             let fakeGeneObject = $().extend({}, theGene);
             fakeGeneObject.start = variant.start;
@@ -822,14 +820,15 @@ class DataSetModel {
                 let containingVcf = me.getContainingVcf(variant.id);
                 me._promiseVcfRefName(theGene.chr)
                     .then(function () {
+                        let probandIds = me.getProbandCohort() ? me.getProbandCohort().sampleIds : [];
                         containingVcf.promiseGetVariants(
                             me.getVcfRefName(theGene.chr, containingVcf),
                             fakeGeneObject,
                             theTranscript,
                             null,   // regions
                             false,   //isMultiSample
-                            me.getFormattedSampleIds('subset'),
-                            me.getFormattedSampleIds('proband'),
+                            me.getSubsetCohort().sampleIds,
+                            probandIds,
                             me.getName() === 'known-variants' ? 'none' : me.getAnnotationScheme().toLowerCase(),
                             me.getTranslator().clinvarMap,
                             me.getGeneModel().geneSource === 'refseq',
@@ -853,6 +852,7 @@ class DataSetModel {
                                     else {
                                         featureList.push(singleVarData.features);
                                     }
+
                                     // Pull out features matching position
                                     let matchingVar = featureList.filter(function (aVariant) {
                                         let matches =
@@ -908,7 +908,7 @@ class DataSetModel {
                                         reject('Cannot find vcf record for variant ' + theGene.gene_name + " " + variant.start + " " + variant.ref + "->" + variant.alt);
                                     }
                                 } else {
-                                    var msg = "Empty results returned from CohortModel.promiseGetVariantExtraAnnotations() for variant " + variant.chrom + " " + variant.start + " " + variant.ref + "->" + variant.alt;
+                                    var msg = "Empty results returned from DataSetModel.promiseGetVariantExtraAnnotations() for variant " + variant.chrom + " " + variant.start + " " + variant.ref + "->" + variant.alt;
                                     console.log(msg);
                                     if (format === 'csv' || format === 'vcf') {
                                         resolve([variant, variant, []]);

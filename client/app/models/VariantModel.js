@@ -801,7 +801,7 @@ class VariantModel {
         let existingVariants = [];
 
         // If we have multiple variants to combine
-        if (fileNames > 1 || firstInfo.features.length > 1) {
+        if (fileNames > 1 || (firstInfo.features && firstInfo.features.length > 1)) {
             for (let i = 0; i < fileNames.length; i++) {
                 let currVars = variantInfo[fileNames[i]].features;
                 currVars.forEach((variant) => {

@@ -372,12 +372,12 @@ Updated: SJG Apr2018
                     return val + "x";
                 }
             },
-            onVariantClick: function (variant, cohortKey) {
+            onVariantClick: function (variant, dataSetKey) {
                 if (this.showVariantViz) {
                     this.hideVariantCircle();
                     this.showVariantCircle(variant);
                 }
-                this.$emit('dataSetVariantClick', variant, this, cohortKey);
+                this.$emit('dataSetVariantClick', variant, this, dataSetKey);
             },
             onVariantZoom: function (selectedVarIds, xStart, yStart, drawBelow, graphWidth) {
                 let self = this;

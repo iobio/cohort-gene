@@ -263,7 +263,7 @@ function scaledVariantD3() {
         svgContainer.remove();
     }
 
-    let switchSelectedColorScheme = function (zoomMode, impactMode) {
+    var switchSelectedColorScheme = function (zoomMode, impactMode) {
         if (zoomMode) {
             // Remove impact or enrichment coloring
             if (impactMode) {
@@ -416,8 +416,8 @@ function scaledVariantD3() {
         } else {
             height = totalLayers * 5 * (variantHeight + verticalPadding);    // Scale this to main layers size
             height += (variantHeight + verticalPadding);
-            if (height < 800) height = 800;   // Set a minimum
-            if (height > 950) height = 950;   // Set a maximum
+            //if (height < 500) height = 500;   // Set a minimum
+            if (height > 750) height = 750;   // Set a maximum
         }
 
         // Account for the margin when we are showing the xAxis

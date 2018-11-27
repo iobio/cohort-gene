@@ -304,6 +304,7 @@
                         let sourceHeight = $('#sourceFileLine').height();
                         bottomSourceCoord = rect.top + sourceHeight;
                     }
+                    // TODO: not using for now
                     let availableSpace = $(document).height() - bottomSourceCoord + 100; // Add a bit of spacing
 
                     // Set the vertical layer count so that the height of the chart can be recalculated
@@ -312,7 +313,7 @@
                             return d.level;
                         });
                     }
-                    self.variantChart.posVertLayers(2); // Hardcoding for now
+                    self.variantChart.posVertLayers(3); // Hardcoding for now
                     self.variantChart.lowestWidth(self.data.featureWidth);
                     //self.variantChart.availableVertSpace(availableSpace); // Forces chart to fill up all available vertical space
                     if (self.data.features == null || self.data.features.length === 0) {
@@ -333,8 +334,8 @@
             },
             onVariantClick: function (variant) {
                 let self = this;
-                let cohortKey = self.name;
-                self.$emit("variantClick", variant, cohortKey);
+                let dataSetKey = self.name;
+                self.$emit("variantClick", variant, dataSetKey);
             },
             onVariantZoomSelected: function (selectedVarIds, xStart, yStart, drawBelow, graphWidth) {
                 let self = this;

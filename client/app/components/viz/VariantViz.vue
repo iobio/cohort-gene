@@ -284,7 +284,7 @@ export default {
           if (self.data.maxPosLevel == null) {
             self.data.maxPosLevel = d3.max(self.data.features, function(d) { return d.level; });
           }
-          self.variantChart.verticalLayers(self.data.maxPosLevel);
+          self.variantChart.verticalLayers(self.data.maxPosLevel + 1);
           self.variantChart.lowestWidth(self.data.featureWidth);
           if (self.data.features == null || self.data.features.length === 0) {
             self.variantChart.showXAxis(false);
@@ -304,8 +304,8 @@ export default {
       },
       onVariantClick: function(variant) {
         let self = this;
-        var cohortKey = self.name;
-        self.$emit("variantClick", variant, cohortKey);
+        var dataSetKey = self.name;
+        self.$emit("variantClick", variant, dataSetKey);
       },
       onVariantHover: function(variant) {
         let self = this;

@@ -493,14 +493,17 @@ TD & SJG updated Nov2018 -->
                 this.filterModel.regionEnd = null;
                 this.variantModel.setLoadedVariants(this.selectedGene);
             },
-            onDataSetVariantClick: function (variant, sourceComponent, cohortKey) {
+            onDataSetVariantClick: function (variant, sourceComponent, dataSetKey) {
                 let self = this;
 
                 if (variant) {
                     // Circle selected variant
-                    if (sourceComponent == null || self.$refs.variantCardRef != sourceComponent) {
-                        // TODO: do I need to loop through these references?
-                        self.$refs.variantCardRef.showVariantCircle(variant);
+                    if (sourceComponent == null || self.$refs.variantCardRef) {
+                        self.$refs.variantCardRef.forEach((cardRef) => {
+                            if (cardRef != sourceComponent) {
+                                cardRef.showVariantCircle(variant);
+                            }
+                        });
                     }
                     // Query service for single variant annotation if we don't have details yet
                     if (!self.variantModel.extraAnnotationsLoaded) {
@@ -510,9 +513,8 @@ TD & SJG updated Nov2018 -->
                         self.loadingExtraClinvarAnnotations = true;
 
                         // Send variant in for annotating
-                        let cohortModel = self.variantModel.dataSet.getSubsetCohort();
-
-                        cohortModel.promiseGetVariantExtraAnnotations(self.selectedGene, self.selectedTranscript, variant, 'vcf')
+                        let dataSet = self.variantModel.getDataSet(dataSetKey);
+                        dataSet.promiseGetVariantExtraAnnotations(self.selectedGene, self.selectedTranscript, variant, 'vcf')
                             .then(function (updatedVariantObject) {
                                 let updatedVariant = updatedVariantObject[0][0];
                                 // Display variant info once we have it
@@ -528,7 +530,7 @@ TD & SJG updated Nov2018 -->
                                 let cohortObj = {};
                                 cohortObj[0] = variantObj;
 
-                                self.variantModel.promiseAnnotateWithClinvar(cohortObj, self.selectedGene, self.selectedTranscript, false)
+                                dataSet.promiseAnnotateWithClinvar(cohortObj, self.selectedGene, self.selectedTranscript, false)
                                     .then(function (variantObj) {
                                         // Unwrap clinvarVariant structure
                                         let clinvarVariant = variantObj[0]['Subset']['features'][0];
