@@ -183,6 +183,21 @@ class DataSetModel {
         return self.getVariantModel().geneModel;
     }
 
+    /* Sets vcfNames field in this model and the phenotypes field in subset cohort model.
+    Both properties utilized in EnrichmentVariantViz chips. */
+    setDisplayChips(dataSetName) {
+        let self = this;
+
+        self.vcfNames = [dataSetName];
+        self.getSubsetCohort().setSelectionDetails(self.excludeIds);
+    }
+
+    wipeGeneData() {
+        let self = this;
+        self.loadedVariants = null;
+        self.getSubsetCohort().updateChips();
+    }
+
     //</editor-fold>
 
     //<editor-fold desc="STATUS GETTERS">
@@ -317,6 +332,9 @@ class DataSetModel {
         let self = this;
 
         return new Promise(function (resolve, reject) {
+            // Set status flags
+            self.inProgress.loadingVariants = true;
+
             // Load variants
             self.startGeneProgress(theGene['gene_name']);
             self.clearLoadedData();
@@ -859,7 +877,8 @@ class DataSetModel {
     /* Checks vcfs to ensure they are found and can be successfully opened. Also retrieves build information
     * for each vcf provided.
     *
-    * Takes in three stably sorted lists of file names, vcf urls, and tbi urls.
+    * Takes in three stably sorted lists of file names, vcf urls, and tbi urls. Optionally takes in
+    * list of file display names (for use with local file upload).
     *
     * Returns three stable sorted lists of vcf names, urls, tbi urls, and array of sample names within file.
     * Each list only contains information relative to vcf files that may be found, successfully opened,
@@ -868,7 +887,7 @@ class DataSetModel {
     * Notifies the user of any vcfs that 1) may not be opened, 2) have indeterminate reference builds, or 3) do not
     * have the majority reference build.
     */
-    onVcfUrlEntered(urlNames, vcfUrls, tbiUrls) {
+    onVcfUrlEntered(urlNames, vcfUrls, tbiUrls, displayNames = []) {
         let me = this;
         me.vcfData = null;
         me.sampleName = null;
@@ -905,19 +924,6 @@ class DataSetModel {
                                     sampleNames.push(names);
                                     resolve();
                                 });
-
-                                // TODO: we shouldn't need this anymore since ref is parameter sent from Hub
-                                // // Get build version from vcf chromosome notation if can't get from header
-                                // if (hdrBuildResult === '') {
-                                //     // Look at chrom notation if we couldn't determine here
-                                //     currVcfEndpt.getChromosomesFromVcf(currVcf, currTbi, function (success, errorMsg, chrBuildResult) {
-                                //         if (success) {
-                                //             individualRefBuilds[currFileName] = chrBuildResult;
-                                //         }
-                                //     })
-                                // } else {
-                                //     individualRefBuilds[currFileName] = hdrBuildResult;
-                                // }
                             } else {
                                 openErrorFiles.push(currFileName);
                                 console.log('Could not open either: ' + vcfUrls[i] + 'or ' + tbiUrls[i] + ' - ' + errorMsg);
@@ -936,6 +942,7 @@ class DataSetModel {
                         updatedListObj['vcfs'] = vcfUrls;
                         updatedListObj['tbis'] = tbiUrls;
                         updatedListObj['samples'] = sampleNames;
+                        updatedListObj['displayNames'] = displayNames;
                         let invalidVcfNames = [];
                         let invalidVcfReasons = []; // Must be in identical order as invalidVcfNames
 
@@ -954,11 +961,12 @@ class DataSetModel {
                         else if (openErrorFiles.length > 0) {
                             errorMsg += 'The following files could not be found and will not be included in the analysis: ' + openErrorFiles.join(',');
                             me.removeEntriesFromHash(openErrorFiles);
-                            let updatedListObj = me.removeEntriesFromLists(openErrorFiles, urlNames, vcfUrls, tbiUrls, sampleNames);
+                            let updatedListObj = me.removeEntriesFromLists(openErrorFiles, urlNames, vcfUrls, tbiUrls, sampleNames, displayNames);
                             urlNames = updatedListObj['names'];
                             vcfUrls = updatedListObj['vcfs'];
                             tbiUrls = updatedListObj['tbis'];
                             sampleNames = updatedListObj['samples'];
+                            displayNames = updatedListObj['displayNames'];
 
                             openErrorFiles.forEach((file) => {
                                 invalidVcfNames.push(file);
@@ -992,11 +1000,12 @@ class DataSetModel {
                         // If we have some files we couldn't find a reference for, remove from lists
                         else if (unfoundRefFiles.length > 0) {
                             me.removeEntriesFromHash(unfoundRefFiles);
-                            updatedListObj = me.removeEntriesFromLists(unfoundRefFiles, urlNames, vcfUrls, tbiUrls, sampleNames);
+                            updatedListObj = me.removeEntriesFromLists(unfoundRefFiles, urlNames, vcfUrls, tbiUrls, sampleNames, displayNames);
                             urlNames = updatedListObj['names'];
                             vcfUrls = updatedListObj['vcfs'];
                             tbiUrls = updatedListObj['tbis'];
                             sampleNames = updatedListObj['samples'];
+                            displayNames = updatedListObj['displayNames'];
 
                             unfoundRefFiles.forEach((fileName) => {
                                 invalidVcfNames.push(fileName);
@@ -1030,11 +1039,12 @@ class DataSetModel {
                             }
                             // Remove files with minority ref builds
                             me.removeEntriesFromHash(minorityRefKeyNames);
-                            updatedListObj = me.removeEntriesFromLists(minorityRefKeyNames, urlNames, vcfUrls, tbiUrls, sampleNames);
+                            updatedListObj = me.removeEntriesFromLists(minorityRefKeyNames, urlNames, vcfUrls, tbiUrls, sampleNames, displayNames);
                             urlNames = updatedListObj['names'];
                             vcfUrls = updatedListObj['vcfs'];
                             tbiUrls = updatedListObj['tbis'];
                             sampleNames = updatedListObj['samples'];
+                            displayNames = updatedListObj['displayNames'];
                             minorityRefKeyNames.forEach((fileName) => {
                                 invalidVcfNames.push(fileName);
                                 invalidVcfReasons.push('File aligned to different reference build than others');
@@ -1058,9 +1068,9 @@ class DataSetModel {
                             });
                         });
                         updatedListObj['samples'] = combinedSamples;
-
                         updatedListObj['invalidNames'] = invalidVcfNames;
                         updatedListObj['invalidReasons'] = invalidVcfReasons;
+                        updatedListObj['displayNames'] = displayNames;
                         resolve(updatedListObj);
                     });
             }
@@ -1506,7 +1516,7 @@ class DataSetModel {
     /* Takes in a list of file names and removes them from the subsequent three provided lists.
      * If a file name is provided that is not within nameList, vcfList, and/or tbiList, nothing is affected
      * Returns nameList, vcfList, and tbiList in a combined object. */
-    removeEntriesFromLists(fileNames, nameList, vcfList, tbiList, sampleNameList) {
+    removeEntriesFromLists(fileNames, nameList, vcfList, tbiList, sampleNameList, displayNameList) {
         let self = this;
 
         // Create return object
@@ -1519,12 +1529,14 @@ class DataSetModel {
             vcfList.splice(fileIndex, 1);
             tbiList.splice(fileIndex, 1);
             sampleNameList.splice(fileIndex, 1);
+            displayNameList.splice(fileIndex, 1);
         });
 
         listObj['names'] = nameList;
         listObj['vcfs'] = vcfList;
         listObj['tbis'] = tbiList;
         listObj['samples'] = sampleNameList;
+        listObj['displayNames'] = displayNameList;
         return listObj;
     }
 

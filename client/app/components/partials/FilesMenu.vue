@@ -292,18 +292,23 @@
                 return 's' + nextVal;
             },
             onLoad: function () {
-                // TODO: have to assign sampleIds in proband cohort
-
                 let self = this;
                 self.inProgress = true;
 
                 self.variantModel.genomeBuildHelper.setCurrentBuild(self.buildName);
                 self.variantModel.genomeBuildHelper.setCurrentSpecies(self.speciesName);
-                self.variantModel.getAllDataSets().forEach(function (dataSet) {
-                    if (dataSet.trackName == null || dataSet.trackName.length === 0) {
-                        dataSet.trackName = dataSet.id;
+
+                // Set display chips for variant
+                for (var infoName in self.modelInfoMap) {
+                    let currInfo = self.modelInfoMap[infoName];
+                    if (currInfo.dataSet && currInfo.dataSet.trackName == null || currInfo.dataSet.trackName.length === 0) {
+                        currInfo.dataSet.trackName = currInfo.dataSet.id;
                     }
-                });
+
+                    let displayName = currInfo.displayName.length > 0 ? currInfo.displayName : 'Local File';
+                    currInfo.dataSet.setDisplayChips(displayName);
+                }
+
                 let performAnalyzeAll = self.autofillAction ? true : false;
                 self.inProgress = false;
                 self.$emit("on-files-loaded", performAnalyzeAll);
@@ -436,9 +441,10 @@
 
                     // Check files in data set model
                     let nameList = [theModelInfo.id];
+                    let displayNameList = [theModelInfo.displayName !== '' ? theModelInfo.displayName : 'Local File'];
 
                     // Check all vcfs at same time for single entry
-                    theDataSet.onVcfUrlEntered(nameList, theModelInfo.vcfs, theModelInfo.tbis)
+                    theDataSet.onVcfUrlEntered(nameList, theModelInfo.vcfs, theModelInfo.tbis, displayNameList)
                         .then((successObj) => {
                             if (successObj) {
                                 // Set samples prop
@@ -453,9 +459,6 @@
                                         // Set view state
                                         currEntryRef.fillSampleFields(successObj.samples, theModelInfo.selectedSample, theModelInfo.subsetSampleIds, theModelInfo.excludeSampleIds);
                                         self.validate();
-
-                                        // Set display name in model
-                                        theDataSet.displayName = theModelInfo.displayName ? theModelInfo.displayName : theModelInfo.selectedSample;
                                     }
                                 }
                                 // TODO: incorporate bam functionality

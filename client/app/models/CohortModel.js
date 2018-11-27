@@ -28,7 +28,7 @@ class CohortModel {
         this.TOTAL_VAR_CUTOFF = 5000;
     }
 
-    // <editor-fold desc="GETTERS">
+    // <editor-fold desc="GETTERS & SETTERS">
     getDataSetModel() {
         let self = this;
         return self._dataSetModel;
@@ -48,6 +48,27 @@ class CohortModel {
             return "VEP";
         } else {
             return this.getDataSetModel().getAnnotationScheme();
+        }
+    }
+
+    /* Adds subset IDs and exclude IDs to the phenotypes field. Phenotypes are displayed as Analysis Sources chips in Variant Viz.*/
+    setSelectionDetails(excludeIds) {
+        let self = this;
+
+        // Add subset IDs
+        if (self.sampleIds.length < 4) {
+            self.phenotypes.push('Subset Samples: ' + self.sampleIds.join());
+        } else {
+            let firstFew = self.sampleIds.splice(3).join() + '...';
+            self.phenotypes.push('Subset Samples: ' + firstFew);
+        }
+
+        // Add exclude IDs if they exist
+        if (excludeIds.length > 0 && excludeIds.length < 4) {
+            self.phenotypes.push('Excluded Samples: ' + excludeIds.join());
+        } else if (excludeIds.length > 0) {
+            let firstFew = excludeIds.splice(3).join() + '...';
+            self.phenotypes.push('Excluded Samples: ' + firstFew);
         }
     }
 
@@ -1477,12 +1498,12 @@ class CohortModel {
         }
     }
 
-    /* A gene has been selected. Clear out the model's state in preparation for getting data.*/
-    wipeGeneData() {
-        if (this.phenotypes.length > 3) {
-            this.phenotypes.pop();
+    /* Clear off the last selection detail chip contianing the number of variants for the selected locus.*/
+    updateChips() {
+        let self = this;
+        if (self.phenotypes.length > 1) {
+            self.phenotypes.pop();
         }
-        this.loadedVariants = null;
     }
 
     setLoadedVariants(theVcfData) {

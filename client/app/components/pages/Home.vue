@@ -301,17 +301,6 @@ TD & SJG updated Nov2018 -->
                 let self = this;
                 return self.cacheHelper._promiseClearCache(self.cacheHelper.launchTimestampToClear);
             },
-            // onLoadDemoData: function () {
-            //     let self = this;
-            //     self.geneModel.copyPasteGenes(self.variantModel.demoGenes.join(", "));
-            //     self.onGeneSelected(self.DEMO_GENE);
-            //     self.variantModel.promiseInitDemo()
-            //         .then(function () {
-            //             if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
-            //                 self.promiseLoadData();
-            //             }
-            //         })
-            // },
             promiseLoadData: function () {
                 let self = this;
 
@@ -367,13 +356,6 @@ TD & SJG updated Nov2018 -->
             onFilesLoaded: function () {
                 let self = this;
 
-                // Set loading status for tracks
-                if (self.variantModel) {
-                    let dataSets = self.variantModel.getAllDataSets();
-                    dataSets.forEach((dataSet) => {
-                        dataSet.inProgress.loadingVariants = true;
-                    });
-                }
                 self.promiseClearCache()
                     .then(function() {
                         // NOTE: moved filter model initialization here from mounting b/c models not ready on local launch
@@ -399,13 +381,12 @@ TD & SJG updated Nov2018 -->
             },
             wipeModels: function () {
                 let self = this;
-                if (self.variantModel == null || self.variantModel.dataSet == null) {
+                if (self.variantModel == null || self.variantModel.getDataSet('s0') == null) {
                     return;
                 }
-                let cohortModels = self.variantModel.dataSet.getCohorts();
-                cohortModels.forEach((model) => {
-                    model.wipeGeneData();
-                });
+                self.variantModel.getAllDataSets().forEach((dataSet) => {
+                    dataSet.wipeGeneData();
+                })
             },
             promiseLoadGene: function (geneName) {
                 let self = this;

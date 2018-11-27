@@ -53,7 +53,6 @@ class VariantModel {
             'subsetSampleIds': ['NA12877'],
             'excludeSampleIds': []
         }];
-        this.demoGenes = ['RAI1', 'MYLK2', 'PDHA1', 'PDGFB', 'AIRE'];
         // </editor-fold>
     }
 
