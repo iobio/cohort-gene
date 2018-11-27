@@ -107,13 +107,15 @@ function variantD3() {
             //showCoordinateFrame(matchingVariant.screenX);
 
         } else if (indicateMissingVariant) {
-            var mousex = d3.round(x(d.start));
+            var mousex = x(d.start - yAxisWidth);
             var mousey = height - verticalPadding;
+            // debugger;
+            // var xAxis = svgContainer.selectAll('.x.axis');
 
 
             var arrowClazz = pinned ? 'g.pinned.arrow' : 'g.hover.arrow';
             var garrow = svgContainer.select(arrowClazz);
-            garrow.attr("transform", "translate(" + (mousex + margin.left + yAxisWidth - variantHeight / 2) + "," + (mousey + margin.top - 6) + ")");
+            garrow.attr("transform", "translate(" +(mousex + margin.left - (variantHeight / 2)) + "," + (mousey + margin.top - 6) + ")");
 
 //            garrow.attr("transform", "translate(" + (mousex + margin.left - variantHeight/2) + "," + (mousey + margin.top - 6) + ")");
             garrow.selectAll('.arrow').transition()
@@ -446,9 +448,6 @@ function variantD3() {
                     });
 
 
-
-
-
                 // exit
                 track.exit().remove();
                 trackindel.exit().remove();
@@ -565,30 +564,30 @@ function variantD3() {
                             .attr("r", variantHeight + 2)
                             .style("opacity", 0);
                     }
-                //
-                //     var arrowClazz = 'g.' + clazz + '.arrow';
-                //     if (svg.selectAll(arrowClazz).empty()) {
-                //         //svg.selectAll("g.arrow").remove();
-                //         var garrow = svg.selectAll(arrowClazz).data([0])
-                //             .enter().append("g")
-                //             .attr("class", clazz + " arrow")
-                //             .attr("transform", "translate(1,0)");
-                //
-                //         garrow.append('line')
-                //             .attr("class", "arrow arrow-line")
-                //             .attr("x1", variantHeight + 2)
-                //             .attr("x2", -2)
-                //             .attr("y1", variantHeight + 2)
-                //             .attr("y2", 0)
-                //             .style("opacity", 0);
-                //         garrow.append('line')
-                //             .attr("class", "arrow arrow-line")
-                //             .attr("x1", variantHeight + 2)
-                //             .attr("x2", -2)
-                //             .attr("y1", 0)
-                //             .attr("y2", variantHeight + 2)
-                //             .style("opacity", 0);
-                //     }
+
+                    var arrowClazz = 'g.' + clazz + '.arrow';
+                    if (svg.selectAll(arrowClazz).empty()) {
+                        //svg.selectAll("g.arrow").remove();
+                        var garrow = svg.selectAll(arrowClazz).data([0])
+                            .enter().append("g")
+                            .attr("class", clazz + " arrow")
+                            .attr("transform", "translate(1,0)");
+
+                        garrow.append('line')
+                            .attr("class", "arrow arrow-line")
+                            .attr("x1", variantHeight + 2)
+                            .attr("x2", -2)
+                            .attr("y1", variantHeight + 2)
+                            .attr("y2", 0)
+                            .style("opacity", 0);
+                        garrow.append('line')
+                            .attr("class", "arrow arrow-line")
+                            .attr("x1", variantHeight + 2)
+                            .attr("x2", -2)
+                            .attr("y1", 0)
+                            .attr("y2", variantHeight + 2)
+                            .style("opacity", 0);
+                    }
                 });
 
                 dispatch.d3rendered();

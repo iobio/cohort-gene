@@ -199,7 +199,6 @@ function scaledVariantD3() {
 
         // Get the x for this position
         if (matchingVariant) {
-            debugger;
             var mousex = x(matchingVariant.start);    // Have to offset this by y-axis
             var mousey = y(matchingVariant.adjustedLevel);
 
@@ -231,8 +230,10 @@ function scaledVariantD3() {
 
         } else if (indicateMissingVariant) {
             var mousex = d3.round(x(d.start));
-            var mousey = height - ((d.adjustedLevel) * (variantHeight + verticalPadding));
 
+            // TODO: this will not work b/c variant being clicked on in sample model will not have adjusted level info
+            //var mousey = height - ((d.adjustedLevel) * (variantHeight + verticalPadding));
+            var mousey = height - verticalPadding;
 
             var garrow = svgContainer.select("g.arrow");
             garrow.attr("transform", "translate(" + (mousex + margin.left + yAxisWidth - variantHeight / 2) + "," + (mousey + margin.top - 6) + ")");

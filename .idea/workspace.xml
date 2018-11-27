@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="17d38fed-e0f5-492f-b455-1d8321fb2586" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/js/d3/variant.d3.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/js/d3/variant.d3.js" afterDir="false" />
     </list>
@@ -41,7 +40,7 @@
         <entry file="file://$PROJECT_DIR$/client/app/models/VariantModel.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="409">
-              <caret line="799" column="34" lean-forward="true" selection-start-line="799" selection-start-column="34" selection-end-line="799" selection-end-column="34" />
+              <caret line="799" column="34" selection-start-line="799" selection-start-column="34" selection-end-line="799" selection-end-column="34" />
               <folding>
                 <element signature="e#3426#3466#0" />
                 <element signature="e#33423#33454#0" />
@@ -69,8 +68,8 @@
       <file leaf-file-name="scaledVariant.d3.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="404">
-              <caret line="199" column="38" lean-forward="true" selection-start-line="199" selection-start-column="38" selection-end-line="199" selection-end-column="38" />
+            <state relative-caret-position="6847">
+              <caret line="826" column="30" selection-start-line="826" selection-start-column="25" selection-end-line="826" selection-end-column="30" />
             </state>
           </provider>
         </entry>
@@ -78,8 +77,8 @@
       <file leaf-file-name="variant.d3.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client/js/d3/variant.d3.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="253">
-              <caret line="437" column="46" lean-forward="true" selection-start-line="437" selection-start-column="46" selection-end-line="437" selection-end-column="46" />
+            <state relative-caret-position="274">
+              <caret line="117" column="72" selection-start-line="117" selection-start-column="72" selection-end-line="117" selection-end-column="72" />
             </state>
           </provider>
         </entry>
@@ -88,7 +87,7 @@
         <entry file="file://$PROJECT_DIR$/client/app/models/CohortModel.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="660">
-              <caret line="815" column="34" lean-forward="true" selection-start-line="815" selection-start-column="34" selection-end-line="815" selection-end-column="34" />
+              <caret line="815" column="34" selection-start-line="815" selection-start-column="34" selection-end-line="815" selection-end-column="34" />
               <folding>
                 <element signature="n#!!block;n#filterVariants#0;n#CohortModel#0" />
               </folding>
@@ -100,7 +99,7 @@
         <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilesMenu.vue">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="456">
-              <caret line="297" lean-forward="true" selection-start-line="297" selection-end-line="297" />
+              <caret line="297" selection-start-line="297" selection-end-line="297" />
             </state>
           </provider>
         </entry>
@@ -127,7 +126,7 @@
         <entry file="file://$PROJECT_DIR$/client/app/components/viz/VariantCard.vue">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="274">
-              <caret line="261" column="79" lean-forward="true" selection-start-line="261" selection-start-column="79" selection-end-line="261" selection-end-column="79" />
+              <caret line="261" column="79" selection-start-line="261" selection-start-column="79" selection-end-line="261" selection-end-column="79" />
               <folding>
                 <element signature="n#style#0;n#div#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
                 <element signature="e#5047#5088#0" expanded="true" />
@@ -147,9 +146,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>wipe</find>
-      <find>watcbh</find>
-      <find>data</find>
       <find>watch</find>
       <find>debugg</find>
       <find>computed</find>
@@ -169,14 +165,17 @@
       <find>genomebuildhelper</find>
       <find>build</find>
       <find>hidebrush</find>
-      <find>chart</find>
       <find>yAxisWidth</find>
       <find>yaxiswidth</find>
       <find>show</find>
       <find>indicatemiss</find>
       <find>d3click</find>
-      <find>showcircle</find>
       <find>debugger</find>
+      <find>showcircl</find>
+      <find>showcircle</find>
+      <find>arrow</find>
+      <find>chart</find>
+      <find>transform</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/client/js/model</dir>
@@ -418,7 +417,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="800952000" />
+    <option name="totallyTimeSpent" value="803363000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="877" extended-state="6" />
@@ -781,7 +780,7 @@
     <entry file="file://$PROJECT_DIR$/client/app/components/viz/VariantCard.vue">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="274">
-          <caret line="261" column="79" lean-forward="true" selection-start-line="261" selection-start-column="79" selection-end-line="261" selection-end-column="79" />
+          <caret line="261" column="79" selection-start-line="261" selection-start-column="79" selection-end-line="261" selection-end-column="79" />
           <folding>
             <element signature="n#style#0;n#div#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
             <element signature="e#5047#5088#0" expanded="true" />
@@ -792,7 +791,7 @@
     <entry file="file://$PROJECT_DIR$/client/app/models/VariantModel.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="409">
-          <caret line="799" column="34" lean-forward="true" selection-start-line="799" selection-start-column="34" selection-end-line="799" selection-end-column="34" />
+          <caret line="799" column="34" selection-start-line="799" selection-start-column="34" selection-end-line="799" selection-end-column="34" />
           <folding>
             <element signature="e#3426#3466#0" />
             <element signature="e#33423#33454#0" />
@@ -817,7 +816,7 @@
     <entry file="file://$PROJECT_DIR$/client/app/models/CohortModel.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="660">
-          <caret line="815" column="34" lean-forward="true" selection-start-line="815" selection-start-column="34" selection-end-line="815" selection-end-column="34" />
+          <caret line="815" column="34" selection-start-line="815" selection-start-column="34" selection-end-line="815" selection-end-column="34" />
           <folding>
             <element signature="n#!!block;n#filterVariants#0;n#CohortModel#0" />
           </folding>
@@ -854,21 +853,21 @@
     <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilesMenu.vue">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="456">
-          <caret line="297" lean-forward="true" selection-start-line="297" selection-end-line="297" />
+          <caret line="297" selection-start-line="297" selection-end-line="297" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="404">
-          <caret line="199" column="38" lean-forward="true" selection-start-line="199" selection-start-column="38" selection-end-line="199" selection-end-column="38" />
+        <state relative-caret-position="6847">
+          <caret line="826" column="30" selection-start-line="826" selection-start-column="25" selection-end-line="826" selection-end-column="30" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/client/js/d3/variant.d3.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="253">
-          <caret line="437" column="46" lean-forward="true" selection-start-line="437" selection-start-column="46" selection-end-line="437" selection-end-column="46" />
+        <state relative-caret-position="274">
+          <caret line="117" column="72" selection-start-line="117" selection-start-column="72" selection-end-line="117" selection-end-column="72" />
         </state>
       </provider>
     </entry>
