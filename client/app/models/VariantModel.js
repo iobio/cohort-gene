@@ -470,7 +470,7 @@ class VariantModel {
     //<editor-fold desc="LOCAL LAUNCH">
 
     /* Adds data set model and cohort models to represent a single entry in file menu. */
-    promiseAddEntry(modelInfo) {
+    promiseAddEntry(modelInfo, isSampleEntry) {
         let self = this;
 
         return new Promise((resolve, reject) => {
@@ -491,9 +491,13 @@ class VariantModel {
                 self.otherDataSets.push(localDataSet);
             }
 
-            localDataSet.initCohorts();
-            localDataSet.setExcludeIds(modelInfo.excludeSampleIds);
-            localDataSet.setSubsetIds(modelInfo.subsetSampleIds);
+            if (isSampleEntry) {
+                localDataSet.initSample();
+            } else {
+                localDataSet.initCohorts();
+                localDataSet.setExcludeIds(modelInfo.excludeSampleIds);
+                localDataSet.setSubsetIds(modelInfo.subsetSampleIds);
+            }
             localDataSet.addVcfEndpoint(modelInfo.id);
             resolve(localDataSet);
         });

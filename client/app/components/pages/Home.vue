@@ -38,8 +38,10 @@ TD & SJG updated Nov2018 -->
                     <v-flex xs9>
                         <enrichment-variant-card
                                 v-if="variantModel"
+                                v-for="dataSet in allDataSets"
                                 ref="variantCardRef"
-                                :dataSetModel="variantModel.mainDataSet"
+                                :key="dataSet.id"
+                                :dataSetModel="dataSet"
                                 :filterModel="filterModel"
                                 :annotationScheme="variantModel.annotationScheme"
                                 :classifyVariantSymbolFunc="variantModel.classifyByEnrichment"
@@ -209,6 +211,14 @@ TD & SJG updated Nov2018 -->
                 } else {
                     return null;
                 }
+            },
+            allDataSets: function() {
+                let self = this;
+                if (self.variantModel) {
+                    return self.variantModel.getAllDataSets();
+                } else {
+                    return [];
+                }
             }
         },
         mounted: function () {
@@ -377,7 +387,9 @@ TD & SJG updated Nov2018 -->
                 self.promiseLoadGene(geneName);
                 self.doneLoadingData = false;
                 self.doneLoadingExtras = false;
-                self.$refs.variantCardRef.clearZoom();
+                self.$refs.variantCardRef.forEach((cardRef) => {
+                    cardRef.clearZoom();
+                })
             },
             wipeModels: function () {
                 let self = this;
@@ -528,7 +540,9 @@ TD & SJG updated Nov2018 -->
                 let self = this;
                 self.selectedVariant = null;
                 if (!keepVariantCircle && self.$refs.variantCardRef) {
-                    self.$refs.variantCardRef.hideVariantCircle();
+                    self.$refs.variantCardRef.forEach((cardRef) => {
+                        cardRef.hideVariantCircle();
+                    })
                 }
             },
             startZoomMode: function (selectedVarIds) {

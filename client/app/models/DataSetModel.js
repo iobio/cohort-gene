@@ -24,7 +24,7 @@ class DataSetModel {
         this.loadedVariants = null;
         this.selectedVariants = null;   // Selected in zoom panel
         this.trackName = '';            // Displays in italics before chips
-        this.excludeIds = [];    // Samples from any vcf file to be removed from analysis
+        this.excludeIds = [];           // Samples from any vcf file to be removed from analysis
         this.getVcfRefName = null;      // The chromosome name for the selected gene
         this.getBamRefName = null;
         this.vcfRefNamesMap = {};       // The map of all chromosomes present in all vcf files for this data set
@@ -60,6 +60,7 @@ class DataSetModel {
         this._variantModel = theVariantModel;
         this._cohorts = [];
         this._cohortMap = {};
+        this._samples = [];
         // </editor-fold>
 
         // <editor-fold desc="MOSAIC PROPS">
@@ -172,6 +173,11 @@ class DataSetModel {
         self.getProbandCohort().sampleIds = theIds;
     }
 
+    setSelectedSample(theId) {
+        let self = this;
+        self.getSubsetCohort().sampleIds = theId;
+    }
+
     getTranslator() {
         let self = this;
         return self.getVariantModel().translator;
@@ -231,18 +237,26 @@ class DataSetModel {
     initCohorts() {
         let self = this;
 
-        let parentVarModel = self.getVariantModel();
-        let probandCohort = new CohortModel(self, parentVarModel);
+        let probandCohort = new CohortModel(self);
         probandCohort.isProbandCohort = true;
         self.addCohort(probandCohort, PROBAND_ID);
 
-        let subsetCohort = new CohortModel(self, parentVarModel);
+        let subsetCohort = new CohortModel(self);
         subsetCohort.isSubsetCohort = true;
         self.addCohort(subsetCohort, SUBSET_ID);
 
-        let unaffectedCohort = new CohortModel(self, parentVarModel);
+        let unaffectedCohort = new CohortModel(self);
         unaffectedCohort.isUnaffectedCohort = true;
         self.addCohort(unaffectedCohort, UNAFFECTED_ID);
+    }
+
+    /* Initializes a single cohort model representing a single sample track, rather than multiple cohorts. */
+    initSample() {
+        let self = this;
+
+        let subsetCohort = new CohortModel(self);
+        subsetCohort.isSubsetCohort = true;
+        self.addCohort(subsetCohort, SUBSET_ID);
     }
 
     /* Adds the cohort to the dataset. Places cohort in lookup by ID. */

@@ -123,12 +123,11 @@
                             :filePlaceholder="filePlaceholder.vcf"
                             :fileAccept="fileAccept.vcf"
                             :separateUrlForIndex="separateUrlForIndex"
-                            :isSampleEntry="false"
                             @url-entered="onVcfUrlEntered"
                             @file-selected="onVcfFilesSelected">
                     </entry-data-file>
                 </v-flex>
-                <v-flex d-flex xs12 id="subset-selection" v-if="samples && samples.length > 0">
+                <v-flex d-flex xs12 id="subset-selection" v-if="!isSampleEntry && samples && samples.length > 0">
                     <v-layout row wrap>
                         <v-flex d-flex xs2 class="pt-3">
                             <span class="pl-3 pt-2 sample-select-label">Subset Samples:</span>
@@ -154,6 +153,18 @@
                             </v-text-field>
                         </v-flex>
                     </v-layout>
+                </v-flex>
+                <v-flex xs4 id="sample-selection" v-if="isSampleEntry">
+                    <v-select
+                            v-bind:class="samples == null || samples.length === 0 ? 'hide' : ''"
+                            label="Sample"
+                            v-model="selectedSample"
+                            :items="samples"
+                            color="appColor"
+                            autocomplete
+                            @input="onSampleSelected"
+                            hide-details
+                    ></v-select>
                 </v-flex>
                 <!--<v-flex d-flex xs12 class="ml-3">-->
                     <!--<entry-data-file-->
@@ -241,29 +252,23 @@
                     self.modelInfo.dataSet.getProbandCohort().trackName = self.modelInfo.displayName;
                 }
             },
-            onVcfUrlEntered: function (entryId, vcfUrl, tbiUrl) {
+            // Called for non-autofill (demo or config file) launch
+            onVcfUrlEntered: function (vcfUrl, tbiUrl) {
                 let self = this;
-                self.$set(self, "sample", null);
+                self.$set(self, "selectedSample", null);
                 self.$set(self, "samples", []);
 
-                if (self.modelInfo && self.modelInfo.model) {
-                    self.modelInfo.dataSet.onVcfUrlEntered([entryId], [vcfUrl], [tbiUrl])
+                if (self.modelInfo && self.modelInfo.dataSet) {
+                    self.modelInfo.dataSet.onVcfUrlEntered([self.modelInfo.id], [vcfUrl], [tbiUrl], [self.modelInfo.displayName])
                         .then((listObj) => {
                         if (listObj) {
                             self.samples = listObj['samples'];
-                            if (self.modelInfo.sample && self.samples.indexOf(self.modelInfo.sample) >= 0) {
-                                self.sample = self.modelInfo.sample;
-                                self.modelInfo.model.sampleName = self.modelInfo.sample;
-                            } else if (self.samples.length === 1) {
-                                self.sample = self.samples[0];
-                                self.modelInfo.sample = self.sample;
-                                self.modelInfo.model.sampleName = self.sample;
+                            if (self.samples.length === 1) {
+                                self.selectedSample = self.samples[0];
+                                self.modelInfo.dataSet.setSelectedSample(self.samples[0]);
                             } else {
-                                self.sample = null;
-                                self.modelInfo.sample = null;
-                                self.modelInfo.model.sampleName = null;
+                                self.selectedSample = null;
                             }
-                            // self.$emit("samples-available", self.modelInfo.order, self.samples);
                         }
                         self.$emit("sample-data-changed");
                     })
@@ -311,6 +316,7 @@
                 self.samples = samples;
                 if (sampleToSelect) {
                     self.selectedSample = sampleToSelect;
+                    self.modelInfo.dataSet.setSampleId(sampleToSelect);
                 } else {
                     self.subsetSampleIds = subsetSampleIds;
                     self.excludeSampleIds = excludeSampleIds;
@@ -326,15 +332,14 @@
                     self.excludeSampleDisplay = excludeSampleIds.join();
                 }
             },
-            // onSampleSelected: function () {
-            //     let self = this;
-            //     self.modelInfo.sample = this.sample;
-            //     if (self.modelInfo.model) {
-            //         self.modelInfo.model.sampleName = this.modelInfo.sample;
-            //         self.modelInfo.model.setSelectedSample(this.modelInfo.sample);
-            //     }
-            //     self.$emit("sample-data-changed");
-            // },
+            onSampleSelected: function () {
+                let self = this;
+                self.modelInfo.selectedSample = self.selectedSample;
+                if (self.modelInfo.dataSet) {
+                    self.modelInfo.dataSet.setSelectedSample([self.selectedSample]);
+                }
+                self.$emit("sample-data-changed");
+            },
             onBamUrlEntered: function (bamUrl, baiUrl) {
                 let self = this;
                 if (self.modelInfo && self.modelInfo.model) {

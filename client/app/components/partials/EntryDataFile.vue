@@ -93,8 +93,7 @@
             indexLabel: null,
             filePlaceholder: null,
             fileAccept: null,
-            separateUrlForIndex: null,
-            isSampleEntry: true     // Can be cohort or sample entry
+            separateUrlForIndex: null
         },
         data() {
             return {

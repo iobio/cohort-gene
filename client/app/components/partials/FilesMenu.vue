@@ -256,6 +256,7 @@
                     newInfo.samples = [];       // All samples in vcf provided
                     newInfo.subsetSampleIds = [];
                     newInfo.excludeSampleIds = [];
+                    newInfo.selectedSample = null;  // When we have a sample model entry
                     newInfo.vcfs = [];
                     newInfo.tbis = [];
                     newInfo.bams = [];
@@ -264,7 +265,7 @@
                     self.modelInfoMap[newId] = newInfo;
 
                     // Add sample model for new entry
-                    self.variantModel.promiseAddEntry(newInfo)
+                    self.variantModel.promiseAddEntry(newInfo, isSampleEntry)
                         .then((dataSet) => {
                             newInfo.dataSet = dataSet;
                             resolve();
