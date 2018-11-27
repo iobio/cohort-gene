@@ -307,8 +307,8 @@ TD & SJG updated Nov2018 -->
                     },
                     function (error) {
                         console.log(error);
-                        alertify.set('notifier', 'position', 'top-center');
-                        alertify.warning("There was a problem contacting our iobio services. Please refresh the application, or contact iobioproject@gmail.com if the problem persists.");
+                        alertify.set('notifier', 'position', 'top-left');
+                        alertify.warning("There was a problem contacting our iobio services. Please check your internet connection, or contact iobioproject@gmail.com if the problem persists.");
                     })
         },
         methods: {
@@ -430,10 +430,12 @@ TD & SJG updated Nov2018 -->
                 let self = this;
                 if (self.variantModel == null || self.variantModel.getDataSet('s0') == null) {
                     return;
+                } else {
+                    debugger;
+                    self.variantModel.getAllDataSets().forEach((dataSet) => {
+                        dataSet.wipeGeneData();
+                    })
                 }
-                self.variantModel.getAllDataSets().forEach((dataSet) => {
-                    dataSet.wipeGeneData();
-                })
             },
             promiseLoadGene: function (geneName) {
                 let self = this;
@@ -500,6 +502,7 @@ TD & SJG updated Nov2018 -->
                 if (variant) {
                     // Circle selected variant
                     if (sourceComponent == null || self.$refs.variantCardRef != sourceComponent) {
+                        // TODO: do I need to loop through these references?
                         self.$refs.variantCardRef.showVariantCircle(variant);
                     }
                     // Query service for single variant annotation if we don't have details yet
@@ -511,12 +514,9 @@ TD & SJG updated Nov2018 -->
 
                         // Send variant in for annotating
                         let cohortModel = self.variantModel.dataSet.getSubsetCohort();
-                        let t0 = performance.now();
 
                         cohortModel.promiseGetVariantExtraAnnotations(self.selectedGene, self.selectedTranscript, variant, 'vcf')
                             .then(function (updatedVariantObject) {
-                                let t1 = performance.now();
-                                console.log('Getting extra annotation for single variant took ' + (t1 - t0) + ' ms');
                                 let updatedVariant = updatedVariantObject[0][0];
                                 // Display variant info once we have it
                                 self.loadingExtraAnnotations = false;
@@ -533,8 +533,6 @@ TD & SJG updated Nov2018 -->
 
                                 self.variantModel.promiseAnnotateWithClinvar(cohortObj, self.selectedGene, self.selectedTranscript, false)
                                     .then(function (variantObj) {
-                                        let t1 = performance.now();
-                                        console.log('Getting extra annotation for single variant WITH CLINVAR took ' + (t1 - t0) + ' ms');
                                         // Unwrap clinvarVariant structure
                                         let clinvarVariant = variantObj[0]['Subset']['features'][0];
                                         self.loadingExtraClinvarAnnotations = false;

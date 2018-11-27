@@ -181,7 +181,7 @@ TD & SJG updated Apr2018 -->
                 coveragePoint: null,
                 impactMode: false,
                 enrichmentColorLegend: {},
-                formattedValidFiles: [],
+                // formattedValidFiles: [],
                 showFilterMenu: false
             }
         },
@@ -191,7 +191,7 @@ TD & SJG updated Apr2018 -->
                 if (self.dataSetModel)
                     return self.dataSetModel.getSubsetCohort();
             },
-            validSourceFiles: function() {
+            formattedValidFiles: function() {
                 let self = this;
                 let files = [];
                 if (self.dataSetModel != null) {

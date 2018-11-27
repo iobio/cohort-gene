@@ -265,7 +265,7 @@ Updated: SJG Apr2018
                 if (self.dataSetModel != null) {
                     files = self.dataSetModel.vcfNames;
                 }
-                return files;
+                self.formattedValidFiles = files;
             },
             invalidSourceFiles: function() {
                 let self = this;

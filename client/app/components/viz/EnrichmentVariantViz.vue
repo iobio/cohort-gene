@@ -312,7 +312,7 @@
                             return d.level;
                         });
                     }
-                    self.variantChart.posVertLayers(3); // Hardcoding for now
+                    self.variantChart.posVertLayers(2); // Hardcoding for now
                     self.variantChart.lowestWidth(self.data.featureWidth);
                     //self.variantChart.availableVertSpace(availableSpace); // Forces chart to fill up all available vertical space
                     if (self.data.features == null || self.data.features.length === 0) {
