@@ -1080,9 +1080,7 @@ vcfiobio = function module() {
 
             // Parse the vcf object into a variant object that is visualized by the client.
             var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, sampleNamesToGenotype, null, vepAF, keepVariantsCombined, enrichMode, singleMode);
-
-
-            callback(annotatedRecs, results);
+            callback(results);
         });
 
         cmd.on('error', function(error) {

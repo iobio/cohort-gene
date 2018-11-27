@@ -566,6 +566,10 @@ class DataSetModel {
                                 .then((results) => {
                                     annotationResults[currFileName] = results;
                                     if (self.isSingleSample) {
+                                        // Unwrap feature array
+                                        results.features = results.features[0];
+
+                                        // Assign cohort model data
                                         let destCohort = self.getSubsetCohort();
                                         results.gene = theGene;
                                         destCohort.vcfData = results;
