@@ -276,15 +276,15 @@ export default {
           this.setVariantChart();
       },
       update: function() {
-        var self = this;
+        let self = this;
         self.model.inProgress.drawingVariants = false;
 
         if (self.data) {
           // Set the vertical layer count so that the height of the chart can be recalculated
-          if (self.data.maxLevel == null) {
-            self.data.maxLevel = d3.max(self.data.features, function(d) { return d.level; });
+          if (self.data.maxPosLevel == null) {
+            self.data.maxPosLevel = d3.max(self.data.features, function(d) { return d.level; });
           }
-          self.variantChart.verticalLayers(self.data.maxLevel);
+          self.variantChart.verticalLayers(self.data.maxPosLevel);
           self.variantChart.lowestWidth(self.data.featureWidth);
           if (self.data.features == null || self.data.features.length === 0) {
             self.variantChart.showXAxis(false);
@@ -295,8 +295,11 @@ export default {
           self.variantChart.regionStart(self.regionStart);
           self.variantChart.regionEnd(self.regionEnd);
 
-          var selection = d3.select(self.$el).datum( [self.data] );
+          let selection = d3.select(self.$el).datum( [self.data] );
           self.variantChart(selection);
+        } else {
+            let selection = d3.select(self.$el).datum([self.data]);
+            self.variantChart(selection);
         }
       },
       onVariantClick: function(variant) {

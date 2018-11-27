@@ -428,10 +428,7 @@ TD & SJG updated Nov2018 -->
             },
             wipeModels: function () {
                 let self = this;
-                if (self.variantModel == null || self.variantModel.getDataSet('s0') == null) {
-                    return;
-                } else {
-                    debugger;
+                if (self.variantModel != null) {
                     self.variantModel.getAllDataSets().forEach((dataSet) => {
                         dataSet.wipeGeneData();
                     })

@@ -273,7 +273,7 @@ Updated: SJG Apr2018
                 if (self.dataSetModel != null) {
                     files = self.dataSetModel.invalidVcfNames;
                 }
-                return files;
+                self.formattedInvalidFiles = files;
             },
             invalidSourceReasons: function() {
                 let self = this;
@@ -281,7 +281,7 @@ Updated: SJG Apr2018
                 if (self.dataSetModel != null) {
                     reasons = self.dataSetModel.invalidVcfReasons;
                 }
-                return reasons;
+                self.formattedInvalidReasons = reasons;
             }
         },
         watch: {

@@ -326,6 +326,9 @@
 
                     let selection = d3.select(self.$el).datum([self.data]);
                     self.variantChart(selection);
+                } else {
+                    let selection = d3.select(self.$el).datum([self.data]);
+                    self.variantChart(selection);
                 }
             },
             onVariantClick: function (variant) {
