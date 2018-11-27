@@ -45,9 +45,9 @@ class DataSetModel {
         this.vcfFilesOpened = false;
         this.bamUrlsEntered = false;
         this.bamFilesOpened = false;
-        this.keepVariantsCombined = true;           // True for multiple samples to be displayed on single track
-        this.efficiencyMode = true;                 // True to only pull back variant locations and not functional impacts
-        this.noMatchingSamples = false; // Flag to display No Matching Variants chip
+        this.keepVariantsCombined = true;   // True for multiple samples to be displayed on single track
+        this.efficiencyMode = true;         // True to only pull back variant locations and not functional impacts
+        this.noMatchingSamples = false;     // Flag to display No Matching Variants chip
         this.annotationScheme = 'VEP';
         this.inProgress = {
             'fetchingHubData': false,
@@ -343,7 +343,7 @@ class DataSetModel {
     // <editor-fold desc="LOAD & ANNOTATE">
 
     /* Promises to load variants for the selected gene. */
-    promiseLoadData(theGene, theTranscript, options) {
+    promiseLoadData(theGene, theTranscript) {
         let self = this;
 
         return new Promise(function (resolve, reject) {
@@ -353,7 +353,7 @@ class DataSetModel {
             // Load variants
             self.startGeneProgress(theGene['gene_name']);
             self.clearLoadedData();
-            self.promiseLoadVariants(theGene, theTranscript, options)
+            self.promiseLoadVariants(theGene, theTranscript)
                 .then(function (data) {
                     self.setLoadedVariants(data.gene);
                     resolve();
@@ -370,14 +370,32 @@ class DataSetModel {
         let self = this;
 
         return new Promise(function (resolve, reject) {
-            self.promiseAnnotateEnrichment(theGene, theTranscript, false, options)
-                .then(function (resultMap) {
-                    let annotatedDataObj = {'resultMap': resultMap, 'gene': theGene, 'transcript': theTranscript};
-                    resolve(annotatedDataObj);
-                })
-                .catch(function (error) {
-                    reject(error);
-                })
+            if (self.isSingleSample) {
+                options = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': false, 'singleMode': true};
+                self.promiseFullyAnnotateVariants(theGene, theTranscript, false, options)
+                    .then(function(wrappedMap) {
+                        let resultMap = wrappedMap[[0]];
+                        let data = Object.values(resultMap)[0];
+
+                        // Flip status flags
+                        self.inProgress.loadingVariants = false;
+                        self.inProgress.drawingVariants = true;
+                        resolve(data);
+                    })
+                    .catch(function(error) {
+                        reject(error);
+                    })
+            } else {
+                self.promiseAnnotateEnrichment(theGene, theTranscript, false, options)
+                    .then(function (resultMap) {
+                        let annotatedDataObj = {'resultMap': resultMap, 'gene': theGene, 'transcript': theTranscript};
+                        resolve(annotatedDataObj);
+                    })
+                    .catch(function (error) {
+                        reject(error);
+                    })
+            }
+
         })
     }
 
@@ -499,7 +517,7 @@ class DataSetModel {
                         })
                 })
                 .catch(function (error) {
-                    console.log("There was a problem with VariantModel promiseFurtherAnnotateVariants: " + error);
+                    console.log("There was a problem with DataSetModel promiseFullyAnnotateVariants: " + error);
                     reject();
                 })
         })
@@ -510,51 +528,66 @@ class DataSetModel {
         let self = this;
 
         return new Promise(function (resolve, reject) {
-            // Annotate variants for cohort models that have specified IDs
-            let urlNames = Object.keys(self.vcfEndptHash);
-            let annotationResults = {};
-            let annotationPromises = [];
-            for (let i = 0; i < urlNames.length; i++) {
-                let currFileName = urlNames[i];
-                let currVcfEndpt = self.vcfEndptHash[currFileName];
-                if (currVcfEndpt != null) {
-                    let annoP = currVcfEndpt.promiseGetVariants(
-                        self.getVcfRefName(theGene.chr, currVcfEndpt),
-                        theGene,
-                        theTranscript,
-                        null,       // regions
-                        false, // isMultiSample
-                        self.getSubsetCohort().sampleIds,
-                        self.getProbandCohort().sampleIds,
-                        self.getName() === 'known-variants' ? 'none' : self.getAnnotationScheme().toLowerCase(),
-                        self.getTranslator().clinvarMap,
-                        self.getGeneModel().geneSource === 'refseq',
-                        false,      // hgvs notation
-                        false,      // rsid
-                        true,       // vep af
-                        null,
-                        self.keepVariantsCombined,
-                        false)       // enrichMode
-                        .then((results) => {
-                            annotationResults[currFileName] = results;
-                        });
-                    annotationPromises.push(annoP);
-                } else {
-                    console.log('Problem in CohortModel promoiseAnnotateVariants: Could not retrieve endpoint for the file: ' + urlNames[i]);
-                }
-            }
-            Promise.all(annotationPromises)
-                .then(function () {
-                    resolve(annotationResults);
-                })
-                .catch(function (error) {
-                    reject("There was a problem in DataSetModel promiseAnnotateVariants: " + error);
-                })
+            self._promiseVcfRefName(theGene.chr)
+                .then(function() {
+                    // Annotate variants for cohort models that have specified IDs
+                    let urlNames = Object.keys(self.vcfEndptHash);
+                    let annotationResults = {};
+                    let annotationPromises = [];
+                    let enrichMode = options.efficiencyMode;
+                    let singleMode = options.singleMode;
+                    let probandIds = [];
+                    if (enrichMode) {
+                        probandIds = self.getProbandCohort().sampleIds;
+                    }
+
+                    for (let i = 0; i < urlNames.length; i++) {
+                        let currFileName = urlNames[i];
+                        let currVcfEndpt = self.vcfEndptHash[currFileName];
+                        if (currVcfEndpt != null) {
+                            let annoP = currVcfEndpt.promiseGetVariants(
+                                self.getVcfRefName(theGene.chr, currVcfEndpt),
+                                theGene,
+                                theTranscript,
+                                null,       // regions
+                                false, // isMultiSample
+                                self.getSubsetCohort().sampleIds,
+                                probandIds,
+                                self.getName() === 'known-variants' ? 'none' : self.getAnnotationScheme().toLowerCase(),
+                                self.getTranslator().clinvarMap,
+                                self.getGeneModel().geneSource === 'refseq',
+                                false,      // hgvs notation
+                                false,      // rsid
+                                true,       // vep af
+                                null,
+                                self.keepVariantsCombined,
+                                enrichMode,
+                                singleMode)
+                                .then((results) => {
+                                    annotationResults[currFileName] = results;
+                                    if (self.isSingleSample) {
+                                        let destCohort = self.getSubsetCohort();
+                                        results.gene = theGene;
+                                        destCohort.vcfData = results;
+                                    }
+                                });
+                            annotationPromises.push(annoP);
+                        } else {
+                            console.log('Problem in CohortModel promoiseAnnotateVariants: Could not retrieve endpoint for the file: ' + urlNames[i]);
+                        }
+                    }
+                    Promise.all(annotationPromises)
+                        .then(function () {
+                            resolve(annotationResults);
+                        })
+                        .catch(function (error) {
+                            reject("There was a problem in DataSetModel promiseAnnotateVariants: " + error);
+                        })
+                });
         });
     }
 
-    // TODO: this can be refactored to a single method (promiseAnnotateVariants) with the above
-    // TODO: this code below is the start of the new setup for the backend, will refactor once local launch has been verified & backend services up
+    // TODO: keeping for backend refactor
     /* Promises to obtain enrichment values for all variants within all urls within the provided cohort model. */
     // promiseAnnotateVariantEnrichment(theGene, theTranscript, isBackground, options = {}) {
     //     let self = this;
@@ -657,7 +690,6 @@ class DataSetModel {
     //     });
     // }
 
-    // TODO: step through this and test - not sure we're pulling in all necessary files here
     promiseAnnotateWithClinvar(resultMap, geneObject, transcript, isBackground) {
         let self = this;
         var formatClinvarKey = function (variant) {
@@ -1385,10 +1417,15 @@ class DataSetModel {
                 return isTarget && !isHomRef && inRegion && passesModelFilter;
             });
 
-            let pileupObject = model._enrichmentPileupVariants(filteredVariants.features, start, end);
+            let pileupObject = null;
+            if (self.isSingleSample) {
+                pileupObject = model._pileupVariants(filteredVariants.features, start, end);
+            } else {
+                pileupObject = model._enrichmentPileupVariants(filteredVariants.features, start, end);
+            }
             filteredVariants.maxPosLevel = pileupObject.maxPosLevel;
-            filteredVariants.maxNegLevel = pileupObject.maxNegLevel;
-            filteredVariants.maxSubLevel = pileupObject.maxSubLevel;
+            filteredVariants.maxNegLevel = pileupObject.maxNegLevel ? pileupObject.maxNegLevel : 0;
+            filteredVariants.maxSubLevel = pileupObject.maxSubLevel ? pileupObject.maxSubLevel : 1;
             filteredVariants.featureWidth = pileupObject.featureWidth;
 
             return filteredVariants;
@@ -1432,7 +1469,7 @@ class DataSetModel {
         })
     }
 
-    // TODO: not sure what the difference is conceptually between selected and loaded variants - is this a flag function?
+    // Used in zoom functionality
     setSelectedVariants(gene, selectedVarIds) {
         let self = this;
 
@@ -1449,7 +1486,7 @@ class DataSetModel {
             });
 
             let pileupObject = model._pileupVariants(filteredVariants.features, start, end);
-            filteredVariants.maxLevel = pileupObject.maxLevel + 1;
+            filteredVariants.maxPosLevel = pileupObject.maxPosLevel + 1;
             filteredVariants.featureWidth = pileupObject.featureWidth;
 
             return filteredVariants;

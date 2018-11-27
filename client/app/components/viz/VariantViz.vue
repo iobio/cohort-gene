@@ -82,38 +82,47 @@
 
 <template>
   <div>
-    <div class="variant-viz loaded-variant-viz">
-      <span class="field-label-header">{{title}}</span>
-      <v-chip color="cohortNavy" small outline style="font-size: 12px" v-for="phenotype in phenotypes" :key="phenotype">
-         {{phenotype}}
+    <div class="variant-viz loaded-variant-viz" id="selectionDetailsLine">
+      <span class="field-label-header">Selection Details</span>
+      <v-chip color="cohortNavy" small outline style="font-size: 12px" v-for="phenotype in phenotypes"
+              :key="phenotype">
+        {{phenotype}}
+      </v-chip>
+    </div>
+    <div class="variant-viz" id="sourceFileLine">
+      <span class="field-label-header">Analysis sources</span>
+      <v-chip color="cohortNavy" small outline style="font-size: 12px" v-for="file in validSourceFiles"
+              :key="file">
+        {{file}}
+        <v-icon right color="green">check_circle_outline</v-icon>
       </v-chip>
     </div>
     <div style="text-align: center;clear: both;">
-      <div class="loader vcfloader" v-bind:class="{ hide: !model.inProgress.loadingVariants }" style="display: inline-block; padding-left: 20px; padding-bottom: 10px">
+      <div v-bind:class="{ hide: !model.inProgress.loadingVariants }"
+           style="display: inline-block;padding-bottom:10px">
         <span class="loader-label">Annotating Variants</span>
         <img src="../../../assets/images/wheel.gif">
       </div>
-      <div class="loader fbloader" v-bind:class="{ hide: !model.inProgress.fetchingHubData }" style="display: inline-block; padding-left: 20px; padding-bottom: 10px">
+      <div v-bind:class="{ hide: !model.inProgress.fetchingHubData }"
+           style="display: inline-block;padding-left: 20px; padding-bottom:10px">
         <span class="loader-label">Fetching Data from Hub</span>
         <img src="../../../assets/images/wheel.gif">
       </div>
-      <div class="loader covloader" v-bind:class="{ hide: !model.inProgress.loadingVariants }" style="display: inline-block; padding-left: 20px; padding-bottom: 10px">
-        <span class="loader-label">Verifying Vcf Data</span>
+      <div v-bind:class="{ hide: !model.inProgress.verifyingVcfUrl }"
+           style="display: inline-block;padding-left: 20px; padding-bottom:10px">
+        <span class="loader-label">Verifying Variant Data</span>
         <img src="../../../assets/images/wheel.gif">
       </div>
-      <div class="loader covloader" v-bind:class="{ hide: !model.inProgress.drawingVariants }" style="display: inline-block; padding-left: 20px; padding-bottom: 10px">
+      <div v-bind:class="{ hide: !model.inProgress.drawingVariants }"
+           style="display: inline-block;padding-left: 20px; padding-bottom:10px">
         <span class="loader-label">Rendering Variants</span>
         <img src="../../../assets/images/wheel.gif">
       </div>
     </div>
-    <div v-bind:class="{ hide: !model.noMatchingSamples }" style="text-align: center; padding-bottom: 20px; padding-top: 20px">
+    <div v-bind:class="{ hide: !noMatchingVariants }"
+         style="text-align: center; padding-bottom: 20px; padding-top: 20px">
       <v-chip color="red" small outline style="font-size: 12px">
-         No Samples Meet Criteria
-      </v-chip>
-    </div>
-    <div v-bind:class="{ hide: !noVariantsFound}" style="text-align: center; padding-bottom: 20px; padding-top: 20px">
-      <v-chip color="red" small outline style="font-size: 12px">
-         No Variants Found
+        No Variants Found
       </v-chip>
     </div>
   </div>
@@ -190,6 +199,10 @@ export default {
         type: Array,
         default: () => []
       },
+      validSourceFiles: {
+          type: Array,
+          default: () => []
+      },
       impactMode: {
         type: Boolean,
         default: false
@@ -206,16 +219,16 @@ export default {
       }
     },
     computed: {
-      noVariantsFound: function() {
-        let self = this;
-        if (self.data == null) return false;
-        if (self.data.features == null) return false;
-        if (self.data.features.length === 0) {
-          let loading = self.model.inProgress.loadingVariants || self.model.inProgress.drawingVariants || self.model.inProgress.fetchingHubData;
-          if (!loading && self.doneLoadingData) return true;
+        noMatchingVariants: function () {
+            let self = this;
+            if (self.data == null) return false;
+            if (self.data.features == null) return false;
+            if (self.data.features.length === 0) {
+                let loading = self.model.inProgress.loadingVariants || self.model.inProgress.drawingVariants || self.model.inProgress.fetchingHubData;
+                if (!loading && self.doneLoadingData) return true;
+            }
+            return false;
         }
-        return false;
-      }
     },
     watch: {
       data: function() {
@@ -232,7 +245,7 @@ export default {
     methods: {
       draw: function() {
         var self = this;
-        this.variantChart =  variantD3()
+        this.variantChart = variantD3()
           .width(this.width)
           .clazz(function(variant) {
             return self.classifySymbolFunc(variant, self.annotationScheme, self.model.getName());
@@ -294,7 +307,7 @@ export default {
       onVariantHover: function(variant) {
         let self = this;
         var cohortKey = self.name;
-        //self.$emit("variantHover", variant, cohortKey); SJG TODO: get rid of hover or incorporate tooltip fxnality
+        //self.$emit("variantHover", variant, cohortKey);
       },
       onVariantHoverEnd: function(variant) {
         let self = this;
@@ -310,7 +323,7 @@ export default {
         this.variantChart.hideCircle()(container);
       },
       setVariantChart: function() {
-        this.$emit('updateVariantChart', this.model); // TODO: no event catcher for this...
+        this.$emit('updateVariantChart', this.model);
       },
       showFlaggedVariant: function(variant, container) {
         this.variantChart.showFlaggedVariant(container, variant);

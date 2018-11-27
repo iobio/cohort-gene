@@ -169,7 +169,7 @@ Updated: SJG Apr2018
     import FilterSettingsMenu from '../partials/FilterSettingsMenu.vue'
 
     export default {
-        name: 'updated-variant-card',
+        name: 'enrichment-variant-card',
         components: {
             VariantViz,
             EnrichmentVariantViz,

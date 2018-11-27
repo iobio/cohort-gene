@@ -142,7 +142,7 @@
 
 
     export default {
-        name: 'updated-variant-viz',
+        name: 'enrichment-variant-viz',
         props: {
             data: {},
             model: {},
@@ -258,10 +258,6 @@
             self.draw();
         },
         methods: {
-            getInvalidReason: function(index) {
-                let self = this;
-                return self.invalidSourceReasons[index];
-            },
             draw: function () {
                 let self = this;
 

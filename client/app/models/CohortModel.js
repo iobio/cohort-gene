@@ -55,7 +55,6 @@ class CohortModel {
         let self = this;
 
         // Add subset IDs
-        debugger;
         if (self.sampleIds.length === 1) {
             if (self.getDataSetModel().getProbandCohort() != null) {
                 self.phenotypes.push('Subset Sample: ' + self.sampleIds.join());
@@ -942,7 +941,7 @@ class CohortModel {
                 }
             }
         }
-        return {'maxLevel': maxLevel, 'featureWidth': featureWidth};
+        return {'maxPosLevel': maxLevel, 'featureWidth': featureWidth};
     }
 
     /* Calculates variant position for visual rendering based on enrichment */

@@ -75,6 +75,22 @@ class VariantModel {
         return null;
     }
 
+    /* Returns all data sets that do not represent a single sample. */
+    getAllCohortDataSets() {
+        let self = this;
+
+        let dataSets = [];
+        if (self.mainDataSet) {
+            dataSets.push(self.mainDataSet);
+        }
+        self.otherDataSets.forEach((dataSet) => {
+            if (!dataSet.isSingleSample) {
+                dataSets.push(dataSet);
+            }
+        })
+        return dataSets;
+    }
+
     getAllDataSets() {
         let self = this;
 
@@ -543,17 +559,17 @@ class VariantModel {
     // <editor-fold desc="ALL LAUNCH">
 
     /* Promises to being loading process for each data set. */
-    promiseLoadData(theGene, theTranscript, options) {
+    promiseLoadData(theGene, theTranscript) {
         let self = this;
 
         if (self.otherDataSets.length === 0) {
-            return self.mainDataSet.promiseLoadData(theGene, theTranscript, options);
+            return self.mainDataSet.promiseLoadData(theGene, theTranscript);
         } else {
             return new Promise((resolve, reject) => {
                 let loadPromises = [];
-                loadPromises.push(self.mainDataSet.promiseLoadData(theGene, theTranscript, options));
+                loadPromises.push(self.mainDataSet.promiseLoadData(theGene, theTranscript));
                 self.otherDataSets.forEach((dataSet) => {
-                    loadPromises.push(dataSet.promiseLoadData(theGene, theTranscript, options));
+                    loadPromises.push(dataSet.promiseLoadData(theGene, theTranscript));
                 });
 
                 Promise.all(loadPromises)
@@ -574,7 +590,7 @@ class VariantModel {
         return new Promise((resolve, reject) => {
             let promises = [];
             let mapList = [];
-            self.getAllDataSets().forEach((dataSet) => {
+            self.getAllCohortDataSets().forEach((dataSet) => {
                 let p = dataSet.promiseFullyAnnotateVariants(theGene, theTranscript, isBackground, options)
                     .then((resultMap) => {
                         mapList.push(resultMap);

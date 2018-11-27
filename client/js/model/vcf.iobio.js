@@ -636,7 +636,7 @@ vcfiobio = function module() {
     }
 
     /* Returns enrichment data relative to selected subset group - uses new service provided by YQ */
-    exports.promiseGetVariants = function (refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, keepVariantsCombined = false, enrichMode = false) {
+    exports.promiseGetVariants = function (refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, keepVariantsCombined = false, enrichMode = false, singleMode = false) {
         let me = this;
 
         return new Promise(function (resolve, reject) {
@@ -649,7 +649,7 @@ vcfiobio = function module() {
                         else {
                             reject();
                         }
-                    }, null, keepVariantsCombined, enrichMode);
+                    }, null, keepVariantsCombined, enrichMode, singleMode);
             } else {
                 me._getLocalVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
                     function (annotatedData, results) {
@@ -840,7 +840,7 @@ vcfiobio = function module() {
     };
 
     /* SJG cohort version 11Jul2018 */
-    exports._updatedGetRemoteVariantsImpl = function (refName, geneObject, selectedTranscript, regions, isMultiSample, expSampleNames, controlSampleNames, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false, enrichMode = false) {
+    exports._updatedGetRemoteVariantsImpl = function (refName, geneObject, selectedTranscript, regions, isMultiSample, expSampleNames, controlSampleNames, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, callback, errorCallback, keepVariantsCombined = false, enrichMode = false, singleMode = false) {
         let me = this;
         if (regions == null || regions.length === 0) {
             regions = [];
@@ -918,7 +918,7 @@ vcfiobio = function module() {
             });
 
             // Parse the vcf object into a variant object that is visualized by the client.
-            let results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, expSampleNames, null, vepAF, keepVariantsCombined, enrichMode);
+            let results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, expSampleNames, null, vepAF, keepVariantsCombined, enrichMode, singleMode);
             results.features = results.features[0];     // Unwrap feature array
             callback(results);
         });
@@ -1665,7 +1665,7 @@ vcfiobio = function module() {
     }
 
     /* Returns a single result object for the given vcfRecs. */
-    exports._parseVcfRecords = function (vcfRecs, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, parseMultiSample, sampleNames, sampleIndex, vepAF, keepVariantsCombined = true, enrichMode = false) {
+    exports._parseVcfRecords = function (vcfRecs, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, parseMultiSample, sampleNames, sampleIndex, vepAF, keepVariantsCombined = true, enrichMode = false, singleMode = false) {
 
         let me = this;
         let selectedTranscriptID = utility.stripTranscriptPrefix(selectedTranscript.transcript_id);
@@ -1768,9 +1768,13 @@ vcfiobio = function module() {
 
                     let annot = me._parseAnnot(rec, altIdx, isMultiAllelic, geneObject, selectedTranscript, selectedTranscriptID, vepAF);
                     let clinvarResult = me.parseClinvarInfo(rec.info, clinvarMap);
+
                     let enrichResult = null;
+                    let gtResult = null;
                     if (enrichMode) {
                         enrichResult = me.parseEnrichmentInfo(rec.enrichment, rec.pValue, (i + 1), alts.length);
+                    } else if (singleMode) {
+                        gtResult = me._parseGenotypes(rec, alt, altIdx, gtSampleIndices, gtSampleNames);
                     }
 
                     let highestImpactSnpeff = me._getHighestImpact(annot.snpEff.allSnpeff, me._cullTranscripts, selectedTranscriptID);
@@ -1801,7 +1805,7 @@ vcfiobio = function module() {
                                 'recfilter': rec.filter.split(";").join("-"),
                                 'extraAnnot': hasExtraAnnot,
 
-                                'zygosity': '',  // Used to filter and pileup variants
+                                'zygosity': '',  // Always assign because may be calling sample model
 
                                 // annot fields
                                 'af': annot.af,
@@ -1852,6 +1856,9 @@ vcfiobio = function module() {
                                 variant.probandZygCounts = [+enrichResult.counts[0], +enrichResult.counts[1], +enrichResult.counts[2], +enrichResult.counts[3]];
                                 variant.subsetZygCounts = [+enrichResult.counts[4], +enrichResult.counts[5], +enrichResult.counts[6], +enrichResult.counts[7]];
                                 variant.pVal = +enrichResult.pVal;
+                            } else if (singleMode) {
+                                debugger;
+                                variant.zygosity = gtResult[0].zygosity;
                             }
 
                             for (let key in clinvarResult) {

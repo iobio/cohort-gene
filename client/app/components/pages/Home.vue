@@ -35,67 +35,69 @@ TD & SJG updated Nov2018 -->
             <div id="warning-authorize" class="warning-authorize"></div>
             <v-container fluid style="padding-top: 3px">
                 <v-layout>
-                    <v-flex xs9 v-for="dataSet in allDataSets">
-                        <enrichment-variant-card
-                                v-if="dataSet.isSingleSample"
-                                ref="variantCardRef"
-                                :key="dataSet.id"
-                                :dataSetModel="dataSet"
-                                :filterModel="filterModel"
-                                :annotationScheme="variantModel.annotationScheme"
-                                :classifyVariantSymbolFunc="variantModel.classifyByEnrichment"
-                                :classifyZoomSymbolFunc="variantModel.classifyByImpact"
-                                :variantTooltip="variantTooltip"
-                                :selectedGene="selectedGene"
-                                :selectedTranscript="selectedTranscript"
-                                :selectedVariant="selectedVariant"
-                                :regionStart="geneRegionStart"
-                                :regionEnd="geneRegionEnd"
-                                :width="cardWidth"
-                                :showGeneViz="true"
-                                :showVariantViz="true"
-                                :geneVizShowXAxis="true"
-                                :doneLoadingData="doneLoadingData"
-                                :doneLoadingExtras="doneLoadingExtras"
-                                :doubleMode="true"
-                                @dataSetVariantClick="onDataSetVariantClick"
-                                @dataSetVariantClickEnd="onDataSetVariantClickEnd"
-                                @dataSetVariantHover="onDataSetVariantHover"
-                                @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
-                                @knownVariantsVizChange="onKnownVariantsVizChange"
-                                @knownVariantsFilterChange="onKnownVariantsFilterChange"
-                                @zoomModeStart="startZoomMode">
-                        </enrichment-variant-card>
-                        <variant-card
-                                v-else
-                                ref="variantCardRef"
-                                :key="dataSet.id"
-                                :dataSetModel="dataSet"
-                                :filterModel="filterModel"
-                                :annotationScheme="variantModel.annotationScheme"
-                                :classifyVariantSymbolFunc="variantModel.classifyByImpact"
-                                :classifyZoomSymbolFunc="variantModel.classifyByImpact"
-                                :variantTooltip="variantTooltip"
-                                :selectedGene="selectedGene"
-                                :selectedTranscript="selectedTranscript"
-                                :selectedVariant="selectedVariant"
-                                :regionStart="geneRegionStart"
-                                :regionEnd="geneRegionEnd"
-                                :width="cardWidth"
-                                :showGeneViz="true"
-                                :showVariantViz="true"
-                                :geneVizShowXAxis="true"
-                                :doneLoadingData="doneLoadingData"
-                                :doneLoadingExtras="doneLoadingExtras"
-                                :doubleMode="true"
-                                @dataSetVariantClick="onDataSetVariantClick"
-                                @dataSetVariantClickEnd="onDataSetVariantClickEnd"
-                                @dataSetVariantHover="onDataSetVariantHover"
-                                @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
-                                @knownVariantsVizChange="onKnownVariantsVizChange"
-                                @knownVariantsFilterChange="onKnownVariantsFilterChange"
-                                @zoomModeStart="startZoomMode">
-                        </variant-card>
+                    <v-flex xs9>
+                        <div v-for="dataSet in allDataSets" v-if="showVariantCards">
+                            <enrichment-variant-card
+                                    v-if="!dataSet.isSingleSample"
+                                    ref="variantCardRef"
+                                    :key="dataSet.id"
+                                    :dataSetModel="dataSet"
+                                    :filterModel="filterModel"
+                                    :annotationScheme="variantModel.annotationScheme"
+                                    :classifyVariantSymbolFunc="variantModel.classifyByEnrichment"
+                                    :classifyZoomSymbolFunc="variantModel.classifyByImpact"
+                                    :variantTooltip="variantTooltip"
+                                    :selectedGene="selectedGene"
+                                    :selectedTranscript="selectedTranscript"
+                                    :selectedVariant="selectedVariant"
+                                    :regionStart="geneRegionStart"
+                                    :regionEnd="geneRegionEnd"
+                                    :width="cardWidth"
+                                    :showGeneViz="true"
+                                    :showVariantViz="true"
+                                    :geneVizShowXAxis="true"
+                                    :doneLoadingData="doneLoadingData"
+                                    :doneLoadingExtras="doneLoadingExtras"
+                                    :doubleMode="true"
+                                    @dataSetVariantClick="onDataSetVariantClick"
+                                    @dataSetVariantClickEnd="onDataSetVariantClickEnd"
+                                    @dataSetVariantHover="onDataSetVariantHover"
+                                    @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
+                                    @knownVariantsVizChange="onKnownVariantsVizChange"
+                                    @knownVariantsFilterChange="onKnownVariantsFilterChange"
+                                    @zoomModeStart="startZoomMode">
+                            </enrichment-variant-card>
+                            <variant-card
+                                    v-else
+                                    ref="variantCardRef"
+                                    :key="dataSet.id"
+                                    :dataSetModel="dataSet"
+                                    :filterModel="filterModel"
+                                    :annotationScheme="variantModel.annotationScheme"
+                                    :classifyVariantSymbolFunc="variantModel.classifyByImpact"
+                                    :classifyZoomSymbolFunc="variantModel.classifyByImpact"
+                                    :variantTooltip="variantTooltip"
+                                    :selectedGene="selectedGene"
+                                    :selectedTranscript="selectedTranscript"
+                                    :selectedVariant="selectedVariant"
+                                    :regionStart="geneRegionStart"
+                                    :regionEnd="geneRegionEnd"
+                                    :width="cardWidth"
+                                    :showGeneViz="true"
+                                    :showVariantViz="true"
+                                    :geneVizShowXAxis="true"
+                                    :doneLoadingData="doneLoadingData"
+                                    :doneLoadingExtras="doneLoadingExtras"
+                                    :doubleMode="true"
+                                    @dataSetVariantClick="onDataSetVariantClick"
+                                    @dataSetVariantClickEnd="onDataSetVariantClickEnd"
+                                    @dataSetVariantHover="onDataSetVariantHover"
+                                    @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
+                                    @knownVariantsVizChange="onKnownVariantsVizChange"
+                                    @knownVariantsFilterChange="onKnownVariantsFilterChange"
+                                    @zoomModeStart="startZoomMode">
+                            </variant-card>
+                        </div>
                     </v-flex>
                     <v-flex xs3>
                         <v-card class="ml-1">
@@ -202,6 +204,7 @@ TD & SJG updated Nov2018 -->
                 selectedGene: {},
                 selectedTranscript: {},
                 selectedVariant: null,
+                showVariantCards: false,
                 doneLoadingData: false,
                 doneLoadingExtras: false,
                 loadingExtraAnnotations: false,
@@ -343,12 +346,12 @@ TD & SJG updated Nov2018 -->
             },
             promiseLoadData: function () {
                 let self = this;
+                self.showVariantCards = true;
 
                 return new Promise((resolve, reject) => {
                     if (self.variantModel) {
-                        let options = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': true};
                         // Load positional information for quick display
-                        self.variantModel.promiseLoadData(self.selectedGene, self.selectedTranscript, options)
+                        self.variantModel.promiseLoadData(self.selectedGene, self.selectedTranscript)
                             .then(() => {
                                 self.doneLoadingData = true;  // Display variants
                                 let nextOptions = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': false};
@@ -417,9 +420,11 @@ TD & SJG updated Nov2018 -->
                 self.promiseLoadGene(geneName);
                 self.doneLoadingData = false;
                 self.doneLoadingExtras = false;
-                self.$refs.variantCardRef.forEach((cardRef) => {
-                    cardRef.clearZoom();
-                })
+                if (self.$refs.variantCardRef) {
+                    self.$refs.variantCardRef.forEach((cardRef) => {
+                        cardRef.clearZoom();
+                    })
+                }
             },
             wipeModels: function () {
                 let self = this;
@@ -437,11 +442,6 @@ TD & SJG updated Nov2018 -->
                     if (self.variantModel) {
                         self.variantModel.clearLoadedData();
                     }
-                    // TODO: get rid of feature matrix model
-                    // if (self.featureMatrixModel) {
-                    //     self.featureMatrixModel.clearRankedVariants();
-                    // }
-
                     self.geneModel.addGeneName(geneName);
                     self.geneModel.promiseGetGeneObject(geneName)
                         .then(function (theGeneObject) {

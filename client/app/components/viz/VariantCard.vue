@@ -68,306 +68,344 @@ TD & SJG updated Apr2018 -->
 <template>
   <v-card tile id="variant-card" class="app-card">
     <v-card-title primary-title>
-      <v-layout row style="padding-left: 15px; padding-right: 15px">
+      <v-layout align-left>
         <v-flex xs6>
-          <span style="min-width: 200px; max-width: 200px; font-size: 15px; padding-bottom: 10px">VARIANTS</span>
-        </v-flex>
-        <v-flex xs6>
-          <v-container fluid style="padding-left: 70%;" id="impactModeSwitch" v-bind:class="{hide: !displayImpactSwitch}">
-            <v-switch :label="`Impact Mode: ${impactModeDisplay(impactMode)}`" v-model="impactMode" hide-details></v-switch>
-          </v-container>
+          <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 0">VARIANTS</span>
         </v-flex>
       </v-layout>
       <div style="width:100%">
         <variant-viz
-          v-if="showVariantViz"
-          :key="dataSetModel.getName()"
-          ref="variantVizRef"
-          :id="dataSetModel.getName()"
-          :model="dataSetModel"
-          :data="dataSetModel.loadedVariants"
-          :title="dataSetModel.getName()"
-          :phenotypes="dataSetModel.getSubsetCohort().phenotypes"
-          :regionStart="regionStart"
-          :regionEnd="regionEnd"
-          :annotationScheme="annotationScheme"
-          :width="width"
-          :margin="variantVizMargin"
-          :variantHeight="variantSymbolHeight"
-          :variantPadding="variantSymbolPadding"
-          :showBrush="false"
-          :showXAxis="true"
-          :classifySymbolFunc="classifyVariantSymbolFunc"
-          :impactMode="impactMode"
-          :doneLoadingData="displayImpactSwitch"
-          @variantClick="onVariantClick"
-          @variantHover="onVariantHover"
-          @variantHoverEnd="onVariantHoverEnd"
-          @trackRendered="switchColorScheme">
+                v-if="dataSetModel && dataSetModel.getSubsetCohort()"
+                ref="subsetVizRef"
+                :id="dataSetModel.getName()"
+                :model="dataSetModel"
+                :data="dataSetModel.loadedVariants"
+                :title="dataSetModel.getName()"
+                :phenotypes="dataSetModel.getSubsetCohort().phenotypes"
+                :validSourceFiles="formattedValidFiles"
+                :regionStart="regionStart"
+                :regionEnd="regionEnd"
+                :annotationScheme="annotationScheme"
+                :width="width"
+                :margin="variantVizMargin"
+                :variantHeight="variantSymbolHeight"
+                :variantPadding="variantSymbolPadding"
+                :showBrush="false"
+                :showXAxis="true"
+                :classifySymbolFunc="classifyVariantSymbolFunc"
+                :impactMode="impactMode"
+                :doneLoadingData="doneLoadingData"
+                :frequencyDisplayMode="true"
+                @variantClick="onVariantClick"
+                @variantHover="onVariantHover"
+                @variantHoverEnd="onVariantHoverEnd"
+                @clearVariants="clearVariants">
         </variant-viz>
         <gene-viz id="gene-viz"
-          v-bind:class="{ hide: !showGeneViz }"
-          :data="[selectedTranscript]"
-          :margin="geneVizMargin"
-          :width="width"
-          :height="40"
-          :trackHeight="geneVizTrackHeight"
-          :cdsHeight="geneVizCdsHeight"
-          :regionStart="regionStart"
-          :regionEnd="regionEnd"
-          :showXAxis="geneVizShowXAxis"
-          :showBrush="false"
-          :featureClass="getExonClass">
+                  v-bind:class="{ hide: !showGeneViz }"
+                  :data="[selectedTranscript]"
+                  :margin="geneVizMargin"
+                  :width="width"
+                  :height="40"
+                  :trackHeight="geneVizTrackHeight"
+                  :cdsHeight="geneVizCdsHeight"
+                  :regionStart="regionStart"
+                  :regionEnd="regionEnd"
+                  :showXAxis="geneVizShowXAxis"
+                  :showBrush="false"
+                  :featureClass="getExonClass">
         </gene-viz>
       </div>
     </v-card-title>
   </v-card>
 </template>
 <script>
-import VariantViz from './VariantViz.vue'
-import GeneViz from './GeneViz.vue'
-export default {
-  name: 'variant-card',
-  components: {
-    VariantViz,
-    GeneViz
-  },
-  props: {
-    dataSetModel: null,
-    annotationScheme: null,
-    classifyVariantSymbolFunc: null,
-    variantTooltip: null,
-    selectedGene: {},
-    selectedTranscript: {},
-    selectedVariant: null,
-    regionStart: 0,
-    regionEnd: 0,
-    width: 0,
-    showVariantViz: true,
-    showGeneViz: true,
-    geneVizShowXAxis: null,
-    displayImpactSwitch: false
-  },
-  data() {
-    let self = this;
-    return {
-      margin: {
-        top: 20,
-        right: 2,
-        bottom: 18,
-        left: 4
-      },
-      variantVizMargin: {
-        top: 0,
-        right: 2,
-        bottom: 5,
-        left: 4
-      },
-      variantSymbolHeight: 8,
-      variantSymbolPadding: 2,
-      geneVizMargin: {
-        top: 0,
-        right: 2,
-        bottom: self.geneVizShowXAxis ? 18: 0,
-        left: 4
-      },
-      geneVizTrackHeight: 16,
-      geneVizCdsHeight: 12,
-      coveragePoint: null,
-      impactMode: false,
-      enrichmentColorLegend: {}
-    }
-  },
-  computed: {
-    depthVizHeight: function() {
-      this.showDepthViz ? 0 : 60;
-    },
-    cohorts: function() {
-      return this.dataSetModel._cohorts;
-    }
-  },
-  watch: {
-    impactMode: function() {
-      let self = this;
-      self.switchColorScheme();
-    },
-    selectedGene: function() {
-      let self = this;
-      self.impactMode = false;
-      self.doneLoadingData = false;
-    }
-  },
-  created: function() {
-    this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
-  },
-  mounted: function() {
-    let self = this;
-    self.name = self.dataSetModel.name;
-  },
-  methods: {
-    drawColorLegend: function() {
-      this.enrichmentColorLegend = colorLegend()
-        .numberSegments(4)
-        .on('d3rendered', function() {
-        });
-      this.enrichmentColorLegend();
-    },
-    impactModeDisplay: function(mode) {
-      if (mode) return 'ON';
-      else return 'OFF';
-    },
-    depthVizYTickFormat: function(val) {
-      if (val == 0) {
-        return "";
-      } else {
-        return val + "x";
-      }
-    },
-    onVariantClick: function(variant, cohortKey) {
-      //this.Tooltip();
-      if (this.showVariantViz) {
-        this.hideVariantCircle();
-        this.showVariantCircle(variant);
-      }
-      this.$emit('dataSetVariantClick', variant, this, cohortKey);
-    },
-    onVariantHover: function(variant, cohortKey, showTooltip=true) {
-      if (this.selectedVariant == null) {
-        if (this.showVariantViz) {
-          this.showVariantCircle(variant);
-          //this.showVariantTooltip(variant, cohortKey, false);
-        }
-        this.$emit('dataSetVariantHover', variant, this);
-      }
-    },
-    onVariantHoverEnd: function() {
-      if (this.showVariantViz) {
-        this.hideVariantCircle();
-        this.hideVariantTooltip(this);
-      }
-      this.$emit('dataSetVariantHoverEnd');
-    },
-    showVariantTooltip: function(variant, cohortKey, lock) {
-      let self = this;
-      if (cohortKey == null || cohortKey == '') {
-        console.log("error in showVariantTooltip: cohort key is blank");
-        return;
-      }
-      let tooltip = d3.select("#main-tooltip");
-      if (lock) {
-        tooltip.style("pointer-events", "all");
-      } else {
-        tooltip.style("pointer-events", "none");
-      }
-      var x = variant.screenX;
-      var y = variant.screenY;
-      var coord = {'x':                  x,
-                   'y':                  y,
-                   'height':             33,
-                   'parentWidth':        self.$el.offsetWidth,
-                   'preferredPositions': [ {top:    ['center', 'right','left'  ]},
-                                           {right:  ['middle', 'top',  'bottom']},
-                                           {left:   ['middle', 'top',  'bottom']},
-                                           {bottom: ['center', 'right','left'  ]} ] };
-      self.variantTooltip.fillAndPositionTooltip(tooltip,
-        variant,
-        self.selectedGene,
-        self.selectedTranscript,
-        lock,
-        coord,
-        self.dataSetModel.cohortMap[cohortKey].getName(),
-        self.dataSetModel.cohortMap[cohortKey].getAffectedInfo(),
-        "",     // SJG TODO: MODE
-        0);     // SJG TODO MAX ALLELE COUNT
-      tooltip.selectAll("#unpin").on('click', function() {
-        self.unpin(null, true);
-      });
-      tooltip.selectAll("#tooltip-scroll-up").on('click', function() {
-        self.tooltipScroll("up");
-      });
-      tooltip.selectAll("#tooltip-scroll-down").on('click', function() {
-        self.tooltipScroll("down");
-      });
-    },
-    tooltipScroll(direction) {
-      this.variantTooltip.scroll(direction, "#main-tooltip");
-    },
-    hideVariantTooltip: function() {
-      let tooltip = d3.select("#main-tooltip");
-      tooltip.transition()
-           .duration(500)
-           .style("opacity", 0)
-           .style("z-index", 0)
-           .style("pointer-events", "none");
-    },
-    showVariantCircle: function(variant) {
-      let self = this;
-      if (self.showVariantViz) {
-        self.$refs.variantVizRef.forEach(function(variantViz) {
-          variantViz.showVariantCircle(variant, self.getVariantSVG(variantViz.name), true);
-        })
-      }
-    },
-    hideVariantCircle: function(variant) {
-      let self = this;
-      if (self.showVariantViz && self.$refs.variantVizRef != null) {
-        self.$refs.variantVizRef.forEach(function(variantViz) {
-          variantViz.hideVariantCircle(self.getVariantSVG(variantViz.name));
-        })
-      }
-    },
-    getVariantSVG: function(vizTrackName) {
-      var svg = d3.select(this.$el).select('#' + vizTrackName + ' > svg');
-      return svg;
-    },
-    hideCoverageCircle: function() {
-      if (this.showDepthViz) {
-        this.$refs.depthVizRef.hideCurrentPoint();
-      }
-    },
-    showCoverageCircle: function(variant) {
-      let self = this;
-      if (self.showDepthViz && self.sampleModel.coverage != null) {
-        let theDepth = null;
-        if (variant.bamDepth != null && variant.bamDepth != '') {
-          theDepth = variant.bamDepth;
-        } else {
-          var matchingVariants = self.sampleModel.loadedVariants.features.filter(function(v) {
-            return v.start == variant.start && v.alt == variant.alt && v.ref == variant.ref;
-          })
-          if (matchingVariants.length > 0) {
-            theDepth = matchingVariants[0].bamDepth;
-            // If samtools mpileup didn't return coverage for this position, use the variant's depth
-            // field.
-            if (theDepth == null || theDepth == '') {
-              theDepth = matchingVariants[0].genotypeDepth;
+    import VariantViz from './VariantViz.vue'
+    import GeneViz from './GeneViz.vue'
+    import FilterSettingsMenu from '../partials/FilterSettingsMenu.vue'
+
+    export default {
+        name: 'variant-card',
+        components: {
+            VariantViz,
+            GeneViz,
+            FilterSettingsMenu
+        },
+        props: {
+            dataSetModel: null,
+            filterModel: null,
+            annotationScheme: null,
+            classifyVariantSymbolFunc: null,
+            variantTooltip: null,
+            selectedGene: {},
+            selectedTranscript: {},
+            selectedVariant: null,
+            regionStart: 0,
+            regionEnd: 0,
+            width: 0,
+            showVariantViz: true,
+            showGeneViz: true,
+            geneVizShowXAxis: null,
+            doneLoadingData: false,
+            doneLoadingExtras: false,
+            showCoverageCutoffs: false
+        },
+        data() {
+            let self = this;
+            return {
+                margin: {
+                    top: 20,
+                    right: 2,
+                    bottom: 18,
+                    left: 4
+                },
+                variantVizMargin: {
+                    top: 0,
+                    right: 2,
+                    bottom: 5,
+                    left: 4
+                },
+                variantSymbolHeight: 10,
+                variantSymbolPadding: 2,
+                variantChartWidth: 0,
+                variantChartX: 0,
+                variantChartY: 0,
+                geneVizMargin: {
+                    top: 0,
+                    right: 2,
+                    bottom: self.geneVizShowXAxis ? 18 : 0,
+                    left: 2
+                },
+                geneVizTrackHeight: 16,
+                geneVizCdsHeight: 12,
+                coveragePoint: null,
+                impactMode: false,
+                enrichmentColorLegend: {},
+                formattedValidFiles: [],
+                showFilterMenu: false
             }
-          }
+        },
+        computed: {
+            subsetCohort: function () {
+                let self = this;
+                if (self.dataSetModel)
+                    return self.dataSetModel.getSubsetCohort();
+            },
+            validSourceFiles: function() {
+                let self = this;
+                let files = [];
+                if (self.dataSetModel != null) {
+                    files = self.dataSetModel.vcfNames;
+                }
+                return files;
+            }
+        },
+        watch: {
+            selectedGene: function () {
+                let self = this;
+                self.impactMode = true;
+                self.doneLoadingData = false;
+            }
+        },
+        created: function () {
+            this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
+        },
+        methods: {
+            /* Formats the file name provided if it is a known phase file. NOTE: this is based on names
+             * and ideally will be changed to a db field. */
+            formatAndSortPhaseFiles: function(files) {
+                let formattedFileNames = [];
+                files.forEach((fileName) => {
+                    if (fileName === '2018-03-18_all.vcf.gz') {
+                        formattedFileNames.push('Phase 1');
+                    }
+                    else if (fileName === 'phase2.all.vcf.gz') {
+                        formattedFileNames.push('Phase 2');
+                    }
+                    else if (fileName === 'phase3_1.all.vcf.gz') {
+                        formattedFileNames.push('Phase 3-1');
+                    }
+                    else if (fileName === 'phase3_2.all.vcf.gz') {
+                        formattedFileNames.push('Phase 3-2');
+                    }
+                    else if (fileName === 'phase4.all.vcf.gz') {
+                        formattedFileNames.push('Phase 4');
+                    }
+                    else {
+                        formattedFileNames.push(fileName);
+                    }
+                });
+                // Return alphanumerically sorted
+                return formattedFileNames.sort();
+            },
+            drawColorLegend: function () {
+                this.enrichmentColorLegend = colorLegend()
+                    .numberSegments(4)
+                    .on('d3rendered', function () {
+                    });
+                this.enrichmentColorLegend();
+            },
+            depthVizYTickFormat: function (val) {
+                if (val === 0) {
+                    return "";
+                } else {
+                    return val + "x";
+                }
+            },
+            onVariantClick: function (variant, cohortKey) {
+                if (this.showVariantViz) {
+                    this.hideVariantCircle();
+                    this.showVariantCircle(variant);
+                }
+                this.$emit('dataSetVariantClick', variant, this, cohortKey);
+            },
+            onVariantHover: function (variant, cohortKey, showTooltip = true) {
+                if (this.selectedVariant == null) {
+                    if (this.showVariantViz) {
+                        this.showVariantCircle(variant);
+                        //this.showVariantTooltip(variant, cohortKey, false);
+                    }
+                    this.$emit('dataSetVariantHover', variant, this);
+                }
+            },
+            onVariantHoverEnd: function () {
+                if (this.showVariantViz) {
+                    this.hideVariantCircle();
+                    this.hideVariantTooltip(this);
+                }
+                this.$emit('dataSetVariantHoverEnd');
+            },
+            showVariantTooltip: function (variant, cohortKey, lock) {
+                let self = this;
+                if (cohortKey == null || cohortKey === '') {
+                    console.log("error in showVariantTooltip: cohort key is blank");
+                    return;
+                }
+                let tooltip = d3.select("#main-tooltip");
+                if (lock) {
+                    tooltip.style("pointer-events", "all");
+                } else {
+                    tooltip.style("pointer-events", "none");
+                }
+                var x = variant.screenX;
+                var y = variant.screenY;
+                var coord = {
+                    'x': x,
+                    'y': y,
+                    'height': 33,
+                    'parentWidth': self.$el.offsetWidth,
+                    'preferredPositions': [{top: ['center', 'right', 'left']},
+                        {right: ['middle', 'top', 'bottom']},
+                        {left: ['middle', 'top', 'bottom']},
+                        {bottom: ['center', 'right', 'left']}]
+                };
+                self.variantTooltip.fillAndPositionTooltip(tooltip,
+                    variant,
+                    self.selectedGene,
+                    self.selectedTranscript,
+                    lock,
+                    coord,
+                    self.dataSetModel.cohortMap[cohortKey].getName(),
+                    self.dataSetModel.cohortMap[cohortKey].getAffectedInfo(),
+                    "",     // SJG TODO: put mode in here later if necessary
+                    0);     // SJG TODO put max allele count in here
+                tooltip.selectAll("#unpin").on('click', function () {
+                    self.unpin(null, true);
+                });
+                tooltip.selectAll("#tooltip-scroll-up").on('click', function () {
+                    self.tooltipScroll("up");
+                });
+                tooltip.selectAll("#tooltip-scroll-down").on('click', function () {
+                    self.tooltipScroll("down");
+                });
+            },
+            tooltipScroll(direction) {
+                this.variantTooltip.scroll(direction, "#main-tooltip");
+            },
+
+            hideVariantTooltip: function () {
+                let tooltip = d3.select("#main-tooltip");
+                tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0)
+                    .style("z-index", 0)
+                    .style("pointer-events", "none");
+            },
+            showVariantCircle: function (variant) {
+                let self = this;
+                if (self.showVariantViz && self.$refs.subsetVizRef != null) {
+                    self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
+                }
+            },
+            hideVariantCircle: function () {
+                let self = this;
+                if (self.showVariantViz && self.$refs.subsetVizRef != null) {
+                    self.$refs.subsetVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.subsetVizRef.name));
+                }
+            },
+            getVariantSVG: function (vizTrackName) {
+                var svg = d3.select(this.$el).select('#' + vizTrackName + ' > svg');
+                return svg;
+            },
+            hideCoverageCircle: function () {
+                if (this.showDepthViz) {
+                    this.$refs.depthVizRef.hideCurrentPoint();
+                }
+            },
+            showCoverageCircle: function (variant) {
+                let self = this;
+                if (self.showDepthViz && self.sampleModel.coverage != null) {
+                    let theDepth = null;
+                    if (variant.bamDepth != null && variant.bamDepth != '') {
+                        theDepth = variant.bamDepth;
+                    } else {
+                        var matchingVariants = self.sampleModel.loadedVariants.features.filter(function (v) {
+                            return v.start == variant.start && v.alt == variant.alt && v.ref == variant.ref;
+                        })
+                        if (matchingVariants.length > 0) {
+                            theDepth = matchingVariants[0].bamDepth;
+                            // If samtools mpileup didn't return coverage for this position, use the variant's depth
+                            // field.
+                            if (theDepth == null || theDepth == '') {
+                                theDepth = matchingVariants[0].genotypeDepth;
+                            }
+                        }
+                    }
+                    if (theDepth) {
+                        self.$refs.depthVizRef.showCurrentPoint({pos: variant.start, depth: theDepth});
+                    }
+                }
+            },
+            onKnownVariantsVizChange: function (viz) {
+                this.$emit("knownVariantsVizChange", viz);
+            },
+            onKnownVariantsFilterChange: function (selectedCategories) {
+                this.$emit("knownVariantsFilterChange", selectedCategories);
+            },
+            getExonClass: function (exon, i) {
+                if (this.showDepthViz && exon.danger) {
+                    return exon.feature_type.toLowerCase() + (exon.danger[this.sampleModel.relationship] ? " danger" : "");
+                } else {
+                    return exon.feature_type.toLowerCase();
+                }
+            },
+            clearVariants: function () {
+                let self = this;
+                if (self.$refs.subsetVizRef != null) {
+                    self.$refs.subsetVizRef.clearVariants(self.getVariantSVG(self.$refs.subsetVizRef.name));
+                }
+            },
+            // TODO: modify this as needed for cohort - check out filter model first
+            onFilterSettingsApplied: function() {
+                let self = this;
+                self.customFilters = [];
+                for (let filterName in self.filterModel.flagCriteria) {
+                    if (self.filterModel.flagCriteria[filterName].active && self.filterModel.flagCriteria[filterName].custom) {
+                        self.customFilters.push({name: filterName, display: self.filterModel.flagCriteria[filterName].name});
+                    }
+                }
+                this.$emit('filter-settings-applied');
+            }
         }
-        if (theDepth) {
-          self.$refs.depthVizRef.showCurrentPoint({pos: variant.start, depth: theDepth});
-        }
-      }
-    },
-    onKnownVariantsVizChange: function(viz) {
-      this.$emit("knownVariantsVizChange", viz);
-    },
-    onKnownVariantsFilterChange: function(selectedCategories) {
-      this.$emit("knownVariantsFilterChange", selectedCategories);
-    },
-    getExonClass: function(exon, i) {
-      if (this.showDepthViz && exon.danger) {
-        return exon.feature_type.toLowerCase() + (exon.danger[this.sampleModel.relationship] ? " danger" : "");
-      } else {
-        return exon.feature_type.toLowerCase();
-      }
-    },
-    switchColorScheme: function() {
-      let self = this;
-      self.$refs.variantVizRef.forEach(function(variantViz) {
-        variantViz.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(variantViz.name));
-      })
     }
-  }
-}
 </script>
