@@ -4,9 +4,13 @@ function scaledVariantD3() {
     // dimensions
     var yAxisWidth = 45;
     var yAxisPadding = 4;
-    var margin = {top: 30, right: 0, bottom: 20, left: 110},
-        width = 800 - yAxisWidth - yAxisPadding,  // Width of variant display area
-        height = 100;
+    // var margin = {top: 30, right: 0, bottom: 20, left: 110},
+    //     width = 800 - yAxisWidth - yAxisPadding,  // Width of variant display area
+    //     height = 100;
+    var margin = {top: 0, right: 2, bottom: 0, left: 2},
+        width = 800,
+        height = 250;
+
     // scales
     var x = d3.scale.linear(),
         y = d3.scale.linear();

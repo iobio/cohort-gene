@@ -2,9 +2,12 @@ function variantD3() {
     var dispatch = d3.dispatch("d3brush", "d3rendered", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout");
 
     // dimensions
+    var yAxisWidth = 45;
+    var yAxisPadding = 4;
     var margin = {top: 0, right: 2, bottom: 0, left: 2},
         width = 800,
         height = 250;
+
     // scales
     var x = d3.scale.linear(),
         y = d3.scale.linear();
@@ -110,7 +113,9 @@ function variantD3() {
 
             var arrowClazz = pinned ? 'g.pinned.arrow' : 'g.hover.arrow';
             var garrow = svgContainer.select(arrowClazz);
-            garrow.attr("transform", "translate(" + (mousex + margin.left - variantHeight/2) + "," + (mousey + margin.top - 6) + ")");
+            garrow.attr("transform", "translate(" + (mousex + margin.left + yAxisWidth - variantHeight / 2) + "," + (mousey + margin.top - 6) + ")");
+
+//            garrow.attr("transform", "translate(" + (mousex + margin.left - variantHeight/2) + "," + (mousey + margin.top - 6) + ")");
             garrow.selectAll('.arrow').transition()
                 .duration(200)
                 .style("opacity", 1);
@@ -293,7 +298,8 @@ function variantD3() {
                     .append("svg")
                     .attr("width", widthPercent)
                     .attr("height", heightPercent)
-                    .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom))
+                    .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + parseInt(width + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height + margin.top + margin.bottom))
+                    // .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom))
                     .attr("preserveAspectRatio", "none")
                     .append("g")
                     .attr("class", "group")
@@ -308,7 +314,8 @@ function variantD3() {
                     .filter(function() {
                         return this.parentNode === container.node();
                     })
-                    .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom));
+                    .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + parseInt(width + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height + margin.top + margin.bottom));
+                // .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom));
 
 
                 // Add grouping for flagged variants
