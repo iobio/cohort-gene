@@ -586,7 +586,7 @@ TD & SJG updated Nov2018 -->
                 let self = this;
 
                 // Pileup selection
-                self.variantModel.setSelectedVariants(self.selectedGene, selectedVarIds);
+                self.variantModel.getDataSet('s0').setSelectedVariants(self.selectedGene, selectedVarIds);
 
                 // Clear data out of summary card
                 if (self.$refs.variantSummaryCardRef) {

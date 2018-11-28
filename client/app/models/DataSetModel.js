@@ -1519,8 +1519,8 @@ class DataSetModel {
         let cohort = self.getSubsetCohort();
         if (cohort != null) {
             if (cohort.vcfData && cohort.vcfData.features) {
-                let start = self.filterModel.regionStart ? self.filterModel.regionStart : gene.start;
-                let end = self.filterModel.regionEnd ? self.filterModel.regionEnd : gene.end;
+                let start = (self.filterModel && self.filterModel.regionStart) ? self.filterModel.regionStart : gene.start;
+                let end = (self.filter && self.filterModel.regionEnd) ? self.filterModel.regionEnd : gene.end;
                 cohort.selectedVariants = filterAndPileupVariants(cohort, start, end, 'selected');
             }
         }
