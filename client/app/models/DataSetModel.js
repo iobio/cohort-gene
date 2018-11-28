@@ -205,6 +205,26 @@ class DataSetModel {
         self.getSubsetCohort().updateChips();
     }
 
+    /* Takes in a variant and returns the corresponding one from this dataset.
+     * If the variant does not exist in this dataset, returns null. */
+    getVariant(varObj) {
+        let self = this;
+        let matchingVar = null;
+        if (self.loadedVariants && self.loadedVariants.features) {
+            matchingVar = self.loadedVariants.features.filter((feature) => {
+                return feature.id === varObj.id;
+            })
+        }
+        if (matchingVar.length > 1) {
+            console.log("WARNING: More than one matching variant!");
+        } else if (matchingVar.length > 0) {
+            matchingVar = matchingVar[0];
+        } else {
+            matchingVar = null;
+        }
+        return matchingVar;
+    }
+
     //</editor-fold>
 
     //<editor-fold desc="STATUS GETTERS">

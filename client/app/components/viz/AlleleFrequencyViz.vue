@@ -97,7 +97,11 @@ export default {
   },
   computed: {
     affectedProbandPercentage: function() {
-      if (this.totalProbandCount < 1) return "0";
+        if (this.totalProbandCount < 0) {
+            return "N/A";
+        } else if (this.totalProbandCount === 0) {
+            return "0";
+        }
       var freq = (Math.round((this.affectedProbandCount / this.totalProbandCount) * 100));
       if (freq == 0 && this.affectedProbandCount > 0) {
         return "1%";
@@ -105,7 +109,11 @@ export default {
       return (Math.round((this.affectedProbandCount / this.totalProbandCount) * 100)) + "";
     },
     affectedSubsetPercentage: function() {
-      if (this.totalSubsetCount < 1) return "0";
+        if (this.totalSubsetCount < 0) {
+            return "N/A";
+        } else if (this.totalSubsetCount === 0) {
+          return "0";
+      }
       var freq = (Math.round((this.affectedSubsetCount / this.totalSubsetCount) * 100));
       if (freq == 0 && this.affectedSubsetCount > 0) {
         return "1%";

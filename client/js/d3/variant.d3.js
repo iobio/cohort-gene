@@ -123,7 +123,7 @@ function variantD3() {
 
 
     var hideCircle = function (svgContainer, parentContainer) {
-        svgContainer.select(".circle").transition()
+        svgContainer.selectAll(".circle").transition()
             .duration(100)
             .style("opacity", 0);
         svgContainer.selectAll("g.arrow").selectAll('.arrow').transition()

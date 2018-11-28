@@ -4,9 +4,6 @@ function scaledVariantD3() {
     // dimensions
     var yAxisWidth = 45;
     var yAxisPadding = 4;
-    // var margin = {top: 30, right: 0, bottom: 20, left: 110},
-    //     width = 800 - yAxisWidth - yAxisPadding,  // Width of variant display area
-    //     height = 100;
     var margin = {top: 0, right: 2, bottom: 0, left: 2},
         width = 800,
         height = 250;
@@ -317,7 +314,7 @@ function scaledVariantD3() {
         }
     };
 
-    let switchColorScheme = function (enrichmentMode, svgContainer) {
+    var switchColorScheme = function (enrichmentMode, svgContainer) {
         impactMode = !enrichmentMode;
         let variants = svgContainer.selectAll(".variant");
         let varsToSwitch = variants;

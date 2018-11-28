@@ -180,37 +180,35 @@
 
 <template>
     <v-container height="100%" style="padding-top: 15px;">
-        <!--<div style="width: 100%">-->
-            <v-flex xl9 offset-xl2 lg12>
-                <div class='form-inline'>
-                    <div class='form-group'>
-                        <v-icon color="limeGreen"
-                                v-bind:class="{hide: variantSelected === false || subsetDelta < 2}">arrow_upward
-                        </v-icon>
-                        <v-icon color="slateGray"
-                                v-bind:class="{hide: variantSelected === false || (subsetDelta <= 1 || subsetDelta >= 2)}">
-                            arrow_upward
-                        </v-icon>
-                        <v-icon color="slateGray"
-                                v-bind:class="{hide: variantSelected === false || (subsetDelta <= 0.5 || subsetDelta >= 1)}">
-                            arrow_downward
-                        </v-icon>
-                        <v-icon color="cherryRed"
-                                v-bind:class="{hide: variantSelected === false || subsetDelta > 0.5}">arrow_downward
-                        </v-icon>
-                    </div>
-                    <div class='form-group'>
-                        <v-chip v-bind:class="{hide: variant == null}" v-bind:style="{margin: 0}" small outline
-                                color="cohortDarkBlue"
-                                @input="summaryCardVariantDeselect()">
+        <v-flex xl9 offset-xl2 lg12>
+            <div class='form-inline'>
+                <div class='form-group'>
+                    <v-icon color="limeGreen"
+                            v-bind:class="{hide: cohortFieldsValid === false || subsetDelta < 2}">arrow_upward
+                    </v-icon>
+                    <v-icon color="slateGray"
+                            v-bind:class="{hide: cohortFieldsValid === false || (subsetDelta <= 1 || subsetDelta >= 2)}">
+                        arrow_upward
+                    </v-icon>
+                    <v-icon color="slateGray"
+                            v-bind:class="{hide: cohortFieldsValid === false || (subsetDelta <= 0.5 || subsetDelta >= 1)}">
+                        arrow_downward
+                    </v-icon>
+                    <v-icon color="cherryRed"
+                            v-bind:class="{hide: cohortFieldsValid === false || subsetDelta > 0.5}">arrow_downward
+                    </v-icon>
+                </div>
+                <div class='form-group'>
+                    <v-chip v-bind:class="{hide: variant == null}" v-bind:style="{margin: 0}" small outline
+                            color="cohortDarkBlue"
+                            @input="summaryCardVariantDeselect()">
                             <span style="padding-right: 10px; font-size: 14px; text-align:center;"
                                   v-bind:class="{hide: geneName === ''}">{{geneName}}</span>
-                            <span style="padding-top: 1px; font-size: 12px; padding-right: 4px">{{selectedVariantLocation}}</span>
-                        </v-chip>
-                    </div>
+                        <span style="padding-top: 1px; font-size: 12px; padding-right: 4px">{{selectedVariantLocation}}</span>
+                    </v-chip>
                 </div>
-            </v-flex>
-        <!--</div>-->
+            </div>
+        </v-flex>
         <v-container fluid grid-list-md>
             <v-layout row wrap>
                 <feature-viz id="loaded-feature-viz" class="summary-viz"
@@ -278,16 +276,22 @@
             loadingExtraClinvarAnnotations: false
         },
         data() {
-            return {}
+            return {
+                cohortFieldsValid: true
+            }
         },
         computed: {
             totalProbandCount: function () {
-                if (this.variant != null)
+                if (!this.cohortFieldsValid) {
+                    return -1;
+                } else if (this.variant != null)
                     return this.variant.totalProbandCount;
                 return 0;
             },
             totalSubsetCount: function () {
-                if (this.variant != null)
+                if (!this.cohortFieldsValid) {
+                    return -1;
+                } else if (this.variant != null)
                     return this.variant.totalSubsetCount;
                 return 0;
             },
@@ -321,17 +325,23 @@
                     }
                     let foldEnrich = Math.round(adjDelta * 10) / 10;
 
-
-                    if (delta > 1) return (foldEnrich + "x" + " IN SUBSETS");
+                    if (!this.cohortFieldsValid) {
+                        return "N/A";
+                    }
+                    else if (delta > 1) return (foldEnrich + "x" + " IN SUBSETS");
                     else if (delta < 1) return (foldEnrich + "x" + " IN PROBANDS");
                     else if (this.variant.totalSubsetCount > 0) return ("EQUAL FREQUENCY");
                     else return "PROBANDS ONLY";
                 }
                 return "-";
             },
-            pValueInfo: function() {
+            pValueInfo: function () {
                 if (this.variant != null) {
-                    return '< ' + this.variant.pVal * 100 / 100;
+                    if (!this.cohortFieldsValid) {
+                        return "N/A";
+                    } else {
+                        return '< ' + this.variant.pVal * 100 / 100;
+                    }
                 }
                 return "-";
             },
@@ -518,6 +528,14 @@
                 if (self.$refs.summaryBarFeatureViz != null) {
                     self.$refs.summaryBarFeatureViz.drawCharts(probandN, subsetN);
                 }
+            },
+            setCohortFieldsNotApplicable: function () {
+                let self = this;
+                self.cohortFieldsValid = false;
+            },
+            setCohortFieldsApplicable: function() {
+                let self = this;
+                self.cohortFieldsValid = true;
             }
         }
     }

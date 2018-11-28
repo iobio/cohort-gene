@@ -326,7 +326,6 @@
                     lock);
             },
             hideVariantCircle: function (container) {
-                debugger;
                 this.variantChart.hideCircle()(container);
             },
             setVariantChart: function () {

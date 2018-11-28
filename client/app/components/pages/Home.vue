@@ -495,7 +495,6 @@ TD & SJG updated Nov2018 -->
             },
             onDataSetVariantClick: function (variant, sourceComponent, dataSetKey) {
                 let self = this;
-
                 if (variant) {
                     // Circle selected variant
                     if (self.$refs.variantCardRef) {
@@ -503,9 +502,11 @@ TD & SJG updated Nov2018 -->
                             cardRef.showVariantCircle(variant);
                         });
                     }
+
                     // Query service for single variant annotation if we don't have details yet
-                    if (!self.variantModel.extraAnnotationsLoaded) {
+                    if (!self.variantModel.extraAnnotationsLoaded && dataSetKey === 's0') {
                         // Turn on flag for summary card loading icons
+                        self.$refs.variantSummaryCardRef.setCohortFieldsApplicable();
                         self.deselectVariant(true);
                         self.loadingExtraAnnotations = true;
                         self.loadingExtraClinvarAnnotations = true;
@@ -537,8 +538,19 @@ TD & SJG updated Nov2018 -->
                                     })
                             })
                     }
-                    else {
+                    else if (dataSetKey === 's0'){
+                        // We've selected a variant in cohort track already loaded
+                        self.$refs.variantSummaryCardRef.setCohortFieldsApplicable();
                         self.selectedVariant = variant;
+                    } else {
+                        // We've selected a variant in sample model track - if it exists in cohort, display those details
+                        let matchingVar = self.variantModel.getDataSet('s0').getVariant(variant);
+                        if (matchingVar != null) {
+                            self.selectdVariant = matchingVar;
+                        } else {
+                            self.$refs.variantSummaryCardRef.setCohortFieldsNotApplicable();
+                            self.selectedVariant = variant;
+                        }
                     }
                 }
                 else {

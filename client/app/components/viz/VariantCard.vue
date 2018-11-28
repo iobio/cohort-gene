@@ -330,7 +330,6 @@ TD & SJG updated Apr2018 -->
             showVariantCircle: function (variant) {
                 let self = this;
                 if (self.showVariantViz && self.$refs.subsetVizRef != null) {
-                    debugger;
                     self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
                 }
             },

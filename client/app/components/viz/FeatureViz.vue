@@ -31,8 +31,8 @@
         </v-layout>
         <v-layout row>
             <v-flex xs2 md3 class="summary-field-label">Effect:</v-flex>
-            <v-flex xs10 md9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">{{
-                effect }}
+            <v-flex xs10 md9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">
+                {{effect}}
             </v-flex>
             <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations == false }">
                 <img src="../../../assets/images/wheel.gif">
