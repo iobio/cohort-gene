@@ -199,6 +199,12 @@ class DataSetModel {
         self.getSubsetCohort().setSelectionDetails(self.excludeIds);
     }
 
+    clearDisplayChips() {
+        let self = this;
+
+        self.getSubsetCohort().clearChips();
+    }
+
     wipeGeneData() {
         let self = this;
         self.loadedVariants = null;
@@ -590,6 +596,8 @@ class DataSetModel {
 
                                         // Assign cohort model data
                                         let destCohort = self.getSubsetCohort();
+                                        // Add variant number to chips
+                                        destCohort.phenotypes.push(results.features.length + ' variants');
                                         results.gene = theGene;
                                         destCohort.vcfData = results;
                                     }

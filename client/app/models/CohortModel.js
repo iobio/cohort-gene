@@ -57,22 +57,21 @@ class CohortModel {
         // Add subset IDs
         if (self.sampleIds.length === 1) {
             if (self.getDataSetModel().getProbandCohort() != null) {
-                self.phenotypes.push('Subset Sample: ' + self.sampleIds.join());
+                self.phenotypes.push('Subset Sample: ' + self.sampleIds.join(', '));
             } else {
                 self.phenotypes.push('Sample: ' + self.sampleIds.join());
             }
         }
         else if (self.sampleIds.length < 4) {
-            self.phenotypes.push('Subset Samples: ' + self.sampleIds.join());
+            self.phenotypes.push('Subset Samples: ' + self.sampleIds.join(', '));
         } else {
-            debugger;
             let firstFew = self.sampleIds.splice(3).join() + '...';
             self.phenotypes.push('Subset Samples: ' + firstFew);
         }
 
         // Add exclude IDs if they exist
         if (excludeIds.length > 0 && excludeIds.length < 4) {
-            self.phenotypes.push('Excluded Samples: ' + excludeIds.join());
+            self.phenotypes.push('Excluded Samples: ' + excludeIds.join(', '));
         } else if (excludeIds.length > 0) {
             let firstFew = excludeIds.splice(3).join() + '...';
             self.phenotypes.push('Excluded Samples: ' + firstFew);
@@ -1183,12 +1182,17 @@ class CohortModel {
         }
     }
 
-    /* Clear off the last selection detail chip contianing the number of variants for the selected locus.*/
+    /* Clear off the last selection detail chip containing the number of variants for the selected locus.*/
     updateChips() {
         let self = this;
         if (self.phenotypes.length > 1) {
             self.phenotypes.pop();
         }
+    }
+
+    clearChips() {
+        let self = this;
+        self.phenotypes = [];
     }
 
     setLoadedVariants(theVcfData) {

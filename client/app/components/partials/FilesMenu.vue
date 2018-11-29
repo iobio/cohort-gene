@@ -307,6 +307,7 @@
                     }
 
                     let displayName = currInfo.displayName.length > 0 ? currInfo.displayName : 'Local File';
+                    currInfo.dataSet.clearDisplayChips();
                     currInfo.dataSet.setDisplayChips(displayName);
                 }
 
