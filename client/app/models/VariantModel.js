@@ -51,7 +51,8 @@ class VariantModel {
                 'https://s3.amazonaws.com/iobio/samples/bam/NA12891.exome.bam'],
             'bais': null,
             'subsetSampleIds': ['NA12877'],
-            'excludeSampleIds': []
+            'excludeSampleIds': [],
+            'selectedSample': null
         }];
         // </editor-fold>
     }
@@ -497,10 +498,6 @@ class VariantModel {
             let localDataSet = new DataSetModel(self);
             localDataSet.entryId = modelInfo.id;
             localDataSet.name = modelInfo.id;
-            localDataSet.vcfs = modelInfo.vcfs;
-            localDataSet.tbis = modelInfo.tbis;
-            localDataSet.bams = modelInfo.bams;
-            localDataSet.bais = modelInfo.bais;
             if (modelInfo.id === 's0') {
                 self.mainDataSet = localDataSet;
             } else {
@@ -520,6 +517,38 @@ class VariantModel {
             resolve(localDataSet);
         });
     }
+
+    promiseInitCustomFile(customFile) {
+        return new Promise((resolve, reject) => {
+            let modelInfos = [];
+            const reader = new FileReader();
+            reader.onload = (fileObj) => {
+                let fileText = fileObj.target.result;
+                let infoObj = JSON.parse(fileText);
+                let entries = infoObj['entries'];
+                entries.forEach((entry) =>  {
+                    let currInfo = {};
+                    currInfo.id = entry.id;
+                    currInfo.displayName = entry.displayName;
+                    currInfo['vcfs'] = entry.vcfs;
+                    currInfo['tbis'] = entry.tbis;
+                    currInfo['bams'] = entry.bams;
+                    currInfo['bais'] = entry.bais;
+                    currInfo['samples'] = entry.samples;
+                    currInfo['subsetSampleIds'] = entry.subsetSampleIds;
+                    currInfo['excludeSampleIds'] = entry.excludeSampleIds;
+                    currInfo['selectedSample'] = entry.selectedSample;
+                    currInfo['isSampleEntry'] = entry.isSampleEntry;
+                    modelInfos.push(currInfo);
+                });
+                let returnObj = {"infos": modelInfos};
+                resolve(returnObj);
+            };
+            reader.readAsText(customFile);
+        })
+    }
+
+
 
     /* Removes data set model and cohort models associated with the given ID from the optional other data set list. */
     removeEntry(id) {

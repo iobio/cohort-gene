@@ -176,7 +176,7 @@ class DataSetModel {
 
     setSelectedSample(theId) {
         let self = this;
-        self.getSubsetCohort().sampleIds = theId;
+        self.getSubsetCohort().sampleIds = [theId];
     }
 
     getTranslator() {
@@ -323,7 +323,6 @@ class DataSetModel {
     addVcfEndpoint(endptKey) {
         let self = this;
 
-        self.vcfs.push(endptKey);
         self.vcfEndptHash[endptKey] = vcfiobio();
         let theEndpt = self.vcfEndptHash[endptKey];
         let varModel = self.getVariantModel();
@@ -989,6 +988,10 @@ class DataSetModel {
                             if (success) {
                                 me.vcfUrlsEntered = true;
                                 me.vcfFilesOpened = false;
+                                me.vcfs.push(currVcf);
+                                if (currTbi) {
+                                    me.tbis.push(currTbi);
+                                }
                                 // Get the sample names from the vcf header
                                 currVcfEndpt.getSampleNames(function (names) {
                                     me.isMultiSample = !!(names && names.length > 1);
@@ -1264,6 +1267,7 @@ class DataSetModel {
     // <editor-fold desc="BAM">
 
     onBamUrlEntered(bamUrl, baiUrl, callback) {
+        // TODO: make sure to add bam and bai urls to this.bams and this.bais like in vcfurlent
         var me = this;
         this.bamData = null;
         this.fbData = null;

@@ -65,6 +65,7 @@ class CohortModel {
         else if (self.sampleIds.length < 4) {
             self.phenotypes.push('Subset Samples: ' + self.sampleIds.join());
         } else {
+            debugger;
             let firstFew = self.sampleIds.splice(3).join() + '...';
             self.phenotypes.push('Subset Samples: ' + firstFew);
         }
@@ -1179,19 +1180,6 @@ class CohortModel {
             } else if (+chromA > +chromB) {
                 return 1;
             }
-        }
-    }
-
-// TODO: refactor this...
-    /* Only called by subset model for now */
-    getFormattedSampleIds(type) {
-        let self = this;
-
-        if (type === 'subset') {
-            return self.sampleIds;
-        }
-        else if (type === 'probands') {
-            return self.getDataSetModel().getProbandCohort().sampleIds;
         }
     }
 

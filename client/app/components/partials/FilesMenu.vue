@@ -137,7 +137,7 @@
                             </v-list-tile>
                             <v-list-tile>
                                 <v-list-tile-action>
-                                    <v-btn flat :disabled="!isValid"
+                                    <v-btn flat :disabled="!isValid" v-bind:class="'menu-selection'"
                                            @click="onDownloadCustomFile">
                                         Download Config
                                     </v-btn>
@@ -201,7 +201,7 @@
             draggable
         },
         props: {
-            variantModel: null, // TODO: can I get away with only passing dataset model now?
+            variantModel: null,
             launchedFromHub: false
         },
         data() {
@@ -258,9 +258,9 @@
                     newInfo.excludeSampleIds = [];
                     newInfo.selectedSample = null;  // When we have a sample model entry
                     newInfo.vcfs = [];
-                    newInfo.tbis = [];
+                    newInfo.tbis = null;
                     newInfo.bams = [];
-                    newInfo.bais = [];
+                    newInfo.bais = null;
                     newInfo.isSampleEntry = isSampleEntry;
                     self.modelInfoMap[newId] = newInfo;
 
@@ -324,8 +324,7 @@
                 let customFile = evt.target.files[0];
                 self.variantModel.promiseInitCustomFile(customFile)
                     .then((obj) => {
-                        // TODO: set anything we need to do
-                        //self.onAutoLoad(obj.isTimeSeries, 'custom', obj.infos);
+                        self.onAutoLoad(obj.infos);
                     })
                     .catch((e) => {
                         console.log('Problem loading custom config file: ' + e);
@@ -336,27 +335,31 @@
                 let self = this;
 
                 // JSON.stringify
-                //let exportObj = {'isTimeSeries': self.timeSeriesMode};
-                let sampleArr = [];
+                let exportObj = {};
+                let entryArr = [];
                 let infoValues = Object.values(self.modelInfoMap);
                 infoValues.forEach((val) => {
                     let newVal = {};
                     newVal.id = val.id;
-                    newVal.isTumor = val.isTumor;
-                    newVal.vcfs = val.vcf;
-                    newVal.tbis = val.tbi;
-                    newVal.bams = val.bam;
-                    newVal.bais = val.bai;
-                    newVal.selectedSample = val.selectedSample;
                     newVal.displayName = val.displayName;
-                    sampleArr.push(newVal);
+                    newVal.samples = val.samples;
+                    newVal.subsetSampleIds = val.subsetSampleIds;
+                    newVal.excludeSampleIds = val.excludeSampleIds;
+                    newVal.selectedSample = val.selectedSample;
+                    newVal.vcfs = val.vcfs;
+                    newVal.tbis = val.tbis;
+                    newVal.bams = val.bams;
+                    newVal.bais = val.bais;
+                    newVal.isSampleEntry = val.isSampleEntry;
+                    entryArr.push(newVal);
                 });
-                exportObj['samples'] = sampleArr;
+
+                exportObj['entries'] = entryArr;
                 const exportFile = JSON.stringify(exportObj);
                 const blob = new Blob([exportFile], {type: 'text/plain'});
                 const e = document.createEvent('MouseEvents'),
                     a = document.createElement('a');
-                a.download = "oncogene_config.json";
+                a.download = "cohort_gene_config.json";
                 a.href = window.URL.createObjectURL(blob);
                 a.dataset.downloadurl = ['text/json', a.download, a.href].join(':');
                 e.initEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
@@ -402,7 +405,7 @@
                     let currDataSet = self.variantModel.getDataSet(currId);
                     if (currDataSet == null) {
                         let corrInfo = self.modelInfoMap[currId];
-                        let p = self.variantModel.promiseAddEntry(corrInfo); // Don't need to assign to map, done in promiseSetModel below
+                        let p = self.variantModel.promiseAddEntry(corrInfo, corrInfo.isSampleEntry); // Don't need to assign to map, done in promiseSetModel below
                         addPromises.push(p);
                     }
                 }
@@ -424,7 +427,7 @@
             checkCustomIndex: function (infos) {
                 let areSeparate = false;
                 infos.forEach((info) => {
-                    if (info.bai != null || info.tbi != null) {
+                    if (info.bais != null || info.tbis != null) {
                         areSeparate = true;
                     }
                 });
@@ -455,10 +458,10 @@
                                     if (currEntryRef.modelInfo.id === theDataSet.entryId) {
                                         // Set selected sample in model and in child cmpnt
                                         if (theModelInfo.isSampleEntry) {
-                                            theDataSet.sampleIds.push(theModelInfo.selectedSample);
+                                            theDataSet.setSelectedSample(theModelInfo.selectedSample);
                                         }
                                         // Set view state
-                                        currEntryRef.fillSampleFields(successObj.samples, theModelInfo.selectedSample, theModelInfo.subsetSampleIds, theModelInfo.excludeSampleIds);
+                                        currEntryRef.fillSampleFields(theModelInfo.samples, theModelInfo.selectedSample, theModelInfo.subsetSampleIds, theModelInfo.excludeSampleIds);
                                         self.validate();
                                     }
                                 }

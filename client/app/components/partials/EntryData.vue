@@ -238,12 +238,21 @@
         watch: {
             'modelInfo.vcfs': function(newVal, oldVal) {
                 let self = this;
-                self.firstVcf = newVal[0];
+                if (newVal) {
+                    self.firstVcf = newVal[0];
+                }
             },
             'modelInfo.tbis': function(newVal, oldVal) {
                 let self = this;
-                self.firstTbi = newVal;
-            }
+                if (newVal) {
+                    self.firstTbi = newVal[0];
+                }
+            },
+            // modelInfo: function() {
+            //     let self = this;
+            //     self.firstVcf = self.modelInfo.vcfs[0];
+            //     self.firstTbi = self.modelInfo.tbis ? self.modelInfo.tbis[0] : null;
+            // }
         },
         computed: {},
         methods: {
@@ -252,7 +261,6 @@
                     self.modelInfo.dataSet.getProbandCohort().trackName = self.modelInfo.displayName;
                 }
             },
-            // Called for non-autofill (demo or config file) launch
             onVcfUrlEntered: function (vcfUrl, tbiUrl) {
                 let self = this;
                 self.$set(self, "selectedSample", null);
@@ -263,11 +271,17 @@
                         .then((listObj) => {
                         if (listObj) {
                             self.samples = listObj['samples'];
+                            self.modelInfo.samples = listObj['samples'];
                             if (self.samples.length === 1) {
                                 self.selectedSample = self.samples[0];
+                                self.modelInfo.selectedSample = self.samples[0];
                                 self.modelInfo.dataSet.setSelectedSample(self.samples[0]);
                             } else {
                                 self.selectedSample = null;
+                            }
+                            self.modelInfo.vcfs = [vcfUrl];
+                            if (tbiUrl != null) {
+                                self.modelInfo.tbis = [tbiUrl];
                             }
                         }
                         self.$emit("sample-data-changed");
@@ -305,33 +319,6 @@
             //     this.modelInfo.model.isTumor = this.modelInfo.affectedStatus;
             //     this.rowLabel = this.getRowLabel();
             // },
-
-            /* Fills in samples field with all sample IDs seen when checking provided vcf urls.
-             * If this is a cohort entry, fills in subset, proband, and exclude sample ID arrays.
-             * Else if this is a sample entry, fills in selected sample ID.
-             * Fills sample fields in both view and model. */
-            fillSampleFields: function (samples, sampleToSelect, subsetSampleIds, excludeSampleIds) {
-                let self = this;
-
-                self.samples = samples;
-                if (sampleToSelect) {
-                    self.selectedSample = sampleToSelect;
-                    self.modelInfo.dataSet.setSampleId(sampleToSelect);
-                } else {
-                    self.subsetSampleIds = subsetSampleIds;
-                    self.excludeSampleIds = excludeSampleIds;
-                    self.selectedSample = null;
-                    self.modelInfo.dataSet.setProbandIds(self.getProbandIds());
-                }
-                if (subsetSampleIds.length > 0) {
-                    self.modelInfo.dataSet.setSubsetIds(subsetSampleIds);
-                    self.subsetSampleDisplay = subsetSampleIds.join();
-                }
-                if (excludeSampleIds.length > 0) {
-                    self.modelInfo.dataSet.setExcludeIds(excludeSampleIds);
-                    self.excludeSampleDisplay = excludeSampleIds.join();
-                }
-            },
             onSampleSelected: function () {
                 let self = this;
                 self.modelInfo.selectedSample = self.selectedSample;
@@ -407,6 +394,7 @@
                     } else {
                         self.subsetSampleDisplay = "click to edit";
                     }
+                    self.modelInfo.subsetSampleIds = selectedSamples;
                     self.modelInfo.dataSet.setSubsetIds(selectedSamples);
                     self.$emit('subset-ids-entered');
                 } else if (dialogType === "Exclude") {
@@ -416,6 +404,7 @@
                     } else {
                         self.excludeSampleDisplay = "click to edit";
                     }
+                    self.modelInfo.excludeSampleIds = selectedSamples;
                     self.modelInfo.dataSet.setExcludeIds(selectedSamples);
                     self.$emit('exclude-ids-entered');
                 }
@@ -451,7 +440,41 @@
                 return allSamples.filter((sample) => {
                     return !self.excludeSampleIds.includes(sample);
                 });
-            }
+            },
+            /* Refreshes computed fields for display when config file is loaded. */
+            refreshFileFields: function() {
+                let self = this;
+                //self.firstVcf = theModelInfo.vcfs[0];
+                self.firstVcf = self.modelInfo.vcfs[0];
+                //self.firstTbi = theModelInfo.tbis ? theModelInfo.tbis[0] : null;
+                // TODO: fill in bam stuff once implemented
+            },
+            /* Fills in samples field with all sample IDs seen when checking provided vcf urls.
+             * If this is a cohort entry, fills in subset, proband, and exclude sample ID arrays.
+             * Else if this is a sample entry, fills in selected sample ID.
+             * Fills sample fields in both view and model. */
+            fillSampleFields: function (samples, sampleToSelect, subsetSampleIds, excludeSampleIds) {
+                let self = this;
+
+                self.samples = samples;
+                if (sampleToSelect) {
+                    self.selectedSample = sampleToSelect;
+                    self.modelInfo.dataSet.setSelectedSample(sampleToSelect);
+                } else {
+                    self.subsetSampleIds = subsetSampleIds;
+                    self.excludeSampleIds = excludeSampleIds;
+                    self.selectedSample = null;
+                    self.modelInfo.dataSet.setProbandIds(self.getProbandIds());
+                }
+                if (subsetSampleIds.length > 0) {
+                    self.modelInfo.dataSet.setSubsetIds(subsetSampleIds);
+                    self.subsetSampleDisplay = subsetSampleIds.join();
+                }
+                if (excludeSampleIds.length > 0) {
+                    self.modelInfo.dataSet.setExcludeIds(excludeSampleIds);
+                    self.excludeSampleDisplay = excludeSampleIds.join();
+                }
+            },
         },
         mounted: function () {
             let self = this;
@@ -459,6 +482,13 @@
             self.subsetSampleIds = self.modelInfo.subsetSampleIds;
             self.excludeSampleIds = self.modelInfo.excludeSampleIds;
             self.isMainCohort = self.dragId === 's0';
+            if (self.modelInfo.vcfs) {
+                self.firstVcf = self.modelInfo.vcfs[0];
+            }
+            if (self.modelInfo.tbis) {
+                self.firstTbi = self.modelInfo.tbis[0];
+            }
+            // TODO: do this for bams
 
             // Assign side bar label
             if (self.modelInfo.isSampleEntry) {
