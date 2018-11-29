@@ -261,7 +261,7 @@
             },
             onVariantClick: function (variant) {
                 let self = this;
-                let cohortKey = self.name;
+                let cohortKey = 's0';   // NOTE: hardcoding b/c only cohort track may zoom for now
                 self.$emit("variantClick", variant, cohortKey);
             },
             showVariantCircle: function (variant, container, lock) {
