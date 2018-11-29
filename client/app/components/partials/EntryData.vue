@@ -263,6 +263,7 @@
             },
             onVcfUrlEntered: function (vcfUrl, tbiUrl) {
                 let self = this;
+                self.$emit("sample-data-changed");
                 self.$set(self, "selectedSample", null);
                 self.$set(self, "samples", []);
 
