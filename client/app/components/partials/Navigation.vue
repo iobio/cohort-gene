@@ -25,8 +25,8 @@
     <div>
         <v-toolbar fixed app :clipped-left="clipped" dark prominent>
 
-            <v-toolbar-side-icon @click.stop="leftDrawer = !leftDrawer">
-            </v-toolbar-side-icon>
+            <!--<v-toolbar-side-icon @click.stop="leftDrawer = !leftDrawer">-->
+            <!--</v-toolbar-side-icon>-->
 
             <v-toolbar-title style="margin-right: 0px" v-text="title"></v-toolbar-title>
             <v-toolbar-title style="color: #95b0c6 !important; margin-left: 0px !important"
@@ -94,24 +94,24 @@
                 </v-list>
             </v-menu>
         </v-toolbar>
-        <v-navigation-drawer
-                fixed
-                :clipped="clipped"
-                v-model="leftDrawer"
-                app
-                width=350
-        >
-            <div>
-                <flagged-variants-card
-                        v-if="leftDrawerContents == 'flagged-variants'"
-                        :cohortModel="cohortModel"
-                        :flaggedVariants="flaggedVariants"
-                        @flagged-variants-imported="onFlaggedVariantsImported"
-                        @flagged-variant-selected="onFlaggedVariantSelected"
-                >
-                </flagged-variants-card>
-            </div>
-        </v-navigation-drawer>
+        <!--<v-navigation-drawer-->
+                <!--fixed-->
+                <!--:clipped="clipped"-->
+                <!--v-model="leftDrawer"-->
+                <!--app-->
+                <!--width=350-->
+        <!--&gt;-->
+            <!--<div>-->
+                <!--<flagged-variants-card-->
+                        <!--v-if="leftDrawerContents == 'flagged-variants'"-->
+                        <!--:cohortModel="cohortModel"-->
+                        <!--:flaggedVariants="flaggedVariants"-->
+                        <!--@flagged-variants-imported="onFlaggedVariantsImported"-->
+                        <!--@flagged-variant-selected="onFlaggedVariantSelected"-->
+                <!--&gt;-->
+                <!--</flagged-variants-card>-->
+            <!--</div>-->
+        <!--</v-navigation-drawer>-->
     </div>
 </template>
 
@@ -158,10 +158,10 @@
 
                 selectedGene: {},
                 clipped: false,
-                leftDrawer: false,
+                //leftDrawer: false,
                 rightDrawer: false,
 
-                leftDrawerContents: "",
+                //leftDrawerContents: "",
                 showLegendMenu: false,
                 focusToggle: false
             }
@@ -188,16 +188,16 @@
                 this.$emit("apply-genes", genesToApply);
             },
             onVariants: function () {
-                this.leftDrawerContents = "flagged-variants";
-                this.leftDrawer = true;
+                // this.leftDrawerContents = "flagged-variants";
+                // this.leftDrawer = true;
             },
             onLegend: function () {
-                this.leftDrawerContents = "legend";
-                this.leftDrawer = true;
+                // this.leftDrawerContents = "legend";
+                // this.leftDrawer = true;
             },
             onShowFlaggedVariants: function () {
-                this.leftDrawerContents = "flagged-variants";
-                this.leftDrawer = true;
+                // this.leftDrawerContents = "flagged-variants";
+                // this.leftDrawer = true;
             },
             onFlaggedVariantSelected: function (variant) {
                 this.$emit("flagged-variant-selected", variant)
