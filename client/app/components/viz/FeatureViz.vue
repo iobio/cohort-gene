@@ -30,36 +30,34 @@
             <v-flex xs12 class="field-label-header" style="text-align: left">Annotation Details</v-flex>
         </v-layout>
         <v-layout row>
-            <v-flex xs2 md3 class="summary-field-label">Effect:</v-flex>
-            <v-flex xs10 md9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">
+            <v-flex xs1 md2 class="summary-field-label">Effect:</v-flex>
+            <v-flex xs5 md4 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
                 {{effect}}
             </v-flex>
-            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations == false }">
+            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
                 <img src="../../../assets/images/wheel.gif">
             </div>
-        </v-layout>
-        <v-layout row>
-            <v-flex xs2 md3 class="summary-field-label">Impact:</v-flex>
-            <v-flex xs10 md9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">
-         <span v-bind:class="{hide: impactText == ''}">
-           <svg v-bind:class="{hide: (type != 'snp' && type != 'mnp')}" class="impact-badge" height="12" width="12">
+            <v-flex xs1 md2 class="summary-field-label">Impact:</v-flex>
+            <v-flex xs5 md4 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
+         <span v-bind:class="{hide: impactText === ''}">
+           <svg v-bind:class="{hide: (type !== 'snp' && type !== 'mnp')}" class="impact-badge" height="12" width="12">
              <g transform="translate(1,3)" class="filter-symbol" v-bind:class="impactColor">
                <rect width="8" height="8"></rect>
              </g>
            </svg>
-           <svg v-bind:class="{hide: (type != 'del')}" class="impact-badge" height="12" width="13">
+           <svg v-bind:class="{hide: (type !== 'del')}" class="impact-badge" height="12" width="13">
              <g transform="translate(5,6)" class="filter-symbol" v-bind:class="impactColor">
                <path d="M0,-4.161791450287817L4.805622828269509,4.161791450287817 -4.805622828269509,4.161791450287817Z">
                </path>
              </g>
            </svg>
-           <svg v-bind:class="{hide: (type != 'ins')}" class="impact-badge" height="12" width="13">
+           <svg v-bind:class="{hide: (type !== 'ins')}" class="impact-badge" height="12" width="13">
              <g transform="translate(7,7)" class="filter-symbol" v-bind:class="impactColor">
                <path d="M0,3.5682482323055424A3.5682482323055424,3.5682482323055424 0 1,1 0,-3.5682482323055424A3.5682482323055424,3.5682482323055424 0 1,1 0,3.5682482323055424Z">
                </path>
              </g>
            </svg>
-           <svg v-bind:class="{hide: (type != 'complex')}" class="impact-badge" height="13" width="13">
+           <svg v-bind:class="{hide: (type !== 'complex')}" class="impact-badge" height="13" width="13">
              <g transform="translate(4,6)" class="filter-symbol" v-bind:class="impactColor">
                <path d="M0,-5.885661912765424L3.398088489694245,0 0,5.885661912765424 -3.398088489694245,0Z">
                </path>
@@ -70,13 +68,29 @@
            {{impactText}}
          </span>
             </v-flex>
-            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations == false }">
+            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
+                <img src="../../../assets/images/wheel.gif">
+            </div>
+        </v-layout>
+        <v-layout row>
+            <v-flex xs1 md2 class="summary-field-label">Type:</v-flex>
+            <v-flex xs5 md4 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
+                {{type}}
+            </v-flex>
+            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
+                <img src="../../../assets/images/wheel.gif">
+            </div>
+            <v-flex xs1 md2 class="summary-field-label">Bases:</v-flex>
+            <v-flex xs5 md4 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
+                {{refAlt}}
+            </v-flex>
+            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
                 <img src="../../../assets/images/wheel.gif">
             </div>
         </v-layout>
         <v-layout row>
             <v-flex xs2 md3 class="summary-field-label">Clinvar:</v-flex>
-            <v-flex xs10 md9 v-bind:class="{hide: loadingExtraClinvarAnnotations == true}" class="summary-field-value">
+            <v-flex xs10 md9 v-bind:class="{hide: loadingExtraClinvarAnnotations === true}" class="summary-field-value">
          <span v-bind:class="{hide: clinVarText == ''}">
            <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
                <g transform="translate(1,3)" v-bind:class="clinVarColor">
@@ -87,14 +101,14 @@
          </span>
                 <span>{{ clinVarText || '-' }}</span>
             </v-flex>
-            <div class="loader" v-bind:class="{ hide: loadingExtraClinvarAnnotations == false }">
+            <div class="loader" v-bind:class="{ hide: loadingExtraClinvarAnnotations === false }">
                 <img src="../../../assets/images/wheel.gif">
             </div>
         </v-layout>
         <v-layout row>
             <v-flex xs2 md3 class="summary-field-label">Polyphen:</v-flex>
-            <v-flex xs10 md9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">
-         <span v-bind:class="{hide: polyPhenText == ''}">
+            <v-flex xs10 md9 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
+         <span v-bind:class="{hide: polyPhenText === ''}">
            <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
                <g transform="translate(1,3)" v-bind:class="polyPhenColor">
                  <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#biohazard-symbol"
@@ -106,14 +120,14 @@
            {{ polyPhenText || '-' }}
          </span>
             </v-flex>
-            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations == false }">
+            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
                 <img src="../../../assets/images/wheel.gif">
             </div>
         </v-layout>
         <v-layout row>
             <v-flex xs2 md3 class="summary-field-label">SIFT:</v-flex>
-            <v-flex xs10 md9 v-bind:class="{hide: loadingExtraAnnotations == true}" class="summary-field-value">
-         <span v-bind:class="{hide: siftText == ''}">
+            <v-flex xs10 md9 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
+         <span v-bind:class="{hide: siftText === ''}">
            <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
                <g transform="translate(1,3)" v-bind:class="siftColor">
                  <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#danger-symbol" width="12"
@@ -125,7 +139,7 @@
            {{ siftText || '-' }}
          </span>
             </v-flex>
-            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations == false }">
+            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
                 <img src="../../../assets/images/wheel.gif">
             </div>
         </v-layout>
@@ -150,6 +164,10 @@
                 type: String
             },
             type: {
+                default: "",
+                type: String
+            },
+            refAlt: {
                 default: "",
                 type: String
             },

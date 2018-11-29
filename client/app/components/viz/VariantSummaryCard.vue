@@ -217,6 +217,7 @@
                              :impactText="impactText"
                              :impactColor="impactColor"
                              :type="variantType"
+                             :refAlt="variantRefAlt"
                              :clinVarText="clinVarText"
                              :clinVarColor="clinVarColor"
                              :siftText="siftText"
@@ -392,7 +393,13 @@
             variantType: function () {
                 if (this.variant != null)
                     return this.variant.type;
-                return "";
+                return "-";
+            },
+            variantRefAlt: function() {
+                if (this.variant != null) {
+                    return this.variant.ref + '->' + this.variant.alt;
+                }
+                return "-";
             },
             clinVarText: function () {
                 if (this.variantInfo != null && this.variantInfo.clinvarSig != null)
