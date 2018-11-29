@@ -1201,3 +1201,4 @@ class CohortModel {
 
     // </editor-fold>
 }
+export default CohortModel

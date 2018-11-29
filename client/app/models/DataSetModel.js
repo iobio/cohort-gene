@@ -1,6 +1,8 @@
 /* Logic relative to a single data set (for example, Sfari data set or local upload data set).
    Has 1:1 relationship with VariantViz component and rendered track.
    SJG updated Nov2018 */
+import CohortModel from './CohortModel.js'
+
 class DataSetModel {
     constructor(theVariantModel) {
 
@@ -1672,3 +1674,4 @@ class DataSetModel {
 
     // </editor-fold>
 }
+export default DataSetModel

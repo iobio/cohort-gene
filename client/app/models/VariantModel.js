@@ -1,5 +1,7 @@
 /* Encapsulates logic for Variant Card and Variant Summary Card
    SJG & TS updated Nov2018 */
+import DataSetModel from './DataSetModel.js'
+
 class VariantModel {
     constructor(endpoint, genericAnnotation, translator, geneModel,
                 cacheHelper, genomeBuildHelper) {
