@@ -2,7 +2,6 @@
 
 rm -rf deploy
 mkdir deploy
-mkdir deploy/js
 mkdir deploy/app
 mkdir deploy/dist
 
@@ -17,9 +16,7 @@ fi
 
 # link to files needed for static page
 ln -s ~/Documents/Code/cohort-gene/server/views/index.html ~/Documents/Code/cohort-gene/deploy/index.html
-
 ln -s ~/Documents/Code/cohort-gene/client/assets ~/Documents/Code/cohort-gene/deploy/assets
-ln -s ~/Documents/Code/cohort-gene/client/data ~/Documents/Code/cohort-gene/deploy/data
 ln -s ~/Documents/Code/cohort-gene/client/js ~/Documents/Code/cohort-gene/deploy/js
 ln -s ~/Documents/Code/cohort-gene/client/dist/build.js ~/Documents/Code/cohort-gene/deploy/dist/build.js
 if [[ $1 == "prod" ]]; then
