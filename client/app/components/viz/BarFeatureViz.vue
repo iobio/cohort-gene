@@ -27,12 +27,12 @@
             <v-flex xs12 class="field-label-header" style="text-align:left">Zygosity Counts</v-flex>
         </v-layout>
         <v-layout row>
-            <v-flex xs2 md3 class="summary-field-label">Probands:</v-flex>
-            <v-flex xs10 md9 id="probandZygBar" style="padding-bottom:5px"></v-flex>
+            <v-flex xs2 class="summary-field-label">Probands:</v-flex>
+            <v-flex xs9 id="probandZygBar" style="padding-bottom:5px"></v-flex>
         </v-layout>
         <v-layout row>
-            <v-flex xs2 md3 class="summary-field-label">Subsets:</v-flex>
-            <v-flex xs10 md9 id="subsetZygBar" style="padding-bottom:5px"></v-flex>
+            <v-flex xs2 class="summary-field-label">Subsets:</v-flex>
+            <v-flex xs9 id="subsetZygBar" style="padding-bottom:5px"></v-flex>
         </v-layout>
     </v-flex>
 </template>

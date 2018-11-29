@@ -9,8 +9,8 @@
             </v-flex>
         </v-layout>
         <v-layout row>
-            <v-flex xs3 class="summary-field-label">Frequency ∆:</v-flex>
-            <v-flex xs9 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
+            <v-flex xs2 class="summary-field-label">Freq ∆:</v-flex>
+            <v-flex xs10 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
                 <span class="summary-field-value">{{ foldEnrichmentInfo }}</span>
             </v-flex>
             <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
@@ -18,8 +18,8 @@
             </div>
         </v-layout>
         <v-layout row>
-            <v-flex xs3 class="summary-field-label">P-value:</v-flex>
-            <v-flex xs9 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
+            <v-flex xs2 class="summary-field-label">P-value:</v-flex>
+            <v-flex xs10 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
                 <span class="summary-field-value">{{ pValueInfo }}</span>
             </v-flex>
             <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
