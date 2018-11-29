@@ -89,8 +89,8 @@
             </div>
         </v-layout>
         <v-layout row>
-            <v-flex xs2 md3 class="summary-field-label">Clinvar:</v-flex>
-            <v-flex xs10 md9 v-bind:class="{hide: loadingExtraClinvarAnnotations === true}" class="summary-field-value">
+            <v-flex xs6 md2 class="summary-field-label">ClinVar:</v-flex>
+            <v-flex xs6 md4 v-bind:class="{hide: loadingExtraClinvarAnnotations === true}" class="summary-field-value">
          <span v-bind:class="{hide: clinVarText == ''}">
            <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
                <g transform="translate(1,3)" v-bind:class="clinVarColor">
@@ -104,10 +104,8 @@
             <div class="loader" v-bind:class="{ hide: loadingExtraClinvarAnnotations === false }">
                 <img src="../../../assets/images/wheel.gif">
             </div>
-        </v-layout>
-        <v-layout row>
-            <v-flex xs2 md3 class="summary-field-label">Polyphen:</v-flex>
-            <v-flex xs10 md9 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
+            <v-flex xs6 md2 class="summary-field-label">PolyPhen:</v-flex>
+            <v-flex xs6 md4 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
          <span v-bind:class="{hide: polyPhenText === ''}">
            <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
                <g transform="translate(1,3)" v-bind:class="polyPhenColor">
@@ -125,8 +123,8 @@
             </div>
         </v-layout>
         <v-layout row>
-            <v-flex xs2 md3 class="summary-field-label">SIFT:</v-flex>
-            <v-flex xs10 md9 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
+            <v-flex xs6 md2 class="summary-field-label">SIFT:</v-flex>
+            <v-flex xs6 md4 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
          <span v-bind:class="{hide: siftText === ''}">
            <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
                <g transform="translate(1,3)" v-bind:class="siftColor">
@@ -138,6 +136,15 @@
                 <span>
            {{ siftText || '-' }}
          </span>
+            </v-flex>
+            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
+                <img src="../../../assets/images/wheel.gif">
+            </div>
+            <v-flex xs6 md2 class="summary-field-label">REVEL:</v-flex>
+            <v-flex xs6 md4 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
+            <span>
+           {{ revelText || '-' }}
+            </span>
             </v-flex>
             <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
                 <img src="../../../assets/images/wheel.gif">
@@ -192,6 +199,10 @@
                 type: String
             },
             polyPhenColor: {
+                default: "",
+                type: String
+            },
+            revelText: {
                 default: "",
                 type: String
             },

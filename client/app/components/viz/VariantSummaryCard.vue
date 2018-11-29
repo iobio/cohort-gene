@@ -224,6 +224,7 @@
                              :siftColor="siftColor"
                              :polyPhenText="polyPhenText"
                              :polyPhenColor="polyPhenColor"
+                             :revelText="revelText"
                              :foldEnrichmentInfo="foldEnrichmentInfo"
                              :pValueInfo="pValueInfo"
                              :variantSelected="variantSelected"
@@ -435,6 +436,12 @@
                     var phenText = this.variantInfo.polyphen;
                     phenText = phenText.replace(" ", "_");
                     return "colorby_polyphen_" + phenText;
+                }
+                return "";
+            },
+            revelText: function() {
+                if (this.variantInfo != null) {
+                    return this.variantInfo.revel;
                 }
                 return "";
             },
