@@ -528,10 +528,9 @@
                 self.variantModel.getAllDataSets().forEach((dataSet) => {
 
                     let modelInfo = self.modelInfoMap[dataSet.entryId];
-                    let probandModel = dataSet.getProbandCohort();
-                    let subsetModel = dataSet.getSubsetCohort();
                     if (modelInfo == null) {
                         modelInfo = {};
+                        modelInfo.id = dataSet.entryId;
                         modelInfo.displayName = self.launchedFromHub ? 'Mosaic Selection' : dataSet.displayName;
                         modelInfo.sampleIds = dataSet.getSubsetIds();
                         modelInfo.excludeIds = dataSet.getExcludeIds();
@@ -543,6 +542,7 @@
                         if (modelInfo.tbi || modelInfo.bai) {
                             self.separateUrlForIndex = true;
                         }
+                        modelInfo.isSampleEntry = dataSet.isSingleSample;
                         let key = 's' + self.entryIds.length;
                         self.entryIds.push(key);
                         self.$set(self.modelInfoMap, key, modelInfo);
