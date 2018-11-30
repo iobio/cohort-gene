@@ -265,7 +265,7 @@ Updated: SJG Apr2018
                 if (self.dataSetModel != null) {
                     files = self.dataSetModel.vcfNames;
                 }
-                self.formattedValidFiles = files;
+                self.formattedValidFiles = self.formatAndSortPhaseFiles(files);
             },
             invalidSourceFiles: function() {
                 let self = this;
@@ -273,7 +273,7 @@ Updated: SJG Apr2018
                 if (self.dataSetModel != null) {
                     files = self.dataSetModel.invalidVcfNames;
                 }
-                self.formattedInvalidFiles = files;
+                self.formattedInvalidFiles = self.formatAndSortPhaseFiles(files);
             },
             invalidSourceReasons: function() {
                 let self = this;

@@ -34,9 +34,11 @@
             <v-flex xs5 md4 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
                 {{effect}}
             </v-flex>
-            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
-                <img src="../../../assets/images/wheel.gif">
-            </div>
+            <v-flex xs5 md4 v-bind:class="{ hide: loadingExtraAnnotations === false }">
+                <div class="loader">
+                    <img src="../../../assets/images/wheel.gif">
+                </div>
+            </v-flex>
             <v-flex xs1 md2 class="summary-field-label">Impact:</v-flex>
             <v-flex xs5 md4 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
          <span v-bind:class="{hide: impactText === ''}">
@@ -68,18 +70,22 @@
            {{impactText}}
          </span>
             </v-flex>
-            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
-                <img src="../../../assets/images/wheel.gif">
-            </div>
+            <v-flex xs5 md4 v-bind:class="{ hide: loadingExtraAnnotations === false }">
+                <div class="loader">
+                    <img src="../../../assets/images/wheel.gif">
+                </div>
+            </v-flex>
         </v-layout>
         <v-layout row>
             <v-flex xs1 md2 class="summary-field-label">Type:</v-flex>
             <v-flex xs5 md4 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
                 {{type}}
             </v-flex>
-            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
-                <img src="../../../assets/images/wheel.gif">
-            </div>
+            <v-flex xs5 md4 v-bind:class="{ hide: loadingExtraAnnotations === false }">
+                <div class="loader">
+                    <img src="../../../assets/images/wheel.gif">
+                </div>
+            </v-flex>
             <v-flex xs1 md2 class="summary-field-label">Bases:</v-flex>
             <v-flex xs5 md4 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
                 {{refAlt}}
@@ -91,19 +97,21 @@
         <v-layout row>
             <v-flex xs6 md2 class="summary-field-label">ClinVar:</v-flex>
             <v-flex xs6 md4 v-bind:class="{hide: loadingExtraClinvarAnnotations === true}" class="summary-field-value">
-         <span v-bind:class="{hide: clinVarText == ''}">
-           <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
-               <g transform="translate(1,3)" v-bind:class="clinVarColor">
-                 <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#clinvar-symbol"
-                      width="11" height="11"></use>
-               </g>
-           </svg>
-         </span>
+                 <span v-bind:class="{hide: clinVarText === ''}">
+                   <svg id="gene-badge-clinvar" class="glyph" width="13" height="14">
+                       <g transform="translate(1,3)" v-bind:class="clinVarColor">
+                         <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#clinvar-symbol"
+                              width="11" height="11"></use>
+                       </g>
+                   </svg>
+                 </span>
                 <span>{{ clinVarText || '-' }}</span>
             </v-flex>
-            <div class="loader" v-bind:class="{ hide: loadingExtraClinvarAnnotations === false }">
-                <img src="../../../assets/images/wheel.gif">
-            </div>
+            <v-flex xs5 md4 v-bind:class="{ hide: loadingExtraClinvarAnnotations === false }">
+                <div class="loader">
+                    <img src="../../../assets/images/wheel.gif">
+                </div>
+            </v-flex>
             <v-flex xs6 md2 class="summary-field-label">PolyPhen:</v-flex>
             <v-flex xs6 md4 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
          <span v-bind:class="{hide: polyPhenText === ''}">
@@ -137,18 +145,22 @@
            {{ siftText || '-' }}
          </span>
             </v-flex>
-            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
-                <img src="../../../assets/images/wheel.gif">
-            </div>
+            <v-flex xs5 md4 v-bind:class="{ hide: loadingExtraAnnotations === false }">
+                <div class="loader">
+                    <img src="../../../assets/images/wheel.gif">
+                </div>
+            </v-flex>
             <v-flex xs6 md2 class="summary-field-label">REVEL:</v-flex>
             <v-flex xs6 md4 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
             <span>
            {{ revelText || '-' }}
             </span>
             </v-flex>
-            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
-                <img src="../../../assets/images/wheel.gif">
-            </div>
+            <v-flex xs5 md4 v-bind:class="{ hide: loadingExtraAnnotations === false }">
+                <div class="loader">
+                    <img src="../../../assets/images/wheel.gif">
+                </div>
+            </v-flex>
         </v-layout>
     </v-flex>
 </template>
