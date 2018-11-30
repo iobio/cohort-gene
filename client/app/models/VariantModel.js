@@ -66,7 +66,7 @@ class VariantModel {
     getDataSet(id) {
         let self = this;
 
-        if (id === 's0') {
+        if (id === 's0' || id === 'Hub') {
             return self.mainDataSet;
         } else {
             self.otherDataSets.forEach((dataSet) => {
