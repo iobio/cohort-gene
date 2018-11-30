@@ -307,15 +307,17 @@
 
                 // Set display chips for variant
                 for (var infoName in self.modelInfoMap) {
-                    let currInfo = self.modelInfoMap[infoName];
-                    if (currInfo.dataSet && currInfo.dataSet.trackName == null || currInfo.dataSet.trackName.length === 0) {
-                        currInfo.dataSet.trackName = currInfo.dataSet.id;
-                    }
+                    if (!(infoName === 's0' && launchedFromHub)) {
+                        let currInfo = self.modelInfoMap[infoName];
+                        if (currInfo.dataSet && currInfo.dataSet.trackName == null || currInfo.dataSet.trackName.length === 0) {
+                            currInfo.dataSet.trackName = currInfo.dataSet.id;
+                        }
 
-                    let displayName = currInfo.displayName.length > 0 ? currInfo.displayName : 'Local File';
-                    currInfo.dataSet.displayName = displayName;
-                    currInfo.dataSet.clearDisplayChips();
-                    currInfo.dataSet.setDisplayChips(displayName);
+                        let displayName = currInfo.displayName.length > 0 ? currInfo.displayName : 'Local File';
+                        currInfo.dataSet.displayName = displayName;
+                        currInfo.dataSet.clearDisplayChips();
+                        currInfo.dataSet.setDisplayChips(displayName);
+                    }
                 }
 
                 let performAnalyzeAll = self.autofillAction ? true : false;
@@ -421,7 +423,9 @@
                     .then(() => {
                         let setPromises = [];
                         self.variantModel.getAllDataSets().forEach(function (dataSet) {
-                            setPromises.push(self.promiseSetModel(dataSet));
+                            if (!(self.launchedFromHub && dataSet.entryId === 's0')) {
+                                setPromises.push(self.promiseSetModel(dataSet));
+                            }
                         });
                         Promise.all(setPromises)
                             .then(() => {

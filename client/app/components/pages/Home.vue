@@ -405,7 +405,6 @@ TD & SJG updated Nov2018 -->
 
                 self.promiseClearCache()
                     .then(function() {
-                        // NOTE: moved filter model initialization here from mounting b/c models not ready on local launch
                         if (self.variantModel.filterModel == null) {
                             self.initializeFiltering();
                         }
