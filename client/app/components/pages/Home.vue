@@ -406,7 +406,9 @@ TD & SJG updated Nov2018 -->
                 self.promiseClearCache()
                     .then(function() {
                         // NOTE: moved filter model initialization here from mounting b/c models not ready on local launch
-                        self.initializeFiltering();
+                        if (self.variantModel.filterModel == null) {
+                            self.initializeFiltering();
+                        }
                         if (self.selectedGene && self.selectedGene.gene_name) {
                             self.promiseLoadGene(self.selectedGene.gene_name);
                         } else if (self.geneModel.sortedGeneNames && self.geneModel.sortedGeneNames.length > 0) {
@@ -419,6 +421,7 @@ TD & SJG updated Nov2018 -->
             },
             onGeneSelected: function (geneName) {
                 let self = this;
+                // TODO: if second launch, only refresh tracks that are new
                 self.deselectVariant();
                 self.wipeModels();
                 self.promiseLoadGene(geneName);

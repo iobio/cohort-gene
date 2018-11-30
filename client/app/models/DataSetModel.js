@@ -30,6 +30,7 @@ class DataSetModel {
         this.getVcfRefName = null;      // The chromosome name for the selected gene
         this.getBamRefName = null;
         this.vcfRefNamesMap = {};       // The map of all chromosomes present in all vcf files for this data set
+        this.displayName = '';          // Name displayed in chips for analysis sources & in file loader for local launched files
 
         // TODO: these might be depreciated if color scheme is no longer used...
         this.subsetEnrichedVars = {};

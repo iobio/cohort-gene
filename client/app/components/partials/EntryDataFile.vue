@@ -37,13 +37,14 @@
             <v-text-field
                     v-if="fileType === 'url'"
                     v-bind:label="'Enter ' + label +  ' URL'"
+                    v-bind:disabled="isCohortFromHub"
                     hide-details
                     v-model="url"
                     color="cohortNavy"
                     @change="onUrlChange"
             ></v-text-field>
             <v-text-field
-                    v-if="fileType === 'url' && (separateUrlForIndex || indexUrl)"
+                    v-if="((!isCohortFromHub) && (fileType === 'url') && (separateUrlForIndex || indexUrl))"
                     v-bind:label="'Enter ' + indexLabel +  ' URL'"
                     hide-details
                     v-model="indexUrl"
@@ -58,6 +59,7 @@
                           title="Choose file"
                           :isMultiple="false"
                           :showLabel="false"
+                          :isCohortFromHub="isCohortFromHub"
                           @file-selected="onFileSelected">
             </file-chooser>
         </v-flex>
@@ -66,6 +68,7 @@
             <span> {{ fileName }} </span>
             <v-btn small flat id="clear-file-button"
                    onclick="clearFile"
+                   :disabled="isCohortFromHub"
                    v-if="fileName != null && fileName.length > 0">
                 Clear
             </v-btn>
@@ -93,7 +96,8 @@
             indexLabel: null,
             filePlaceholder: null,
             fileAccept: null,
-            separateUrlForIndex: null
+            separateUrlForIndex: null,
+            isCohortFromHub: false
         },
         data() {
             return {

@@ -55,7 +55,8 @@
 
 <template>
   <span style="display:inline-block">
-    <v-btn id="file-chooser-button" dark class="btn--dark-flat-focused file-chooser-button">
+    <v-btn id="file-chooser-button" dark class="btn--dark-flat-focused file-chooser-button"
+    :disabled="isCohortFromHub">
       {{ title }}
       <input v-if="isMultiple"  class="select-file" multiple type="file" @change="onFileSelected">
       <input v-if="!isMultiple" class="select-file" v-bind:accept="accept" type="file" @change="onFileSelected">
@@ -65,6 +66,7 @@
           {{ fileName }}
       </span>
       <v-btn small flat id="clear-file-button"
+             :disabled="isCohortFromHub"
              @click="clearFile"
              v-if="fileName != null && fileName.length > 0">
           Clear
@@ -82,7 +84,8 @@
             showLabel: null,
             accept: null,
             selectedCallback: Function,
-            title: String
+            title: String,
+            isCohortFromHub: false
         },
         data() {
             return {

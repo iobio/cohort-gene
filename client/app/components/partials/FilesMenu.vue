@@ -103,15 +103,17 @@
                             label="Genome Build"
                             hide-details
                             v-model="buildName"
+                            :disabled="launchedFromHub"
                             :items="buildList"
                             color="cohortNavy"
                     ></v-select>
                 </v-flex>
 
                 <v-flex xs3 class="pr-0 pt-2">
-                    <v-menu>
+                    <v-menu :disabled="launchedFromHub">
                         <v-btn outline
                                color="cohortNavy"
+                               :disabled="launchedFromHub"
                                slot="activator">
                             Auto-Fill
                             <v-icon small>keyboard_arrow_down</v-icon>
@@ -265,14 +267,18 @@
                     self.modelInfoMap[newId] = newInfo;
 
                     // Add sample model for new entry
-                    self.variantModel.promiseAddEntry(newInfo, isSampleEntry)
-                        .then((dataSet) => {
-                            newInfo.dataSet = dataSet;
-                            resolve();
-                        })
-                        .catch(() => {
-                            reject('There was a problem adding sample.');
-                        });
+                    if (self.launchedFromHub) {
+                        resolve();
+                    } else {
+                        self.variantModel.promiseAddEntry(newInfo, isSampleEntry)
+                            .then((dataSet) => {
+                                newInfo.dataSet = dataSet;
+                                resolve();
+                            })
+                            .catch(() => {
+                                reject('There was a problem adding sample.');
+                            });
+                    }
                 });
             },
             findNextAvailableId: function () {
@@ -307,6 +313,7 @@
                     }
 
                     let displayName = currInfo.displayName.length > 0 ? currInfo.displayName : 'Local File';
+                    currInfo.dataSet.displayName = displayName;
                     currInfo.dataSet.clearDisplayChips();
                     currInfo.dataSet.setDisplayChips(displayName);
                 }
@@ -488,19 +495,22 @@
                 let keyList = Object.keys(self.modelInfoMap);
                 for (let i = 0; i < keyList.length; i++) {
                     let currKey = keyList[i];
+                    if (currKey === 's0' && self.launchedFromHub) {
+                        continue;
+                    }
                     self.isValid &= (self.modelInfoMap[currKey] != null && self.modelInfoMap[currKey].dataSet.isReadyToLoad());
                 }
             },
-            getModel: function (id) {
-                let theModel = null;
-                if (this.variantModel) {
-                    let modelObject = this.variantModel.sampleMap[id];
-                    if (modelObject) {
-                        theModel = modelObject.model;
-                    }
-                }
-                return theModel;
-            },
+            // getModel: function (id) {
+            //     let theModel = null;
+            //     if (this.variantModel) {
+            //         let modelObject = this.variantModel.sampleMap[id];
+            //         if (modelObject) {
+            //             theModel = modelObject.model;
+            //         }
+            //     }
+            //     return theModel;
+            // },
             // Called each time files menu opened
             init: function() {
                 let self = this;
@@ -515,17 +525,16 @@
             initModelInfo: function () {
                 let self = this;
                 self.separateUrlForIndex = false;
-                self.timeSeries = false;
                 self.variantModel.getAllDataSets().forEach((dataSet) => {
 
-                    let modelInfo = self.modelInfoMap[dataSet.id];
+                    let modelInfo = self.modelInfoMap[dataSet.entryId];
                     let probandModel = dataSet.getProbandCohort();
                     let subsetModel = dataSet.getSubsetCohort();
                     if (modelInfo == null) {
                         modelInfo = {};
-                        modelInfo.displayName = probandModel != null ? probandModel.trackName : '';
-                        modelInfo.sampleIds = subsetModel != null ? subsetModel.sampleIds : [];
-                        modelInfo.excludeIds = probandModel != null ? probandModel.excludeIds : [];
+                        modelInfo.displayName = self.launchedFromHub ? 'Mosaic Selection' : dataSet.displayName;
+                        modelInfo.sampleIds = dataSet.getSubsetIds();
+                        modelInfo.excludeIds = dataSet.getExcludeIds();
                         modelInfo.vcfs = dataSet.vcfs;
                         modelInfo.tbis = dataSet.tbis;
                         modelInfo.bams = dataSet.bams;
@@ -535,6 +544,7 @@
                             self.separateUrlForIndex = true;
                         }
                         let key = 's' + self.entryIds.length;
+                        self.entryIds.push(key);
                         self.$set(self.modelInfoMap, key, modelInfo);
                     }
                 })
@@ -577,6 +587,7 @@
             }
         },
         mounted: function () {
+            // TODO: lock genome build if launching from Hub
             if (this.variantModel) {
                 this.speciesName = this.variantModel.genomeBuildHelper.getCurrentSpeciesName();
                 this.buildName = this.variantModel.genomeBuildHelper.getCurrentBuildName();

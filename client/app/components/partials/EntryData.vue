@@ -86,14 +86,15 @@
                     <v-text-field color="cohortNavy"
                                   label="Enter Track Name"
                                   hide-details
+                                  :disabled="isCohortFromHub"
                                   v-model="modelInfo.displayName"
                                   @change="onNicknameEntered"
                     ></v-text-field>
                 </v-flex>
-                <v-flex d-flex xs7 v-if="launchedFromHub">
+                <v-flex d-flex xs7 v-if="isCohortFromHub">
                     <v-container>
                         <div>
-                            <v-chip small outline color="appColor">
+                            <v-chip small outline color="cohortNavy">
                                 {{chipLabel}}
                             </v-chip>
                         </div>
@@ -122,7 +123,8 @@
                             :indexLabel="`tbi`"
                             :filePlaceholder="filePlaceholder.vcf"
                             :fileAccept="fileAccept.vcf"
-                            :separateUrlForIndex="separateUrlForIndex"
+                            :separateUrlForIndex="separateUrlForIndex && !isCohortFromHub"
+                            :isCohortFromHub="isCohortFromHub"
                             @url-entered="onVcfUrlEntered"
                             @file-selected="onVcfFilesSelected">
                     </entry-data-file>
@@ -134,6 +136,7 @@
                         </v-flex>
                         <v-flex d-flex xs3>
                             <v-text-field :value="subsetSampleDisplay"
+                                          :disabled="launchedFromHub"
                                           single-line
                                           v-bind:class="'sample-select-button'"
                                           v-on:click="openSubsetDialog">
@@ -147,6 +150,7 @@
                         </v-flex>
                         <v-flex d-flex xs3>
                             <v-text-field :value="excludeSampleDisplay"
+                                          :disabled="launchedFromHub"
                                           single-line
                                           v-bind:class="'sample-select-button'"
                                           v-on:click="openExcludeDialog">
@@ -229,7 +233,7 @@
                 excludeSampleDisplay: 'click to edit',
                 isMainCohort: false,
                 entryLabel: '',
-                chipLabel: 'Hub Sourced',
+                chipLabel: 'Mosaic Sourced',
                 firstVcf: null,
                 firstTbi: null,
                 dialogType: ''
@@ -254,7 +258,17 @@
             //     self.firstTbi = self.modelInfo.tbis ? self.modelInfo.tbis[0] : null;
             // }
         },
-        computed: {},
+        computed: {
+            isCohortFromHub: function() {
+                let self = this;
+
+                if (self.launchedFromHub && self.modelInfo.id === 's0') {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        },
         methods: {
             onNicknameEntered: function () {
                 if (self.modelInfo && self.modelInfo.dataSet) {
@@ -356,6 +370,10 @@
             openSubsetDialog: function() {
                 let self = this;
 
+                if (self.isCohortFromHub) {
+                    return;
+                }
+
                 let selectedSamples = [];
                 self.dialogType = 'Subset';
                 let dataSet = self.modelInfo.dataSet;
@@ -371,6 +389,10 @@
             },
             openExcludeDialog: function() {
                 let self = this;
+
+                if (self.isCohortFromHub) {
+                    return;
+                }
 
                 let selectedSamples = [];
                 self.dialogType = 'Exclude';

@@ -185,6 +185,7 @@ class VariantModel {
         // Initialize hub data set
         let hubDataSet = new DataSetModel(self);
         hubDataSet.name = 'Hub';
+        hubDataSet.entryId = 's0';
         self.mainDataSet = hubDataSet;
         hubDataSet.inProgress.fetchingHubData = true;
         hubDataSet.initCohorts();
