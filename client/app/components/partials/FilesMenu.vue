@@ -307,7 +307,7 @@
 
                 // Set display chips for variant
                 for (var infoName in self.modelInfoMap) {
-                    if (!(infoName === 's0' && launchedFromHub)) {
+                    if (!(infoName === 's0' && self.launchedFromHub)) {
                         let currInfo = self.modelInfoMap[infoName];
                         if (currInfo.dataSet && currInfo.dataSet.trackName == null || currInfo.dataSet.trackName.length === 0) {
                             currInfo.dataSet.trackName = currInfo.dataSet.id;
