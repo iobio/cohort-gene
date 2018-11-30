@@ -710,6 +710,7 @@ TD & SJG updated Nov2018 -->
 
                     // If we have a project ID here, coming from Hub launch
                     if (projectId !== '0') {
+                        self.initializeFiltering();
                         let hubEndpoint = new HubEndpoint(source, usingNewApi);
                         let initialLaunch = !(self.paramProjectId === '0');
                         self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch, usingNewApi)
@@ -730,6 +731,7 @@ TD & SJG updated Nov2018 -->
                             })
                     } else {
                         // Otherwise, wait for user to launch files menu
+                        // TODO: maybe display get started info - some dynamic feedback
                         resolve();
                     }
                 });

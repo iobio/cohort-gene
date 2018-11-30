@@ -1473,8 +1473,8 @@ class DataSetModel {
         let filterModel = self.getFilterModel();
         if (name == null || name === cohort.name) {
             if (cohort.vcfData && cohort.vcfData.features) {
-                let start = filterModel.regionStart ? filterModel.regionStart : gene.start;
-                let end = filterModel.regionEnd ? filterModel.regionEnd : gene.end;
+                let start = (filterModel && filterModel.regionStart) ? filterModel.regionStart : gene.start;
+                let end = (filterModel && filterModel.regionEnd) ? filterModel.regionEnd : gene.end;
                 self.loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
             }
         }
