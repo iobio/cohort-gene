@@ -508,7 +508,7 @@ TD & SJG updated Nov2018 -->
                     }
 
                     // Query service for single variant annotation if we don't have details yet
-                    if (!self.variantModel.extraAnnotationsLoaded && dataSetKey === 's0') {
+                    if (!self.variantModel.extraAnnotationsLoaded && (dataSetKey === 's0' || dataSetKey === 'Hub')) {
                         // Turn on flag for summary card loading icons
                         self.$refs.variantSummaryCardRef.setCohortFieldsApplicable();
                         self.deselectVariant(true);
@@ -542,13 +542,14 @@ TD & SJG updated Nov2018 -->
                                     })
                             })
                     }
-                    else if (dataSetKey === 's0'){
+                    else if (dataSetKey === 's0' || dataSetKey === 'Hub'){
                         // We've selected a variant in cohort track already loaded
                         self.$refs.variantSummaryCardRef.setCohortFieldsApplicable();
                         self.selectedVariant = variant;
                     } else {
                         // We've selected a variant in sample model track - if it exists in cohort, display those details
-                        let matchingVar = self.variantModel.getDataSet('s0').getVariant(variant);
+                        let mainDataSet = self.launchedFromHub ? self.variantModel.getDataSet('Hub') : self.variantModel.getDataSet('s0');
+                        let matchingVar = mainDataSet.getVariant(variant);
                         if (matchingVar != null) {
                             self.selectdVariant = matchingVar;
                         } else {
@@ -710,6 +711,7 @@ TD & SJG updated Nov2018 -->
 
                     // If we have a project ID here, coming from Hub launch
                     if (projectId !== '0') {
+                        self.launchedFromHub = true;
                         let hubEndpoint = new HubEndpoint(source, usingNewApi);
                         let initialLaunch = !(self.paramProjectId === '0');
                         self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch, usingNewApi)
@@ -732,6 +734,7 @@ TD & SJG updated Nov2018 -->
                     } else {
                         // Otherwise, wait for user to launch files menu
                         // TODO: maybe display get started info - some dynamic feedback
+                        self.launchedFromHub = false;
                         resolve();
                     }
                 });
