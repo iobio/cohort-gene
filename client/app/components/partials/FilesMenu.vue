@@ -267,7 +267,7 @@
                     self.modelInfoMap[newId] = newInfo;
 
                     // Add sample model for new entry
-                    if (self.launchedFromHub) {
+                    if (self.launchedFromHub && newId === 's0') {
                         resolve();
                     } else {
                         self.variantModel.promiseAddEntry(newInfo, isSampleEntry)
@@ -495,10 +495,10 @@
                 let keyList = Object.keys(self.modelInfoMap);
                 for (let i = 0; i < keyList.length; i++) {
                     let currKey = keyList[i];
-                    if (currKey === 's0' && self.launchedFromHub) {
-                        continue;
+                    if (currKey !== 's0' && self.launchedFromHub) {
+                        self.isValid &= (self.modelInfoMap[currKey] != null && self.modelInfoMap[currKey].dataSet.isReadyToLoad());
                     }
-                    self.isValid &= (self.modelInfoMap[currKey] != null && self.modelInfoMap[currKey].dataSet.isReadyToLoad());
+
                 }
             },
             // getModel: function (id) {
