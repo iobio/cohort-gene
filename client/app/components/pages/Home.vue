@@ -710,7 +710,6 @@ TD & SJG updated Nov2018 -->
 
                     // If we have a project ID here, coming from Hub launch
                     if (projectId !== '0') {
-                        self.initializeFiltering();
                         let hubEndpoint = new HubEndpoint(source, usingNewApi);
                         let initialLaunch = !(self.paramProjectId === '0');
                         self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch, usingNewApi)
@@ -727,6 +726,7 @@ TD & SJG updated Nov2018 -->
                                 }
                                 self.geneModel.addGeneName(selectedGene);
                                 self.onGeneSelected(selectedGene);
+                                self.initializeFiltering();
                                 resolve();
                             })
                     } else {
