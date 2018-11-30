@@ -350,7 +350,7 @@ TD & SJG updated Nov2018 -->
             },
             promiseLoadData: function () {
                 let self = this;
-                self.showVariantCards = true;
+                self.showVariantCards = true;   // Show for local launch
 
                 return new Promise((resolve, reject) => {
                     if (self.variantModel) {
@@ -711,6 +711,7 @@ TD & SJG updated Nov2018 -->
 
                     // If we have a project ID here, coming from Hub launch
                     if (projectId !== '0') {
+                        self.showVariantCards = true;   // Show for hub launch
                         self.launchedFromHub = true;
                         let hubEndpoint = new HubEndpoint(source, usingNewApi);
                         let initialLaunch = !(self.paramProjectId === '0');
