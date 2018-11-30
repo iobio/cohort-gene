@@ -117,11 +117,22 @@ class VariantModel {
         self.simonsIdMap = idMap;
     }
 
-    getRawIds(ids) {
+    getRawIds(ids, usingNewApi) {
         let rawIds = [];
-        ids.forEach((idObj) => {
-            rawIds.push(idObj.id);
-        });
+        if (usingNewApi) {
+            ids.forEach((idObj) => {
+                let vcf = idObj.files.filter((file) => {
+                    return file.type === 'vcf';
+                });
+                if (vcf != null && vcf[0] != null) {
+                    rawIds.push(vcf[0].vcf_sample_name);
+                }
+            });
+        } else {
+            ids.forEach((idObj) => {
+                rawIds.push(idObj.id);
+            });
+        }
         return rawIds;
     }
 
@@ -166,7 +177,7 @@ class VariantModel {
     /* Sets up cohort and data set models.
        Retrieves urls and sample IDs from Hub, then promises to initialize.
        Assumes a project ID has been mapped and assigned to this model. */
-    promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch) {
+    promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch, usingNewApi = true) {
         let self = this;
         // Set status
         self.inProgress.loadingDataSources = true;
@@ -205,13 +216,17 @@ class VariantModel {
                     // Retrieve proband sample IDs from Hub
                     let promises = [];
                     let probandP = self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
-                        .then(function (ids) {
+                        .then(function (sampleObjs) {
                             // Stop process if we don't have any probands
-                            if (ids.length === 0) {
+                            if (sampleObjs.length === 0) {
                                 reject('No samples found for proband filtering from Hub');
                             }
-                            probandCohort.sampleIds = self.getRawIds(ids);
-                            probandCohort.phenotypes.push('n = ' + ids.length);
+                            if (!usingNewApi && !((sampleObjs[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
+                                probandCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'proband');
+                            } else {
+                                probandCohort.subsetIds = self.getRawIds(sampleObjs, usingNewApi);
+                            }
+                            probandCohort.subsetPhenotypes.push('n = ' + sampleObjs.length);
                         });
                     promises.push(probandP);
 
@@ -233,8 +248,12 @@ class VariantModel {
 
                     // Retrieve subset sample IDs from Hub
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
-                        .then(function (ids) {
-                            subsetCohort.sampleIds = self.getRawIds(ids);
+                        .then(function (sampleObjs) {
+                            if (sampleObjs.length > 0 && !usingNewApi && !((sampleObjs[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
+                                subsetCohort.subsetIds = self.convertSimonsIds(sampleObjs, 'subset', usingNewApi);
+                            } else {
+                                subsetCohort.subsetIds = self.getRawIds(sampleObjs, usingNewApi);
+                            }
                         });
                     promises.push(subsetP);
 

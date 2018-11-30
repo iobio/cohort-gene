@@ -1,15 +1,8 @@
-function HubEndpoint(source) {
+function HubEndpoint(source, usingNewApi) {
     this.api = decodeURIComponent(source) + '/apiv1';
     this.oauth_api = decodeURIComponent(source);
     this.client_id = 'HkWNVjYK';
-}
-
-// Used when coming from Oauth reauthorize
-HubEndpoint.prototype.assignParameters = function (source, projectId) {
-    let self = this;
-    self.api = decodeURIComponent(source) + '/apiv1';
-    self.oauth_api = decodeURIComponent(source);
-    self.projectId = projectId;
+    this.usingNewApi = usingNewApi;
 }
 
 /* First call to Hub from client to get files.
@@ -58,7 +51,7 @@ HubEndpoint.prototype.getProject = function (projectId) {
             'Authorization': localStorage.getItem('hub-iobio-tkn')
         }
     });
-}
+};
 
 HubEndpoint.prototype.getSamplesForProject = function (projectId, sampleFilters) {
     let self = this;
@@ -68,7 +61,12 @@ HubEndpoint.prototype.getSamplesForProject = function (projectId, sampleFilters)
     }
 
     let params = Qs.stringify(queryParams, {addQueryPrefix: true, arrayFormat: 'brackets'});
-    let urlParam = self.api + '/projects/' + projectId + '/samples/list' + params;
+    let urlParam = '';
+    if (self.usingNewApi) {
+        urlParam = self.api + '/projects/' + projectId + '/samples/list' + params;
+    } else {
+        urlParam = self.api + '/projects/' + projectId + '/samples' + params;
+    }
     let authToken = localStorage.getItem('hub-iobio-tkn');
 
     return $.ajax({
@@ -81,18 +79,29 @@ HubEndpoint.prototype.getSamplesForProject = function (projectId, sampleFilters)
     }).then(function (response) {
         return response.data;
     });
-}
+};
 
-HubEndpoint.prototype.getSignedUrlForFile = function (projectId, fileId) {
+HubEndpoint.prototype.getSignedUrlForFile = function (file) {
     let self = this;
-    return $.ajax({
-        url: self.api + '/projects/' + projectId + '/files/' + fileId + '/url',
-        type: 'GET',
-        contentType: 'application/json',
-        headers: {
-            'Authorization': localStorage.getItem('hub-iobio-tkn')
-        }
-    });
+    if (self.usingNewApi) {
+        return $.ajax({
+            url: self.api + '/projects/' + file.project_id + '/files/' + file.id + '/url',
+            type: 'GET',
+            contentType: 'application/json',
+            headers: {
+                'Authorization': localStorage.getItem('hub-iobio-tkn')
+            }
+        });
+    } else {
+        return $.ajax({
+            url: self.api + '/files/' + file.uuid + '/url',
+            type: 'GET',
+            contentType: 'application/json',
+            headers: {
+                'Authorization': localStorage.getItem('hub-iobio-tkn')
+            }
+        });
+    }
 };
 
 
@@ -104,4 +113,4 @@ HubEndpoint.prototype.requestAuthorization = function () {
     }).fail(function (xhr, status, error) {
         alert('Could not complete reauthorization request. Please relaunch app from Hub.');
     });
-}
+};

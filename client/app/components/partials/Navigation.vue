@@ -24,10 +24,6 @@
 <template>
     <div>
         <v-toolbar fixed app :clipped-left="clipped" dark prominent>
-
-            <!--<v-toolbar-side-icon @click.stop="leftDrawer = !leftDrawer">-->
-            <!--</v-toolbar-side-icon>-->
-
             <v-toolbar-title style="margin-right: 0px" v-text="title"></v-toolbar-title>
             <v-toolbar-title style="color: #95b0c6 !important; margin-left: 0px !important"
                              v-text="titleSuffix"></v-toolbar-title>
@@ -82,36 +78,12 @@
             <v-menu offset-y>
                 <v-btn flat slot="activator">Help</v-btn>
                 <v-list>
-                    <!--<v-list-tile  @click="onLoadDemoData">-->
-                    <!--<v-list-tile-title>Load Demo Data</v-list-tile-title>-->
-                    <!--</v-list-tile>-->
-                    <!--<v-list-tile  @click="onClearCache">-->
-                    <!--<v-list-tile-title>Clear session data</v-list-tile-title>-->
-                    <!--</v-list-tile>-->
                     <v-list-tile @click="openWorkflow">
                         <v-list-tile-title>View example workflow</v-list-tile-title>
                     </v-list-tile>
                 </v-list>
             </v-menu>
         </v-toolbar>
-        <!--<v-navigation-drawer-->
-                <!--fixed-->
-                <!--:clipped="clipped"-->
-                <!--v-model="leftDrawer"-->
-                <!--app-->
-                <!--width=350-->
-        <!--&gt;-->
-            <!--<div>-->
-                <!--<flagged-variants-card-->
-                        <!--v-if="leftDrawerContents == 'flagged-variants'"-->
-                        <!--:cohortModel="cohortModel"-->
-                        <!--:flaggedVariants="flaggedVariants"-->
-                        <!--@flagged-variants-imported="onFlaggedVariantsImported"-->
-                        <!--@flagged-variant-selected="onFlaggedVariantSelected"-->
-                <!--&gt;-->
-                <!--</flagged-variants-card>-->
-            <!--</div>-->
-        <!--</v-navigation-drawer>-->
     </div>
 </template>
 
