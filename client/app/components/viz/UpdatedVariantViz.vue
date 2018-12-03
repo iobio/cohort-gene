@@ -46,8 +46,6 @@
     .variant-viz
         .field-label-header
             color: #7f7f7f
-            font-style: italic
-            padding-left: 6px
             text-align: right
         .flagged-variant
             rect

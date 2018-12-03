@@ -66,11 +66,11 @@ Updated: SJG Apr2018
 <style lang="css">
 </style>
 <template>
-	<v-card tile id="variant-card" class="app-card" height="100%" >
+	<v-card tile id="variant-card" class="app-card pa-4" height="100%">
 		<v-card-title primary-title>
-			<v-layout align-left pa-3>
-				<v-flex xs6>
-					<span class="title black--text">Cohort Variants</span>
+			<v-layout align-left>
+				<v-flex xs6 mb-3>
+					<span class="subheading black--text"><b>Cohort Variants</b></span>
 				</v-flex>
 			</v-layout>
 			<v-layout text-xs-right>

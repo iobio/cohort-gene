@@ -35,7 +35,7 @@ TD & SJG updated Jun2018 -->
 				<v-layout>
 
 					<!-- left column -->
-					<v-flex xs9>
+					<v-flex xs9 mr-3>
 						<updated-variant-card
 							v-if="variantModel"
 							ref="variantCardRef"
@@ -63,8 +63,8 @@ TD & SJG updated Jun2018 -->
 							@dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
 							@knownVariantsVizChange="onKnownVariantsVizChange"
 							@knownVariantsFilterChange="onKnownVariantsFilterChange"
-							@zoomModeStart="startZoomMode">
-						</updated-variant-card>
+							@zoomModeStart="startZoomMode"
+						/>
 					</v-flex>
 
 					<!-- right column -->
