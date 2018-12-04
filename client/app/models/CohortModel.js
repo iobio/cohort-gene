@@ -395,6 +395,9 @@ class CohortModel {
         }
     }
 
+    // TODO: refactor this as appropriate
+    // TODO: where are the filter objects generated and what do they have in them - from filter model
+    // Takes in vcfData and filter object - filters vcfdata and returns filtered version
     filterVariants(data, filterObject, start, end, bypassRangeFilter) {
         var me = this;
 
@@ -403,9 +406,10 @@ class CohortModel {
             return;
         }
 
-        if (me.relationship === 'known-variants') {
-            return me.filterKnownVariants(data, start, end, bypassRangeFilter);
-        }
+        // Filter clinvar track - TODO: not displaying clinVar track for now, can get rid of
+        // if (me.relationship === 'known-variants') {
+        //     return me.filterKnownVariants(data, start, end, bypassRangeFilter);
+        // }
 
         let impactField = me.getAnnotationScheme().toLowerCase() === 'snpeff' ? 'impact' : IMPACT_FIELD_TO_FILTER;
         let effectField = me.getAnnotationScheme().toLowerCase() === 'snpeff' ? 'effect' : 'vepConsequence';

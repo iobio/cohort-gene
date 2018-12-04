@@ -2,9 +2,7 @@ class FilterModel {
 
   // TODO: refactor for multiple cohorts
     constructor(affectedInfo, isBasicMode) {
-        this.affectedInfo = affectedInfo;   // Represents affected individuals - maybe probands?
-
-        this.isBasicMode = isBasicMode;
+        this.affectedInfo = affectedInfo;
 
         this.annotsToInclude = new Object();
 
@@ -196,8 +194,7 @@ class FilterModel {
                 minGenotypeDepth: null,
                 exclusiveOf: null
             }
-        }
-
+        };
 
         this.modelFilters = {
             'known-variants': {
@@ -208,19 +205,10 @@ class FilterModel {
 
     getFilterObject() {
         let self = this;
-        // For mygene2 basic mode, return a fixed filter of clinvar path / likely path and AF < 1%
-        if (self.isBasicMode) {
-            var annots = {
-                clinvar_path: {key: 'clinvar', state: true, value: 'clinvar_path'},
-                clinvar_lpath: {key: 'clinvar', state: true, value: 'clinvar_lpath'}
-            }
 
-            return {afMin: 0, afMax: .01, annotsToInclude: annots};
-        }
-
-        var afMin = 0;
-        var afMax = 1;
-        var coverageMin = 0;
+        let afMin = 0;
+        let afMax = 1;
+        let coverageMin = 0;
 
         return {
             'coverageMin': coverageMin,
@@ -420,30 +408,15 @@ class FilterModel {
             || +gc.mean < this.geneCoverageMean;
     }
 
+    // TODO: what is this doing exactly
     getAffectedFilterInfo(refreshedAffectedInfo) {
         var self = this;
 
         if (refreshedAffectedInfo) {
             self.affectedInfo = refreshedAffectedInfo;
-        }
-
-        if (refreshedAffectedInfo) {
             self.affectedInfo.filter(function (info) {
                 return info.model.isAffected();
-            })
-                .forEach(function (info) {
-                    //var cb = $('#present-in-affected').find("#" + info.id + " input");
-                    //info.filter = (cb.is(":checked"));
-                });
-
-            self.affectedInfo.filter(function (info) {
-                return !info.model.isAffected();
-            })
-                .forEach(function (info) {
-                    //var cb = $('#absent-in-unaffected').find("#" + info.id + " input");
-                    //info.filter = (cb.is(":checked"));
-                });
-
+            });
         }
         return this.affectedInfo;
     }
@@ -455,24 +428,12 @@ class FilterModel {
         if (self.affectedInfo) {
             self.affectedInfo.filter(function (info) {
                 return info.model.isAffected() && info.relationship !== 'proband';
-            })
-                .forEach(function (info) {
-                    //var cb = $('#present-in-affected').find("#" + info.id + " input");
-                    //cb.prop('checked', false);
-                    info.filter = false;
-                });
+            });
+
 
             self.affectedInfo.filter(function (info) {
                 return !info.model.isAffected();
-            })
-                .forEach(function (info) {
-                    //var cb = $('#absent-in-unaffected').find("#" + info.id + " input");
-                    //cb.prop('checked', false);
-                    info.filter = false;
-                });
-
-
-            //self.affectedInfo = getAffectedInfo();
+            });
         }
 
         return self.affectedInfo;

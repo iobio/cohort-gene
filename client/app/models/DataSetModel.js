@@ -21,9 +21,9 @@ class DataSetModel {
         this.vcfEndptHash = {};         // Maps each file to a single vcf.iobio model (key is name of file)
         this.varsInFileHash = {};       // Maps each file to list of variant IDs that exist within the file
         this.genesInProgress = [];
-        this.affectedInfo = null;       // TODO: what is this?
-        this.calledVariants = null;
-        this.loadedVariants = null;
+        this.affectedInfo = null;       // TODO: what is this? gene artifact
+        this.calledVariants = null;     // TODO: what is this? gene artifact
+        this.loadedVariants = null;     // Variants displayed in track
         this.selectedVariants = null;   // Selected in zoom panel
         this.trackName = '';            // Displays in italics before chips
         this.excludeIds = [];           // Samples from any vcf file to be removed from analysis
