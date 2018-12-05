@@ -74,22 +74,24 @@ Updated: SJG Apr2018
 				</v-flex>
 			</v-layout>
 			<v-layout text-xs-right>
-				<v-flex>
-					<v-chip v-bind:class="{hide: !zoomMode}" style="margin: 0; font-size: 12px"
-									@input="toggleZoomMode" close small outline color="cohortPeriwinkle">Zoom Mode: On</v-chip>
-					<v-menu v-bind:class="{hide: !doneLoadingData}">
-						<v-btn outline round slot="activator" color="cohortDarkBlue" style="margin: 0; font-size: 12px">
-							Display Options
-						</v-btn>
-						<v-list>
-							<v-list-tile @click="toggleZoomMode">
-								<v-list-tile-title>{{zoomModeText}}</v-list-tile-title>
-							</v-list-tile>
-							<v-list-tile v-bind:class="{hide: !doneLoadingExtras}" @click="toggleDisplayMode">
-								<v-list-tile-title>{{displayModeText}}</v-list-tile-title>
-							</v-list-tile>
-						</v-list>
-					</v-menu>
+				<v-flex v-show="doneLoadingData">
+
+
+					<!-- enrichment vs. impact -->
+					<v-radio-group
+						v-model="impactMode"
+						v-show="doneLoadingExtras"
+					>
+						<v-radio label="Enrichment Mode" :value="false" />
+						<v-radio label="Impact Mode" :value="true" />
+					</v-radio-group>
+
+					<!-- zoom mode -->
+					<v-switch
+						label="Zoom Mode"
+						v-model="zoomMode"
+					/>
+
 				</v-flex>
 			</v-layout>
 			<div style="width:100%">
@@ -256,10 +258,6 @@ Updated: SJG Apr2018
 								if (this.impactMode) return 'Switch to Enrichment Mode';
 								else return 'Switch to Impact Mode';
 						},
-						zoomModeText: function () {
-								if (this.zoomMode) return 'Exit Zoom';
-								else return 'Zoom';
-						},
 						validSourceFiles: function() {
 								let self = this;
 								let files = [];
@@ -313,7 +311,10 @@ Updated: SJG Apr2018
 										sortedInvalidReasons.push(self.invalidSourceReasons[prevIndex]);
 								});
 								self.formattedInvalidReasons = sortedInvalidReasons;
-						}
+						},
+						zoomMode() {
+							this.zoomMode  ? this.displayVariantBrush() : this.hideVariantBrush();
+						},
 				},
 				created: function () {
 						this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
@@ -353,18 +354,6 @@ Updated: SJG Apr2018
 										});
 								this.enrichmentColorLegend();
 						},
-						toggleDisplayMode: function () {
-								this.impactMode = !this.impactMode;
-						},
-						toggleZoomMode: function () {
-								this.zoomMode = !this.zoomMode;
-								if (this.zoomMode) {
-										this.displayVariantBrush();
-								}
-								else {
-										this.hideVariantBrush();
-								}
-						},
 						depthVizYTickFormat: function (val) {
 								if (val === 0) {
 										return "";
@@ -392,7 +381,6 @@ Updated: SJG Apr2018
 						},
 						clearZoom: function () {
 								this.hideVariantBrush();
-								this.zoomMode = false;
 						},
 						onVariantHover: function (variant, cohortKey, showTooltip = true) {
 								if (this.selectedVariant == null) {
