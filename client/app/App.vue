@@ -13,6 +13,9 @@
 button
   color: $text-color
 
+*
+  outline: 0 !important
+
 .theme--light
   .content--wrap
     .btn
