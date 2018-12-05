@@ -56,11 +56,11 @@
 
 				<div v-bind:class="{ hide: !selectedGeneName }"
 					 style="text-align: center; padding-top: 11px; padding-left: 8px">
-					<v-chip color="cohortDarkBlue" text-color="white"
+					<v-chip color="cohortDarkBlue" text-color="white" disabled
 							style="font-size: 14px; font-weight: bold;">
 						{{ selectedGeneDisplay }}
 					</v-chip>
-					<v-chip color="cohortDarkBlue" text-color="white"
+					<v-chip color="cohortDarkBlue" text-color="white" disabled
 							style="font-size: 14px; font-weight: bold;">
 						{{ selectedBuild }}
 					</v-chip>
