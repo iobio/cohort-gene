@@ -66,6 +66,8 @@
     <div>
         <div class="variant-viz loaded-variant-viz" id="selectionDetailsLine">
             <span class="field-label-header">Selection Details</span>
+
+            <!-- phenotypic data -->
             <v-chip color="cohortNavy" small outline style="font-size: 12px" v-for="phenotype in phenotypes"
                     :key="phenotype">
                 {{phenotype}}

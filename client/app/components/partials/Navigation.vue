@@ -7,9 +7,13 @@
 			margin-right: 2px
 
 		.toolbar__title
-			font-size: 20px
+			font-size: 18px
 			margin-right: 20px
 			padding-bottom: 5px
+
+	#search-gene-name:focus
+		outline: none
+
 </style>
 <style>
 	::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */

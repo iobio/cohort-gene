@@ -11,6 +11,9 @@ TD & SJG updated Jun2018 -->
 		margin-left: auto
 		margin-right: auto
 		text-align: center
+
+	.tabs a
+		text-decoration: none !important
 </style>
 
 <template>
@@ -73,12 +76,12 @@ TD & SJG updated Jun2018 -->
 							<v-tabs icons centered>
 								<v-tabs-bar>
 									<v-tabs-slider color="cohortDarkBlue"></v-tabs-slider>
-									<v-tabs-item href="#summary-tab">
-										<v-icon style="margin-bottom: 0px;">bar_chart</v-icon>
+									<v-tabs-item class="tab" href="#summary-tab">
+										<v-icon mb-0>bar_chart</v-icon>
 										Summary
 									</v-tabs-item>
-									<v-tabs-item href="#filter-tab">
-										<v-icon style="margin-bottom: 0px">bubble_chart</v-icon>
+									<v-tabs-item class="tab" href="#filter-tab">
+										<v-icon mb-0>bubble_chart</v-icon>
 										Filters
 									</v-tabs-item>
 								</v-tabs-bar>
