@@ -62,20 +62,27 @@ Updated: SJG Apr2018
 				font-weight: bold
 				width: 24px
 				top: -3px
-	.rail-actions
+	.impact-enrichment-mode
 		label
 			line-height: 30px
+	.zoom-mode
+		label
+			font-weight: 500
+	.rail-heading
+		font-size: 18px
 </style>
 <style lang="css">
 </style>
 <template>
-	<v-card tile id="variant-card" class="app-card pa-4" height="100%">
+	<v-card tile id="variant-card" class="app-card px-4 py-3" height="100%">
 		<v-card-title primary-title>
 			<v-layout align-left>
 				<v-flex xs6 mb-3>
-					<span class="subheading black--text"><b>Cohort Variants</b></span>
+					<span class="rail-heading black--text"><b>Cohort Variants</b></span>
 				</v-flex>
 			</v-layout>
+
+			<!-- cohort variant actions -->
 			<v-layout
 				v-show="doneLoadingExtras"
 				row align-center
@@ -86,6 +93,7 @@ Updated: SJG Apr2018
 					<v-switch
 						label="Zoom Mode"
 						v-model="zoomMode"
+						class="zoom-mode"
 					/>
 				</v-flex>
 				<!-- enrichment vs. impact -->
@@ -93,13 +101,14 @@ Updated: SJG Apr2018
 					<v-radio-group
 						v-model="impactMode"
 						row
-						class="pt-0 rail-actions"
+						class="pt-0 impact-enrichment-mode"
 					>
 						<v-radio label="Enrichment Mode" :value="false" />
 						<v-radio label="Impact Mode" :value="true" />
 					</v-radio-group>
 				</v-flex>
 			</v-layout>
+
 			<div style="width:100%">
 				<updated-variant-viz
 					v-if="(showVariantViz && subsetCohort != null && probandCohort != null)"
