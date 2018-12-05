@@ -170,19 +170,19 @@
                             hide-details
                     ></v-select>
                 </v-flex>
-                <!--<v-flex d-flex xs12 class="ml-3">-->
-                    <!--<entry-data-file-->
-                            <!--:defaultUrl="firstBam"-->
-                            <!--:defaultIndexUrl="firstBai"-->
-                            <!--:label="`bam`"-->
-                            <!--:indexLabel="`bai`"-->
-                            <!--:filePlaceholder="filePlaceholder.bam"-->
-                            <!--:fileAccept="fileAccept.bam"-->
-                            <!--:separateUrlForIndex="separateUrlForIndex"-->
-                            <!--@url-entered="onBamUrlEntered"-->
-                            <!--@file-selected="onBamFilesSelected">-->
-                    <!--</entry-data-file>-->
-                <!--</v-flex>-->
+                <v-flex d-flex xs12 class="ml-3">
+                    <entry-data-file
+                            :defaultUrl="firstBam"
+                            :defaultIndexUrl="firstBai"
+                            :label="`bam`"
+                            :indexLabel="`bai`"
+                            :filePlaceholder="filePlaceholder.bam"
+                            :fileAccept="fileAccept.bam"
+                            :separateUrlForIndex="separateUrlForIndex"
+                            @url-entered="onBamUrlEntered"
+                            @file-selected="onBamFilesSelected">
+                    </entry-data-file>
+                </v-flex>
             </v-layout>
         </v-flex>
         <sample-select-dialog
@@ -236,6 +236,8 @@
                 chipLabel: 'Mosaic Sourced',
                 firstVcf: null,
                 firstTbi: null,
+                firstBam: null,
+                firstBai: null,
                 dialogType: ''
             }
         },
@@ -251,12 +253,7 @@
                 if (newVal) {
                     self.firstTbi = newVal[0];
                 }
-            },
-            // modelInfo: function() {
-            //     let self = this;
-            //     self.firstVcf = self.modelInfo.vcfs[0];
-            //     self.firstTbi = self.modelInfo.tbis ? self.modelInfo.tbis[0] : null;
-            // }
+            }
         },
         computed: {
             isCohortFromHub: function() {
@@ -329,11 +326,6 @@
                         self.$emit("sample-data-changed");
                     })
             },
-            // onIsAffected: function () {
-            //     this.modelInfo.isTumor = this.isTumor;
-            //     this.modelInfo.model.isTumor = this.modelInfo.affectedStatus;
-            //     this.rowLabel = this.getRowLabel();
-            // },
             onSampleSelected: function () {
                 let self = this;
                 self.modelInfo.selectedSample = self.selectedSample;
@@ -344,9 +336,12 @@
             },
             onBamUrlEntered: function (bamUrl, baiUrl) {
                 let self = this;
-                if (self.modelInfo && self.modelInfo.model) {
-                    self.modelInfo.model.onBamUrlEntered(bamUrl, baiUrl, function (success) {
+                self.$emit("sample-data-changed");
+
+                if (self.modelInfo && self.modelInfo.dataSet) {
+                    self.modelInfo.dataSet.onBamUrlEntered(bamUrl, baiUrl, function (success) {
                         if (success) {
+                            // Can add more functionality here if needed
                         } else {
                         }
                         self.$emit("sample-data-changed");
@@ -463,14 +458,6 @@
                 return allSamples.filter((sample) => {
                     return !self.excludeSampleIds.includes(sample);
                 });
-            },
-            /* Refreshes computed fields for display when config file is loaded. */
-            refreshFileFields: function() {
-                let self = this;
-                //self.firstVcf = theModelInfo.vcfs[0];
-                self.firstVcf = self.modelInfo.vcfs[0];
-                //self.firstTbi = theModelInfo.tbis ? theModelInfo.tbis[0] : null;
-                // TODO: fill in bam stuff once implemented
             },
             /* Fills in samples field with all sample IDs seen when checking provided vcf urls.
              * If this is a cohort entry, fills in subset, proband, and exclude sample ID arrays.

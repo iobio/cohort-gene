@@ -1277,35 +1277,37 @@ class DataSetModel {
 
     // <editor-fold desc="BAM">
 
+    // Only accepts on bam url at a time since app currently configured to only show coverage for single sample tracks
     onBamUrlEntered(bamUrl, baiUrl, callback) {
-        // TODO: make sure to add bam and bai urls to this.bams and this.bais like in vcfurlent
-        var me = this;
-        this.bamData = null;
-        this.fbData = null;
+        let self = this;
+        self.bamData = null;
+        self.fbData = null;
 
-        if (bamUrl == null || bamUrl.trim() == "") {
-            this.bamUrlEntered = false;
-            this.bam = null;
+        if (bamUrl == null || bamUrl.trim() === "") {
+            self.bamUrlEntered = false;
+            self.bam = null;
         } else {
-            this.bamUrlEntered = true;
-            this.bam = new Bam(this.cohort.endpoint, bamUrl, baiUrl);
-            this.bam.checkBamUrl(bamUrl, baiUrl, function(success, errorMsg) {
-                if (me.lastBamAlertify) {
-                    me.lastBamAlertify.dismiss();
+            self.bamUrlEntered = true;
+
+            // TODO get appropriate endpoint out of here - does it matter which one?
+            self.bam = new Bam(self.cohort.endpoint, bamUrl, baiUrl);
+            self.bam.checkBamUrl(bamUrl, baiUrl, function(success, errorMsg) {
+                if (self.lastBamAlertify) {
+                    self.lastBamAlertify.dismiss();
                 }
                 if (!success) {
-                    this.bamUrlEntered = false;
-                    this.bam = null;
-                    var msg = "<span style='font-size:18px'>" + errorMsg + "</span><br><span style='font-size:12px'>" + bamUrl + "</span>";
+                    self.bamUrlEntered = false;
+                    self.bam = null;
+                    let msg = "<span style='font-size:18px'>" + errorMsg + "</span><br><span style='font-size:12px'>" + bamUrl + "</span>";
                     alertify.set('notifier','position', 'top-right');
-                    me.lastBamAlertify = alertify.error(msg, 15);
+                    self.lastBamAlertify = alertify.error(msg, 15);
                 }
                 if(callback) {
                     callback(success);
                 }
             });
         }
-        this.bamRefName = this._stripRefName;
+        self.bamRefName = self._stripRefName;
     }
 
     promiseBamFilesSelected(event) {

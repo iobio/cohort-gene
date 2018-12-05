@@ -36,7 +36,7 @@
         <v-flex xs9>
             <v-text-field
                     v-if="fileType === 'url'"
-                    v-bind:label="'Enter ' + label +  ' URL'"
+                    v-bind:label="urlLabel"
                     v-bind:disabled="isCohortFromHub"
                     hide-details
                     v-model="url"
@@ -106,6 +106,16 @@
                 url: null,
                 indexUrl: null,
                 fileName: null
+            }
+        },
+        computed: {
+            urlLabel: function() {
+                let self = this;
+                if (self.label === 'bam') {
+                    return 'Enter ' + self.label + ' URL (optional)';
+                } else {
+                    return 'Enter ' + self.label + ' URL';
+                }
             }
         },
         watch: {
