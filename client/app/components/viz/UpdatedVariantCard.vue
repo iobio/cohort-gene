@@ -62,6 +62,9 @@ Updated: SJG Apr2018
 				font-weight: bold
 				width: 24px
 				top: -3px
+	.rail-actions
+		label
+			line-height: 30px
 </style>
 <style lang="css">
 </style>
@@ -74,27 +77,27 @@ Updated: SJG Apr2018
 				</v-flex>
 			</v-layout>
 			<v-layout
-				text-xs-right
 				v-show="doneLoadingExtras"
+				row align-center
+				justify-end
 			>
+				<!-- zoom mode -->
+				<v-flex xs3>
+					<v-switch
+						label="Zoom Mode"
+						v-model="zoomMode"
+					/>
+				</v-flex>
+				<!-- enrichment vs. impact -->
 				<v-flex xs6>
-					<!-- enrichment vs. impact -->
 					<v-radio-group
 						v-model="impactMode"
-						row pt-0
+						row
+						class="pt-0 rail-actions"
 					>
 						<v-radio label="Enrichment Mode" :value="false" />
 						<v-radio label="Impact Mode" :value="true" />
 					</v-radio-group>
-				</v-flex>
-
-				<v-flex xs6>
-					<!-- zoom mode -->
-					<v-switch
-						hide-details
-						label="Zoom Mode"
-						v-model="zoomMode"
-					/>
 				</v-flex>
 			</v-layout>
 			<div style="width:100%">
