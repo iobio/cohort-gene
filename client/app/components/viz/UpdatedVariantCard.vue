@@ -73,25 +73,28 @@ Updated: SJG Apr2018
 					<span class="subheading black--text"><b>Cohort Variants</b></span>
 				</v-flex>
 			</v-layout>
-			<v-layout text-xs-right>
-				<v-flex v-show="doneLoadingData">
-
-
+			<v-layout
+				text-xs-right
+				v-show="doneLoadingExtras"
+			>
+				<v-flex xs6>
 					<!-- enrichment vs. impact -->
 					<v-radio-group
 						v-model="impactMode"
-						v-show="doneLoadingExtras"
+						row pt-0
 					>
 						<v-radio label="Enrichment Mode" :value="false" />
 						<v-radio label="Impact Mode" :value="true" />
 					</v-radio-group>
+				</v-flex>
 
+				<v-flex xs6>
 					<!-- zoom mode -->
 					<v-switch
+						hide-details
 						label="Zoom Mode"
 						v-model="zoomMode"
 					/>
-
 				</v-flex>
 			</v-layout>
 			<div style="width:100%">
