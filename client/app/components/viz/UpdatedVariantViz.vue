@@ -68,21 +68,21 @@
             <span class="field-label-header">Selection Details</span>
 
             <!-- phenotypic data -->
-            <v-chip color="cohortNavy" small outline style="font-size: 12px" v-for="phenotype in phenotypes"
+            <v-chip disabled color="cohortNavy" small outline style="font-size: 12px" v-for="phenotype in phenotypes"
                     :key="phenotype">
                 {{phenotype}}
             </v-chip>
         </div>
         <div class="variant-viz" id="sourceFileLine">
             <span class="field-label-header">Analysis sources</span>
-            <v-chip color="cohortNavy" small outline style="font-size: 12px" v-for="file in validSourceFiles"
+            <v-chip disabled color="cohortNavy" small outline style="font-size: 12px" v-for="file in validSourceFiles"
                     :key="file">
                 {{file}}
                 <v-icon right color="green">check_circle_outline</v-icon>
             </v-chip>
             <template v-for="(file,index) in invalidSourceFiles">
                 <v-tooltip bottom>
-                    <v-chip color="cohortNavy" small outline style="font-size: 12px; font-family: 'Open Sans'" slot="activator"
+                    <v-chip disabled color="cohortNavy" small outline style="font-size: 12px; font-family: 'Open Sans'" slot="activator"
                             :key="file">
                         {{file}}
                         <v-icon right color="red">error_outline</v-icon>
@@ -92,30 +92,31 @@
             </template>
         </div>
         <div style="text-align: center;clear: both;">
-            <div v-bind:class="{ hide: !model.inProgress.loadingVariants }"
-                 style="display: inline-block;padding-bottom:10px">
+            <div v-bind:class="['d-inline-block pb-1',{ hide: !model.inProgress.loadingVariants }]">
                 <span class="loader-label">Annotating Variants</span>
                 <img src="../../../assets/images/wheel.gif">
             </div>
-            <div v-bind:class="{ hide: !model.inProgress.fetchingHubData }"
-                 style="display: inline-block;padding-left: 20px; padding-bottom:10px">
+            <div v-bind:class="['d-inline-block pb-1 pl-2',{ hide: !model.inProgress.fetchingHubData }]">
                 <span class="loader-label">Fetching Data from Hub</span>
                 <img src="../../../assets/images/wheel.gif">
             </div>
-            <div v-bind:class="{ hide: !model.inProgress.verifyingVcfUrl }"
-                 style="display: inline-block;padding-left: 20px; padding-bottom:10px">
+            <div
+                v-bind:class="['d-inline-block pb-1 pl-2',{ hide: !model.inProgress.verifyingVcfUrl }]"
+            >
                 <span class="loader-label">Verifying Variant Data</span>
                 <img src="../../../assets/images/wheel.gif">
             </div>
-            <div v-bind:class="{ hide: !model.inProgress.drawingVariants }"
-                 style="display: inline-block;padding-left: 20px; padding-bottom:10px">
+            <div
+                v-bind:class="['d-inline-block pb-1 pl-2',{ hide: !model.inProgress.drawingVariants }]"
+            >
                 <span class="loader-label">Rendering Variants</span>
                 <img src="../../../assets/images/wheel.gif">
             </div>
         </div>
-        <div v-bind:class="{ hide: !noMatchingVariants }"
-             style="text-align: center; padding-bottom: 20px; padding-top: 20px">
-            <v-chip color="red" small outline style="font-size: 12px">
+        <div
+            v-bind:class="['d-inline-block pt-2 pb-2 text-xs-center', { hide: !noMatchingVariants }]"
+        >
+            <v-chip disabled color="red" small outline style="font-size: 12px">
                 No Variants Found
             </v-chip>
         </div>
