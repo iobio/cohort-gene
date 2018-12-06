@@ -156,12 +156,13 @@ class CohortModel {
     getBamDepth(gene, selectedTranscript, bamIsLoaded, callbackDataLoaded) {
         let me = this;
 
-        if (bamIsLoaded) {
-            if (callbackDataLoaded) {
-                callbackDataLoaded();
-            }
-            return;
-        }
+        // TODO: what is this and how do I re-incorporate?
+        // if (bamIsLoaded) {
+        //     if (callbackDataLoaded) {
+        //         callbackDataLoaded();
+        //     }
+        //     return;
+        // }
 
         var performCallbackForCachedData = function (regions, theVcfData, coverageData) {
             if (regions.length > 0) {
@@ -223,7 +224,7 @@ class CohortModel {
                         } else {
                             // TODO: hardcoded userServerCache to false in line below - ensure that is correct
                             let useServerCache = false;
-                            me.bam.getCoverageForRegion(refName, gene.start, gene.end, regions, 2000, useServerCache,
+                            me.getDataSetModel().bamEndpt.getCoverageForRegion(refName, gene.start, gene.end, regions, 2000, useServerCache,
                                 function (coverageForRegion, coverageForPoints) {
                                     if (coverageForRegion != null) {
                                         me.bamData = {
@@ -237,7 +238,7 @@ class CohortModel {
                                         // Use browser cache for storage coverage data if app is not relying on
                                         // server-side cache
                                         if (!useServerCache) {
-                                            me._promiseCacheData(me.bamData, CacheHelper.BAM_DATA, gene.gene_name)
+                                            me.getDataSetModel()._promiseCacheData(me.bamData, CacheHelper.BAM_DATA, gene.gene_name)
                                                 .then(function () {
                                                     performCallback(regions, theVcfData, coverageForRegion, coverageForPoints);
                                                 })
@@ -414,8 +415,8 @@ class CohortModel {
                 console.log(msg);
                 reject(msg);
             } else {
-                let key = me._getCacheKey(dataKind, geneName.toUpperCase(), transcript);
-                me.getCacheHelper().promiseGetData(key)
+                let key = me.getDataSetModel()._getCacheKey(dataKind, geneName.toUpperCase(), transcript);
+                me.getDataSetModel().getCacheHelper().promiseGetData(key)
                     .then(function (data) {
                             resolve(data);
                         },
@@ -569,23 +570,23 @@ class CohortModel {
                     dangerCounts.POLYPHEN[clazz] = {};
                     dangerCounts.POLYPHEN[clazz][key] = variant.highestPolyphen[key];
                 }
-            }
-
-            if (variant.hasOwnProperty('clinvar')) {
-                var clinvarEntry = null;
-                var clinvarDisplay = null;
-                var clinvarKey = null;
-                for (var key in translator.clinvarMap) {
-                    var me = translator.clinvarMap[key];
-                    if (clinvarEntry == null && me.clazz == variant.clinvar) {
-                        clinvarEntry = me;
-                        clinvarDisplay = key;
-                        clinvarKey = key;
+                if (variant.hasOwnProperty('clinvar')) {
+                    var clinvarEntry = null;
+                    var clinvarDisplay = null;
+                    var clinvarKey = null;
+                    for (var key in translator.clinvarMap) {
+                        var me = translator.clinvarMap[key];
+                        if (clinvarEntry == null && me.clazz == variant.clinvar) {
+                            clinvarEntry = me;
+                            clinvarDisplay = key;
+                            clinvarKey = key;
+                        }
+                    }
+                    if (clinvarEntry && clinvarEntry.badge) {
+                        clinvarClasses[clinvarKey] = clinvarEntry;
                     }
                 }
-                if (clinvarEntry && clinvarEntry.badge) {
-                    clinvarClasses[clinvarKey] = clinvarEntry;
-                }
+
             }
 
             if (variant.inheritance && variant.inheritance != 'none') {

@@ -298,7 +298,7 @@ EndpointCmd.prototype.getBamCoverage = function (bamSource, refName, regionStart
     regions.forEach(function (region) {
         region.name = refName;
         if (region.name && region.start && region.end) {
-            if (regionsArg.length == 0) {
+            if (regionsArg.length === 0) {
                 regionsArg += " -p ";
             } else {
                 regionsArg += ",";
@@ -333,14 +333,11 @@ EndpointCmd.prototype.getBamCoverage = function (bamSource, refName, regionStart
             });
         cmd = cmd.pipe(samtools, ["mpileup", "-"], {ssl: me.useSSL});
     } else {
-
-
         cmd = new iobio.cmd(samtools, ['mpileup', bamSource.writeStream],
             {
                 'urlparams': {'encoding': 'utf8'},
                 ssl: me.useSSL
             });
-
     }
 
     //
@@ -359,12 +356,9 @@ EndpointCmd.prototype.getBamCoverage = function (bamSource, refName, regionStart
         // After running samtools mpileup, run coverage service to summarize point data.
         // NOTE:  Had to change to protocol http(); otherwise signed URLs don't work (with websockets)
         cmd = cmd.pipe(me.IOBIO.coverage, [maxPointsArg, spanningRegionArg, regionsArg], {ssl: me.useSSL});
-
     }
-
     return cmd;
-
-}
+};
 
 EndpointCmd.prototype.freebayesJointCall = function (bamSources, refName, regionStart, regionEnd, isRefSeq, fbArgs, vepAF) {
     var me = this;

@@ -1361,7 +1361,7 @@ class DataSetModel {
                 }
             });
         }
-        self.bamRefName = self._stripRefName;
+        self.getBamRefName = self._stripRefName;
     }
 
     promiseBamFilesSelected(event) {

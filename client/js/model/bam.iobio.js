@@ -369,11 +369,12 @@ export default class Bam {
     */
     getCoverageForRegion(refName, regionStart, regionEnd, regions, maxPoints, useServerCache, callback, callbackError) {
         var me = this;
+        debugger;
 
         this.transformRefName(refName, function(trRefName){
 
             var bamSource = {};
-            if (me.sourceType == 'url') {
+            if (me.sourceType === 'url') {
                 bamSource.bamUrl = me.bamUri;
                 bamSource.baiUrl = me.baiUri;
             } else {
@@ -401,25 +402,24 @@ export default class Bam {
             });
 
             cmd.on('end', function() {
-
-                if (samData != "") {
+                if (samData !== "") {
                     var coverage = null;
                     var coverageForPoints = [];
                     var coverageForRegion = [];
                     var lines = samData.split('\n');
                     lines.forEach(function(line) {
-                        if (line.indexOf("#specific_points") == 0) {
+                        if (line.indexOf("#specific_points") === 0) {
                             coverage = coverageForPoints;
-                        } else if (line.indexOf("#reduced_points") == 0 ) {
+                        } else if (line.indexOf("#reduced_points") === 0 ) {
                             coverage = coverageForRegion;
                         } else {
                             var fields = line.split('\t');
                             var pos = -1;
                             var depth = -1;
-                            if (fields[0] != null && fields[0] != '') {
+                            if (fields[0] != null && fields[0] !== '') {
                                 var pos   = +fields[0];
                             }
-                            if (fields[1] != null && fields[1] != '') {
+                            if (fields[1] != null && fields[1] !== '') {
                                 var depth = +fields[1];
                             }
                             if (coverage){
@@ -435,9 +435,7 @@ export default class Bam {
 
             cmd.on('error', function(error) {
                 console.log(error);
-
             });
-
             cmd.run();
         });
     }
