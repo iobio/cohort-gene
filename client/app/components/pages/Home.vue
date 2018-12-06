@@ -288,7 +288,8 @@ TD & SJG updated Nov2018 -->
                         IOBIO,
                         self.cacheHelper.launchTimestamp,
                         self.genomeBuildHelper,
-                        utility.getHumanRefNames);
+                        utility.getHumanRefNames,
+                        vepREVELFile);
 
                     self.variantModel = new VariantModel(endpoint,
                         genericAnnotation,

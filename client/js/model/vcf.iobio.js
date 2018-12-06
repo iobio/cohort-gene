@@ -1859,6 +1859,7 @@ vcfiobio = function module() {
                     let highestImpactVep = me._getHighestImpact(annot.vep.allVep, me._cullTranscripts, selectedTranscriptID);
                     let highestSIFT = me._getLowestScore(annot.vep.allSIFT, me._cullTranscripts, selectedTranscriptID);
                     let highestPolyphen = me._getHighestScore(annot.vep.allPolyphen, me._cullTranscripts, selectedTranscriptID);
+                    let highestREVEL = me._getHighestScore( annot.vep.allREVEL, me._cullTranscripts, selectedTranscriptID);
 
                     for (let i = 0; i < allVariants.length; i++) {
                         //let genotype = gtResult.genotypes[i];
@@ -1899,6 +1900,7 @@ vcfiobio = function module() {
                                 'vepConsequence': annot.vep.vepConsequence,
                                 'vepImpact': annot.vep.vepImpact,
                                 'vepExon': annot.vep.vepExon,
+                                'vepREVEL': annot.vep.vepREVEL,
                                 'vepSIFT': annot.vep.vepSIFT,
                                 'sift': annot.vep.sift,
                                 'vepPolyPhen': annot.vep.vepPolyPhen,
@@ -1913,6 +1915,7 @@ vcfiobio = function module() {
                                 'highestImpactVep': highestImpactVep,
                                 'highestSIFT': highestSIFT,
                                 'highestPolyphen': highestPolyphen,
+                                'highestREVEL': highestREVEL,
 
                                 // cohort specific
                                 'pVal': +1, // Guilty until proven innocent
@@ -2062,6 +2065,7 @@ vcfiobio = function module() {
                 allVep: {},
                 allSIFT: {},
                 allPolyphen: {},
+                allREVEL: {},
                 vepConsequence: {},
                 vepImpact: {},
                 vepFeatureType: {},
@@ -2073,6 +2077,7 @@ vcfiobio = function module() {
                 vepVariationIds: {},
                 vepSIFT: {},
                 vepPolyPhen: {},
+                vepREVEL: {},
                 sift: {},       // need a special field for filtering purposes
                 polyphen: {},   // need a special field for filtering purposes
                 regulatory: {}, // need a special field for filtering purposes
@@ -2199,6 +2204,11 @@ vcfiobio = function module() {
                     annot.vep.vepPolyPhen[polyphenDisplay] = polyphenDisplay;
                     annot.vep.polyphen['polyphen_' + polyphenDisplay] = 'polyphen_' + polyphenDisplay;
 
+                    if (vepFields.REVEL) {
+                        var revelScore = vepTokens[vepFields.REVEL];
+                        annot.vep.vepREVEL[revelScore] = revelScore;
+                    }
+
                 } else if (featureType == 'RegulatoryFeature' || featureType == 'MotifFeature') {
                     annot.vep.vepRegs.push({
                         'impact': vepTokens[vepFields.IMPACT],
@@ -2252,6 +2262,8 @@ vcfiobio = function module() {
                             polyphenScore = polyphenString.split("(")[1].split(")")[0];
                         }
 
+                        var revelScore  = vepFields.REVEL ? vepTokens[vepFields.REVEL] : "";
+
                         var consequencesObject = annot.vep.allVep[theImpact];
                         if (consequencesObject == null) {
                             consequencesObject = {};
@@ -2272,6 +2284,13 @@ vcfiobio = function module() {
                         }
                         me._appendTranscript(polyphenObject, polyphenDisplay, theTranscriptId);
                         annot.vep.allPolyphen[polyphenScore] = polyphenObject;
+
+                        var revelObject = annot.vep.allREVEL[revelScore];
+                        if (revelObject == null) {
+                            revelObject = {};
+                        }
+                        me._appendTranscript(revelObject, revelScore, theTranscriptId);
+                        annot.vep.allREVEL[revelScore] = revelObject;
 
                         if (vepAF) {
                             me._parseVepAfAnnot(VEP_FIELDS_AF_GNOMAD, vepFields, vepTokens, "gnomAD", "gnomAD", annot);

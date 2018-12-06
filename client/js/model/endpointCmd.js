@@ -1,10 +1,10 @@
-function EndpointCmd(useSSL, IOBIOServiceNames, launchTimestamp, genomeBuildHelper, getHumanRefNamesFunc) {
+function EndpointCmd(useSSL, IOBIOServiceNames, launchTimestamp, genomeBuildHelper, getHumanRefNamesFunc, revelFile) {
     this.useSSL = useSSL;
     this.IOBIO = IOBIOServiceNames;
     this.launchTimestamp = launchTimestamp;
     this.genomeBuildHelper = genomeBuildHelper;
     this.getHumanRefNames = getHumanRefNamesFunc;
-
+    this.vepREVELFile = revelFile;
 }
 
 
@@ -192,6 +192,9 @@ EndpointCmd.prototype.annotateVariants = function (vcfSource, refName, regions, 
         vepArgs.push(me.genomeBuildHelper.getCurrentBuildName());
         vepArgs.push(" --format vcf");
         vepArgs.push(" --allele_number");
+        if (me.vepREVELFile) {
+            vepArgs.push(" --plugin REVEL," + me.vepREVELFile);
+        }
         if (vepAF) {
             vepArgs.push("--af");
             vepArgs.push("--af_gnomad");
