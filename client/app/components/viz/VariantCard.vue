@@ -102,7 +102,6 @@ TD & SJG updated Apr2018 -->
                         @clearVariants="clearVariants">
                 </variant-viz>
                 <div id="bam-track">
-                    <!--TODO: coverage prop is not being populated w/ anything - left off digging into this-->
                     <depth-viz
                             v-if="showDepthViz"
                             ref="depthVizRef"

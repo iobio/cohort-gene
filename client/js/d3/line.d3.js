@@ -29,7 +29,7 @@ export default function lineD3() {
 
     var margin = {left: 50, right: 20, top: 10, bottom: 30};
     var yAxisWidth = 45;
-    var yAxisPadding = 4;
+    var yAxisPadding = 6;
 
     var width = 600 - margin.left - margin.right;
     var height = 220 - margin.top - margin.bottom;

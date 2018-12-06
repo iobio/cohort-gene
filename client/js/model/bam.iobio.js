@@ -369,7 +369,6 @@ export default class Bam {
     */
     getCoverageForRegion(refName, regionStart, regionEnd, regions, maxPoints, useServerCache, callback, callbackError) {
         var me = this;
-        debugger;
 
         this.transformRefName(refName, function(trRefName){
 

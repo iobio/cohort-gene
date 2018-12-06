@@ -502,6 +502,7 @@ TD & SJG updated Nov2018 -->
             },
             onDataSetVariantClick: function (variant, sourceComponent, dataSetKey) {
                 let self = this;
+
                 if (variant) {
                     // Circle selected variant
                     if (self.$refs.variantCardRef) {
@@ -554,7 +555,7 @@ TD & SJG updated Nov2018 -->
                         let mainDataSet = self.launchedFromHub ? self.variantModel.getDataSet('Hub') : self.variantModel.getDataSet('s0');
                         let matchingVar = mainDataSet.getVariant(variant);
                         if (matchingVar != null) {
-                            self.selectdVariant = matchingVar;
+                            self.selectedVariant = matchingVar;
                         } else {
                             self.$refs.variantSummaryCardRef.setCohortFieldsNotApplicable();
                             self.selectedVariant = variant;

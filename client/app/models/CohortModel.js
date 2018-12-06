@@ -297,46 +297,11 @@ class CohortModel {
                             theVcfData = data;
                             resolve({model: me, vcfData: theVcfData});
                         } else {
-                            // If the vcf data is null, see if there are called variants in the cache.  If so,
-                            // copy the called variants into the vcf data.
-                            if (whenEmptyUseFbData && me.isAlignmentsOnly()) {
-                                me.promiseGetFbData(geneObject, selectedTranscript)
-                                    .then(function (theFbData) {
-                                            // If no variants are loaded, create a dummy vcfData with 0 features
-                                            if (theFbData && theFbData.features) {
-                                                theVcfData = $.extend({}, theFbData);
-                                                theVcfData.features = [];
-                                                me.promiseSetLoadState(theVcfData, 'clinvar')
-                                                    .then(function () {
-                                                        return me.promiseSetLoadState(theVcfData, 'coverage');
-                                                    })
-                                                    .then(function () {
-                                                        return me.promiseSetLoadState(theVcfData, 'inheritance');
-                                                    })
-                                                    .then(function () {
-                                                        me.addCalledVariantsToVcfData(theVcfData, theFbData);
-                                                    })
-
-
-                                            }
-                                            resolve({model: me, vcfData: theVcfData});
-
-                                        },
-                                        function (error) {
-                                            var msg = "Problem occurred in SampleModel.promiseGetVcfData: " + error;
-                                            console.log(msg);
-                                            reject(error);
-                                        });
-                            } else {
-                                resolve({model: me, vcfData: theVcfData});
-                            }
-
+                            resolve({model: me, vcfData: theVcfData});
                         }
 
                     })
             }
-
-
         });
     }
 

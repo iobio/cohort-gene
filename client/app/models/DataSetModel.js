@@ -254,11 +254,7 @@ class DataSetModel {
 
     /* Returns true if all cohort data are only alignments. */
     isAlignmentsOnly() {
-        let self = this;
-        let theCohorts = self._cohorts.filter(function (cohort) {
-            return cohort.isAlignmentsOnly();
-        });
-        return theCohorts.length === self._cohorts.length;
+        return !this.areVcfsReadyToLoad() && this.isBamLoaded();
     }
 
     isReadyToLoad() {
