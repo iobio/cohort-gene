@@ -783,7 +783,6 @@ vcfiobio = function module() {
             });
 
             // Parse the vcf object into a variant object that is visualized by the client.
-            // TODO: left off here - need to pull back zygosities for variants - what's easiest way to do this?
             let results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, (hgvsNotation && getRsId), isMultiSample, expSampleNames, null, vepAF, keepVariantsCombined, enrichMode);
             results.features = results.features[0];     // Unwrap feature array
             callback(results);
