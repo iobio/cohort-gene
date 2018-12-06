@@ -26,7 +26,7 @@
                 <img src="../../../assets/images/wheel.gif">
             </div>
         </v-layout>
-        <v-layout row style="padding-top: 10px">
+        <v-layout row class="mt-4">
             <v-flex xs12 class="field-label-header" style="text-align: left">Annotation Details</v-flex>
         </v-layout>
         <v-layout row>
