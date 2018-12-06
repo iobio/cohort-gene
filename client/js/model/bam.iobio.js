@@ -1,20 +1,11 @@
-//import BamFile  from '../third-party/bam.js'
-//import bin      from '../third-party/bin.js'
-//import inflate  from '../third-party/inflate.js'
-//import binary   from '../third-party/binary.js'
-
-
-// extending Thomas Down's original BAM js work
-
 export default class Bam {
-    constructor(globalApp, endpoint, bamUri, baiUri, options) {
-        this.globalApp = globalApp;
+    constructor(endpoint, bamUri, baiUri, options) {
         this.endpoint = endpoint;
         this.bamUri = bamUri;
         this.baiUri = baiUri;
         this.options = options; // *** add options mapper ***
         // test if file or url
-        if (typeof(this.bamUri) == "object") {
+        if (this.bamUri != null && typeof(this.bamUri) === "object") {
             this.sourceType = "file";
             this.bamFile = this.bamUri;
             this.baiFile = this.options.bai;
@@ -82,17 +73,15 @@ export default class Bam {
     }
 
     checkBamUrl(url, baiUrl, callback) {
-        var me = this;
+        let self = this;
 
-        var cmd = this.endpoint.getBamHeader(url, baiUrl);
-
-        var success = null;
+        let cmd = self.endpoint.getBamHeader(url, baiUrl);
+        let success = null;
         cmd.on('data', function(data) {
-            if (data != undefined) {
+            if (data != null) {
                 success = true;
             }
         });
-
         cmd.on('end', function() {
             if (success == null) {
                 success = true;
@@ -101,23 +90,20 @@ export default class Bam {
                 callback(success);
             }
         });
-
         cmd.on('error', function(error) {
-            if (me.ignoreErrorMessage(error)) {
+            if (self.ignoreErrorMessage(error)) {
                 success = true;
                 callback(success)
             } else {
                 if (success == null) {
                     success = false;
-                    me.bamUri = url;
-                    callback(success, me.translateErrorMessage(error));
+                    self.bamUri = url;
+                    callback(success, self.translateErrorMessage(error));
                 }
             }
 
         });
-
         cmd.run();
-
     }
 
 
@@ -150,16 +136,16 @@ export default class Bam {
         var me = this;
 
 
-        if (fileSelection.files.length != 2) {
+        if (fileSelection.files.length !== 2) {
             callback(false, 'must select 2 files, both a .bam and .bam.bai file');
             return;
         }
 
-        if (me.globalApp.utility.endsWith(fileSelection.files[0].name, ".sam") ||
-            me.globalApp.utility.endsWith(fileSelection.files[1].name, ".sam")) {
-            callback(false, 'You must select a bam file, not a sam file');
-            return;
-        }
+        // if (Util.endsWith(fileSelection.files[0].name, ".sam") ||
+        //     Util.endsWith(fileSelection.files[1].name, ".sam")) {
+        //     callback(false, 'You must select a bam file, not a sam file');
+        //     return;
+        // }
 
         var fileType0 = /([^.]*)\.(bam(\.bai)?)$/.exec(fileSelection.files[0].name);
         var fileType1 = /([^.]*)\.(bam(\.bai)?)$/.exec(fileSelection.files[1].name);
@@ -599,5 +585,3 @@ export default class Bam {
     }
 
 }
-
-

@@ -499,22 +499,12 @@
                 let keyList = Object.keys(self.modelInfoMap);
                 for (let i = 0; i < keyList.length; i++) {
                     let currKey = keyList[i];
-                    if (currKey !== 's0' && self.launchedFromHub) {
+                    if (!(currKey === 's0' && self.launchedFromHub)) {
                         self.isValid &= (self.modelInfoMap[currKey] != null && self.modelInfoMap[currKey].dataSet.isReadyToLoad());
                     }
 
                 }
             },
-            // getModel: function (id) {
-            //     let theModel = null;
-            //     if (this.variantModel) {
-            //         let modelObject = this.variantModel.sampleMap[id];
-            //         if (modelObject) {
-            //             theModel = modelObject.model;
-            //         }
-            //     }
-            //     return theModel;
-            // },
             // Called each time files menu opened
             init: function() {
                 let self = this;

@@ -1,6 +1,6 @@
-/**
+/*
 SJG Mar2018
-Adapted from http://bl.ocks.org/d3noob/8952219'
+Adapted from http://bl.ocks.org/d3noob/8952219
 
 This is a bar chart that initially displays just the graph outline, then populates when fillChart is called,
 to allow a dynamic rendering of chart fill.

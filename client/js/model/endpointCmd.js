@@ -276,6 +276,18 @@ EndpointCmd.prototype.normalizeVariants = function (vcfUrl, tbiUrl, refName, reg
     return cmd;
 }
 
+EndpointCmd.prototype.getBamHeader = function(bamUrl, baiUrl) {
+    let me = this;
+    let args = ['view', '-H', '"'+bamUrl+'"'];
+    if (baiUrl) {
+        args.push('"'+baiUrl+'"');
+    }
+    return new iobio.cmd(
+        me.IOBIO.samtoolsOnDemand,
+        args,
+        {ssl: me.useSSL}
+    );
+};
 
 EndpointCmd.prototype.getBamCoverage = function (bamSource, refName, regionStart, regionEnd, regions, maxPoints, useServerCache, serverCacheKey) {
     var me = this;

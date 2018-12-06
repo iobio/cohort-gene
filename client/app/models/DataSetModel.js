@@ -2,6 +2,7 @@
    Has 1:1 relationship with VariantViz component and rendered track.
    SJG updated Nov2018 */
 import CohortModel from './CohortModel.js'
+import Bam from '../../js/model/bam.iobio.js';
 
 class DataSetModel {
     constructor(theVariantModel) {
@@ -20,6 +21,7 @@ class DataSetModel {
         this.bamRefName = null;
         this.vcfEndptHash = {};         // Maps each file to a single vcf.iobio model (key is name of file)
         this.varsInFileHash = {};       // Maps each file to list of variant IDs that exist within the file
+        this.bamEndpt = {};             // The bam endpt for this dataset model - only single sample tracks support BAM information for now
         this.genesInProgress = [];
         this.affectedInfo = null;       // TODO: what is this? gene artifact
         this.calledVariants = null;     // TODO: what is this? gene artifact
@@ -43,11 +45,11 @@ class DataSetModel {
         // </editor-fold>
 
         // <editor-fold desc="STATE PROPS">
-        this.isSingleSample = false;     // True if we this model represents a single sample in a single vcf file
-        this.vcfUrlsEntered = false;
+        this.isSingleSample = false;        // True if we this model represents a single sample in a single vcf file
+        this.vcfUrlsEntered = false;        // True if we have one or more valid vcf urls entered
         this.vcfFilesOpened = false;
-        this.bamUrlsEntered = false;
-        this.bamFilesOpened = false;
+        this.bamUrlEntered = false;         // True if we have a valid bam url entered
+        this.bamFileOpened = false;
         this.keepVariantsCombined = true;   // True for multiple samples to be displayed on single track
         this.efficiencyMode = true;         // True to only pull back variant locations and not functional impacts
         this.noMatchingSamples = false;     // Flag to display No Matching Variants chip
@@ -123,6 +125,11 @@ class DataSetModel {
     getFilterModel() {
         let self = this;
         return self.getVariantModel().filterModel;
+    }
+
+    getEndpoint() {
+        let self = this;
+        return self.getVariantModel().endpoint;
     }
 
     /* Returns the first vcf in vcfEndptHash. */
@@ -248,11 +255,16 @@ class DataSetModel {
     }
 
     isReadyToLoad() {
-        return (this.areVcfsReadyToLoad() || this.areBamsReadyToLoad()) && this.getSubsetIds().length > 0;
+        return this.areVcfsReadyToLoad() && this.isBamReadyToLoad() && this.getSubsetIds().length > 0;
     }
 
-    areBamsReadyToLoad() {
-        return this.bams.length > 0 && (this.bamUrlsEntered || this.bamFilesOpened);
+    // Bam not required but if it's there, must be valid
+    isBamReadyToLoad() {
+        if (this.bams.length === 0) {
+            return true;
+        } else {
+            return this.bamUrlEntered || this.bamFileOpened;
+        }
     }
 
     areVcfsReadyToLoad() {
@@ -1278,6 +1290,7 @@ class DataSetModel {
     // <editor-fold desc="BAM">
 
     // Only accepts on bam url at a time since app currently configured to only show coverage for single sample tracks
+    // Supports only one BAM per data set model, but can modify in future if desired akin to onVcfUrlEntered
     onBamUrlEntered(bamUrl, baiUrl, callback) {
         let self = this;
         self.bamData = null;
@@ -1287,20 +1300,26 @@ class DataSetModel {
             self.bamUrlEntered = false;
             self.bam = null;
         } else {
-            self.bamUrlEntered = true;
-
-            // TODO get appropriate endpoint out of here - does it matter which one?
-            self.bam = new Bam(self.cohort.endpoint, bamUrl, baiUrl);
-            self.bam.checkBamUrl(bamUrl, baiUrl, function(success, errorMsg) {
+            self.bams.push(bamUrl);
+            self.bamEndpt = new Bam(self.getEndpoint(), bamUrl, baiUrl);
+            if (baiUrl != null) {
+                self.bais.push(baiUrl);
+            }
+            self.bamEndpt.checkBamUrl(bamUrl, baiUrl, function(success, errorMsg) {
                 if (self.lastBamAlertify) {
                     self.lastBamAlertify.dismiss();
                 }
                 if (!success) {
                     self.bamUrlEntered = false;
-                    self.bam = null;
+                    self.bams[0] = null;
+                    self.bais[0] = null;
+                    self.bamsEndpt = null;
                     let msg = "<span style='font-size:18px'>" + errorMsg + "</span><br><span style='font-size:12px'>" + bamUrl + "</span>";
                     alertify.set('notifier','position', 'top-right');
                     self.lastBamAlertify = alertify.error(msg, 15);
+                } else {
+                    self.bamUrlEntered = true;
+                    self.bamFileOpened = false;
                 }
                 if(callback) {
                     callback(success);
@@ -1662,8 +1681,8 @@ class DataSetModel {
     }
 
     _stripRefName(refName) {
-        var tokens = refName.split("chr");
-        var strippedName = refName;
+        let tokens = refName.split("chr");
+        let strippedName = refName;
         if (tokens.length > 1) {
             strippedName = tokens[1];
         } else {

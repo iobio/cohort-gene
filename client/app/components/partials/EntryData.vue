@@ -170,7 +170,7 @@
                             hide-details
                     ></v-select>
                 </v-flex>
-                <v-flex d-flex xs12 class="ml-3">
+                <v-flex d-flex xs12 class="ml-3" v-if="isSampleEntry">
                     <entry-data-file
                             :defaultUrl="firstBam"
                             :defaultIndexUrl="firstBai"
@@ -336,21 +336,18 @@
             },
             onBamUrlEntered: function (bamUrl, baiUrl) {
                 let self = this;
+                debugger;
                 self.$emit("sample-data-changed");
 
                 if (self.modelInfo && self.modelInfo.dataSet) {
-                    self.modelInfo.dataSet.onBamUrlEntered(bamUrl, baiUrl, function (success) {
-                        if (success) {
-                            // Can add more functionality here if needed
-                        } else {
-                        }
+                    self.modelInfo.dataSet.onBamUrlEntered(bamUrl, baiUrl, function () {
                         self.$emit("sample-data-changed");
                     })
                 }
             },
             onBamFilesSelected: function (fileSelection) {
                 let self = this;
-                self.modelInfo.model.promiseBamFilesSelected(fileSelection)
+                self.modelInfo.dataSet.promiseBamFilesSelected(fileSelection)
                     .then(function () {
                         self.$emit("sample-data-changed");
                     })
@@ -492,13 +489,20 @@
             self.subsetSampleIds = self.modelInfo.subsetSampleIds;
             self.excludeSampleIds = self.modelInfo.excludeSampleIds;
             self.isMainCohort = self.dragId === 's0';
+
+            // If we've already filled in the file menu, populate accordingly
             if (self.modelInfo.vcfs) {
                 self.firstVcf = self.modelInfo.vcfs[0];
             }
             if (self.modelInfo.tbis) {
                 self.firstTbi = self.modelInfo.tbis[0];
             }
-            // TODO: do this for bams
+            if (self.modelInfo.bams) {
+                self.firstBam = self.modelInfo.bams[0];
+            }
+            if (self.modelInfo.bais) {
+                self.firstBai = self.modelInfo.bais[0];
+            }
 
             // Assign side bar label
             if (self.modelInfo.isSampleEntry) {
