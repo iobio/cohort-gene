@@ -987,9 +987,9 @@ class DataSetModel {
 
         return new Promise((resolve, reject) => {
             // For each vcf url, open and get sample names
-            if (vcfUrls == null || vcfUrls.length === 0) {
+            if (vcfUrls == null || vcfUrls.length === 0 || vcfUrls[0] === '') {
                 me.vcfUrlsEntered = false;
-                reject();
+                reject('No vcf to check');
             } else {
                 me.getVcfRefName = null;
                 me.isMultiSample = true;
@@ -1299,6 +1299,9 @@ class DataSetModel {
         if (bamUrl == null || bamUrl.trim() === "") {
             self.bamUrlEntered = false;
             self.bam = null;
+            if (callback) {
+                callback(false);
+            }
         } else {
             self.bams.push(bamUrl);
             self.bamEndpt = new Bam(self.getEndpoint(), bamUrl, baiUrl);

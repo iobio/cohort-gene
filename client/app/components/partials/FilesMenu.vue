@@ -378,63 +378,67 @@
             onAutoLoad: function (customInfos = false) {
                 let self = this;
 
-                let infosToLoad = null;
-                if (!customInfos) {
-                    self.separateUrlForIndex = false;
-                    infosToLoad = self.variantModel.demoInfo;
-                } else {
-                    infosToLoad = customInfos;
-                    self.separateUrlForIndex = self.checkCustomIndex(customInfos);
-                }
-
-                // Reset modelInfoMap to get rid of any added info extras
-                self.modelInfoMap = {};
-
-                // Add relevant infos to map and ids to sample array in correct order
-                let idList = [];
-                let arrIndex = 0;
-                infosToLoad.forEach(function (modelInfo) {
-                    let id = modelInfo.id;
-                    idList.push(id);
-                    self.modelInfoMap[id] = modelInfo;
-                    self.entryIds[arrIndex] = modelInfo.id;
-                    arrIndex++;
-                });
-
-                // Get rid of any remaining extra samples names in array
-                if (self.entryIds.length > arrIndex) {
-                    let numToDelete = self.entryIds.length - arrIndex;
-                    self.entryIds.splice(arrIndex, numToDelete);
-                }
-
-                // Ensure models are synonymous with infos and in same order as view
-                self.variantModel.removeExtraneousDataSets(idList);
-                let addPromises = [];
-                for (let i = 0; i < self.entryIds.length; i++) {
-                    let currId = self.entryIds[i];
-                    let currDataSet = self.variantModel.getDataSet(currId);
-                    if (currDataSet == null) {
-                        let corrInfo = self.modelInfoMap[currId];
-                        let p = self.variantModel.promiseAddEntry(corrInfo, corrInfo.isSampleEntry); // Don't need to assign to map, done in promiseSetModel below
-                        addPromises.push(p);
+                return new Promise((resolve, reject) => {
+                    let infosToLoad = null;
+                    if (!customInfos) {
+                        self.separateUrlForIndex = false;
+                        infosToLoad = self.variantModel.demoInfo;
+                    } else {
+                        infosToLoad = customInfos;
+                        self.separateUrlForIndex = self.checkCustomIndex(customInfos);
                     }
-                }
-                Promise.all(addPromises)
-                    .then(() => {
-                        let setPromises = [];
-                        self.variantModel.getAllDataSets().forEach(function (dataSet) {
-                            if (!(self.launchedFromHub && dataSet.entryId === 's0')) {
-                                setPromises.push(self.promiseSetModel(dataSet));
-                            }
-                        });
-                        Promise.all(setPromises)
-                            .then(() => {
-                                resolve();
-                            })
-                            .catch((error) => {
-                                reject(error);
-                            })
+
+                    // Reset modelInfoMap to get rid of any added info extras
+                    self.modelInfoMap = {};
+
+                    // Add relevant infos to map and ids to sample array in correct order
+                    let idList = [];
+                    let arrIndex = 0;
+                    infosToLoad.forEach(function (modelInfo) {
+                        let id = modelInfo.id;
+                        idList.push(id);
+                        self.modelInfoMap[id] = modelInfo;
+                        self.entryIds[arrIndex] = modelInfo.id;
+                        arrIndex++;
                     });
+
+                    // Get rid of any remaining extra samples names in array
+                    if (self.entryIds.length > arrIndex) {
+                        let numToDelete = self.entryIds.length - arrIndex;
+                        self.entryIds.splice(arrIndex, numToDelete);
+                    }
+
+                    // Ensure models are synonymous with infos and in same order as view
+                    self.variantModel.removeExtraneousDataSets(idList);
+                    let addPromises = [];
+                    for (let i = 0; i < self.entryIds.length; i++) {
+                        let currId = self.entryIds[i];
+                        let currDataSet = self.variantModel.getDataSet(currId);
+                        if (currDataSet == null) {
+                            let corrInfo = self.modelInfoMap[currId];
+                            let p = self.variantModel.promiseAddEntry(corrInfo, corrInfo.isSampleEntry); // Don't need to assign to map, done in promiseSetModel below
+                            addPromises.push(p);
+                        }
+                    }
+                    Promise.all(addPromises)
+                        .then(() => {
+                            // Turn on loading spinners
+                            for (let i = 0; i < self.$refs.entryDataRef.length; i++) {
+                                self.$refs.entryDataRef[i].setLoadingFlags(true);
+                            }
+
+                            let setPromises = [];
+                            self.variantModel.getAllDataSets().forEach(function (dataSet) {
+                                if (!(self.launchedFromHub && dataSet.entryId === 's0')) {
+                                    setPromises.push(self.promiseSetModel(dataSet));
+                                }
+                            });
+                            Promise.all(setPromises)
+                                .then(() => {
+                                    resolve();
+                                })
+                        })
+                });
             },
             checkCustomIndex: function (infos) {
                 let areSeparate = false;
@@ -474,21 +478,33 @@
                                         }
                                         // Set view state
                                         currEntryRef.fillSampleFields(theModelInfo.samples, theModelInfo.selectedSample, theModelInfo.subsetSampleIds, theModelInfo.excludeSampleIds);
+                                        currEntryRef.setLoadingFlags(false);
                                         self.validate();
                                     }
                                 }
-                                // TODO: incorporate bam functionality
-                                // theDataSet.onBamUrlEntered(theModelInfo.bam, theModelInfo.bai, function (success) {
-                                //     self.validate();
-                                //     if (success) {
-                                //         resolve();
-                                //     } else {
-                                //         reject();
-                                //     }
-                                // })
+                                if (theDataSet.entryId !== 's0' && theDataSet.entryId !== 'Hub') {
+                                    let firstBam = theModelInfo.bams ? theModelInfo.bams[0] : '';
+                                    let firstBai = theModelInfo.bais ? theModelInfo.bais[0] : null;
+                                    theDataSet.onBamUrlEntered(firstBam, firstBai, function (success) {
+                                        self.validate();
+                                        if (success) {
+                                            resolve();
+                                        } else {
+                                            reject('No bam to check');
+                                        }
+                                    })
+                                }
                             } else {
-                                reject();
+                                // Turn off loading spinners
+                                for (let i = 0; i < self.$refs.entryDataRef.length; i++) {
+                                    self.$refs.entryDataRef[i].setLoadingFlags(false);
+                                }
+                                reject('No vcf to check');
                             }
+                        })
+                        .catch((error) => {
+                            console.log(error);
+                            reject(error);
                         })
                 })
             },
@@ -581,7 +597,6 @@
             }
         },
         mounted: function () {
-            // TODO: lock genome build if launching from Hub
             if (this.variantModel) {
                 this.speciesName = this.variantModel.genomeBuildHelper.getCurrentSpeciesName();
                 this.buildName = this.variantModel.genomeBuildHelper.getCurrentBuildName();

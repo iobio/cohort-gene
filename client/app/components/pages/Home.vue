@@ -736,7 +736,6 @@ TD & SJG updated Nov2018 -->
                             })
                     } else {
                         // Otherwise, wait for user to launch files menu
-                        // TODO: maybe display get started info - some dynamic feedback
                         self.launchedFromHub = false;
                         resolve();
                     }

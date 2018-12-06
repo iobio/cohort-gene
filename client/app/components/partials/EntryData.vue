@@ -129,6 +129,13 @@
                             @file-selected="onVcfFilesSelected">
                     </entry-data-file>
                 </v-flex>
+                <v-flex d-flex xs12 v-if="retrievingIds">
+                    <v-layout>
+                        <div class="loader">
+                            <img src="../../../assets/images/wheel.gif">
+                        </div>
+                    </v-layout>
+                </v-flex>
                 <v-flex d-flex xs12 id="subset-selection" v-if="!isSampleEntry && samples && samples.length > 0">
                     <v-layout row wrap>
                         <v-flex d-flex xs2 class="pt-3">
@@ -182,6 +189,13 @@
                             @url-entered="onBamUrlEntered"
                             @file-selected="onBamFilesSelected">
                     </entry-data-file>
+                </v-flex>
+                <v-flex d-flex xs12 v-if="checkingBam">
+                    <v-layout>
+                        <div class="loader">
+                            <img src="../../../assets/images/wheel.gif">
+                        </div>
+                    </v-layout>
                 </v-flex>
             </v-layout>
         </v-flex>
@@ -238,7 +252,9 @@
                 firstTbi: null,
                 firstBam: null,
                 firstBai: null,
-                dialogType: ''
+                dialogType: '',
+                retrievingIds: false,
+                checkingBam: false
             }
         },
         watch: {
@@ -252,6 +268,18 @@
                 let self = this;
                 if (newVal) {
                     self.firstTbi = newVal[0];
+                }
+            },
+            'modelInfo.bams': function(newVal, oldVal) {
+                let self = this;
+                if (newVal) {
+                    self.firstBam = newVal[0];
+                }
+            },
+            'modelInfo.bais': function(newVal, oldVal) {
+                let self = this;
+                if (newVal) {
+                    self.firstBai = newVal[0];
                 }
             }
         },
@@ -274,6 +302,7 @@
             },
             onVcfUrlEntered: function (vcfUrl, tbiUrl) {
                 let self = this;
+                self.retrievingIds = true;
                 self.$emit("sample-data-changed");
                 self.$set(self, "selectedSample", null);
                 self.$set(self, "samples", []);
@@ -281,7 +310,8 @@
                 if (self.modelInfo && self.modelInfo.dataSet) {
                     self.modelInfo.dataSet.onVcfUrlEntered([self.modelInfo.id], [vcfUrl], [tbiUrl], [self.modelInfo.displayName])
                         .then((listObj) => {
-                        if (listObj) {
+                            self.retrievingIds = false;
+                            if (listObj) {
                             self.samples = listObj['samples'];
                             self.modelInfo.samples = listObj['samples'];
                             if (self.samples.length === 1) {
@@ -297,7 +327,11 @@
                             }
                         }
                         self.$emit("sample-data-changed");
-                    })
+                        })
+                        .catch((error) => {
+                            console.log(error);
+                            self.retrievingIds = false;
+                        })
                 }
             },
             onVcfFilesSelected: function (fileSelection) {
@@ -336,11 +370,18 @@
             },
             onBamUrlEntered: function (bamUrl, baiUrl) {
                 let self = this;
-                debugger;
+                self.checkingBam = true;
                 self.$emit("sample-data-changed");
 
                 if (self.modelInfo && self.modelInfo.dataSet) {
-                    self.modelInfo.dataSet.onBamUrlEntered(bamUrl, baiUrl, function () {
+                    self.modelInfo.dataSet.onBamUrlEntered(bamUrl, baiUrl, function (success) {
+                        self.checkingBam = false;
+                        if (success) {
+                            self.modelInfo.bams = [bamUrl];
+                            if (baiUrl) {
+                                self.modelInfo.bais = [baiUrl];
+                            }
+                        }
                         self.$emit("sample-data-changed");
                     })
                 }
@@ -475,13 +516,20 @@
                 }
                 if (subsetSampleIds.length > 0) {
                     self.modelInfo.dataSet.setSubsetIds(subsetSampleIds);
-                    self.subsetSampleDisplay = subsetSampleIds.join();
+                    self.subsetSampleDisplay = subsetSampleIds.join(', ');
                 }
                 if (excludeSampleIds.length > 0) {
                     self.modelInfo.dataSet.setExcludeIds(excludeSampleIds);
-                    self.excludeSampleDisplay = excludeSampleIds.join();
+                    self.excludeSampleDisplay = excludeSampleIds.join(', ');
                 }
             },
+            setLoadingFlags: function(flagState) {
+                let self = this;
+                self.retrievingIds = flagState;
+                if (self.modelInfo.bams.length > 0) {
+                    self.checkingBam = flagState;
+                }
+            }
         },
         mounted: function () {
             let self = this;
