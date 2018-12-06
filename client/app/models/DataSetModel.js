@@ -33,6 +33,7 @@ class DataSetModel {
         this.getBamRefName = null;
         this.vcfRefNamesMap = {};       // The map of all chromosomes present in all vcf files for this data set
         this.displayName = '';          // Name displayed in chips for analysis sources & in file loader for local launched files
+        this.maxDepth = 0;
 
         // TODO: these might be depreciated if color scheme is no longer used...
         this.subsetEnrichedVars = {};
@@ -58,7 +59,8 @@ class DataSetModel {
             'fetchingHubData': false,
             'verifyingVcfUrl': false,
             'loadingVariants': false,
-            'drawingVariants': false
+            'drawingVariants': false,
+            'loadingCoverage': false
         };
         // </editor-fold>
 
@@ -130,6 +132,11 @@ class DataSetModel {
     getEndpoint() {
         let self = this;
         return self.getVariantModel().endpoint;
+    }
+
+    getCacheHelper() {
+        let self = this;
+        return self.getVariantModel().cacheHelper;
     }
 
     /* Returns the first vcf in vcfEndptHash. */
@@ -267,6 +274,10 @@ class DataSetModel {
         }
     }
 
+    isBamLoaded() {
+        return this.bams.length > 0 && (this.bamUrlEntered || (this.bamFileOpened && this.getBamRefName));
+    }
+
     areVcfsReadyToLoad() {
         return this.vcfs.length > 0 && Object.keys(this.vcfEndptHash).length > 0 && (this.vcfUrlsEntered || this.vcfFilesOpened);
     }
@@ -389,19 +400,40 @@ class DataSetModel {
         return new Promise(function (resolve, reject) {
             // Set status flags
             self.inProgress.loadingVariants = true;
+            let promises = [];
 
             // Load variants
             self.startGeneProgress(theGene['gene_name']);
             self.clearLoadedData();
-            self.promiseLoadVariants(theGene, theTranscript)
+            let vcfP = self.promiseLoadVariants(theGene, theTranscript)
                 .then(function (data) {
                     self.setLoadedVariants(data.gene);
-                    resolve();
                 })
                 .catch(function (error) {
-                    console.log('There was a problem loading the data in VariantModel.');
+                    console.log('There was a problem loading the data in DataSetModel.');
                     reject(error);
                 });
+            promises.push(vcfP);
+            let bamP = null;
+
+            if (self.isSingleSample) {
+                bamP = self.promiseLoadCoverage(theGene, theTranscript)
+                    .then(function() {
+                        self.setCoverage();
+                    })
+                    .catch((error) => {
+                        console.log('There was a problem loading coverage in DataSetModel');
+                        reject(error);
+                    });
+            } else {
+                bamP = Promise.resolve();
+            }
+            promises.push(bamP);
+
+            Promise.all(promises)
+                .then(function() {
+                    resolve();
+                })
         });
     }
 
@@ -1333,7 +1365,7 @@ class DataSetModel {
     }
 
     promiseBamFilesSelected(event) {
-        var me = this;
+        let me = this;
         return new Promise(function(resolve, reject) {
             me.bamData = null;
             me.fbData = null;
@@ -1350,7 +1382,7 @@ class DataSetModel {
                     if (me.lastBamAlertify) {
                         me.lastBamAlertify.dismiss();
                     }
-                    var msg = "<span style='font-size:18px'>" + message + "</span>";
+                    let msg = "<span style='font-size:18px'>" + message + "</span>";
                     alertify.set('notifier','position', 'top-right');
                     me.lastBamAlertify = alertify.error(msg, 15);
 
@@ -1360,30 +1392,92 @@ class DataSetModel {
         });
     }
 
+    promiseLoadCoverage(theGene, theTranscript) {
+        let self = this;
+
+        return new Promise(function (resolve, reject) {
+            self.promiseGetCachedGeneCoverage(theGene, theTranscript, true)
+                .then(function (data) {
+                    return self.promiseLoadBamDepth(theGene, theTranscript);
+                })
+                .then(function (data) {
+                    resolve(data);
+                })
+                .catch(function (error) {
+                    reject(error);
+                })
+        })
+
+    }
+
+    setCoverage(regionStart, regionEnd) {
+        let self = this;
+        let model = self.getSubsetCohort();
+        if (model.bamData) {
+            if (regionStart && regionEnd) {
+                model.coverage = model.bamData.coverage.filter(function (depth) {
+                    return depth[0] >= regionStart && depth[0] <= regionEnd;
+                })
+            } else {
+                model.coverage = model.bamData.coverage;
+            }
+
+            if (model.coverage) {
+                let max = d3.max(model.coverage, function (d, i) {
+                    return d[1]
+                });
+                if (max > self.maxDepth) {
+                    self.maxDepth = max;
+                }
+            }
+        }
+    }
+
+    promiseGetCachedGeneCoverage(geneObject, transcript, showProgress = false) {
+        let self = this;
+        return new Promise(function (resolve, reject) {
+            let geneCoverageAll = {gene: geneObject, transcript: transcript, geneCoverage: {}};
+
+            if (self.isBamLoaded()) {
+                self.promiseGetGeneCoverage(geneObject, transcript)
+                    .then(function (data) {
+                        let gc = data.geneCoverage;
+                        geneCoverageAll.geneCoverage[self.entryId] = gc;
+                        resolve(geneCoverageAll);
+                    })
+                    .catch(function (error) {
+                        reject(error);
+                    });
+            } else {
+                resolve();
+            }
+        })
+    }
+
     promiseGetGeneCoverage(geneObject, transcript) {
         let self = this;
 
         return new Promise(function (resolve, reject) {
                 if (transcript.features == null || transcript.features.length === 0) {
-                    resolve({model: me, gene: geneObject, transcript: transcript, 'geneCoverage': []});
+                    resolve({model: self, gene: geneObject, transcript: transcript, 'geneCoverage': []});
                 } else {
-                    self.bam.getGeneCoverage(geneObject,
+                    self.bamEndpt.getGeneCoverage(geneObject,
                         transcript,
-                        [self.bam],
+                        [self.bamEndpt],
                         function (theData, trRefName, theGeneObject, theTranscript) {
                             let geneCoverageObjects = self._parseGeneCoverage(theData);
                             if (geneCoverageObjects.length > 0) {
-                                me._setGeneCoverageExonNumbers(transcript, geneCoverageObjects);
-                                me.setGeneCoverageForGene(geneCoverageObjects, theGeneObject, theTranscript);
+                                self._setGeneCoverageExonNumbers(transcript, geneCoverageObjects);
+                                self.setGeneCoverageForGene(geneCoverageObjects, theGeneObject, theTranscript);
                                 resolve({
-                                    model: me,
+                                    model: self,
                                     gene: theGeneObject,
                                     transcript: theTranscript,
                                     'geneCoverage': geneCoverageObjects
                                 });
                             } else {
                                 console.log("Cannot get gene coverage for gene " + theGeneObject.gene_name);
-                                resolve({model: me, gene: theGeneObject, transcript: theTranscript, 'geneCoverage': []});
+                                resolve({model: self, gene: theGeneObject, transcript: theTranscript, 'geneCoverage': []});
                             }
                         }
                     );
@@ -1395,12 +1489,17 @@ class DataSetModel {
             });
     }
 
+    setGeneCoverageForGene(geneCoverage, geneObject, transcript) {
+        geneObject = geneObject ? geneObject : window.gene;
+        transcript = transcript ? transcript : window.selectedTranscript;
+        this._promiseCacheData(geneCoverage, CacheHelper.GENE_COVERAGE_DATA, geneObject.gene_name, transcript);
+    }
+
     _setGeneCoverageExonNumbers(transcript, geneCoverageObjects) {
-        var me = this;
         transcript.features.forEach(function (feature) {
-            var gc = null;
-            var matchingFeatureCoverage = geneCoverageObjects.filter(function (gc) {
-                return feature.start == gc.start && feature.end == gc.end;
+            let gc = null;
+            let matchingFeatureCoverage = geneCoverageObjects.filter(function (gc) {
+                return feature.start === gc.start && feature.end === gc.end;
             });
             if (matchingFeatureCoverage.length > 0) {
                 gc = matchingFeatureCoverage[0];
@@ -1412,28 +1511,28 @@ class DataSetModel {
     }
 
     _parseGeneCoverage(theData) {
-        var geneCoverageObjects = [];
+        let geneCoverageObjects = [];
         if (theData && theData.length > 0) {
-            var fieldNames = [];
+            let fieldNames = [];
             theData.split("\n").forEach(function (rec) {
-                if (rec.indexOf("#") == 0 && fieldNames.length == 0) {
+                if (rec.indexOf("#") === 0 && fieldNames.length === 0) {
                     rec.split("\t").forEach(function (field) {
-                        if (field.indexOf("#") == 0) {
+                        if (field.indexOf("#") === 0) {
                             field = field.substring(1);
                         }
                         fieldNames.push(field);
                     })
                 } else {
-                    var fields = rec.split("\t");
-                    if (fields.length == fieldNames.length) {
-                        var gc = {};
-                        for (var i = 0; i < fieldNames.length; i++) {
+                    let fields = rec.split("\t");
+                    if (fields.length === fieldNames.length) {
+                        let gc = {};
+                        for (let i = 0; i < fieldNames.length; i++) {
                             gc[fieldNames[i]] = fields[i];
-                            if (fieldNames[i] == 'region') {
-                                if (fields[i] != "NA") {
-                                    var parts = fields[i].split(":");
+                            if (fieldNames[i] === 'region') {
+                                if (fields[i] !== "NA") {
+                                    let parts = fields[i].split(":");
                                     gc.chrom = parts[0];
-                                    var region = parts[1].split("-");
+                                    let region = parts[1].split("-");
                                     gc.start = region[0];
                                     gc.end = region[1];
                                 }
@@ -1445,6 +1544,23 @@ class DataSetModel {
             })
         }
         return geneCoverageObjects;
+    }
+
+    promiseLoadBamDepth(theGene, theTranscript) {
+        let self = this;
+
+        return new Promise(function (resolve, reject) {
+            let theResultMap = {};
+            let model = self.getSubsetCohort();
+            if (self.isBamLoaded()) {
+                self.inProgress.loadingCoverage = true;
+                model.getBamDepth(theGene, theTranscript, self.isBamLoaded(), function (coverageData) {
+                    self.inProgress.loadingCoverage = false;
+                    theResultMap[self.entryId] = coverageData;
+                    resolve(theResultMap);
+                });
+            }``
+        });
     }
 
     // </editor-fold>
@@ -1563,6 +1679,56 @@ class DataSetModel {
                 cohort.selectedVariants = filterAndPileupVariants(cohort, start, end, 'selected');
             }
         }
+    }
+
+    // </editor-fold>
+
+    // <editor-fold desc="CACHING">
+
+    _promiseCacheData(data, dataKind, geneName, transcript) {
+        let me = this;
+        return new Promise(function (resolve, reject) {
+            let key = me._getCacheKey(dataKind, geneName.toUpperCase(), transcript);
+
+            // In order to avoid circular references that cause vcfData.features
+            // to have null elements, we just blank out the 'features' property
+            // on every variant
+            if (dataKind === 'vcfData' || dataKind === 'fbData') {
+                if (data.features) {
+                    data.features.forEach(function (f) {
+                        delete f.features;
+                    })
+                }
+            }
+
+            me.getCacheHelper().promiseCacheData(key, data)
+                .then(function () {
+                        resolve();
+                    },
+                    function (error) {
+                        CacheHelper.showError(key, error);
+                        alertify.set('notifier', 'position', 'top-right');
+                        alertify.error("Error occurred when compressing analyzed data before caching.", 15);
+                        reject(error);
+                    })
+        })
+    }
+
+    _getCacheKey(dataKind, geneName, transcript) {
+        let self = this;
+        let selectedSample = self.getSubsetCohort().sampleIds;
+
+        return self.getCacheHelper().getCacheKey(
+            {
+                id: self.entryId,
+                sample: (selectedSample != null ? selectedSample : "null"),
+                gene: (geneName != null ? geneName : gene.gene_name),
+                transcript: (transcript != null ? transcript.transcript_id : "null"),
+                annotationScheme: (self.getAnnotationScheme().toLowerCase()),
+                dataKind: dataKind
+            }
+        );
+
     }
 
     // </editor-fold>

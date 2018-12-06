@@ -84,6 +84,7 @@ TD & SJG updated Nov2018 -->
                                     :regionEnd="geneRegionEnd"
                                     :width="cardWidth"
                                     :showGeneViz="true"
+                                    :showDepthViz="true"
                                     :showVariantViz="true"
                                     :geneVizShowXAxis="true"
                                     :doneLoadingData="doneLoadingData"
@@ -328,7 +329,7 @@ TD & SJG updated Nov2018 -->
                 return new Promise(function (resolve, reject) {
                     self.cacheHelper = new CacheHelper();
                     self.cacheHelper.on("geneAnalyzed", function(geneName) {
-                      self.$refs.genesCardRef.determineFlaggedGenes();
+                      //self.$refs.genesCardRef.determineFlaggedGenes();
                       self.$refs.navRef.onShowFlaggedVariants();
                     });
                     globalCacheHelper = self.cacheHelper;
@@ -376,7 +377,7 @@ TD & SJG updated Nov2018 -->
                                 reject(error);
                             })
                     } else {
-                        Promise.resolve();
+                        resolve();
                     }
                 })
             },

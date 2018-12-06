@@ -17,6 +17,7 @@ class CohortModel {
         this.vcfData = null;            // Annotated VCF data
         this.fbData = null;
         this.bamData = null;
+        this.coverage = [[]];
         this.sampleIds = [];            // Sample IDs that compose this cohort
         this.phenotypes = [];           // Phrases describing phenotypic filtering data; displayed in track chips
         // </editor-fold>
@@ -82,6 +83,55 @@ class CohortModel {
 
     // <editor-fold desc="FREEBAYES FXNS">
 
+    promiseGetFbData(geneObject, selectedTranscript, reconstiteFromVcfData = false) {
+        let me = this;
+        return new Promise(function (resolve, reject) {
+            me._promiseGetData(CacheHelper.FB_DATA, geneObject.gene_name, selectedTranscript)
+                .then(function (theFbData) {
+                        if (reconstiteFromVcfData) {
+                            // Reconstitute called variants from vcf data that contains called variants
+                            if (theFbData == null || theFbData.features == null) {
+                                me.promiseGetVcfData(geneObject, selectedTranscript, false)
+                                    .then(function (data) {
+                                            let theVcfData = data.vcfData;
+                                            let dangerSummary = me.promiseGetDangerSummary(geneObject.gene_name)
+                                                .then(function (dangerSummary) {
+                                                        if (theVcfData && theVcfData.features) {
+                                                            theFbData = me.reconstituteFbData(theVcfData);
+                                                            resolve({fbData: theFbData, model: me});
+                                                        } else {
+                                                            resolve({fbData: theFbData, model: me});
+                                                        }
+                                                    },
+                                                    function (error) {
+                                                        let msg = "An error occurred in SampleModel.promiseGetFbData: " + error;
+                                                        console.log(msg);
+                                                        reject(msg);
+                                                    })
+
+                                        },
+                                        function (error) {
+                                            let msg = "An error occurred in SampleModel.promiseGetFbData: " + error;
+                                            console.log(msg);
+                                            reject(msg);
+                                        });
+                            } else {
+                                resolve({fbData: theFbData, model: me});
+                            }
+                        } else {
+                            resolve({fbData: theFbData, model: me});
+
+                        }
+
+                    },
+                    function (error) {
+                        let msg = "Problem in SampleModel.promiseGetFbData(): " + error;
+                        console.log(msg);
+                        reject(msg);
+                    })
+        })
+    }
+
     reconstituteFbData(theVcfData) {
         let me = this;
         let theFbData = $.extend({}, theVcfData);
@@ -101,6 +151,316 @@ class CohortModel {
 
     // </editor-fold>
 
+    // <editor-fold desc="BAM & COVERAGE FXNS">
+
+    getBamDepth(gene, selectedTranscript, bamIsLoaded, callbackDataLoaded) {
+        let me = this;
+
+        if (bamIsLoaded) {
+            if (callbackDataLoaded) {
+                callbackDataLoaded();
+            }
+            return;
+        }
+
+        var performCallbackForCachedData = function (regions, theVcfData, coverageData) {
+            if (regions.length > 0) {
+                me._refreshVariantsWithCoverage(theVcfData, coverageData, function () {
+                    if (callbackDataLoaded) {
+                        callbackDataLoaded(coverageData);
+                    }
+                });
+            } else {
+                if (callbackDataLoaded) {
+                    callbackDataLoaded(coverageData);
+                }
+            }
+        }
+
+        var performCallback = function (regions, theVcfData, coverageForRegion, coverageForPoints) {
+            if (regions.length > 0) {
+                me._refreshVariantsWithCoverage(theVcfData, coverageForPoints, function () {
+                    if (callbackDataLoaded) {
+                        callbackDataLoaded(coverageForRegion);
+                    }
+                });
+            } else {
+                if (callbackDataLoaded) {
+                    callbackDataLoaded(coverageForRegion, CacheHelper.BAM_DATA);
+                }
+            }
+        }
+
+
+        // A gene has been selected.  Read the bam file to obtain
+        // the read converage.
+        let refName = me.getDataSetModel().getBamRefName(gene.chr);
+        me.promiseGetVcfData(gene, selectedTranscript)
+            .then(function (data) {
+                let theVcfData = data.vcfData;
+                let regions = [];
+                // We we have variants, get the positions for each variant.  This will
+                // be provided for the service to get coverage data so that specific
+                // base coverage is also returned.
+                if (theVcfData != null) {
+                    me.flagDupStartPositions(theVcfData.features);
+                    if (theVcfData) {
+                        theVcfData.features.forEach(function (variant) {
+                            if (!variant.dup) {
+                                regions.push({name: refName, start: variant.start - 1, end: variant.start});
+                            }
+                        });
+                    }
+                }
+                // Get the coverage data for the gene region
+                // First the gene vcf data has been cached, just return
+                // it.  (No need to retrieve the variants from the iobio service.)
+                me._promiseGetData(CacheHelper.BAM_DATA, gene.gene_name)
+                    .then(function (data) {
+                        if (data != null && data !== '') {
+                            me.bamData = data;
+                            performCallbackForCachedData(regions, theVcfData, data.coverage);
+                        } else {
+                            // TODO: hardcoded userServerCache to false in line below - ensure that is correct
+                            let useServerCache = false;
+                            me.bam.getCoverageForRegion(refName, gene.start, gene.end, regions, 2000, useServerCache,
+                                function (coverageForRegion, coverageForPoints) {
+                                    if (coverageForRegion != null) {
+                                        me.bamData = {
+                                            gene: gene.gene_name,
+                                            ref: refName,
+                                            start: gene.start,
+                                            end: gene.end,
+                                            coverage: coverageForRegion
+                                        };
+
+                                        // Use browser cache for storage coverage data if app is not relying on
+                                        // server-side cache
+                                        if (!useServerCache) {
+                                            me._promiseCacheData(me.bamData, CacheHelper.BAM_DATA, gene.gene_name)
+                                                .then(function () {
+                                                    performCallback(regions, theVcfData, coverageForRegion, coverageForPoints);
+                                                })
+                                        } else {
+                                            performCallback(regions, theVcfData, coverageForRegion, coverageForPoints);
+                                        }
+                                    } else {
+                                        performCallback(regions, theVcfData, coverageForRegion, coverageForPoints);
+                                    }
+
+                                });
+                        }
+
+                    })
+            })
+    }
+
+    promiseGetVcfData(geneObject, selectedTranscript, whenEmptyUseFbData = true) {
+        let me = this;
+        let dataKind = CacheHelper.VCF_DATA;
+        return new Promise(function (resolve, reject) {
+            if (geneObject == null) {
+                reject("Empty geneObject in SampleModel.promiseGetVcfData()");
+            }
+
+            // If only alignments have specified, but not variant files, we will need to use the
+            // getBamRefName function instead of the getVcfRefName function.
+            let theGetRefNameFunction = me.getDataSetModel().getVcfRefName != null ? me.getDataSetModel().getVcfRefName : me.getDataSetModel().getBamRefName;
+            if (theGetRefNameFunction == null) {
+                theGetRefNameFunction = me.getDataSetModel()._stripRefName;
+            }
+            if (theGetRefNameFunction == null) {
+                let msg = "No function defined to parse ref name from file";
+                console.log(msg);
+                reject(msg);
+            }
+
+            let theVcfData = null;
+
+            if (me[dataKind] != null && me[dataKind].features && me[dataKind].features.length > 0) {
+                if (theGetRefNameFunction(geneObject.chr) === me[dataKind].ref &&
+                    geneObject.start === me[dataKind].start &&
+                    geneObject.end === me[dataKind].end &&
+                    geneObject.strand === me[dataKind].strand) {
+                    theVcfData = me[dataKind];
+                    resolve({model: me, vcfData: theVcfData});
+                }
+            }
+
+            if (theVcfData == null) {
+                // Find vcf data in cache
+                me._promiseGetData(dataKind, geneObject.gene_name, selectedTranscript)
+                    .then(function (data) {
+                        if (data != null && data !== '') {
+                            me[dataKind] = data;
+                            theVcfData = data;
+                            resolve({model: me, vcfData: theVcfData});
+                        } else {
+                            // If the vcf data is null, see if there are called variants in the cache.  If so,
+                            // copy the called variants into the vcf data.
+                            if (whenEmptyUseFbData && me.isAlignmentsOnly()) {
+                                me.promiseGetFbData(geneObject, selectedTranscript)
+                                    .then(function (theFbData) {
+                                            // If no variants are loaded, create a dummy vcfData with 0 features
+                                            if (theFbData && theFbData.features) {
+                                                theVcfData = $.extend({}, theFbData);
+                                                theVcfData.features = [];
+                                                me.promiseSetLoadState(theVcfData, 'clinvar')
+                                                    .then(function () {
+                                                        return me.promiseSetLoadState(theVcfData, 'coverage');
+                                                    })
+                                                    .then(function () {
+                                                        return me.promiseSetLoadState(theVcfData, 'inheritance');
+                                                    })
+                                                    .then(function () {
+                                                        me.addCalledVariantsToVcfData(theVcfData, theFbData);
+                                                    })
+
+
+                                            }
+                                            resolve({model: me, vcfData: theVcfData});
+
+                                        },
+                                        function (error) {
+                                            var msg = "Problem occurred in SampleModel.promiseGetVcfData: " + error;
+                                            console.log(msg);
+                                            reject(error);
+                                        });
+                            } else {
+                                resolve({model: me, vcfData: theVcfData});
+                            }
+
+                        }
+
+                    })
+            }
+
+
+        });
+    }
+
+    _refreshVariantsWithCoverage(theVcfData, coverage, callback) {
+        let me = this;
+        var vcfIter = 0;
+        var covIter = 0;
+        if (theVcfData == null || coverage == null) {
+            callback();
+        }
+        let recs = theVcfData.features;
+
+        me.flagDupStartPositions(recs);
+
+        for (var vcfIter = 0, covIter = 0; vcfIter < recs.length; null) {
+            // Bypass duplicates
+            if (recs[vcfIter].dup) {
+                recs[vcfIter].bamDepth = recs[vcfIter - 1].bamDepth;
+                vcfIter++;
+            }
+            if (vcfIter >= recs.length) {
+
+            } else {
+                if (covIter >= coverage.length) {
+                    recs[vcfIter].bamDepth = "";
+                    vcfIter++;
+                } else {
+                    let coverageRow = coverage[covIter];
+                    let coverageStart = coverageRow[0];
+                    let coverageDepth = coverageRow[1];
+
+                    // compare curr variant and curr coverage record
+                    if (recs[vcfIter].start === coverageStart) {
+                        recs[vcfIter].bamDepth = +coverageDepth;
+                        vcfIter++;
+                        covIter++;
+                    } else if (recs[vcfIter].start < coverageStart) {
+                        recs[vcfIter].bamDepth = "";
+                        vcfIter++;
+                    } else {
+                        //console.log("no variant corresponds to coverage at " + coverageStart);
+                        covIter++;
+                    }
+                }
+            }
+        }
+        if (!theVcfData.hasOwnProperty('loadState')) {
+            theVcfData.loadState = {};
+        }
+        theVcfData.loadState['coverage'] = true;
+        callback();
+    }
+
+    flagDupStartPositions(variants) {
+        // Flag variants with same start position as this will throw off comparisons
+        for (let i = 0; i < variants.length - 1; i++) {
+            let variant = variants[i];
+            let nextVariant = variants[i + 1];
+            if (i === 0) {
+                variant.dup = false;
+            }
+            nextVariant.dup = false;
+
+            if (variant.start === nextVariant.start) {
+                nextVariant.dup = true;
+            }
+        }
+    }
+
+    _promiseGetData(dataKind, geneName, transcript) {
+        let me = this;
+        return new Promise(function (resolve, reject) {
+
+            if (geneName == null) {
+                let msg = "CohortModel._promiseGetData(): empty gene name";
+                console.log(msg);
+                reject(msg);
+            } else {
+                let key = me._getCacheKey(dataKind, geneName.toUpperCase(), transcript);
+                me.getCacheHelper().promiseGetData(key)
+                    .then(function (data) {
+                            resolve(data);
+                        },
+                        function (error) {
+                            let msg = "An error occurred in CohortModel._promiseGetData(): " + error;
+                            console.log(msg);
+                            reject(msg);
+                        })
+            }
+        })
+    }
+
+    promiseSetLoadState(theVcfData, taskName) {
+        let me = this;
+
+        var resolveIt = function (resolve, theVcfData) {
+            if (theVcfData != null) {
+                if (theVcfData.loadState == null) {
+                    theVcfData.loadState = {};
+                }
+                theVcfData.loadState[taskName] = true;
+            }
+            resolve();
+        };
+
+        return new Promise(function (resolve, reject) {
+            if (theVcfData != null) {
+                resolveIt(resolve, theVcfData);
+            } else {
+                me.promiseGetVcfData(window.gene, window.selectedTranscript)
+                    .then(function (data) {
+                            resolveIt(resolve, data.vcfData);
+                        },
+                        function (error) {
+                            let msg = "A problem occurred in CohortModel.promiseSetLoadState(): " + error;
+                            console.log(msg);
+                            reject(msg);
+                        })
+
+            }
+        })
+    }
+
+    // </editor-fold>
+
     // <editor-fold desc="SUMMARIZE DANGER">
 
     promiseGetDangerSummary(geneName) {
@@ -109,9 +469,9 @@ class CohortModel {
     }
 
     promiseSummarizeDanger(geneName, theVcfData, options, geneCoverageAll, filterModel) {
-        var me = this;
+        let me = this;
         return new Promise(function (resolve, reject) {
-            var dangerSummary = CohortModel._summarizeDanger(geneName, theVcfData, options, geneCoverageAll, filterModel, me.getTranslator(), me.getAnnotationScheme());
+            let dangerSummary = me._summarizeDanger(geneName, theVcfData, options, geneCoverageAll, filterModel, me.getDataSetModel().getTranslator(), me.getAnnotationScheme());
             me.promiseCacheDangerSummary(dangerSummary, geneName).then(function () {
                     resolve(dangerSummary);
                 },
@@ -121,10 +481,14 @@ class CohortModel {
         })
     }
 
+    promiseCacheDangerSummary(dangerSummary, geneName) {
+        return this.getDataSetModel()._promiseCacheData(dangerSummary, CacheHelper.DANGER_SUMMARY_DATA, geneName);
+    }
+
     promiseSummarizeError(geneName, error) {
-        var me = this;
+        let me = this;
         return new Promise(function (resolve, reject) {
-            var dangerSummary = CohortModel.summarizeError(error);
+            let dangerSummary = me.summarizeError(error);
             me.promiseCacheDangerSummary(dangerSummary, geneName)
                 .then(function () {
                         resolve(dangerSummary);
@@ -796,7 +1160,6 @@ class CohortModel {
             return;
         }
 
-
         var loadClinvarProperties = function (recs, clinvarRecs) {
             for (var vcfIter = 0, clinvarIter = 0; vcfIter < recs.length && clinvarIter < clinvarRecs.length; null) {
 
@@ -812,7 +1175,7 @@ class CohortModel {
                         var variant = recs[vcfIter];
 
                         let combinedVcf = me.getDataSetModel().getFirstVcf();
-                        var result = combinedVcf.parseClinvarInfo(clinvarRec.info, me.getTranslator().clinvarMap);
+                        var result = combinedVcf.parseClinvarInfo(clinvarRec.info, me.getDataSetModel().getTranslator().clinvarMap);
                         for (let key in result) {
                             variant[key] = result[key];
                         }
@@ -843,7 +1206,6 @@ class CohortModel {
         var sortedFeatures = theVcfData.features.sort(me.orderVariantsByPosition);
         var sortedClinvarVariants = clinvarVariants.sort(me.orderVariantsByPosition);
         loadClinvarProperties(sortedFeatures, sortedClinvarVariants);
-
     }
 
     _addClinVarInfoToVariant(variant, clinvar) {
@@ -871,7 +1233,7 @@ class CohortModel {
 
                 // Get the clinvar "classification" for the highest ranked clinvar
                 // designation. (e.g. "pathogenic" trumps "benign");
-                var mapEntry = me.getTranslator().clinvarMap[clinSigToken];
+                var mapEntry = me.getDataSetModel().getTranslator().clinvarMap[clinSigToken];
                 if (mapEntry != null) {
                     if (variant.clinvarRank == null ||
                         mapEntry.value < variant.clinvarRank) {

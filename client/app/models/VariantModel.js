@@ -32,6 +32,7 @@ class VariantModel {
         this.genomeBuildHelper = genomeBuildHelper;
         this.filterModel = null;
         this.featureMatrixModel = null;
+        this.cacheHelper = cacheHelper;
         // </editor-fold>
 
         // <editor-fold desc="MOSAIC PROPERTIES">

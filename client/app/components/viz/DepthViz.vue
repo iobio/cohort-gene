@@ -1,60 +1,60 @@
 <style lang="sass">
-@import ../../../assets/sass/variables
+    @import ../../../assets/sass/variables
 
 
 
-#depth-viz .circle-label
-  fill: $arrow-color
-  font-size: 13px
-  font-weight: bold
-  stroke: none
-  pointer-events: none
+    #depth-viz .circle-label
+        fill: $arrow-color
+        font-size: 15px
+        font-weight: bold
+        stroke: none
+        pointer-events: none
 
-#depth-viz
-  .y.axis
-    line
-      stroke-width: .5px
-    .tick
-      text
-        font-size: 11px
+    #depth-viz
+        .y.axis
+            line
+                stroke-width: .5px
+            .tick
+                text
+                    font-size: 11px
 
-#depth-viz path.line
-  stroke: rgba(128,128,128,.81)
-  stroke-width: 1
-  fill: none
+    #depth-viz path.line
+        stroke: rgba(128,128,128,.81)
+        stroke-width: 1
+        fill: none
 
-.area-chart-gradient-top
-  stop-color: grey
-  stop-opacity: 0.1
+    .area-chart-gradient-top
+        stop-color: grey
+        stop-opacity: 0.1
 
-.area-chart-gradient-bottom
-  stop-color: grey
-  stop-opacity: 0.6
+    .area-chart-gradient-bottom
+        stop-color: grey
+        stop-opacity: 0.6
 
-#depth-viz
-  text-align: left
-  margin-top: 0px
-  min-height: 30px
+    #depth-viz
+        text-align: left
+        margin-top: 0px
+        min-height: 30px
 
-  .circle
-    stroke: none
-    fill: $current-color
-    pointer-events: none
+        .circle
+            stroke: none
+            fill: $current-color
+            pointer-events: none
 
-  .region
-    stroke-width: 1px
-    stroke: $coverage-problem-region-color
-    fill: $coverage-problem-region-color
+        .region
+            stroke-width: 1px
+            stroke: $coverage-problem-region-color
+            fill: $coverage-problem-region-color
 
-  .threshold
-    line
-      stroke-width: 1px
-      stroke: lightgray
-      stroke-dasharray: 5,5
-    text
-      font-size: 12px
-      fill: $text-color
-      cursor: pointer
+        .threshold
+            line
+                stroke-width: 1px
+                stroke: lightgray
+                stroke-dasharray: 5,5
+            text
+                font-size: 12px
+                fill: $text-color
+                cursor: pointer
 
 </style>
 
@@ -67,160 +67,175 @@
 
 <script>
 
+    import lineD3 from '../../../js/d3/line.d3.js'
 
-export default {
-    name: 'depth-viz',
-    props: {
-      data: {
-        type: Array,
-        default: function() {
-          return [[0,0]];
-        }
-      },
-      maxDepth: {
-        type: Number,
-        default: 0
-      },
-      width: {
-        type: Number,
-        default: 0
-      },
-      height: {
-        type: Number,
-        default: 0
-      },
-      kind: {
-        type: String,
-        default: 'area'
-      },
-      margin: {
-        type: Object,
-        default: {}
-      },
-      showXAxis: {
-        type: Boolean,
-        default: true
-      },
-      showYAxis: {
-        type: Boolean,
-        default: true
-      },
-      showYAxis: {
-        type: Boolean,
-        default: true
-      },
-      yAxisLine: {
-        type: Boolean,
-        default: false
-      },
-      yTicks: {
-        type: Number,
-        default: 3
-      },
-      xStart: {
-        type: Number,
-        default: 0
-      },
-      xEnd: {
-        type: Number,
-        default: 0
-      },
-      maxDepth: {
-        type: Number,
-        default: 0
-      }
-
-    },
-    data() {
-      return {
-        depthChart: {}
-      }
-    },
-    created: function() {
-    },
-    mounted: function() {
-      this.draw();
-    },
-    methods: {
-      draw: function() {
-        var self = this;
-
-        this.depthChart =  lineD3()
-          .width(this.width)
-          .height(this.height)
-          .widthPercent("100%")
-          .heightPercent("100%")
-          .kind(this.kind)
-          .margin(this.margin)
-          .showXAxis(this.showXAxis)
-          .showYAxis(this.showYAxis)
-          .yAxisLine(this.yAxisLine)
-          .yTicks(this.yTicks)
-          .pos( function(d) { return d[0] })
-          .depth( function(d) { return d[1] })
-          .maxDepth(this.maxDepth)
-          .yTickFormat(function(val) {
-            if (val == 0) {
-              return "";
-            } else {
-              return val + "x";
+    export default {
+        name: 'depth-viz',
+        props: {
+            data: {
+                type: Array,
+                default: function() {
+                    return [[]];
+                }
+            },
+            coverageDangerRegions: {
+                type: Array,
+                default: function() {
+                    return [];
+                }
+            },
+            coverageMedian: {
+                type: Number,
+                default: 0
+            },
+            maxDepth: {
+                type: Number,
+                default: 0
+            },
+            currentPoint: {
+                type: Object,
+                default: function() {
+                    return null;
+                }
+            },
+            width: {
+                type: Number,
+                default: 0
+            },
+            height: {
+                type: Number,
+                default: 0
+            },
+            kind: {
+                type: String,
+                default: 'area'
+            },
+            margin: {
+                type: Object,
+                default: {}
+            },
+            showXAxis: {
+                type: Boolean,
+                default: true
+            },
+            showYAxis: {
+                type: Boolean,
+                default: true
+            },
+            showYAxis: {
+                type: Boolean,
+                default: true
+            },
+            yAxisLine: {
+                type: Boolean,
+                default: false
+            },
+            yTicks: {
+                type: Number,
+                default: 3
+            },
+            regionStart: {
+                type: Number,
+                default: 0
+            },
+            regionEnd: {
+                type: Number,
+                default: 0
+            },
+            regionGlyph: {
+                type: Function,
+                default: function(d,i,regionX) {
+                }
             }
-          })
-          /*
-          .regionGlyph(function(d,i,regionX) {
-            var parent = d3.select(this.parentNode);
-            var exonId = 'exon' + d.exon_number.replace("/", "-");
-            if (parent.select("g#" + exonId).empty()) {
-                parent.append('g')
-                      .attr("id", exonId)
-                      .attr('class',      'region-glyph coverage-problem-glyph')
-                      .attr('transform',  'translate(' + (regionX - 12) + ',-16)')
-                      .data([d])
-                      .append('use')
-                      .attr('height',     '22')
-                      .attr('width',      '22')
-                      .attr('href', '#long-arrow-down-symbol')
-                      .attr('xlink','http://www.w3.org/1999/xlink')
-                      .data([d]);
+
+        },
+        data() {
+            return {
+                depthChart: {}
             }
-          })
-          .showTooltip(true)
-          .pos( function(d) { return d[0] })
-            .depth( function(d) { return d[1] })
-            .formatCircleText( function(pos, depth) {
-              return depth + 'x' ;
-            })
-            .on("d3regiontooltip", function(featureObject, feature, tooltip, lock, onClose) {
-            me.showExonTooltip(featureObject, feature, tooltip, lock, onClose);
-            })
-            .on("d3horizontallineclick", function(label) {
-            showSidebar('Filter')
-              $('#filter-track #coverage-thresholds').addClass('attention');
-            })
-*/
+        },
+        created: function() {
+        },
+        mounted: function() {
+            this.draw();
+        },
+        methods: {
+            draw: function() {
+                let self = this;
 
-          this.setDepthChart();
-      },
-      update: function() {
-        var self = this;
-        if (self.data) {
-          var selection = d3.select(self.$el).datum( self.data );
-          self.depthChart(selection);
-        } else {
-          var selection = d3.select(self.$el).datum( [[0,0]] );
-          self.depthChart(selection);
+                this.depthChart =  lineD3()
+                    .width(this.width)
+                    .height(this.height)
+                    .widthPercent("100%")
+                    .heightPercent("100%")
+                    .kind(this.kind)
+                    .margin(this.margin)
+                    .showXAxis(this.showXAxis)
+                    .showYAxis(this.showYAxis)
+                    .yAxisLine(this.yAxisLine)
+                    .yTicks(this.yTicks)
+                    .pos( function(d) { return d[0] })
+                    .depth( function(d) { return d[1] })
+                    .maxDepth(this.maxDepth)
+                    .yTickFormat(function(val) {
+                        if (val === 0) {
+                            return "";
+                        } else {
+                            return val + "x";
+                        }
+                    })
+                    .formatCircleText( function(pos, depth) {
+                        return depth + 'x' ;
+                    })
+                    .regionGlyph(function(d, i, regionX) {
+                        var parent = d3.select(this.parentNode);
+                        return self.regionGlyph(d, parent, regionX);
+                    })
+                    .on("d3region", function(featureObject, feature, lock) {
+                        self.$emit("region-selected", featureObject, feature, lock );
+                    });
+
+                this.setDepthChart();
+            },
+            update: function() {
+                var self = this;
+                if (self.data && self.data.length > 0 && self.data[0].length > 0) {
+                    $(self.$el).removeClass("hide");
+                    self.depthChart.maxDepth(self.maxDepth);
+                    self.depthChart.xStart(self.regionStart);
+                    self.depthChart.xEnd(self.regionEnd);
+                    self.depthChart.width(self.width);
+                    self.depthChart.height(self.height);
+                    var selection = d3.select(self.$el).datum( self.data );
+                    self.depthChart(selection);
+                } else {
+                    $(self.$el).addClass("hide");
+                    var selection = d3.select(self.$el).datum( [[0,0]] );
+                    self.depthChart(selection);
+                }
+            },
+            setDepthChart: function() {
+                this.$emit('updateDepthChart', this.depthChart);
+            },
+            showCurrentPoint: function(point) {
+                this.depthChart.showCircle()(point.pos, point.depth);
+            },
+            hideCurrentPoint: function(point) {
+                this.depthChart.hideCircle()();
+            }
+        },
+        watch: {
+            data: function() {
+                this.update();
+            },
+            coverageDangerRegions: function() {
+                let self = this;
+                self.depthChart.highlightRegions(self.coverageDangerRegions,
+                    {},
+                    self.regionStart,
+                    self.regionEnd,
+                    self.coverageMedian);
+            }
         }
-      },
-      setDepthChart: function() {
-        this.$emit('updateDepthChart', this.depthChart);
-      }
-    },
-    watch: {
-      data: function() {
-        console.log("data for DepthViz has changed");
-        this.update();
-      }
-
     }
-}
 </script>
