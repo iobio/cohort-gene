@@ -1,8 +1,6 @@
 <style lang="sass">
     @import ../../../assets/sass/variables
 
-
-
     #depth-viz .circle-label
         fill: $arrow-color
         font-size: 15px

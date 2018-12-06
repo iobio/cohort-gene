@@ -28,6 +28,8 @@ export default function lineD3() {
     var formatXTick = null;
 
     var margin = {left: 50, right: 20, top: 10, bottom: 30};
+    var yAxisWidth = 45;
+    var yAxisPadding = 4;
 
     var width = 600 - margin.left - margin.right;
     var height = 220 - margin.top - margin.bottom;
@@ -162,7 +164,7 @@ export default function lineD3() {
                 .append("svg")
                 .attr("width", widthPercent)
                 .attr("height", heightPercent)
-                .attr('viewBox', "0 0 " + (parseInt(width) + margin.left + margin.right) + " " + parseInt(height))
+                .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + (parseInt(width) + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height))
                 .attr("preserveAspectRatio", "none");
 
             // The chart dimensions could change after instantiation, so update viewbox dimensions
@@ -171,7 +173,7 @@ export default function lineD3() {
                 .filter(function() {
                     return this.parentNode === container.node();
                 })
-                .attr('viewBox', "0 0 " + (parseInt(width) + margin.left + margin.right) + " " + parseInt(height));
+                .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + (parseInt(width) + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height))
 
             // add a circle and label
             var circle = svg.selectAll(".circle").data([0])
