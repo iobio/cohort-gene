@@ -14,6 +14,12 @@ TD & SJG updated Jun2018 -->
 
 	.tabs a
 		text-decoration: none !important
+
+	.right-tabs .tabs__wrapper
+		overflow: hidden !important
+
+	.overview-card
+		background-color: #516e87 !important
 </style>
 
 <template>
@@ -24,13 +30,13 @@ TD & SJG updated Jun2018 -->
 			:knownGenes="variantModel.geneModel.allKnownGenes"
 			:selectedGeneName="selectedGene.gene_name"
 			:selectedChr="selectedGene.chr"
-			:selectedBuild="genomeBuildHelper.getCurrentSpeciesName() + ' ' + genomeBuildHelper.getCurrentBuildName()"
+			:selectedBuild="selectedBuild"
 			@input="onGeneSelected"
 			@load-demo-data="onLoadDemoData"
 			@clear-cache="clearCache"
 			@apply-genes="onApplyGenes"
 			@on-files-loaded="onFilesLoaded"
-		></navigation>
+		/>
 		<v-content>
 			<div id="warning-authorize" class="warning-authorize"></div>
 
@@ -39,6 +45,7 @@ TD & SJG updated Jun2018 -->
 
 					<!-- left column -->
 					<v-flex xs9 mr-3>
+
 						<updated-variant-card
 							v-if="variantModel"
 							ref="variantCardRef"
@@ -71,18 +78,34 @@ TD & SJG updated Jun2018 -->
 					</v-flex>
 
 					<!-- right column -->
-					<v-flex xs3>
+					<v-flex xs3 column>
+
+						<!-- Overview Card -->
+						<v-card v-if="variantModel" dark class="overview-card px-4 py-3 mb-3">
+							<v-card-title class="subheading mb-3">Overview</v-card-title>
+							<v-container pa-0>
+								<v-layout>
+									<v-flex xs12>
+										<p class="mb-2"><b class="mr-2">Gene:</b> {{ selectedGene.gene_name }} </p>
+										<p class="mb-2"><b class="mr-2">Chromosome:</b> {{ selectedGene.chr }} </p>
+										<p class="mb-2"><b class="mr-2">Reference:</b> {{ selectedBuild }} </p>
+									</v-flex>
+								</v-layout>
+							</v-container>
+						</v-card>
+
+
 						<v-card class="ml-1">
-							<v-tabs icons centered>
-								<v-tabs-bar>
+							<v-tabs icon centered>
+								<v-tabs-bar class="right-tabs">
 									<v-tabs-slider color="cohortDarkBlue"></v-tabs-slider>
 									<v-tabs-item class="tab" href="#summary-tab">
-										<v-icon mb-0>bar_chart</v-icon>
-										Summary
+										<v-icon class="mb-0 mr-2">bar_chart</v-icon>
+										<span class="text-capitalize">Summary</span>
 									</v-tabs-item>
 									<v-tabs-item class="tab" href="#filter-tab">
-										<v-icon mb-0>bubble_chart</v-icon>
-										Filters
+										<v-icon class="mb-0 mr-2">filter_list</v-icon>
+										<span class="text-capitalize">Filters</span>
 									</v-tabs-item>
 								</v-tabs-bar>
 								<v-tabs-items>
@@ -214,7 +237,10 @@ TD & SJG updated Jun2018 -->
 				} else {
 					return null;
 				}
-			}
+			},
+			selectedBuild() {
+				return this.genomeBuildHelper.getCurrentSpeciesName() + ' ' + this.genomeBuildHelper.getCurrentBuildName()
+			},
 		},
 		mounted: function () {
 			// Initialize models & get data loading
