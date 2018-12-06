@@ -177,6 +177,9 @@
 	<v-container height="100%" style="padding-top: 15px;">
 		<!--<div style="width: 100%">-->
 			<v-flex xl9 offset-xl2 lg12>
+
+				<!-- ADD SELECTED VARIANT SECTION HERE -->
+
 				<div class='form-inline'>
 					<div class='form-group'>
 						<v-icon color="limeGreen"
@@ -195,6 +198,7 @@
 						</v-icon>
 					</div>
 					<div class='form-group'>
+
 						<v-chip v-bind:class="{hide: variant == null}" v-bind:style="{margin: 0}" small outline
 								color="cohortDarkBlue"
 								@input="summaryCardVariantDeselect()">
@@ -202,8 +206,10 @@
 								  v-bind:class="{hide: geneName === ''}">{{geneName}}</span>
 							<span style="padding-top: 1px; font-size: 12px; padding-right: 4px">{{selectedVariantLocation}}</span>
 						</v-chip>
+
 					</div>
 				</div>
+
 			</v-flex>
 		<!--</div>-->
 		<v-container fluid grid-list-md>

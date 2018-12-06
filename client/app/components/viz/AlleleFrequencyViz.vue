@@ -28,7 +28,7 @@
        <v-flex xs9 md8 id="exAcProgress" style="padding: 0px"></v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs2 md3 class="summary-field-label">Proband%:</v-flex>
+       <v-flex xs2 md3 class="summary-field-label">Proband %:</v-flex>
        <v-flex xs2 v-bind:class="{ hide: loadingExtraAnnotations === true }" class="summary-field-value">{{ probandDisplay }}</v-flex>
        <v-flex xs2 class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
          <img src="../../../assets/images/wheel.gif">
@@ -36,7 +36,7 @@
        <v-flex xs9 md8 id="probandProgress" style="padding: 0px"></v-flex>
     </v-layout>
     <v-layout row>
-       <v-flex xs2 md3 class="summary-field-label">Subset%:</v-flex>
+       <v-flex xs2 md3 class="summary-field-label">Subset %:</v-flex>
        <v-flex xs2 v-bind:class="{ hide: loadingExtraAnnotations === true }" class="summary-field-value">{{ subsetDisplay }}</v-flex>
        <v-flex xs2 class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
          <img src="../../../assets/images/wheel.gif">
