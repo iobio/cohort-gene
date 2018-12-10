@@ -619,6 +619,8 @@ class Util {
             phenotype: "",
             phenotypeSimple: "",
             zygosity: "",
+            af1000G: "",
+            afgnomAD: "",
             vepImpact: "",
             vepHighestImpact: "",
             vepHighestImpactSimple: "",
@@ -642,7 +644,7 @@ class Util {
 
         info.coord = variant.chrom + ":" + variant.start;
         info.refalt = variant.ref + "->" + variant.alt;
-        if (variant.ref == '' && variant.alt == '') {
+        if (variant.ref === '' && variant.alt === '') {
             info.refalt = '(' + variant.len + ' bp)';
         }
 
@@ -718,6 +720,13 @@ class Util {
             info.zygosity = "Heterozygous";
         } else if (variant.zygosity && variant.zygosity.toLowerCase() == 'hom') {
             info.zygosity = "Homozygous";
+        }
+
+        if (variant.af1000G) {
+            info.af1000G =  +variant.af1000G >= 0 ? this.round(+variant.af1000G * 100, 2) + "%" : "";
+        }
+        if (variant.afgnomAD) {
+            info.afgnomAD =  +variant.afgnomAD >= 0 ? this.round(+variant.afgnomAD * 100, 2) + "%" : "";
         }
 
 

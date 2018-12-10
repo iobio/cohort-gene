@@ -303,7 +303,7 @@
                 self.inProgress = true;
 
                 self.variantModel.genomeBuildHelper.setCurrentBuild(self.buildName);
-                self.variantModel.genomeBuildHelper.setCurrentSpecies(self.speciesName);
+                //self.variantModel.genomeBuildHelper.setCurrentSpecies(self.speciesName);
 
                 // Set display chips for variant
                 for (var infoName in self.modelInfoMap) {
@@ -334,7 +334,7 @@
                 let customFile = evt.target.files[0];
                 self.variantModel.promiseInitCustomFile(customFile)
                     .then((obj) => {
-                        self.onAutoLoad(obj.infos);
+                        self.onAutoLoad(obj.infos, obj.refBuild);
                     })
                     .catch((e) => {
                         console.log('Problem loading custom config file: ' + e);
@@ -365,6 +365,7 @@
                 });
 
                 exportObj['entries'] = entryArr;
+                exportObj['refBuild'] = self.buildName;
                 const exportFile = JSON.stringify(exportObj);
                 const blob = new Blob([exportFile], {type: 'text/plain'});
                 const e = document.createEvent('MouseEvents'),
@@ -375,7 +376,7 @@
                 e.initEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
                 a.dispatchEvent(e);
             },
-            onAutoLoad: function (customInfos = false) {
+            onAutoLoad: function (customInfos = false, refBuild = "") {
                 let self = this;
 
                 return new Promise((resolve, reject) => {
@@ -420,6 +421,12 @@
                             addPromises.push(p);
                         }
                     }
+
+                    // Set ref build if different from current drop-down selection
+                    if (refBuild !== '' && refBuild !== self.buildName) {
+                        self.buildName = refBuild;
+                    }
+
                     Promise.all(addPromises)
                         .then(() => {
                             // Turn on loading spinners

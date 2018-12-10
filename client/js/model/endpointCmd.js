@@ -205,7 +205,7 @@ EndpointCmd.prototype.annotateVariants = function (vcfSource, refName, regions, 
         if (isRefSeq) {
             vepArgs.push("--refseq");
         }
-        // Get the hgvs notation and the rsid since we won't be able to easily get it one demand
+        // Get the hgvs notation and the rsid since we won't be able to easily get it on demand
         // since we won't have the original vcf records as input
         if (hgvsNotation) {
             vepArgs.push("--hgvs");

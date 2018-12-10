@@ -139,6 +139,11 @@ class DataSetModel {
         return self.getVariantModel().cacheHelper;
     }
 
+    getGenomeBuildHelper() {
+        let self = this;
+        return self.getVariantModel().genomeBuildHelper;
+    }
+
     /* Returns the first vcf in vcfEndptHash. */
     getFirstVcf() {
         let self = this;
@@ -836,7 +841,7 @@ class DataSetModel {
                                 clinvarAnnot[key] = variant[key];
                                 clinvarLookup[formatClinvarKey(variant)] = clinvarAnnot;
                             }
-                        })
+                        });
 
                         let refreshPromises = [];
 

@@ -2159,9 +2159,9 @@ vcfiobio = function module() {
             var keep = true;
             if (isMultiAllelic) {
                 if (vepFields.hasOwnProperty('ALLELE_NUM') && vepFields.ALLELE_NUM >= 0) {
-                    var vepAlleleNumber = vepTokens[vepFields.ALLELE_NUM];
+                    let vepAlleleNumber = vepTokens[vepFields.ALLELE_NUM];
                     if (altIdx >= 0 && vepAlleleNumber >= 0) {
-                        if (altIdx + 1 != vepAlleleNumber) {
+                        if (altIdx + 1 !== vepAlleleNumber) {
                             keep = false;
                         }
                     }

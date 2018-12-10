@@ -263,6 +263,7 @@ TD & SJG updated Nov2018 -->
             let self = this;
             self.cardWidth = self.$el.offsetWidth;
 
+            // Initialize with ref from frameshift if provided
             let currRef = 'GRCh38';
             if (self.paramRef != null && self.paramRef !== "") {
                 currRef = self.paramRef;
@@ -556,6 +557,7 @@ TD & SJG updated Nov2018 -->
                         let mainDataSet = self.launchedFromHub ? self.variantModel.getDataSet('Hub') : self.variantModel.getDataSet('s0');
                         let matchingVar = mainDataSet.getVariant(variant);
                         if (matchingVar != null) {
+                            self.$refs.variantSummaryCardRef.setCohortFieldsApplicable();
                             self.selectedVariant = matchingVar;
                         } else {
                             self.$refs.variantSummaryCardRef.setCohortFieldsNotApplicable();

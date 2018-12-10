@@ -1078,21 +1078,21 @@ class CohortModel {
             for (var vcfIter = 0, clinvarIter = 0; vcfIter < recs.length && clinvarIter < clinVarIds.length; null) {
                 var uid = clinVarIds[clinvarIter];
                 var clinVarStart = clinVars[uid].variation_set[0].variation_loc.filter(function (v) {
-                    return v["assembly_name"] == me.getGenomeBuildHelper().getCurrentBuildName()
+                    return v["assembly_name"] === me.getDataSetModel().getGenomeBuildHelper().getCurrentBuildName()
                 })[0].start;
                 var clinVarAlt = clinVars[uid].variation_set[0].variation_loc.filter(function (v) {
-                    return v["assembly_name"] == me.getGenomeBuildHelper().getCurrentBuildName()
+                    return v["assembly_name"] === me.getDataSetModel().getGenomeBuildHelper().getCurrentBuildName()
                 })[0].alt;
                 var clinVarRef = clinVars[uid].variation_set[0].variation_loc.filter(function (v) {
-                    return v["assembly_name"] == me.getGenomeBuildHelper().getCurrentBuildName()
+                    return v["assembly_name"] === me.getDataSetModel().getGenomeBuildHelper().getCurrentBuildName()
                 })[0].ref;
 
 
                 // compare curr variant and curr clinVar record
-                if (recs[vcfIter].clinvarStart == clinVarStart) {
+                if (recs[vcfIter].clinvarStart === clinVarStart) {
                     // add clinVar info to variant if it matches
-                    if (recs[vcfIter].clinvarAlt == clinVarAlt &&
-                        recs[vcfIter].clinvarRef == clinVarRef) {
+                    if (recs[vcfIter].clinvarAlt === clinVarAlt &&
+                        recs[vcfIter].clinvarRef === clinVarRef) {
                         me._addClinVarInfoToVariant(recs[vcfIter], clinVars[uid]);
                         vcfIter++;
                         clinvarIter++;
@@ -1101,7 +1101,7 @@ class CohortModel {
                         // iter (multiple vcf recs with same position as 1 clinvar rec) or
                         // the clinvar iter needs to be advanced (multiple clinvar recs with same
                         // position as 1 vcf rec)
-                        if (vcfIter + 1 < recs.length && recs[vcfIter + 1].clinvarStart == clinVarStart) {
+                        if (vcfIter + 1 < recs.length && recs[vcfIter + 1].clinvarStart === clinVarStart) {
                             vcfIter++;
                         } else {
                             clinvarIter++;

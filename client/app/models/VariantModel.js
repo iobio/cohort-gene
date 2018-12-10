@@ -550,6 +550,7 @@ class VariantModel {
                 let fileText = fileObj.target.result;
                 let infoObj = JSON.parse(fileText);
                 let entries = infoObj['entries'];
+                let refBuild = infoObj['refBuild'];
                 entries.forEach((entry) =>  {
                     let currInfo = {};
                     currInfo.id = entry.id;
@@ -565,7 +566,7 @@ class VariantModel {
                     currInfo['isSampleEntry'] = entry.isSampleEntry;
                     modelInfos.push(currInfo);
                 });
-                let returnObj = {"infos": modelInfos};
+                let returnObj = {"infos": modelInfos, "refBuild": refBuild};
                 resolve(returnObj);
             };
             reader.readAsText(customFile);
@@ -891,6 +892,7 @@ class VariantModel {
                 existingVar.sift = matchingVar.sift;
                 existingVar.vepPolyPhen = matchingVar.vepPolyPhen;
                 existingVar.polyphen = matchingVar.polyphen;
+                existingVar.vepREVEL = matchingVar.vepREVEL;
                 existingVar.vepAf = matchingVar.vepAf;
 
                 existingVar.highestImpactSnpeff = matchingVar.highestImpactSnpeff;

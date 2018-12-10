@@ -23,7 +23,7 @@ var global_siteConfigUrl    =  "https://s3.amazonaws.com/gene.iobio.config/site-
 var global_clinvarGenesUrl  =  "https://s3.amazonaws.com/gene.iobio.config/clinvar-counts.txt";
 
 // Get clinvar annotations from 'eutils' or 'vcf'
-var clinvarSource         = "vcf";
+var clinvarSource         = "eutils";
 
 // Allow freebayes runtime args to be set by user
 var allowFreebayesSettings  = false;
