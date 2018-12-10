@@ -139,7 +139,6 @@ Updated: SJG Apr2018
                           :featureClass="getExonClass">
                 </gene-viz>
                 <zoom-modal-viz id="zoom-viz"
-                            v-if="showZoomModal"
                             ref="zoomVizRef"
                             :modalWidth="zoomWidth"
                             :modalXStart="zoomX"
@@ -383,7 +382,8 @@ Updated: SJG Apr2018
                 self.zoomX = +xStart;
 
                 // Render zoom modal
-                self.showZoomModal = true;
+                self.$refs.zoomVizRef.showModal();
+                //self.showZoomModal = true;
 
                 // Start pileup of selected variants
                 self.$emit('zoomModeStart', selectedVarIds);

@@ -8,7 +8,6 @@
         left: 0;
         width: 100%;
         height: 100%;
-        /*background-color: rgba(0, 0, 0, .5);*/
         display: table;
         transition: opacity .3s ease;
     }
@@ -24,8 +23,8 @@
         box-shadow: 2px 4px rgba(0, 0, 0, .2);
         transition: all .3s ease;
         max-height: 235px;
-        overflow-y: hidden;
-        position: relative;
+        overflow-y: scroll;
+        /*position: relative;*/
     }
 
     .modal-header {
@@ -86,49 +85,58 @@
 </style>
 
 <template>
-    <transition name="modal">
-        <div class="modal-mask">
-            <div class="modal-wrapper">
-                <div class="modal-container" v-bind:style="{ width: modalWidth + 'px', marginLeft: modalXStart + 'px'}">
-                    <div class="modal-header">
-                        <slot name="header">
-                            <div>
-                                <v-layout>
-                                    <v-flex xs6>
-                                        <div class="modal-title">
-                                            Selected Variants
-                                        </div>
-                                    </v-flex>
-                                    <v-flex xs6 text-xs-right>
-                                        <v-btn class="close-button" icon
-                                               @click="resetModal">
-                                            <v-icon color="white">clear</v-icon>
-                                        </v-btn>
-                                    </v-flex>
-                                </v-layout>
-                            </div>
-                        </slot>
-                    </div>
-                    <div class="modal-body">
-                        <slot name="body">
-                            <div class="selected-variant-viz"></div>
-                        </slot>
-                    </div>
-                    <div>
-                        <slot name="footer">
-                        </slot>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </transition>
+    <modal name="zoomModal">
+        test
+    </modal>
+    <!--<transition name="modal">-->
+    <!--<div class="modal-mask">-->
+    <!--<div class="modal-wrapper">-->
+    <!--<div class="modal-container"-->
+    <!--v-bind:style="{ width: modalWidth + 'px', marginLeft: modalXStart + 'px'}">-->
+    <!--<div class="modal-header">-->
+    <!--<slot name="header">-->
+    <!--<div>-->
+    <!--<v-layout>-->
+    <!--<v-flex xs6>-->
+    <!--<div class="modal-title">-->
+    <!--Selected Variants-->
+    <!--</div>-->
+    <!--</v-flex>-->
+    <!--<v-flex xs6 text-xs-right>-->
+    <!--<v-btn class="close-button" icon-->
+    <!--@click="resetModal">-->
+    <!--<v-icon color="white">clear</v-icon>-->
+    <!--</v-btn>-->
+    <!--</v-flex>-->
+    <!--</v-layout>-->
+    <!--</div>-->
+    <!--</slot>-->
+    <!--</div>-->
+    <!--<div class="modal-body">-->
+    <!--<slot name="body">-->
+    <!--<div class="selected-variant-viz"></div>-->
+    <!--</slot>-->
+    <!--</div>-->
+    <!--<div>-->
+    <!--<slot name="footer">-->
+    <!--</slot>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</transition>-->
 </template>
 
 
 <script>
+
+    import VModal from 'vue-js-modal'
+
     export default {
         name: 'zoom-modal-viz',
-        components: {},
+        components: {
+            VModal
+        },
         props: {
             modalWidth: {
                 default: 100,
@@ -202,6 +210,9 @@
             }
         },
         methods: {
+            showModal: function () {
+                this.$modal.show('zoomModal');
+            },
             resetModal: function () {
                 this.$emit('closeModal');
             },
@@ -209,7 +220,7 @@
                 let self = this;
                 this.selectionVarChart = variantD3()
                     .width(this.modalWidth)
-                    .clazz(function(variant) {
+                    .clazz(function (variant) {
                         return self.classifySymbolFunc(variant, self.annotationScheme, self.model.getName());
                     })
                     .margin(this.margin)
@@ -222,16 +233,16 @@
                     .tooltipHTML(this.tooltipHTML)
                     .regionStart(this.regionStart)
                     .regionEnd(this.regionEnd)
-                    .on("d3rendered", function() {
+                    .on("d3rendered", function () {
                         //self.$emit("trackRendered");
                     })
-                    .on('d3click', function(variant) {
+                    .on('d3click', function (variant) {
                         self.onVariantClick(variant);
                     })
-                    .on('d3mouseover', function(variant) {
+                    .on('d3mouseover', function (variant) {
                         //self.onVariantHover(variant);
                     })
-                    .on('d3mouseout', function() {
+                    .on('d3mouseout', function () {
                         //self.onVariantHoverEnd();
                     });
             },
@@ -277,7 +288,7 @@
                 this.$emit('updateVariantChart', this.model);
             }
         },
-        mounted: function() {
+        mounted: function () {
             let self = this;
             self.draw();
             self.update();

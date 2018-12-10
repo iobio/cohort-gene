@@ -1,4 +1,5 @@
 import jQuery from 'jquery'
+import VModal from 'vue-js-modal'
 
 global.jQuery = jQuery
 global.$ = jQuery
@@ -14,7 +15,8 @@ import Home from './components/pages/Home.vue'
 import bootstrap from 'bootstrap/dist/css/bootstrap.css'
 import {Typeahead} from 'uiv'
 
-Vue.use(Typeahead)
+Vue.use(Typeahead);
+Vue.use(VModal);
 
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.css'
