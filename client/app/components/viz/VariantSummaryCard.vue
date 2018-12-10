@@ -235,6 +235,7 @@
                                       ref="summaryFrequencyViz"
                                       :selectedVariant="variant"
                                       :oneKGenomes="oneKGenomes"
+                                      :gnomad="gnomad"
                                       :exAc="exAc"
                                       :affectedProbandCount="affectedProbandCount"
                                       :affectedSubsetCount="affectedSubsetCount"
@@ -448,6 +449,16 @@
             oneKGenomes: function () {
                 if (this.variant != null && this.variant.af1000G != null)
                     return Math.round(this.variant.af1000G * 100) + "%";
+                return "-";
+            },
+            gnomad: function () {
+                if (this.variant != null && this.variant.afgnomAD != null) {
+                    if (this.variant.afgnomAD !== '.' && this.variant.afgnomAD !== '') {
+                        return Math.round(this.variant.afgnomAD * 100) + "%";
+                    } else {
+                        return '0%';
+                    }
+                }
                 return "-";
             },
             exAc: function () {
