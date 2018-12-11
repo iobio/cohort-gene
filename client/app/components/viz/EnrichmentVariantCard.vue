@@ -382,7 +382,8 @@ Updated: SJG Dec2018
                         width: graphWidth + 'px',
                         height: 'auto',
                         scrollable: true,
-                        transition: 'modal'
+                        transition: 'modal',
+                        pivotX: 0.10
                     });
                 self.hideVariantCircle();
             },
