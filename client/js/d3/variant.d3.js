@@ -722,7 +722,6 @@ function variantD3() {
         return chart;
     };
 
-
     chart.regionStart = function(_) {
         if (!arguments.length) return regionStart;
         regionStart = _;
@@ -800,7 +799,6 @@ function variantD3() {
         tooltipHTML = _;
         return chart;
     }
-
 
     chart.showCircle = function(_) {
         if (!arguments.length) return showCircle;

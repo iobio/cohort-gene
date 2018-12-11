@@ -16,7 +16,7 @@ import bootstrap from 'bootstrap/dist/css/bootstrap.css'
 import {Typeahead} from 'uiv'
 
 Vue.use(Typeahead);
-Vue.use(VModal);
+Vue.use(VModal, { dynamic: true, injectModalsContainer: true });
 
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.css'

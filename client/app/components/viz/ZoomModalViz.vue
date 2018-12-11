@@ -1,22 +1,6 @@
-<!-- SJG updated Jul2018 -->
+<!-- SJG updated Dec2018 -->
 
 <style lang="css">
-    .modal-mask {
-        position: fixed;
-        z-index: 9998;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: table;
-        transition: opacity .3s ease;
-    }
-
-    .modal-wrapper {
-        display: table-cell;
-        vertical-align: middle;
-    }
-
     .modal-container {
         background-color: #fff;
         border: double 1px;
@@ -37,7 +21,7 @@
 
     .modal-title {
         font-family: Quicksand;
-        font-size: 16px;
+        font-size: 18px;
         padding-top: 5px;
     }
 
@@ -56,27 +40,6 @@
         padding: 0;
     }
 
-    .modal-default-button {
-        float: right;
-    }
-
-    /*
-     * The following styles are auto-applied to elements with
-     * transition="modal" when their visibility is toggled
-     * by Vue.js.
-     *
-     * You can easily play with the modal transition by editing
-     * these styles.
-     */
-
-    .modal-enter {
-        opacity: 0;
-    }
-
-    .modal-leave-active {
-        opacity: 0;
-    }
-
     .modal-enter .modal-container,
     .modal-leave-active .modal-container {
         -webkit-transform: scale(1.1);
@@ -85,46 +48,36 @@
 </style>
 
 <template>
-    <modal name="zoomModal">
-        test
-    </modal>
-    <!--<transition name="modal">-->
-    <!--<div class="modal-mask">-->
-    <!--<div class="modal-wrapper">-->
-    <!--<div class="modal-container"-->
-    <!--v-bind:style="{ width: modalWidth + 'px', marginLeft: modalXStart + 'px'}">-->
-    <!--<div class="modal-header">-->
-    <!--<slot name="header">-->
-    <!--<div>-->
-    <!--<v-layout>-->
-    <!--<v-flex xs6>-->
-    <!--<div class="modal-title">-->
-    <!--Selected Variants-->
-    <!--</div>-->
-    <!--</v-flex>-->
-    <!--<v-flex xs6 text-xs-right>-->
-    <!--<v-btn class="close-button" icon-->
-    <!--@click="resetModal">-->
-    <!--<v-icon color="white">clear</v-icon>-->
-    <!--</v-btn>-->
-    <!--</v-flex>-->
-    <!--</v-layout>-->
-    <!--</div>-->
-    <!--</slot>-->
-    <!--</div>-->
-    <!--<div class="modal-body">-->
-    <!--<slot name="body">-->
-    <!--<div class="selected-variant-viz"></div>-->
-    <!--</slot>-->
-    <!--</div>-->
-    <!--<div>-->
-    <!--<slot name="footer">-->
-    <!--</slot>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--</div>-->
-    <!--</transition>-->
+    <div class="modal-container">
+        <div class="modal-header">
+            <slot name="header">
+                <div>
+                    <v-layout>
+                        <v-flex xs6>
+                            <div class="modal-title">
+                                Selected Variants
+                            </div>
+                        </v-flex>
+                        <!--<v-flex xs6 text-xs-right>-->
+                            <!--<v-btn class="close-button" icon-->
+                                   <!--@click="closeModal">-->
+                                <!--<v-icon color="white">clear</v-icon>-->
+                            <!--</v-btn>-->
+                        <!--</v-flex>-->
+                    </v-layout>
+                </div>
+            </slot>
+        </div>
+        <div class="modal-body">
+            <slot name="body">
+                <div class="selected-variant-viz"></div>
+            </slot>
+        </div>
+        <div>
+            <slot name="footer">
+            </slot>
+        </div>
+    </div>
 </template>
 
 
@@ -210,11 +163,9 @@
             }
         },
         methods: {
-            showModal: function () {
-                this.$modal.show('zoomModal');
-            },
-            resetModal: function () {
-                this.$emit('closeModal');
+            closeModal: function () {
+                // this.$modal.hide('zoom-modal-viz');
+                // this.$emit('closeModal');
             },
             draw: function () {
                 let self = this;

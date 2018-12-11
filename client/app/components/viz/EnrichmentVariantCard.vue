@@ -64,6 +64,9 @@ Updated: SJG Apr2018
                 top: -3px
 </style>
 <style lang="css">
+    .v--modal-overlay[data-modal="zoom-modal-viz"] {
+        background: transparent;
+    }
 </style>
 <template>
     <v-card tile id="variant-card" class="app-card">
@@ -76,7 +79,8 @@ Updated: SJG Apr2018
             <v-layout text-xs-right>
                 <v-flex>
                     <v-chip v-bind:class="{hide: !zoomMode}" style="margin: 0; font-size: 12px"
-                            @input="toggleZoomMode" close small outline color="cohortPeriwinkle">Zoom Mode: On</v-chip>
+                            @input="toggleZoomMode" close small outline color="cohortPeriwinkle">Zoom Mode: On
+                    </v-chip>
                     <v-menu v-bind:class="{hide: !doneLoadingData}">
                         <v-btn outline round slot="activator" color="cohortDarkBlue" style="margin: 0; font-size: 12px">
                             Display Options
@@ -138,24 +142,24 @@ Updated: SJG Apr2018
                           :showBrush="false"
                           :featureClass="getExonClass">
                 </gene-viz>
-                <zoom-modal-viz id="zoom-viz"
-                            ref="zoomVizRef"
-                            :modalWidth="zoomWidth"
-                            :modalXStart="zoomX"
-                            :model="subsetCohort"
-                            :data="subsetCohort.selectedVariants"
-                            :regionStart="regionStart"
-                            :regionEnd="regionEnd"
-                            :annotationScheme="annotationScheme"
-                            :margin="variantVizMargin"
-                            :variantHeight="variantSymbolHeight"
-                            :variantPadding="variantSymbolPadding"
-                            :showXAxis="true"
-                            :classifySymbolFunc="classifyZoomSymbolFunc"
-                            :doneLoadingData="doneLoadingData"
-                            @variantClick="onVariantClick"
-                            @closeModal="closeModal">
-                </zoom-modal-viz>
+                <!--<zoom-modal-viz id="zoom-viz"-->
+                                <!--ref="zoomVizRef"-->
+                                <!--:modalWidth="zoomWidth"-->
+                                <!--:modalXStart="zoomX"-->
+                                <!--:model="subsetCohort"-->
+                                <!--:data="subsetCohort.selectedVariants"-->
+                                <!--:regionStart="regionStart"-->
+                                <!--:regionEnd="regionEnd"-->
+                                <!--:annotationScheme="annotationScheme"-->
+                                <!--:margin="variantVizMargin"-->
+                                <!--:variantHeight="variantSymbolHeight"-->
+                                <!--:variantPadding="variantSymbolPadding"-->
+                                <!--:showXAxis="true"-->
+                                <!--:classifySymbolFunc="classifyZoomSymbolFunc"-->
+                                <!--:doneLoadingData="doneLoadingData"-->
+                                <!--@variantClick="onVariantClick"-->
+                                <!--@closeModal="closeModal">-->
+                <!--</zoom-modal-viz>-->
             </div>
         </v-card-title>
     </v-card>
@@ -258,7 +262,7 @@ Updated: SJG Apr2018
                 if (this.zoomMode) return 'Exit Zoom';
                 else return 'Zoom';
             },
-            validSourceFiles: function() {
+            validSourceFiles: function () {
                 let self = this;
                 let files = [];
                 if (self.dataSetModel != null) {
@@ -266,7 +270,7 @@ Updated: SJG Apr2018
                 }
                 self.formattedValidFiles = self.formatAndSortPhaseFiles(files);
             },
-            invalidSourceFiles: function() {
+            invalidSourceFiles: function () {
                 let self = this;
                 let files = [];
                 if (self.dataSetModel != null) {
@@ -274,7 +278,7 @@ Updated: SJG Apr2018
                 }
                 self.formattedInvalidFiles = self.formatAndSortPhaseFiles(files);
             },
-            invalidSourceReasons: function() {
+            invalidSourceReasons: function () {
                 let self = this;
                 let reasons = [];
                 if (self.dataSetModel != null) {
@@ -293,16 +297,16 @@ Updated: SJG Apr2018
                 self.impactMode = false;
                 self.doneLoadingData = false;
             },
-            validSourceFiles: function() {
+            validSourceFiles: function () {
                 let self = this;
                 // Sort valid files
                 self.formattedValidFiles = self.formatAndSortPhaseFiles(self.validSourceFiles);
             },
-            invalidSourceFiles: function() {
+            invalidSourceFiles: function () {
                 let self = this;
                 self.formattedInvalidFiles = self.formatAndSortPhaseFiles(self.invalidSourceFiles);
             },
-            invalidSourceReasons: function() {
+            invalidSourceReasons: function () {
                 let self = this;
 
                 let sortedInvalidReasons = [];
@@ -320,7 +324,7 @@ Updated: SJG Apr2018
         methods: {
             /* Formats the file name provided if it is a known phase file. NOTE: this is based on names
              * and ideally will be changed to a db field. */
-            formatAndSortPhaseFiles: function(files) {
+            formatAndSortPhaseFiles: function (files) {
                 let formattedFileNames = [];
                 files.forEach((fileName) => {
                     if (fileName === '2018-03-18_all.vcf.gz') {
@@ -377,16 +381,30 @@ Updated: SJG Apr2018
             onVariantZoom: function (selectedVarIds, xStart, yStart, drawBelow, graphWidth) {
                 let self = this;
 
-                // Set modal properties to be utilized on creation
-                self.zoomWidth = +graphWidth;
-                self.zoomX = +xStart;
-
-                // Render zoom modal
-                self.$refs.zoomVizRef.showModal();
-                //self.showZoomModal = true;
-
                 // Start pileup of selected variants
                 self.$emit('zoomModeStart', selectedVarIds);
+
+                self.$modal.show(ZoomModalViz, {
+                        model: self.subsetCohort,
+                        data: self.subsetCohort.selectedVariants,
+                        regionStart: self.regionStart,
+                        regionEnd: self.regionEnd,
+                        annotationScheme: self.annotationScheme,
+                        margin: self.variantVizMargin,
+                        variantHeight: self.variantSymbolHeight,
+                        variantPadding: self.variantSymbolPadding,
+                        showXAxis: true,
+                        classifySymbolFunc: self.classifyZoomSymbolFunc,
+                        doneLoadingData: self.doneLoadingData,
+                        modalWidth: graphWidth
+                    },
+                    {
+                        draggable: '.modal-header',
+                        width: graphWidth + 'px',
+                        height: 'auto',
+                        scrollable: true,
+                        transition: 'modal'
+                    });
                 self.hideVariantCircle();
             },
             clearZoom: function () {
@@ -480,7 +498,7 @@ Updated: SJG Apr2018
                     self.$refs.subsetVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.subsetVizRef.name));
                 }
             },
-            getZoomSVG: function() {
+            getZoomSVG: function () {
                 let parentId = d3.select(this.$refs.zoomVizRef.$el).node().id;
                 let svg = d3.select('#' + parentId).select('svg');
                 return svg;
@@ -564,12 +582,15 @@ Updated: SJG Apr2018
                 self.showZoomModal = false;
             },
             // TODO: modify this as needed for cohort - check out filter model first
-            onFilterSettingsApplied: function() {
+            onFilterSettingsApplied: function () {
                 let self = this;
                 self.customFilters = [];
                 for (let filterName in self.filterModel.flagCriteria) {
                     if (self.filterModel.flagCriteria[filterName].active && self.filterModel.flagCriteria[filterName].custom) {
-                        self.customFilters.push({name: filterName, display: self.filterModel.flagCriteria[filterName].name});
+                        self.customFilters.push({
+                            name: filterName,
+                            display: self.filterModel.flagCriteria[filterName].name
+                        });
                     }
                 }
                 this.$emit('filter-settings-applied');
