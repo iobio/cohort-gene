@@ -222,14 +222,19 @@
                 }
             },
             onVariantClick: function (variant) {
-                let self = this;
-                let cohortKey = 's0';   // NOTE: hardcoding b/c only cohort track may zoom for now
-                self.$emit("variantClick", variant, cohortKey);
+                // NOTE: had to do this horrible reaching to accommodate draggable vue-js-modal
+                // - if modal draggability becomes native to vuetify in future can get rid of this garbage
+                if (this.$root && this.$root.$children && this.$root.$children[0] && this.$root.$children[0].$children && this.$root.$children[0].$children[0]
+                        && this.$root.$children[0].$children[0].$children && this.$root.$children[0].$children[0].$children[0]
+                        && this.$root.$children[0].$children[0].$children[0])
+                this.$root.$children[0].$children[0].$children[0].onZoomClick(variant);
+                this.showVariantCircle(variant, true);
             },
-            showVariantCircle: function (variant, container, lock) {
+            showVariantCircle: function (variant, lock) {
+                let svg = d3.select(this.$el).select('svg');
                 this.selectionVarChart.showCircle()(variant,
-                    container,
-                    variant.fbCalled && variant.fbCalled === 'Y',
+                    svg,
+                    false,
                     lock);
             },
             hideVariantCircle: function (container) {

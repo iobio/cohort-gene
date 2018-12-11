@@ -59,6 +59,7 @@ TD & SJG updated Nov2018 -->
                                     :doneLoadingData="doneLoadingData"
                                     :doneLoadingExtras="doneLoadingExtras"
                                     :doubleMode="true"
+                                    @variantClick="onVariantClick"
                                     @dataSetVariantClick="onDataSetVariantClick"
                                     @dataSetVariantClickEnd="onDataSetVariantClickEnd"
                                     @dataSetVariantHover="onDataSetVariantHover"
@@ -502,7 +503,10 @@ TD & SJG updated Nov2018 -->
                 this.filterModel.regionEnd = null;
                 this.variantModel.setLoadedVariants(this.selectedGene);
             },
-            onDataSetVariantClick: function (variant, sourceComponent, dataSetKey) {
+            onVariantClick: function() {
+              alert('test test');
+            },
+            onDataSetVariantClick: function (variant, dataSetKey) {
                 let self = this;
 
                 if (variant) {
@@ -752,6 +756,12 @@ TD & SJG updated Nov2018 -->
                 let params = Qs.parse(self.$route.query);
                 let {filter} = params;
                 return filter;
+            },
+            onZoomClick: function(variant) {
+                // Work around for vue-js-modal implementation
+                let self = this;
+                let cohortKey = 's0';   // Hard-coding for now since only cohort track can be zoomed
+                self.onDataSetVariantClick(variant, cohortKey);
             },
             onFilterSettingsApplied: function () {
                 // TODO: implement this - pass info to filter model
