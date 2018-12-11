@@ -262,55 +262,32 @@ function scaledVariantD3() {
         svgContainer.remove();
     }
 
-    var switchSelectedColorScheme = function (zoomMode, impactMode) {
+    var switchSelectedColorScheme = function (zoomMode) {
         if (zoomMode) {
             // Remove impact or enrichment coloring
-            if (impactMode) {
-                selectedVariants.classed('impact_HIGH', false);
-                selectedVariants.classed('impact_MODERATE', false);
-                selectedVariants.classed('impact_MODIFIER', false);
-                selectedVariants.classed('impact_LOW', false);
-                selectedVariants.classed('impact_none', false);
-            }
-            else {
-                selectedVariants.classed('enrichment_subset_UP', false);
-                selectedVariants.classed('enrichment_subset_DOWN', false);
-                selectedVariants.classed('enrichment_LOW', false);
-                selectedVariants.classed('enrichment_NA', false);
-            }
+            selectedVariants.classed('impact_HIGH', false);
+            selectedVariants.classed('impact_MODERATE', false);
+            selectedVariants.classed('impact_MODIFIER', false);
+            selectedVariants.classed('impact_LOW', false);
+            selectedVariants.classed('impact_none', false);
+
             // Turn on selected coloring
             selectedVariants.classed('zoom_selected', true);
-        }
-
-        else if (impactMode) {
+        } else {
             // Turn off selected coloring
             selectedVariants.classed('zoom_selected', false);
 
             // Turn impact coloring back on
-            let highVars = selectedVariants.filter(".iHIGH");
+            let highVars = selectedVariants.filter(".HIGH");
             highVars.classed('impact_HIGH', true);
-            let moderateVars = selectedVariants.filter(".iMODERATE");
+            let moderateVars = selectedVariants.filter(".MODERATE");
             moderateVars.classed('impact_MODERATE', true);
-            let modifierVars = selectedVariants.filter(".iMODIFIER");
+            let modifierVars = selectedVariants.filter(".MODIFIER");
             modifierVars.classed('impact_MODIFIER', true);
-            let lowVars = selectedVariants.filter(".iLOW");
+            let lowVars = selectedVariants.filter(".LOW");
             lowVars.classed('impact_LOW', true);
-            let noVars = selectedVariants.filter(".iNONE");
+            let noVars = selectedVariants.filter(".NONE");
             noVars.classed('impact_none', true);
-        }
-        else {
-            // Turn off selected coloring
-            selectedVariants.classed('zoom_selected', false);
-
-            // Turn enrichment coloring back on
-            let enrichUp = selectedVariants.filter(".eUP");
-            enrichUp.classed('enrichment_subset_UP', true);
-            let enrichDown = selectedVariants.filter(".eDOWN");
-            enrichDown.classed('enrichment_subset_DOWN', true);
-            let enrichLow = selectedVariants.filter(".eLOW");
-            enrichLow.classed('enrichment_LOW', true);
-            let enrichNotApplic = selectedVariants.filter(".eNA");
-            enrichNotApplic.classed('enrichment_NA', true);
         }
     };
 
@@ -334,75 +311,91 @@ function scaledVariantD3() {
         let lowVars = varsToSwitch.filter(".iLOW");
         let noVars = varsToSwitch.filter(".iNONE");
 
-        let enrichUp = varsToSwitch.filter(".eUP");
-        let enrichDown = varsToSwitch.filter(".eDOWN");
-        let enrichLow = varsToSwitch.filter(".eLOW");
-        let enrichNotApplic = varsToSwitch.filter(".eNA");
+        highVars.classed({
+            'impact_HIGH': true
+        });
+        moderateVars.classed({
+            'impact_MODERATE': true
+        });
+        modifierVars.classed({
+            'impact_MODIFIER': true
+        });
+        lowVars.classed({
+            'impact_LOW': true
+        });
+        noVars.classed({
+            'impact_none': true
+        });
 
-        if (enrichmentMode) {
-            // Remove impact color scheme
-            highVars.classed({
-                'impact_HIGH': false
-            });
-            moderateVars.classed({
-                'impact_MODERATE': false
-            });
-            modifierVars.classed({
-                'impact_MODIFIER': false
-            });
-            lowVars.classed({
-                'impact_LOW': false
-            });
-            noVars.classed({
-                'impact_none': false
-            });
+        // let enrichUp = varsToSwitch.filter(".eUP");
+        // let enrichDown = varsToSwitch.filter(".eDOWN");
+        // let enrichLow = varsToSwitch.filter(".eLOW");
+        // let enrichNotApplic = varsToSwitch.filter(".eNA");
 
-            // Turn on enrichment color scheme
-            enrichUp.classed({
-                'enrichment_subset_UP': true
-            });
-            enrichDown.classed({
-                'enrichment_subset_DOWN': true
-            });
-            enrichLow.classed({
-                'enrichment_LOW': true
-            });
-            enrichNotApplic.classed({
-                'enrichment_NA': true
-            });
-        }
+        // if (enrichmentMode) {
+        //     // Remove impact color scheme
+        //     highVars.classed({
+        //         'impact_HIGH': false
+        //     });
+        //     moderateVars.classed({
+        //         'impact_MODERATE': false
+        //     });
+        //     modifierVars.classed({
+        //         'impact_MODIFIER': false
+        //     });
+        //     lowVars.classed({
+        //         'impact_LOW': false
+        //     });
+        //     noVars.classed({
+        //         'impact_none': false
+        //     });
+        //
+        //     // Turn on enrichment color scheme
+        //     enrichUp.classed({
+        //         'enrichment_subset_UP': true
+        //     });
+        //     enrichDown.classed({
+        //         'enrichment_subset_DOWN': true
+        //     });
+        //     enrichLow.classed({
+        //         'enrichment_LOW': true
+        //     });
+        //     enrichNotApplic.classed({
+        //         'enrichment_NA': true
+        //     });
+        // }
 
-        else {
-            // Turn off enrichment color scheme
-            enrichUp.classed({
-                'enrichment_subset_UP': false
-            });
-            enrichDown.classed({
-                'enrichment_subset_DOWN': false
-            });
-            enrichLow.classed({
-                'enrichment_LOW': false
-            });
-            enrichNotApplic.classed({
-                'enrichment_NA': false
-            });
+        //else {
+            // // Turn off enrichment color scheme
+            // enrichUp.classed({
+            //     'enrichment_subset_UP': false
+            // });
+            // enrichDown.classed({
+            //     'enrichment_subset_DOWN': false
+            // });
+            // enrichLow.classed({
+            //     'enrichment_LOW': false
+            // });
+            // enrichNotApplic.classed({
+            //     'enrichment_NA': false
+            // });
             // Turn on impact color scheme
-            highVars.classed({
-                'impact_HIGH': true
-            });
-            moderateVars.classed({
-                'impact_MODERATE': true
-            });
-            modifierVars.classed({
-                'impact_MODIFIER': true
-            });
-            lowVars.classed({
-                'impact_LOW': true
-            });
-            noVars.classed({
-                'impact_none': true
-            });
-        }
+            // highVars.classed({
+            //     'impact_HIGH': true
+            // });
+            // moderateVars.classed({
+            //     'impact_MODERATE': true
+            // });
+            // modifierVars.classed({
+            //     'impact_MODIFIER': true
+            // });
+            // lowVars.classed({
+            //     'impact_LOW': true
+            // });
+            // noVars.classed({
+            //     'impact_none': true
+            // });
+        //}
     };
 
     function chart(selection, options) {

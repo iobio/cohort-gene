@@ -64,9 +64,6 @@ Updated: SJG Dec2018
                 top: -3px
 </style>
 <style lang="css">
-    .v--modal-overlay[data-modal="zoom-modal-viz"] {
-        background: transparent;
-    }
 </style>
 <template>
     <v-card tile id="variant-card" class="app-card">
@@ -498,17 +495,17 @@ Updated: SJG Dec2018
                 let self = this;
                 if (self.showDepthViz && self.sampleModel.coverage != null) {
                     let theDepth = null;
-                    if (variant.bamDepth != null && variant.bamDepth != '') {
+                    if (variant.bamDepth != null && variant.bamDepth !== '') {
                         theDepth = variant.bamDepth;
                     } else {
-                        var matchingVariants = self.sampleModel.loadedVariants.features.filter(function (v) {
-                            return v.start == variant.start && v.alt == variant.alt && v.ref == variant.ref;
-                        })
+                        var matchingVariants = self.dataSetModel.loadedVariants.features.filter(function (v) {
+                            return v.start === variant.start && v.alt === variant.alt && v.ref === variant.ref;
+                        });
                         if (matchingVariants.length > 0) {
                             theDepth = matchingVariants[0].bamDepth;
                             // If samtools mpileup didn't return coverage for this position, use the variant's depth
                             // field.
-                            if (theDepth == null || theDepth == '') {
+                            if (theDepth == null || theDepth === '') {
                                 theDepth = matchingVariants[0].genotypeDepth;
                             }
                         }
@@ -534,9 +531,6 @@ Updated: SJG Dec2018
             switchColorScheme: function () {
                 let self = this;
 
-                // if (self.$refs.probandVizRef != null) {
-                //     self.$refs.probandVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.probandVizRef.name));
-                // }
                 if (self.$refs.subsetVizRef != null) {
                     self.$refs.subsetVizRef.changeVariantColorScheme(!self.impactMode, self.getVariantSVG(self.$refs.subsetVizRef.name));
                 }

@@ -407,7 +407,7 @@ TD & SJG updated Apr2018 -->
                     } else {
                         var matchingVariants = self.dataSetModel.loadedVariants.features.filter(function (v) {
                             return v.start === variant.start && v.alt === variant.alt && v.ref === variant.ref;
-                        })
+                        });
                         if (matchingVariants.length > 0) {
                             theDepth = matchingVariants[0].bamDepth;
                             // If samtools mpileup didn't return coverage for this position, use the variant's depth
