@@ -1,6 +1,6 @@
 <!--
 Encapsulates Variant card
-Updated: SJG Apr2018
+Updated: SJG Dec2018
 -->
 <style lang="sass">
     @import ../../../assets/sass/variables
@@ -142,24 +142,6 @@ Updated: SJG Apr2018
                           :showBrush="false"
                           :featureClass="getExonClass">
                 </gene-viz>
-                <!--<zoom-modal-viz id="zoom-viz"-->
-                                <!--ref="zoomVizRef"-->
-                                <!--:modalWidth="zoomWidth"-->
-                                <!--:modalXStart="zoomX"-->
-                                <!--:model="subsetCohort"-->
-                                <!--:data="subsetCohort.selectedVariants"-->
-                                <!--:regionStart="regionStart"-->
-                                <!--:regionEnd="regionEnd"-->
-                                <!--:annotationScheme="annotationScheme"-->
-                                <!--:margin="variantVizMargin"-->
-                                <!--:variantHeight="variantSymbolHeight"-->
-                                <!--:variantPadding="variantSymbolPadding"-->
-                                <!--:showXAxis="true"-->
-                                <!--:classifySymbolFunc="classifyZoomSymbolFunc"-->
-                                <!--:doneLoadingData="doneLoadingData"-->
-                                <!--@variantClick="onVariantClick"-->
-                                <!--@closeModal="closeModal">-->
-                <!--</zoom-modal-viz>-->
             </div>
         </v-card-title>
     </v-card>
@@ -594,6 +576,12 @@ Updated: SJG Apr2018
                     }
                 }
                 this.$emit('filter-settings-applied');
+            },
+            refreshVariantColors: function() {
+                let self = this;
+                if (self.$refs.subsetVizRef) {
+                    self.$refs.subsetVizRef.refreshVariantColors();
+                }
             }
         }
     }

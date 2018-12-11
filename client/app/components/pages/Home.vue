@@ -39,12 +39,12 @@ TD & SJG updated Nov2018 -->
                         <div v-for="dataSet in allDataSets" v-if="showVariantCards">
                             <enrichment-variant-card
                                     v-if="!dataSet.isSingleSample"
-                                    ref="variantCardRef"
+                                    ref="enrichCardRef"
                                     :key="dataSet.id"
                                     :dataSetModel="dataSet"
                                     :filterModel="filterModel"
                                     :annotationScheme="variantModel.annotationScheme"
-                                    :classifyVariantSymbolFunc="variantModel.classifyByEnrichment"
+                                    :classifyVariantSymbolFunc="variantModel.classifyByImpact"
                                     :classifyZoomSymbolFunc="variantModel.classifyByImpact"
                                     :variantTooltip="variantTooltip"
                                     :selectedGene="selectedGene"
@@ -374,6 +374,11 @@ TD & SJG updated Nov2018 -->
                                         });
                                         self.updateClasses();
                                         self.doneLoadingExtras = true;
+                                        if (self.$refs.enrichCardRef) {
+                                            self.$refs.enrichCardRef.forEach((cardRef) => {
+                                                cardRef.refreshVariantColors();
+                                            })
+                                        }
                                     })
                             })
                             .catch(function (error) {
@@ -432,6 +437,11 @@ TD & SJG updated Nov2018 -->
                 self.doneLoadingExtras = false;
                 if (self.$refs.variantCardRef) {
                     self.$refs.variantCardRef.forEach((cardRef) => {
+                        cardRef.clearZoom();
+                    })
+                }
+                if (self.$refs.enrichCardRef) {
+                    self.$refs.enrichCardRef.forEach((cardRef) => {
                         cardRef.clearZoom();
                     })
                 }
@@ -516,6 +526,11 @@ TD & SJG updated Nov2018 -->
                             cardRef.showVariantCircle(variant);
                         });
                     }
+                    if (self.$refs.enrichCardRef) {
+                        self.$refs.enrichCardRef.forEach((cardRef) => {
+                            cardRef.showVariantCircle(variant);
+                        });
+                    }
 
                     // Query service for single variant annotation if we don't have details yet
                     if (!self.variantModel.extraAnnotationsLoaded && (dataSetKey === 's0' || dataSetKey === 'Hub')) {
@@ -573,10 +588,6 @@ TD & SJG updated Nov2018 -->
                     self.deselectVariant();
                 }
             },
-            onDataSetVariantClickEnd: function (sourceComponent) {
-                let self = this;
-                self.$refs.variantCardRef.hideVariantCircle();
-            },
             onDataSetVariantHover: function (variant, sourceComponent) {
                 let self = this;
                 if (self.$refs.variantCardRef != sourceComponent) {
@@ -595,7 +606,12 @@ TD & SJG updated Nov2018 -->
                 if (!keepVariantCircle && self.$refs.variantCardRef) {
                     self.$refs.variantCardRef.forEach((cardRef) => {
                         cardRef.hideVariantCircle();
-                    })
+                    });
+                    if (self.$refs.enrichCardRef) {
+                        self.$refs.enrichCardRef.forEach((cardRef) => {
+                            cardRef.hideVariantCircle();
+                        });
+                    }
                 }
             },
             startZoomMode: function (selectedVarIds) {

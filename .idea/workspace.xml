@@ -7,7 +7,11 @@
     <list default="true" id="17d38fed-e0f5-492f-b455-1d8321fb2586" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/app/components/pages/Home.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/pages/Home.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantCard.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantCard.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/app/components/viz/VariantViz.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/viz/VariantViz.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/app/models/VariantModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/models/VariantModel.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/assets/sass/_symbols.sass" beforeDir="false" afterPath="$PROJECT_DIR$/client/assets/sass/_symbols.sass" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/dist/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/dist/build.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/client/dist/" />
@@ -26,8 +30,8 @@
       <file leaf-file-name="Home.vue" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/app/components/pages/Home.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="49" column="64" lean-forward="true" selection-start-line="49" selection-start-column="64" selection-end-line="49" selection-end-column="64" />
+            <state relative-caret-position="537">
+              <caret line="378" column="79" lean-forward="true" selection-start-line="378" selection-start-column="79" selection-end-line="378" selection-end-column="79" />
             </state>
           </provider>
         </entry>
@@ -35,8 +39,8 @@
       <file leaf-file-name="EnrichmentVariantCard.vue" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantCard.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="476">
-              <caret line="501" column="75" selection-start-line="501" selection-start-column="75" selection-end-line="501" selection-end-column="75" />
+            <state relative-caret-position="744">
+              <caret line="582" column="67" selection-start-line="582" selection-start-column="67" selection-end-line="582" selection-end-column="67" />
               <folding>
                 <element signature="n#style#0;n#div#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
                 <element signature="e#7175#7236#0" expanded="true" />
@@ -45,11 +49,23 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ZoomModalViz.vue" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue">
+      <file leaf-file-name="EnrichmentVariantViz.vue" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="504">
-              <caret line="233" column="60" lean-forward="true" selection-start-line="233" selection-start-column="60" selection-end-line="233" selection-end-column="60" />
+            <state relative-caret-position="2695">
+              <caret line="388" column="13" lean-forward="true" selection-start-line="388" selection-start-column="13" selection-end-line="388" selection-end-column="13" />
+              <folding>
+                <element signature="n#style#0;n#v-chip#0;n#div#1;n#div#0;n#template#0;n#!!top" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="VariantViz.vue" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/client/app/components/viz/VariantViz.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="711">
+              <caret line="245" column="31" lean-forward="true" selection-start-line="245" selection-start-column="31" selection-end-line="245" selection-end-column="31" />
             </state>
           </provider>
         </entry>
@@ -73,8 +89,8 @@
       <file leaf-file-name="VariantModel.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/app/models/VariantModel.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="312">
-              <caret line="66" column="4" selection-start-line="66" selection-start-column="4" selection-end-line="66" selection-end-column="4" />
+            <state relative-caret-position="318">
+              <caret line="790" column="9" lean-forward="true" selection-start-line="790" selection-start-column="9" selection-end-line="790" selection-end-column="9" />
             </state>
           </provider>
         </entry>
@@ -117,12 +133,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>promiseinitfrom</find>
-      <find>genomebuild</find>
-      <find>genomeBuildHelper</find>
-      <find>buildName</find>
-      <find>refbuild</find>
-      <find>click</find>
       <find>cohortFieldsValid</find>
       <find>allele-freq</find>
       <find>gnomad</find>
@@ -147,6 +157,12 @@
       <find>ondataset</find>
       <find>sourceComponent</find>
       <find>enrichmentCard</find>
+      <find>extra</find>
+      <find>doneLoadingExtras</find>
+      <find>impact_none</find>
+      <find>variantCardRef</find>
+      <find>byimpact</find>
+      <find>fully</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/client/js/model</dir>
@@ -159,7 +175,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/client/app/components/partials/FilterIcon.vue" />
         <option value="$PROJECT_DIR$/client/app/components/partials/FilterSettingsCoverage.vue" />
         <option value="$PROJECT_DIR$/client/app/components/partials/FilterSettings.vue" />
         <option value="$PROJECT_DIR$/client/app/components/partials/FilterSettingsMenu.vue" />
@@ -176,8 +191,6 @@
         <option value="$PROJECT_DIR$/client/assets/sass/_variables.sass" />
         <option value="$PROJECT_DIR$/client/app/components/viz/UpdatedVariantCard.vue" />
         <option value="$PROJECT_DIR$/client/app/components/viz/UpdatedVariantViz.vue" />
-        <option value="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue" />
-        <option value="$PROJECT_DIR$/client/app/components/viz/VariantViz.vue" />
         <option value="$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js" />
         <option value="$PROJECT_DIR$/client/app/components/viz/BarFeatureViz.vue" />
         <option value="$PROJECT_DIR$/client/app/components/partials/Navigation.vue" />
@@ -201,15 +214,18 @@
         <option value="$PROJECT_DIR$/client/js/globalsDeployment.js" />
         <option value="$PROJECT_DIR$/client/app/models/CohortModel.js" />
         <option value="$PROJECT_DIR$/client/app/models/DataSetModel.js" />
-        <option value="$PROJECT_DIR$/client/app/models/VariantModel.js" />
         <option value="$PROJECT_DIR$/client/app/components/partials/FilesMenu.vue" />
         <option value="$PROJECT_DIR$/client/app/components/viz/AlleleFrequencyViz.vue" />
         <option value="$PROJECT_DIR$/client/app/routes.js" />
         <option value="$PROJECT_DIR$/client/app/components/viz/VariantSummaryCard.vue" />
         <option value="$PROJECT_DIR$/client/js/d3/variant.d3.js" />
+        <option value="$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue" />
+        <option value="$PROJECT_DIR$/client/assets/sass/_symbols.sass" />
+        <option value="$PROJECT_DIR$/client/app/models/VariantModel.js" />
         <option value="$PROJECT_DIR$/client/app/components/pages/Home.vue" />
         <option value="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantCard.vue" />
-        <option value="$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue" />
+        <option value="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue" />
+        <option value="$PROJECT_DIR$/client/app/components/viz/VariantViz.vue" />
       </list>
     </option>
   </component>
@@ -373,12 +389,12 @@
       <workItem from="1534733762579" duration="93552000" />
       <workItem from="1541186436650" duration="118751000" />
       <workItem from="1543944185263" duration="9803000" />
-      <workItem from="1544058694781" duration="45734000" />
+      <workItem from="1544058694781" duration="47238000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="923696000" />
+    <option name="totallyTimeSpent" value="925200000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1920" y="167" width="1920" height="1057" extended-state="6" />
@@ -417,13 +433,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/webpack.config.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="296">
-          <caret line="63" column="47" selection-start-line="63" selection-start-column="47" selection-end-line="63" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/server/express-app.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="288">
@@ -466,13 +475,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="96">
           <caret line="6" column="56" lean-forward="true" selection-start-line="6" selection-start-column="56" selection-end-line="6" selection-end-column="56" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/viz/VariantViz.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="561">
-          <caret line="323" column="30" lean-forward="true" selection-start-line="323" selection-start-column="30" selection-end-line="323" selection-end-column="30" />
         </state>
       </provider>
     </entry>
@@ -575,16 +577,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="638">
           <caret line="83" column="74" lean-forward="true" selection-start-line="83" selection-start-column="74" selection-end-line="83" selection-end-column="74" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="339">
-          <caret line="94" column="32" selection-start-line="94" selection-start-column="32" selection-end-line="94" selection-end-column="32" />
-          <folding>
-            <element signature="n#style#0;n#v-chip#0;n#div#1;n#div#0;n#template#0;n#!!top" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -809,27 +801,6 @@
     <entry file="file://$PROJECT_DIR$/client/app/App.vue">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/models/VariantModel.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="312">
-          <caret line="66" column="4" selection-start-line="66" selection-start-column="4" selection-end-line="66" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/models/DataSetModel.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="312">
-          <caret line="1652" column="4" selection-start-line="1652" selection-start-column="4" selection-end-line="1652" selection-end-column="4" />
-          <folding>
-            <element signature="e#191#233#0" expanded="true" />
-            <element signature="n#style#0;n#span#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#span#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#span#1;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#span#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/client/js/d3/variant.d3.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="432">
@@ -859,17 +830,52 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3096">
+          <caret line="233" column="60" lean-forward="true" selection-start-line="233" selection-start-column="60" selection-end-line="233" selection-end-column="60" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/models/DataSetModel.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="312">
+          <caret line="1652" column="4" selection-start-line="1652" selection-start-column="4" selection-end-line="1652" selection-end-column="4" />
+          <folding>
+            <element signature="e#191#233#0" expanded="true" />
+            <element signature="n#style#0;n#span#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#span#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#span#1;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#span#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/assets/sass/_symbols.sass">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="431">
+          <caret line="91" column="17" lean-forward="true" selection-start-line="91" selection-start-column="17" selection-end-line="91" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/models/VariantModel.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="318">
+          <caret line="790" column="9" lean-forward="true" selection-start-line="790" selection-start-column="9" selection-end-line="790" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/client/app/components/pages/Home.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="49" column="64" lean-forward="true" selection-start-line="49" selection-start-column="64" selection-end-line="49" selection-end-column="64" />
+        <state relative-caret-position="537">
+          <caret line="378" column="79" lean-forward="true" selection-start-line="378" selection-start-column="79" selection-end-line="378" selection-end-column="79" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantCard.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="501" column="75" selection-start-line="501" selection-start-column="75" selection-end-line="501" selection-end-column="75" />
+        <state relative-caret-position="744">
+          <caret line="582" column="67" selection-start-line="582" selection-start-column="67" selection-end-line="582" selection-end-column="67" />
           <folding>
             <element signature="n#style#0;n#div#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
             <element signature="e#7175#7236#0" expanded="true" />
@@ -877,10 +883,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue">
+    <entry file="file://$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="504">
-          <caret line="233" column="60" lean-forward="true" selection-start-line="233" selection-start-column="60" selection-end-line="233" selection-end-column="60" />
+        <state relative-caret-position="2695">
+          <caret line="388" column="13" lean-forward="true" selection-start-line="388" selection-start-column="13" selection-end-line="388" selection-end-column="13" />
+          <folding>
+            <element signature="n#style#0;n#v-chip#0;n#div#1;n#div#0;n#template#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/components/viz/VariantViz.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="711">
+          <caret line="245" column="31" lean-forward="true" selection-start-line="245" selection-start-column="31" selection-end-line="245" selection-end-column="31" />
         </state>
       </provider>
     </entry>

@@ -232,6 +232,10 @@
             frequencyDisplayMode: { // Controls what type of layout we have here
                 type: Boolean,
                 default: false
+            },
+            extraAnnotationsLoaded: {
+                type: Boolean,
+                default: false
             }
         },
         computed: {
@@ -264,7 +268,7 @@
                 this.variantChart = scaledVariantD3()
                     .width(this.width)
                     .clazz(function (variant) {
-                        return self.classifySymbolFunc(variant, self.annotationScheme);
+                        return self.classifySymbolFunc(variant, self.annotationScheme, true, self.extraAnnotationsLoaded);
                     })
                     .margin(self.margin)
                     .showXAxis(self.showXAxis)
@@ -377,6 +381,11 @@
             },
             clearVariants: function (svg) {
                 this.variantChart.clearVariants()(svg);
+            },
+            refreshVariantColors: function() {
+                let self = this;
+                self.extraAnnotationsLoaded = true;
+                this.update();
             }
         },
         watch: {

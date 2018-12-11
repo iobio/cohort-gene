@@ -784,7 +784,12 @@ class VariantModel {
             ' ' + d.consensus + ' ' + enrichment + ' ' + enrichColor;
     }
 
-    classifyByImpact(d, annotationScheme) {
+    classifyByImpact(d, annotationScheme, isEnrichmentTrack, extraAnnotationsLoaded) {
+        let emptyImpact = 'impact_none';
+        if (!extraAnnotationsLoaded && isEnrichmentTrack) {
+            emptyImpact = 'impact_TBD';
+        }
+
         let impacts = "";
         let colorimpacts = "";
         let effects = "";
@@ -813,7 +818,7 @@ class VariantModel {
             colorimpacts += " " + 'impact_' + key;
         }
         if (colorimpacts === "") {
-            colorimpacts = "impact_none";
+            colorimpacts = emptyImpact;
         }
         for (let key in d.sift) {
             sift += " " + key;
