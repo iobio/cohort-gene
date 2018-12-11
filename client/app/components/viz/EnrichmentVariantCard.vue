@@ -76,24 +76,17 @@ Updated: SJG Dec2018
                     <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 0">VARIANTS</span>
                 </v-flex>
             </v-layout>
-            <v-layout text-xs-right>
-                <v-flex>
-                    <v-chip v-bind:class="{hide: !zoomMode}" style="margin: 0; font-size: 12px"
-                            @input="toggleZoomMode" close small outline color="cohortPeriwinkle">Zoom Mode: On
-                    </v-chip>
-                    <v-menu v-bind:class="{hide: !doneLoadingData}">
-                        <v-btn outline round slot="activator" color="cohortDarkBlue" style="margin: 0; font-size: 12px">
-                            Display Options
-                        </v-btn>
-                        <v-list>
-                            <v-list-tile @click="toggleZoomMode">
-                                <v-list-tile-title>{{zoomModeText}}</v-list-tile-title>
-                            </v-list-tile>
-                            <v-list-tile v-bind:class="{hide: !doneLoadingExtras}" @click="toggleDisplayMode">
-                                <v-list-tile-title>{{displayModeText}}</v-list-tile-title>
-                            </v-list-tile>
-                        </v-list>
-                    </v-menu>
+            <v-layout text-xs-right align-right>
+                <v-flex xs9>
+                    <!--spacing-->
+                </v-flex>
+                <v-flex xs3>
+                    <v-switch label="Zoom Mode"
+                              hide-details
+                              color="cohortNavy"
+                              v-model="zoomMode"
+                              v-bind:class="{hide: !doneLoadingData}">
+                    </v-switch>
                 </v-flex>
             </v-layout>
             <div style="width:100%">
@@ -298,7 +291,14 @@ Updated: SJG Dec2018
                     sortedInvalidReasons.push(self.invalidSourceReasons[prevIndex]);
                 });
                 self.formattedInvalidReasons = sortedInvalidReasons;
-            }
+            },
+            zoomMode: function() {
+                if (this.zoomMode) {
+                    this.displayVariantBrush();
+                }
+                else {
+                    this.hideVariantBrush();
+                }            }
         },
         created: function () {
             this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
