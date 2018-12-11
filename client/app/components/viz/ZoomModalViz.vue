@@ -184,6 +184,7 @@
                     .tooltipHTML(this.tooltipHTML)
                     .regionStart(this.regionStart)
                     .regionEnd(this.regionEnd)
+                    .zoomVersion(true)
                     .on("d3rendered", function () {
                         //self.$emit("trackRendered");
                     })

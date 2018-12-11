@@ -33,6 +33,7 @@ function variantD3() {
         lowestWidth = 3,
         dividerLevel = null,
         container = null,
+        zoomVersion = false,
         clazz = null;
 
     //  options
@@ -282,30 +283,47 @@ function variantD3() {
                 var svg = container.selectAll("svg").data([0]);
 
 
-
-                svg.enter()
-                    .append("svg")
-                    .attr("width", widthPercent)
-                    .attr("height", heightPercent)
-                    .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + parseInt(width + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height + margin.top + margin.bottom))
-                    // .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom))
-                    .attr("preserveAspectRatio", "none")
-                    .append("g")
-                    .attr("class", "group")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                if (zoomVersion) {
+                    svg.enter()
+                        .append("svg")
+                        .attr("width", widthPercent)
+                        .attr("height", heightPercent)
+                        .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom))
+                        .attr("preserveAspectRatio", "none")
+                        .append("g")
+                        .attr("class", "group")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                } else {
+                    svg.enter()
+                        .append("svg")
+                        .attr("width", widthPercent)
+                        .attr("height", heightPercent)
+                        .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + parseInt(width + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height + margin.top + margin.bottom))
+                        // .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom))
+                        .attr("preserveAspectRatio", "none")
+                        .append("g")
+                        .attr("class", "group")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                }
 
                 var g = svg.select("g.group");
 
 
                 // The chart dimensions could change after instantiation, so update viewbox dimensions
                 // every time we draw the chart.
-                d3.select(this).selectAll("svg")
-                    .filter(function() {
-                        return this.parentNode === container.node();
-                    })
-                    .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + parseInt(width + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height + margin.top + margin.bottom));
-                // .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom));
-
+                if (zoomVersion) {
+                    d3.select(this).selectAll("svg")
+                        .filter(function() {
+                            return this.parentNode === container.node();
+                        })
+                        .attr('viewBox', "0 0 " + parseInt(width + margin.left + margin.right) + " " + parseInt(height + margin.top + margin.bottom));
+                } else {
+                    d3.select(this).selectAll("svg")
+                        .filter(function() {
+                            return this.parentNode === container.node();
+                        })
+                        .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + parseInt(width + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height + margin.top + margin.bottom));
+                }
 
                 // Add grouping for flagged variants
                 svg.select("g.flagged-variants").remove();
@@ -813,6 +831,12 @@ function variantD3() {
     chart.highlightVariant = function(_) {
         if (!arguments.length) return highlightVariant;
         highlightVariant = _;
+        return chart;
+    }
+
+    chart.zoomVersion = function (_) {
+        if (!arguments.length) return zoomVersion;
+        zoomVersion = _;
         return chart;
     }
 

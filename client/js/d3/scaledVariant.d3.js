@@ -39,7 +39,6 @@ function scaledVariantD3() {
         container = null,
         clazz = null,
         selectedVariants = [],
-        impactMode = false,
         availableVertSpace = 0;
 
     //  options
@@ -93,7 +92,7 @@ function scaledVariantD3() {
 
                 // Switch back any variants selected from last time
                 if (selectedVariants.length > 0) {
-                    switchSelectedColorScheme(false, impactMode);
+                    switchSelectedColorScheme(false);
                 }
 
                 // Get variants encompassed by brush box
@@ -114,7 +113,7 @@ function scaledVariantD3() {
                 // Only show modal if we've captured variants in our selection box
                 if (selectedVarIds.length > 0) {
                     // Change coloring on selected variants
-                    switchSelectedColorScheme(true, impactMode);
+                    switchSelectedColorScheme(true);
 
                     // Get position info to send into modal
                     let graphDimensions = container.select('svg').select('g.group').node().getBoundingClientRect();
@@ -293,7 +292,6 @@ function scaledVariantD3() {
     };
 
     var switchColorScheme = function (enrichmentMode, svgContainer) {
-        impactMode = !enrichmentMode;
         let variants = svgContainer.selectAll(".variant");
         let varsToSwitch = variants;
         if (selectedVariants.length > 0) {
@@ -523,7 +521,6 @@ function scaledVariantD3() {
 
                 // Select the svg element, if it exists.
                 var svg = container.selectAll("svg").data([0]);
-
                 svg.enter()
                     .append("svg")
                     .attr("width", widthPercent)
@@ -534,6 +531,7 @@ function scaledVariantD3() {
                     .attr("class", "group")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+
                 var g = svg.select("g.group");
 
                 // The chart dimensions could change after instantiation, so update viewbox dimensions
@@ -543,6 +541,7 @@ function scaledVariantD3() {
                         return this.parentNode === container.node();
                     })
                     .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + parseInt(width + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height + margin.top + margin.bottom));
+
 
 
                 // Add grouping for flagged variants
@@ -1110,12 +1109,6 @@ function scaledVariantD3() {
     chart.hideBrush = function (_) {
         if (!arguments.length) return hideBrush;
         hideBrush = _;
-        return chart;
-    };
-
-    chart.impactMode = function (_) {
-        if (!arguments.length) return impactMode;
-        impactMode = _;
         return chart;
     };
 
