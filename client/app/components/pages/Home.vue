@@ -61,7 +61,6 @@ TD & SJG updated Nov2018 -->
                                     :doubleMode="true"
                                     @variantClick="onVariantClick"
                                     @dataSetVariantClick="onDataSetVariantClick"
-                                    @dataSetVariantClickEnd="onDataSetVariantClickEnd"
                                     @dataSetVariantHover="onDataSetVariantHover"
                                     @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
                                     @knownVariantsVizChange="onKnownVariantsVizChange"
@@ -92,7 +91,6 @@ TD & SJG updated Nov2018 -->
                                     :doneLoadingExtras="doneLoadingExtras"
                                     :doubleMode="true"
                                     @dataSetVariantClick="onDataSetVariantClick"
-                                    @dataSetVariantClickEnd="onDataSetVariantClickEnd"
                                     @dataSetVariantHover="onDataSetVariantHover"
                                     @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
                                     @knownVariantsVizChange="onKnownVariantsVizChange"
@@ -435,15 +433,10 @@ TD & SJG updated Nov2018 -->
                 self.promiseLoadGene(geneName);
                 self.doneLoadingData = false;
                 self.doneLoadingExtras = false;
-                if (self.$refs.variantCardRef) {
-                    self.$refs.variantCardRef.forEach((cardRef) => {
-                        cardRef.clearZoom();
-                    })
-                }
                 if (self.$refs.enrichCardRef) {
-                    self.$refs.enrichCardRef.forEach((cardRef) => {
-                        cardRef.clearZoom();
-                    })
+                    self.$refs.enrichCardRef.forEach((card) => {
+                        card.resetZoom();
+                    });
                 }
             },
             wipeModels: function () {

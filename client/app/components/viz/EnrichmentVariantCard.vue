@@ -386,8 +386,9 @@ Updated: SJG Dec2018
                     });
                 self.hideVariantCircle();
             },
-            clearZoom: function () {
+            resetZoom: function () {
                 this.hideVariantBrush();
+                this.$refs.subsetVizRef.resetPreAnnotateColor();
                 this.zoomMode = false;
             },
             onVariantHover: function (variant, cohortKey, showTooltip = true) {

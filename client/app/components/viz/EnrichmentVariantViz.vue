@@ -232,10 +232,6 @@
             frequencyDisplayMode: { // Controls what type of layout we have here
                 type: Boolean,
                 default: false
-            },
-            extraAnnotationsLoaded: {
-                type: Boolean,
-                default: false
             }
         },
         computed: {
@@ -253,12 +249,17 @@
         data() {
             return {
                 variantChart: {},
-                name: ''
+                name: '',
+                extraAnnotationsLoaded: {
+                    type: Boolean,
+                    default: false
+                }
             }
         },
         mounted: function () {
             let self = this;
             self.name = self.model.getName();
+            self.extraAnnotationsLoaded = false;
             self.draw();
         },
         methods: {
@@ -386,6 +387,11 @@
                 let self = this;
                 self.extraAnnotationsLoaded = true;
                 this.update();
+            },
+            resetPreAnnotateColor: function() {
+                debugger;
+                let self = this;
+                self.extraAnnotationsLoaded = false;
             }
         },
         watch: {

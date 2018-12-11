@@ -167,8 +167,9 @@ function scaledVariantD3() {
                 brush.remove();
             }
 
-            // Change coloring back
-            switchSelectedColorScheme(false, impactMode);
+            if (selectedVariants.length > 0) {
+                switchSelectedColorScheme(false);
+            }
 
             // Reset variants
             selectedVariants = [];
