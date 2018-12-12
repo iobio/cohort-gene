@@ -637,7 +637,6 @@ class DataSetModel {
                                 singleMode)
                                 .then((results) => {
                                     annotationResults[currFileName] = results;
-                                    debugger;
                                     if (self.isSingleSample) {
                                         // Unwrap feature array if we're coming from remote call
                                         if (self.vcfUrlsEntered) {
