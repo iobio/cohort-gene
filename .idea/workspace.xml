@@ -5,10 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="17d38fed-e0f5-492f-b455-1d8321fb2586" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/app/models/DataSetModel.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/models/DataSetModel.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/js/globalsDeployment.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/js/globalsDeployment.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/js/model/bam.iobio.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/js/model/bam.iobio.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/js/model/vcf.iobio.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/js/model/vcf.iobio.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/client/dist/" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -26,7 +24,7 @@
       <file leaf-file-name="Home.vue" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/app/components/pages/Home.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="364">
+            <state relative-caret-position="447">
               <caret line="359" column="51" selection-start-line="359" selection-start-column="51" selection-end-line="359" selection-end-column="51" />
             </state>
           </provider>
@@ -35,8 +33,8 @@
       <file leaf-file-name="DataSetModel.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client/app/models/DataSetModel.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="259">
-              <caret line="621" column="78" lean-forward="true" selection-start-line="621" selection-start-column="78" selection-end-line="621" selection-end-column="78" />
+            <state relative-caret-position="243">
+              <caret line="642" column="66" lean-forward="true" selection-start-line="642" selection-start-column="66" selection-end-line="642" selection-end-column="66" />
               <folding>
                 <element signature="e#191#233#0" expanded="true" />
                 <element signature="n#style#0;n#span#0;n#!!top" expanded="true" />
@@ -102,6 +100,15 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="vcf.iobio.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/client/js/model/vcf.iobio.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="500">
+              <caret line="669" column="67" selection-start-line="669" selection-start-column="67" selection-end-line="669" selection-end-column="67" />
+            </state>
+          </provider>
+        </entry>
+      </file>
     </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
@@ -113,10 +120,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>ENRICH_COUNTS</find>
-      <find>promiseGetEnrichCmd</find>
-      <find>_getLocalEnrichCmds</find>
-      <find>_getLocalEnrichCmd</find>
       <find>_getRemoteEnrichCmd</find>
       <find>getlocalvariants</find>
       <find>parseEnrichmentInfo</find>
@@ -129,8 +132,6 @@
       <find>annotationengine</find>
       <find>getlocalvar</find>
       <find>annotateVariants</find>
-      <find>debugger</find>
-      <find>_annotateVcfRegion</find>
       <find>selectedTranscript</find>
       <find>bamUri</find>
       <find>promisegetvariants</find>
@@ -143,6 +144,12 @@
       <find>bamFileOpened</find>
       <find>bamRefName</find>
       <find>debugg</find>
+      <find>debugger</find>
+      <find>promiseannotatevar</find>
+      <find>_annotateVcfRegion</find>
+      <find>promisegetvarian</find>
+      <find>vcfurlen</find>
+      <find>vcfUrlenter</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/client/js/model</dir>
@@ -201,10 +208,10 @@
         <option value="$PROJECT_DIR$/client/app/components/partials/FilesMenu.vue" />
         <option value="$PROJECT_DIR$/client/app/components/partials/EntryData.vue" />
         <option value="$PROJECT_DIR$/client/app/components/pages/Home.vue" />
-        <option value="$PROJECT_DIR$/client/js/model/vcf.iobio.js" />
         <option value="$PROJECT_DIR$/client/js/globalsDeployment.js" />
         <option value="$PROJECT_DIR$/client/js/model/bam.iobio.js" />
         <option value="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue" />
+        <option value="$PROJECT_DIR$/client/js/model/vcf.iobio.js" />
         <option value="$PROJECT_DIR$/client/app/models/DataSetModel.js" />
       </list>
     </option>
@@ -362,12 +369,12 @@
       <workItem from="1541186436650" duration="118751000" />
       <workItem from="1543944185263" duration="9803000" />
       <workItem from="1544058694781" duration="64171000" />
-      <workItem from="1544568438308" duration="7985000" />
+      <workItem from="1544568438308" duration="9353000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="950118000" />
+    <option name="totallyTimeSpent" value="951486000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1440" height="877" extended-state="6" />
@@ -377,6 +384,7 @@
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" weight="0.07427938" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32815966" />
       <window_info anchor="bottom" id="Version Control" order="9" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.32908458" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -391,7 +399,6 @@
       <window_info anchor="bottom" id="Inspection Results" order="11" weight="0.32960325" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.32815966" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -717,13 +724,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/js/model/vcf.iobio.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1006">
-          <caret line="1796" column="47" lean-forward="true" selection-start-line="1796" selection-start-column="47" selection-end-line="1796" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/client/js/globalsDeployment.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="400">
@@ -755,13 +755,6 @@
           <folding>
             <element signature="e#7115#7154#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/pages/Home.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="364">
-          <caret line="359" column="51" selection-start-line="359" selection-start-column="51" selection-end-line="359" selection-end-column="51" />
         </state>
       </provider>
     </entry>
@@ -799,10 +792,24 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/components/pages/Home.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="447">
+          <caret line="359" column="51" selection-start-line="359" selection-start-column="51" selection-end-line="359" selection-end-column="51" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/js/model/vcf.iobio.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="500">
+          <caret line="669" column="67" selection-start-line="669" selection-start-column="67" selection-end-line="669" selection-end-column="67" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/client/app/models/DataSetModel.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="259">
-          <caret line="621" column="78" lean-forward="true" selection-start-line="621" selection-start-column="78" selection-end-line="621" selection-end-column="78" />
+        <state relative-caret-position="243">
+          <caret line="642" column="66" lean-forward="true" selection-start-line="642" selection-start-column="66" selection-end-line="642" selection-end-column="66" />
           <folding>
             <element signature="e#191#233#0" expanded="true" />
             <element signature="n#style#0;n#span#0;n#!!top" expanded="true" />

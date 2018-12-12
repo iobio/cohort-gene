@@ -841,7 +841,7 @@ vcfiobio = function module() {
 
             var allRecs = headerRecords.concat(recordsForRegions);
 
-            me._promiseAnnotateVcfRecords(allRecs, refName, geneObject, selectedTranscript, clinvarMap, isRefSeq && hgvsNotation, isMultiSample, subsetSamples, probandSamples, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, enrichMode)
+            me._promiseAnnotateVcfRecords(allRecs, refName, geneObject, selectedTranscript, clinvarMap, isRefSeq && hgvsNotation, isMultiSample, subsetSamples, probandSamples, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, enrichMode, singleMode)
                 .then(function (data) {
                     callback(data[0], data[1]);
                 }, function (error) {
@@ -1388,7 +1388,7 @@ vcfiobio = function module() {
 
     }
 
-    exports._promiseAnnotateVcfRecords = function (records, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, isMultiSample, subsetSamples, probandSamples, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, enrichMode) {
+    exports._promiseAnnotateVcfRecords = function (records, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, isMultiSample, subsetSamples, probandSamples, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, enrichMode, singleMode) {
         var me = this;
 
         return new Promise(function (resolve, reject) {
@@ -1470,7 +1470,7 @@ vcfiobio = function module() {
                         }
                     });
                     // Parse the vcf object into a variant object that is visualized by the client.
-                    let results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, isMultiSample, subsetSamples, null, vepAF, true, false, false);
+                    let results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, isMultiSample, subsetSamples, null, vepAF, true, false, singleMode);
                     resolve([annotatedRecs, results]);
                 })
             }

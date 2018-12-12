@@ -613,7 +613,6 @@ class DataSetModel {
                     if (enrichMode) {
                         probandIds = self.getProbandCohort().sampleIds;
                     }
-
                     for (let i = 0; i < urlNames.length; i++) {
                         let currFileName = urlNames[i];
                         let currVcfEndpt = self.vcfEndptHash[currFileName];
@@ -638,10 +637,12 @@ class DataSetModel {
                                 singleMode)
                                 .then((results) => {
                                     annotationResults[currFileName] = results;
+                                    debugger;
                                     if (self.isSingleSample) {
-                                        // Unwrap feature array
-                                        results.features = results.features[0];
-
+                                        // Unwrap feature array if we're coming from remote call
+                                        if (self.vcfUrlsEntered) {
+                                            results.features = results.features[0];
+                                        }
                                         // Assign cohort model data
                                         let destCohort = self.getSubsetCohort();
                                         // Add variant number to chips
