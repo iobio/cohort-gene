@@ -56,8 +56,8 @@
         <v-flex xs3 class="mt-2">
             or
             <file-chooser class="ml-1"
-                          title="Choose file"
-                          :isMultiple="false"
+                          title="Choose files"
+                          :isMultiple="true"
                           :showLabel="false"
                           :isCohortFromHub="isCohortFromHub"
                           @file-selected="onFileSelected">
@@ -67,7 +67,7 @@
         <v-flex xs12>
             <span> {{ fileName }} </span>
             <v-btn small flat id="clear-file-button"
-                   onclick="clearFile"
+                   @click="clearFile"
                    :disabled="isCohortFromHub"
                    v-if="fileName != null && fileName.length > 0">
                 Clear
@@ -133,16 +133,16 @@
                 }
                 this.$emit("file-selected", event.target);
             },
+            clearFile: function () {
+                this.fileName = '';
+                this.$emit("file-selected");
+            },
             onUrlChange: _.debounce(function (newUrl) {
                 if (newUrl && newUrl.length > 0) {
                     this.fileName = '';
                 }
                 this.$emit('url-entered', this.url, this.indexUrl);
-            }, 100),
-            clearFile: function () {
-                this.fileName = '';
-                this.$emit("file-selected");
-            }
+            }, 100)
         },
         created: function () {
             this.indexUrl = this.defaultIndexUrl;

@@ -275,8 +275,8 @@
                                 newInfo.dataSet = dataSet;
                                 resolve();
                             })
-                            .catch(() => {
-                                reject('There was a problem adding sample.');
+                            .catch((error) => {
+                                reject('There was a problem adding sample: ' + error);
                             });
                     }
                 });
@@ -525,7 +525,6 @@
                     if (!(currKey === 's0' && self.launchedFromHub)) {
                         self.isValid &= (self.modelInfoMap[currKey] != null && self.modelInfoMap[currKey].dataSet.isReadyToLoad());
                     }
-
                 }
             },
             // Called each time files menu opened

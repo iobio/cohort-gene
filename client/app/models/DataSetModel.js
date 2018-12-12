@@ -23,8 +23,8 @@ class DataSetModel {
         this.varsInFileHash = {};       // Maps each file to list of variant IDs that exist within the file
         this.bamEndpt = {};             // The bam endpt for this dataset model - only single sample tracks support BAM information for now
         this.genesInProgress = [];
-        this.affectedInfo = null;       // TODO: what is this? gene artifact
-        this.calledVariants = null;     // TODO: what is this? gene artifact
+        this.affectedInfo = null;
+        this.calledVariants = null;
         this.loadedVariants = null;     // Variants displayed in track
         this.selectedVariants = null;   // Selected in zoom panel
         this.trackName = '';            // Displays in italics before chips
@@ -618,6 +618,7 @@ class DataSetModel {
                         let currFileName = urlNames[i];
                         let currVcfEndpt = self.vcfEndptHash[currFileName];
                         if (currVcfEndpt != null) {
+                            debugger;
                             let annoP = currVcfEndpt.promiseGetVariants(
                                 self.getVcfRefName(theGene.chr, currVcfEndpt),
                                 theGene,
@@ -1207,34 +1208,34 @@ class DataSetModel {
         });
     }
 
-    // TODO: refactor this for cohort (sample name, etc)
     promiseVcfFilesSelected(event) {
         let me = this;
 
         return new Promise( function(resolve, reject) {
             me.sampleName = null;
             me.vcfData = null;
-            me.vcf.openVcfFile( event,
-                function(success, message) {
+            me.getFirstVcf().openVcfFile(event,
+                function(success, vcfIndex, tbiIndex, message) {
                     if (me.lastVcfAlertify) {
                         me.lastVcfAlertify.dismiss();
                     }
                     if (success) {
-                        me.vcfFileOpened = true;
-                        me.vcfUrlEntered = false;
+                        me.vcfs.push(event.files[vcfIndex].name);
+                        me.tbis.push(event.files[tbiIndex].name);
+                        me.vcfFilesOpened = true;
+                        me.vcfUrlsEntered = false;
                         me.getVcfRefName = null;
                         me.isMultiSample = false;
 
                         // Get the sample names from the vcf header
-                        me.vcf.getSampleNames( function(sampleNames) {
+                        me.getFirstVcf().getSampleNames(function(sampleNames) {
                             me.isMultiSample = sampleNames && sampleNames.length > 1 ? true : false;
-                            resolve({'fileName': me.vcf.getVcfFile().name, 'sampleNames': sampleNames});
+                            resolve({'fileName': me.getFirstVcf().getVcfFile().name, 'sampleNames': sampleNames});
                         });
                     } else {
                         let msg = "<span style='font-size:18px'>" + message + "</span>";
                         alertify.set('notifier','position', 'top-right');
                         me.lastVcfAlertify = alertify.error(msg, 15);
-
                         reject(message);
                     }
                 }
@@ -1292,7 +1293,6 @@ class DataSetModel {
         });
     }
 
-    // TODO: refactor this for dataset model - this will be used with new backend
     _getCombinedResults(gtenricherCmds, fileNames, theGene, theTranscript) {
         let self = this;
 

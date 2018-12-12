@@ -135,7 +135,6 @@ export default class Bam {
     openBamFile(fileSelection, callback) {
         var me = this;
 
-
         if (fileSelection.files.length !== 2) {
             callback(false, 'must select 2 files, both a .bam and .bam.bai file');
             return;

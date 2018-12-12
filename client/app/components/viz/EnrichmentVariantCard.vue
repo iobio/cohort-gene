@@ -74,10 +74,10 @@ Updated: SJG Dec2018
                 </v-flex>
             </v-layout>
             <v-layout text-xs-right align-right>
-                <v-flex xs9>
+                <v-flex xs8>
                     <!--spacing-->
                 </v-flex>
-                <v-flex xs3>
+                <v-flex xs4>
                     <v-switch label="Zoom Mode"
                               hide-details
                               color="cohortNavy"

@@ -336,27 +336,28 @@
             },
             onVcfFilesSelected: function (fileSelection) {
                 let self = this;
-                self.$set(self, "sample", null);
+                self.$set(self, "selectedSample", null);
                 self.$set(self, "samples", []);
-                self.modelInfo.model.promiseVcfFilesSelected(fileSelection)
+                fileSelection.id = self.modelInfo.id;
+                self.modelInfo.dataSet.promiseVcfFilesSelected(fileSelection)
                     .then(function (data) {
-                        self.samples = data.sampleNames;
-                        if (self.modelInfo.sample && self.samples.indexOf(self.modelInfo.sample) >= 0) {
-                            self.sample = self.modelInfo.sample;
-                            self.modelInfo.model.sampleName = self.modelInfo.sample;
-                        } else if (self.samples.length === 1) {
-                            self.sample = self.samples[0];
-                            self.modelInfo.sample = self.sample;
-                            self.modelInfo.model.sampleName = self.sample;
-                        } else {
-                            self.sample = null;
-                            self.modelInfo.sample = null;
-                            self.modelInfo.model.sampleName = null;
+                        if (data && data.sampleNames.length > 0) {
+                            self.retrievingIds = false;
+                            self.samples = data.sampleNames;
+                            self.modelInfo.samples = data.sampleNames;
+                            if (self.samples.length === 1) {
+                                self.selectedSample = self.samples[0];
+                                self.modelInfo.selectedSample = self.samples[0];
+                                self.modelInfo.dataSet.setSelectedSample(self.samples[0]);
+                            } else {
+                                self.selectedSample = null;
+                            }
                         }
                         self.$emit("sample-data-changed");
-                        self.$emit("samples-available", self.modelInfo.id, self.samples);
+                        //self.$emit("samples-available", self.modelInfo.id, self.samples);
                     })
                     .catch(function (error) {
+                        self.retrievingIds = false;
                         self.$emit("sample-data-changed");
                     })
             },

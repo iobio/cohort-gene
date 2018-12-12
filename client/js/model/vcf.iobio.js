@@ -339,14 +339,14 @@ vcfiobio = function module() {
     exports.openVcfFile = function (fileSelection, callback) {
         sourceType = SOURCE_TYPE_FILE;
 
-        if (fileSelection.files.length != 2) {
-            callback(false, 'must select 2 files, both a .vcf.gz and .vcf.gz.tbi file');
+        if (fileSelection.files.length !== 2) {
+            callback(false, 0, 0, 'must select 2 files, both a .vcf.gz and .vcf.gz.tbi file');
             return;
         }
 
         if (endsWith(fileSelection.files[0].name, ".vcf") ||
             endsWith(fileSelection.files[1].name, ".vcf")) {
-            callback(false, 'You must select a compressed vcf file (.vcf.gz), not a vcf file');
+            callback(false, 0, 0, 'You must select a compressed vcf file (.vcf.gz), not a vcf file');
             return;
         }
 
@@ -361,35 +361,38 @@ vcfiobio = function module() {
 
 
         if (fileType0 == null || fileType0.length < 3 || fileType1 == null || fileType1.length < 3) {
-            callback(false, 'You must select BOTH  a compressed vcf file (.vcf.gz) and an index (.tbi)  file');
+            callback(false, 0, 0, 'You must select BOTH  a compressed vcf file (.vcf.gz) and an index (.tbi)  file');
             return;
         }
 
-
-        if (fileExt0 == 'vcf.gz' && fileExt1 == 'vcf.gz.tbi') {
-            if (rootFileName0 != rootFileName1) {
-                callback(false, 'The index (.tbi) file must be named ' + rootFileName0 + ".tbi");
+        let vcfFileIndex = 0;
+        let tbiFileIndex = 0;
+        if (fileExt0 === 'vcf.gz' && fileExt1 === 'vcf.gz.tbi') {
+            if (rootFileName0 !== rootFileName1) {
+                callback(false, 0, 0, 'The index (.tbi) file must be named ' + rootFileName0 + ".tbi");
                 return;
             } else {
                 vcfFile = fileSelection.files[0];
+                vcfFileIndex = 0;
                 tabixFile = fileSelection.files[1];
+                tbiFileIndex = 1;
             }
-        } else if (fileExt1 == 'vcf.gz' && fileExt0 == 'vcf.gz.tbi') {
-            if (rootFileName0 != rootFileName1) {
-                callback(false, 'The index (.tbi) file must be named ' + rootFileName1 + ".tbi");
+        } else if (fileExt1 === 'vcf.gz' && fileExt0 === 'vcf.gz.tbi') {
+            if (rootFileName0 !== rootFileName1) {
+                callback(false, 0, 0, 'The index (.tbi) file must be named ' + rootFileName1 + ".tbi");
                 return;
             } else {
                 vcfFile = fileSelection.files[1];
+                vcfFileIndex = 1;
                 tabixFile = fileSelection.files[0];
+                tbiFileIndex = 0;
             }
         } else {
-            callback(false, 'You must select BOTH  a compressed vcf file (.vcf.gz) and an index (.tbi)  file');
+            callback(false, 0, 0, 'You must select BOTH  a compressed vcf file (.vcf.gz) and an index (.tbi)  file');
             return;
         }
-
-        callback(true);
+        callback(true, vcfFileIndex, tbiFileIndex, '');
         return;
-
     }
 
 
@@ -635,7 +638,6 @@ vcfiobio = function module() {
         });
     }
 
-    /* Returns enrichment data relative to selected subset group - uses new service provided by YQ */
     exports.promiseGetVariants = function (refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, keepVariantsCombined = false, enrichMode = false, singleMode = false) {
         let me = this;
 
@@ -664,64 +666,66 @@ vcfiobio = function module() {
                 me._getLocalVariantsImpl(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
                     function (annotatedData, results) {
                         if (annotatedData && results) {
-                            resolve([annotatedData, results]);
+                            // Unwrap results array
+                            results.features = results.features[0];
+                            resolve(results);
                         } else {
                             reject();
                         }
-                    });
+                    }, null, keepVariantsCombined, enrichMode, singleMode);
             }
         });
     };
 
     /* Returns iobio command that calls gtenricher on the vcf file which this model represents. */
-    exports.promiseGetEnrichCmd = function(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve) {
-        let self = this;
+    // exports.promiseGetEnrichCmd = function(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve) {
+    //     let self = this;
+    //
+    //     return new Promise(function(resolve, reject) {
+    //         if (sourceType === SOURCE_TYPE_URL) {
+    //             self._getRemoteEnrichCmd(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve,
+    //                 function (resultMapList) {
+    //                     if (resultMapList) {
+    //                         resolve(resultMapList);
+    //                     }
+    //                     else {
+    //                         reject();
+    //                     }
+    //                 }, null);
+    //         } else {
+    //             self._getLocalEnrichCmds(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
+    //                 function (annotatedData, results) {
+    //                     if (annotatedData && results) {
+    //                         resolve([annotatedData, results]);
+    //                     } else {
+    //                         reject();
+    //                     }
+    //                 });
+    //         }
+    //     });
+    // };
 
-        return new Promise(function(resolve, reject) {
-            if (sourceType === SOURCE_TYPE_URL) {
-                self._getRemoteEnrichCmd(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve,
-                    function (resultMapList) {
-                        if (resultMapList) {
-                            resolve(resultMapList);
-                        }
-                        else {
-                            reject();
-                        }
-                    }, null);
-            } else {
-                self._getLocalEnrichCmds(refName, geneObject, selectedTranscript, regions, isMultiSample, expSamplesToRetrieve, controlSamplesToRetrieve, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache,
-                    function (annotatedData, results) {
-                        if (annotatedData && results) {
-                            resolve([annotatedData, results]);
-                        } else {
-                            reject();
-                        }
-                    });
-            }
-        });
-    };
+    // /* Returns iobio command that calls gtenricher on the remote vcf file which this model represents. */
+    // exports._getRemoteEnrichCmd = function(refName, geneObject, selectedTranscript, regions, isMultiSample, expSampleNames, controlSampleNames) {
+    //     let me = this;
+    //     if (regions == null || regions.length === 0) {
+    //         regions = [];
+    //         regions.push({'name': refName, 'start': geneObject.start, 'end': geneObject.end});
+    //     }
+    //     let cmd = me.getEndpoint().annotateEnrichmentCounts({
+    //         'vcfUrl': vcfURL,
+    //         'tbiUrl': tbiUrl
+    //     }, refName, regions, expSampleNames, controlSampleNames);
+    //
+    //     return cmd;
+    // };
 
-    /* Returns iobio command that calls gtenricher on the remote vcf file which this model represents. */
-    exports._getRemoteEnrichCmd = function(refName, geneObject, selectedTranscript, regions, isMultiSample, expSampleNames, controlSampleNames) {
-        let me = this;
-        if (regions == null || regions.length === 0) {
-            regions = [];
-            regions.push({'name': refName, 'start': geneObject.start, 'end': geneObject.end});
-        }
-        let cmd = me.getEndpoint().annotateEnrichmentCounts({
-            'vcfUrl': vcfURL,
-            'tbiUrl': tbiUrl
-        }, refName, regions, expSampleNames, controlSampleNames);
-
-        return cmd;
-    };
-
-    /* Returns iobio command that calls gtenricher on the local vcf file which this model represents. */
-    exports._getLocalEnrichCmd = function(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, callback, errorCallback) {
-        let cmd = null;
-        console.log("Haven't implemented _getLocalEnrichCmd in vcf.iobio.js yet");
-        return cmd;
-    };
+    // /* Returns iobio command that calls gtenricher on the local vcf file which this model represents. */
+    // exports._getLocalEnrichCmd = function(refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, callback, errorCallback) {
+    //     let cmd = null;
+    //     console.log("Haven't implemented _getLocalEnrichCmd in vcf.iobio.js yet");
+    //     return cmd;
+    // };
 
 
     /* Takes in individual gtenricher commands for each vcf, and sends into vtcombiner -> enrichstats. Then parses data coming back
@@ -770,7 +774,7 @@ vcfiobio = function module() {
                         infoLookup[splitFields[0]] = splitFields[1];
                     });
 
-                    let enrichment = infoLookup['ENRICH_COUNTS'];   // TODO: NOTE this field name will not be changed until new version of gtenricher deployed
+                    let enrichment = infoLookup['ENRICH'];
                     let pValue = infoLookup['ENRICH_PVAL'];
 
                     // Turn vcf record into a JSON object and add it to an array
@@ -791,7 +795,7 @@ vcfiobio = function module() {
         cmd.run();
     };
 
-    exports._getLocalVariantsImpl = function (refName, geneObject, selectedTranscript, regions, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, callback, errorCallback) {
+    exports._getLocalVariantsImpl = function (refName, geneObject, selectedTranscript, regions, isMultiSample, subsetSamples, probandSamples, annotationEngine, clinvarMap, isRefSeq, hgvsNotation, getRsId, vepAF, cache, callback, errorCallback, keepVariantsCombined = false, enrichMode = false, singleMode = false) {
         var me = this;
 
         // The variant region may span more than the specified region.
@@ -837,7 +841,7 @@ vcfiobio = function module() {
 
             var allRecs = headerRecords.concat(recordsForRegions);
 
-            me._promiseAnnotateVcfRecords(allRecs, refName, geneObject, selectedTranscript, clinvarMap, isRefSeq && hgvsNotation, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF)
+            me._promiseAnnotateVcfRecords(allRecs, refName, geneObject, selectedTranscript, clinvarMap, isRefSeq && hgvsNotation, isMultiSample, subsetSamples, probandSamples, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, enrichMode)
                 .then(function (data) {
                     callback(data[0], data[1]);
                 }, function (error) {
@@ -915,7 +919,7 @@ vcfiobio = function module() {
                     let pValue = '';
                     if (enrichMode) {
                         enrichment = infoLookup['ENRICH'];
-                        pValue = infoLookup['IOBIO_PVAL'];  // TODO: take this out for gtcombiner changes
+                        pValue = infoLookup['IOBIO_PVAL'];
                     }
 
                     // Turn vcf record into a JSON object and add it to an array
@@ -1346,9 +1350,9 @@ vcfiobio = function module() {
         var vcfObjects = [];
 
         annotatedRecs.forEach(function (record) {
-            if (record == null || record == "") {
+            if (record == null || record === "") {
 
-            } else if (record.charAt(0) == "#") {
+            } else if (record.charAt(0) === "#") {
                 me._parseHeaderForInfoFields(record);
             } else {
 
@@ -1384,54 +1388,95 @@ vcfiobio = function module() {
 
     }
 
-    exports._promiseAnnotateVcfRecords = function (records, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, isMultiSample, vcfSampleNames, sampleNamesToGenotype, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF) {
+    exports._promiseAnnotateVcfRecords = function (records, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, isMultiSample, subsetSamples, probandSamples, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, enrichMode) {
         var me = this;
 
         return new Promise(function (resolve, reject) {
             // For each vcf records, call snpEff to get the annotations.
             // Each vcf record returned will have an EFF field in the
             // info field.
-            me._annotateVcfRegion(records, refName, vcfSampleNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, function (annotatedData) {
+            if (enrichMode) {
+                me._annotateVcfEnrichment(records, refName, subsetSamples, probandSamples, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, function (annotatedData) {
+                    let annotatedRecs = annotatedData.split("\n");
+                    annotatedRecs.pop();    // Clip off last blank line
+                    let vcfObjects = [];
 
-                var annotatedRecs = annotatedData.split("\n");
-                var vcfObjects = [];
+                    annotatedRecs.forEach(function (record) {
+                        if (record.charAt(0) === "#") {
+                            me._parseHeaderForInfoFields(record);
+                        } else {
+                            // Parse the vcf record into its fields
+                            var fields = record.split('\t');
+                            var pos = fields[1];
+                            var id = fields[2];
+                            var ref = fields[3];
+                            var alt = fields[4];
+                            var qual = fields[5];
+                            var filter = fields[6];
+                            let info = fields[7];
+                            let infoFields = info.split(';');
+                            let infoLookup = {};
+                            infoFields.forEach(function (field) {
+                                let splitFields = field.split('=');
+                                infoLookup[splitFields[0]] = splitFields[1];
+                            });
 
-                annotatedRecs.forEach(function (record) {
-                    if (record.charAt(0) == "#") {
-                        me._parseHeaderForInfoFields(record);
-                    } else {
+                            let enrichment = infoLookup['ENRICH'];
+                            let pValue = infoLookup['ENRICH_PVAL'];
 
-                        // Parse the vcf record into its fields
-                        var fields = record.split('\t');
-                        var pos = fields[1];
-                        var id = fields[2];
-                        var ref = fields[3];
-                        var alt = fields[4];
-                        var qual = fields[5];
-                        var filter = fields[6];
-                        var info = fields[7];
-                        var format = fields[8];
-                        var genotypes = [];
-                        for (var i = 9; i < fields.length; i++) {
-                            genotypes.push(fields[i]);
+                            // Turn vcf record into a JSON object and add it to an array
+                            let vcfObject = {
+                                'pos': pos, 'id': 'id', 'ref': ref, 'alt': alt, 'qual': qual,
+                                'filter': filter, 'info': info, 'enrichment': enrichment, 'pValue': pValue
+                            };
+                            vcfObjects.push(vcfObject);
                         }
+                    });
 
+                    // Parse the vcf object into a variant object that is visualized by the client.
+                    let results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, isMultiSample, subsetSamples, null, vepAF, true, true, false);
+                    resolve([annotatedRecs, results]);
+                })
+            } else {
+                me._annotateVcfRegion(records, refName, subsetSamples, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, function (annotatedData) {
+                    let annotatedRecs = annotatedData.split("\n");
+                    annotatedRecs.pop();    // Clip off last blank line
+                    var vcfObjects = [];
 
-                        // Turn vcf record into a JSON object and add it to an array
-                        var vcfObject = {
-                            'pos': pos, 'id': 'id', 'ref': ref, 'alt': alt,
-                            'qual': qual, 'filter': filter, 'info': info, 'format': format, 'genotypes': genotypes
-                        };
-                        vcfObjects.push(vcfObject);
-                    }
-                });
+                    annotatedRecs.forEach(function (record) {
+                        if (record.charAt(0) === "#") {
+                            me._parseHeaderForInfoFields(record);
+                        } else {
 
-                // Parse the vcf object into a variant object that is visualized by the client.
-                var results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, isMultiSample, sampleNamesToGenotype, null, vepAF);
-                resolve([annotatedRecs, results]);
-            });
-        });
-    }
+                            // Parse the vcf record into its fields
+                            var fields = record.split('\t');
+                            var pos = fields[1];
+                            var id = fields[2];
+                            var ref = fields[3];
+                            var alt = fields[4];
+                            var qual = fields[5];
+                            var filter = fields[6];
+                            var info   = fields[7];
+                            var format = fields[8];
+                            var genotypes = [];
+                            for (var i = 9; i < fields.length; i++) {
+                                genotypes.push(fields[i]);
+                            }
+
+                            // Turn vcf record into a JSON object and add it to an array
+                            var vcfObject = {'pos': pos, 'id': 'id', 'ref': ref, 'alt': alt,
+                                'qual': qual, 'filter': filter, 'info': info, 'format':format, 'genotypes': genotypes};
+                            vcfObjects.push(vcfObject);
+                        }
+                    });
+                    // Parse the vcf object into a variant object that is visualized by the client.
+                    let results = me._parseVcfRecords(vcfObjects, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, isMultiSample, subsetSamples, null, vepAF, true, false, false);
+                    resolve([annotatedRecs, results]);
+                })
+            }
+        })
+    };
+
 
     exports.promiseGetClinvarRecords = function (theVcfData, refName, geneObject, clinvarGenes, clinvarLoadVariantsFunction) {
         var me = this;
@@ -1701,8 +1746,7 @@ vcfiobio = function module() {
 
     };
 
-
-    exports._annotateVcfRegion = function (records, refName, sampleName, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, callback, callbackClinvar) {
+    exports._annotateVcfEnrichment = function (records, refName, subsetSamples, probandSamples, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, callback, callbackClinvar) {
         var me = this;
 
         //  Figure out the reference sequence file path
@@ -1711,7 +1755,7 @@ vcfiobio = function module() {
 
         var writeStream = function (stream) {
             records.forEach(function (record) {
-                if (record.trim() == "") {
+                if (record.trim() === "") {
                 } else {
                     stream.write(record + "\n");
                 }
@@ -1720,7 +1764,7 @@ vcfiobio = function module() {
             stream.end();
         }
 
-        var cmd = me.getEndpoint().annotateVariants({'writeStream': writeStream}, refName, null, regions, null, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache);
+        var cmd = me.getEndpoint().annotateEnrichmentCounts({'writeStream': writeStream}, refName, regions, subsetSamples, probandSamples);
 
 
         var buffer = "";
@@ -1740,7 +1784,47 @@ vcfiobio = function module() {
         // Run the iobio command
         cmd.run();
 
-    }
+    };
+
+
+    exports._annotateVcfRegion = function (records, refName, subsetNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, callback, callbackClinvar) {
+        var me = this;
+
+        //  Figure out the reference sequence file path
+        var refFastaFile = me.getGenomeBuildHelper().getFastaPath(refName);
+
+        var writeStream = function (stream) {
+            records.forEach(function (record) {
+                if (record.trim() === "") {
+                } else {
+                    stream.write(record + "\n");
+                }
+            });
+
+            stream.end();
+        }
+
+        var cmd = me.getEndpoint().annotateVariants({'writeStream': writeStream}, refName, regions, subsetNames, annotationEngine, isRefSeq, hgvsNotation, getRsId, vepAF, useServerCache, null);
+
+
+        var buffer = "";
+        // Get the results from the command
+        cmd.on('data', function (data) {
+            buffer = buffer + data;
+        });
+
+        cmd.on('end', function () {
+            callback(buffer);
+        });
+
+        cmd.on('error', function (error) {
+            console.log("error while annotating vcf records " + error);
+        });
+
+        // Run the iobio command
+        cmd.run();
+
+    };
 
     /* Returns a single result object for the given vcfRecs. */
     exports._parseVcfRecords = function (vcfRecs, refName, geneObject, selectedTranscript, clinvarMap, hasExtraAnnot, parseMultiSample, sampleNames, sampleIndex, vepAF, keepVariantsCombined = true, enrichMode = false, singleMode = false) {
