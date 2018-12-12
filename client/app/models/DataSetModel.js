@@ -276,7 +276,7 @@ class DataSetModel {
     }
 
     isBamLoaded() {
-        return this.bams.length > 0 && (this.bamUrlEntered || (this.bamFileOpened && this.getBamRefName));
+        return this.bams.length > 0 && (this.bamUrlEntered || this.bamFileOpened);
     }
 
     areVcfsReadyToLoad() {
@@ -618,7 +618,6 @@ class DataSetModel {
                         let currFileName = urlNames[i];
                         let currVcfEndpt = self.vcfEndptHash[currFileName];
                         if (currVcfEndpt != null) {
-                            debugger;
                             let annoP = currVcfEndpt.promiseGetVariants(
                                 self.getVcfRefName(theGene.chr, currVcfEndpt),
                                 theGene,
@@ -1243,7 +1242,7 @@ class DataSetModel {
         });
     }
 
-    /* Ensures the given chromosme has a reference within the vcf files for this data set.
+    /* Ensures the given chromosome has a reference within the vcf files for this data set.
        Populates reference chromosome table if first call. */
     _promiseVcfRefName(ref, vcfEndpt) {
         let me = this;
@@ -1331,7 +1330,7 @@ class DataSetModel {
 
         if (bamUrl == null || bamUrl.trim() === "") {
             self.bamUrlEntered = false;
-            self.bam = null;
+            self.bams = [];
             if (callback) {
                 callback(false);
             }
@@ -1370,15 +1369,19 @@ class DataSetModel {
         return new Promise(function(resolve, reject) {
             me.bamData = null;
             me.fbData = null;
-            me.bam = new Bam();
-            me.bam.openBamFile(event, function(success, message) {
+            me.bamEndpt = new Bam(me.getEndpoint());
+            me.bamEndpt.openBamFile(event, function(success, bamIndex, baiIndex, message) {
                 if (me.lastBamAlertify) {
                     me.lastBamAlertify.dismiss();
                 }
                 if (success) {
                     me.bamFileOpened = true;
+                    me.bamUrlEntered = false;
                     me.getBamRefName = me._stripRefName;
-                    resolve(me.bam.bamFile.name);
+                    me.bamRefName = me._stripRefName;
+                    me.bams.push(event.files[bamIndex].name);
+                    me.bais.push(event.files[baiIndex].name);
+                    resolve(me.bamEndpt.bamFile.name);
                 } else {
                     if (me.lastBamAlertify) {
                         me.lastBamAlertify.dismiss();

@@ -389,7 +389,6 @@
                 this.update();
             },
             resetPreAnnotateColor: function() {
-                debugger;
                 let self = this;
                 self.extraAnnotationsLoaded = false;
             }

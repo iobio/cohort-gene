@@ -8,7 +8,7 @@ export default class Bam {
         if (this.bamUri != null && typeof(this.bamUri) === "object") {
             this.sourceType = "file";
             this.bamFile = this.bamUri;
-            this.baiFile = this.options.bai;
+            this.baiFile = this.baiUri;
             this.makeBamBlob();
         } else  {
             this.sourceType = "url";
@@ -16,7 +16,6 @@ export default class Bam {
             this.baiFile = null;
         }
         this.promises = [];
-
 
         this.ignoreMessages =  [
             /samtools\sError:\s.*:\sstderr\s-\s\[M::test_and_fetch\]\sdownloading\sfile\s.*\sto\slocal\sdirectory/
@@ -136,7 +135,7 @@ export default class Bam {
         var me = this;
 
         if (fileSelection.files.length !== 2) {
-            callback(false, 'must select 2 files, both a .bam and .bam.bai file');
+            callback(false, 0, 0, 'must select 2 files, both a .bam and .bam.bai file');
             return;
         }
 
@@ -157,35 +156,40 @@ export default class Bam {
 
 
         if (fileType0 == null || fileType0.length < 3 || fileType1 == null || fileType1.length <  3) {
-            callback(false, 'You must select BOTH  a compressed bam file  and an index (.bai)  file');
+            callback(false, 0, 0, 'You must select BOTH  a compressed bam file  and an index (.bai)  file');
             return;
         }
 
+        let bamIndex = 0;
+        let baiIndex = 0;
 
-        if (fileExt0 == 'bam' && fileExt1 == 'bam.bai') {
-            if (rootFileName0 != rootFileName1) {
-                callback(false, 'The index (.bam.bai) file must be named ' +  rootFileName0 + ".bam.bai");
+        if (fileExt0 === 'bam' && fileExt1 === 'bam.bai') {
+            if (rootFileName0 !== rootFileName1) {
+                callback(false, 0, 0, 'The index (.bam.bai) file must be named ' +  rootFileName0 + ".bam.bai");
                 return;
             } else {
                 me.bamFile   = fileSelection.files[0];
+                bamIndex = 0;
                 me.baiFile   = fileSelection.files[1];
-
+                baiIndex = 1;
             }
-        } else if (fileExt1 == 'bam' && fileExt0 == 'bam.bai') {
-            if (rootFileName0 != rootFileName1) {
-                callback(false, 'The index (.bam.bai) file must be named ' +  rootFileName1 + ".bam.bai");
+        } else if (fileExt1 === 'bam' && fileExt0 === 'bam.bai') {
+            if (rootFileName0 !== rootFileName1) {
+                callback(false, 0, 0, 'The index (.bam.bai) file must be named ' +  rootFileName1 + ".bam.bai");
                 return;
             } else {
                 me.bamFile   = fileSelection.files[1];
+                bamIndex = 1;
                 me.baiFile   = fileSelection.files[0];
+                baiIndex = 0;
             }
         } else {
-            callback(false, 'You must select BOTH  a bam and an index (.bam.bai)  file');
+            callback(false, 0, 0, 'You must select BOTH  a bam and an index (.bam.bai)  file');
             return;
         }
         me.sourceType = "file";
-        me.makeBamBlob( function() {
-            callback(true);
+        me.makeBamBlob(function() {
+            callback(true, bamIndex, baiIndex, '');
         });
         return;
     }
