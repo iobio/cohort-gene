@@ -335,9 +335,11 @@
                 }
                 if (vcfUrl === '') {
                     self.modelInfo.vcfs = [];
+                    self.firstVcf = null;
                 }
                 if (tbiUrl === '') {
                     self.modelInfo.tbis = null;
+                    self.firstTbi = null;
                 }
             },
             onVcfFilesSelected: function (fileSelection) {
@@ -394,9 +396,11 @@
                 }
                 if (bamUrl === '') {
                     self.modelInfo.bams = [];
+                    self.firstBam = null;
                 }
                 if (baiUrl === '') {
                     self.modelInfo.bais = null;
+                    self.firstBai = null;
                 }
             },
             onBamFilesSelected: function (fileSelection) {

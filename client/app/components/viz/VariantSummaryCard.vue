@@ -447,8 +447,13 @@
                 return "";
             },
             oneKGenomes: function () {
-                if (this.variant != null && this.variant.af1000G != null)
-                    return Math.round(this.variant.af1000G * 100) + "%";
+                if (this.variant != null && this.variant.af1000G != null) {
+                    if (this.variant.af1000G !== '.' && this.variant.af1000G !== '') {
+                        return Math.round(this.variant.af1000G * 100) + "%";
+                    } else {
+                        return '0%';
+                    }
+                }
                 return "-";
             },
             gnomad: function () {
@@ -462,8 +467,13 @@
                 return "-";
             },
             exAc: function () {
-                if (this.variant != null && this.variant.afExAC != null)
-                    return Math.round(this.variant.afExAC * 100) + "%";
+                if (this.variant != null && this.variant.afExAC != null) {
+                    if (this.variant.afExAC !== '.' && this.variant.afExAC !== '') {
+                        return Math.round(this.variant.afExAC * 100) + "%";
+                    } else {
+                        return '0%';
+                    }
+                }
                 return "-";
             },
             probandZygMap: function () {
