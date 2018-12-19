@@ -392,11 +392,10 @@ Updated: SJG Dec2018
                 this.$refs.subsetVizRef.resetPreAnnotateColor();
                 this.zoomMode = false;
             },
-            onVariantHover: function (variant, cohortKey, showTooltip = true) {
+            onVariantHover: function (variant, showTooltip = true) {
                 if (this.selectedVariant == null) {
                     if (this.showVariantViz) {
                         this.showVariantCircle(variant);
-                        //this.showVariantTooltip(variant, cohortKey, false);
                     }
                     this.$emit('dataSetVariantHover', variant, this);
                 }

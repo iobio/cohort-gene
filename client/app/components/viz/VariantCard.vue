@@ -306,16 +306,21 @@ TD & SJG updated Apr2018 -->
             onVariantClick: function (variant, dataSetKey) {
                 this.$emit('dataSetVariantClick', variant, this, dataSetKey);
             },
-            onVariantHover: function (variant, cohortKey, showTooltip = true) {
+            onVariantHover: function (variant, showTooltip = true) {
                 if (this.selectedVariant == null) {
+                    if (this.showDepthViz) {
+                        this.showCoverageCircle(variant);
+                    }
                     if (this.showVariantViz) {
                         this.showVariantCircle(variant);
-                        //this.showVariantTooltip(variant, cohortKey, false);
                     }
                     this.$emit('dataSetVariantHover', variant, this);
                 }
             },
             onVariantHoverEnd: function () {
+                if (this.showDepthViz) {
+                    this.hideCoverageCircle();
+                }
                 if (this.showVariantViz) {
                     this.hideVariantCircle();
                     this.hideVariantTooltip(this);

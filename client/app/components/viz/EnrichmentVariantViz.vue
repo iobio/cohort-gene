@@ -348,12 +348,11 @@
             },
             onVariantHover: function (variant) {
                 let self = this;
-                //var cohortKey = self.name;
-                //self.$emit("variantHover", variant, cohortKey);
+                self.$emit("variantHover", variant);
             },
             onVariantHoverEnd: function (variant) {
                 let self = this;
-                //self.$emit("variantHoverEnd", variant);
+                self.$emit("variantHoverEnd", variant);
             },
             showVariantCircle: function (variant, container, lock) {
                 this.hideVariantCircle(container);

@@ -583,14 +583,26 @@ TD & SJG updated Nov2018 -->
             },
             onDataSetVariantHover: function (variant, sourceComponent) {
                 let self = this;
-                if (self.$refs.variantCardRef != sourceComponent) {
-                    self.$refs.variantCardRef.showVariantCircle(variant);
+                self.$refs.variantCardRef.forEach(function (variantCard) {
+                    if (variantCard != sourceComponent) {
+                        variantCard.showVariantCircle(variant, false);
+                        variantCard.showCoverageCircle(variant);
+                    }
+                });
+                if (self.$refs.enrichCardRef != null) {
+                    self.$refs.enrichCardRef.showVariantCircle(variant, false);
                 }
             },
             onDataSetVariantHoverEnd: function (sourceVariantCard) {
                 let self = this;
                 if (self.$refs.variantCardRef) {
-                    self.$refs.variantCardRef.hideVariantCircle();
+                    self.$refs.variantCardRef.forEach(function (variantCard) {
+                        variantCard.hideVariantCircle(false);
+                        variantCard.hideCoverageCircle();
+                    });
+                }
+                if (self.$refs.enrichCardRef != null) {
+                    self.$refs.enrichCardRef.hideVariantCircle(variant, false);
                 }
             },
             deselectVariant: function (keepVariantCircle = false) {
