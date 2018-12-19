@@ -577,6 +577,7 @@
                 }
 
                 // Remove sample and delete info
+                debugger;
                 let entryIndex = self.entryIds.indexOf(entryId);
                 self.entryIds.splice(entryIndex, 1);
                 delete self.modelInfoMap[entryId];

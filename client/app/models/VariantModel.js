@@ -582,7 +582,7 @@ class VariantModel {
         if (self.otherDataSets.length > 0) {
             let removeIndex = -1;
             for (let i = 0; i < self.otherDataSets.length; i++) {
-                if (self.otherDataSets[i].id === id) {
+                if (self.otherDataSets[i].entryId === id) {
                     removeIndex = i;
                     break;
                 }
