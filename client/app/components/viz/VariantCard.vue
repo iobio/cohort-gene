@@ -117,6 +117,7 @@ TD & SJG updated Apr2018 -->
                             :height="60"
                             :showTooltip="false"
                             :showXAxis="false"
+                            :inProgress="dataSetModel.inProgress"
                             :regionGlyph="depthVizRegionGlyph"
                             @region-selected="showExonTooltip"
                     >

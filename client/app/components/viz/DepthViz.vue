@@ -59,7 +59,13 @@
 
 <template>
     <div id="depth-viz">
-
+        <div style="text-align: center;clear: both;">
+            <div v-bind:class="{ hide: !inProgress.loadingCoverage }"
+                 style="display: inline-block;padding-bottom:10px">
+                <span class="loader-label">Analyzing Coverage</span>
+                <img src="../../../assets/images/wheel.gif">
+            </div>
+        </div>
     </div>
 </template>
 
@@ -144,6 +150,10 @@
                 type: Function,
                 default: function(d,i,regionX) {
                 }
+            },
+            inProgress: {
+                type: Object,
+                default: null
             }
 
         },
