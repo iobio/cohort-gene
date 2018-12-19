@@ -333,6 +333,12 @@
                             self.retrievingIds = false;
                         })
                 }
+                if (vcfUrl === '') {
+                    self.modelInfo.vcfs = [];
+                }
+                if (tbiUrl === '') {
+                    self.modelInfo.tbis = null;
+                }
             },
             onVcfFilesSelected: function (fileSelection) {
                 let self = this;
@@ -386,6 +392,12 @@
                         self.$emit("sample-data-changed");
                     })
                 }
+                if (bamUrl === '') {
+                    self.modelInfo.bams = [];
+                }
+                if (baiUrl === '') {
+                    self.modelInfo.bais = null;
+                }
             },
             onBamFilesSelected: function (fileSelection) {
                 let self = this;
@@ -427,7 +439,6 @@
                 if (self.isCohortFromHub) {
                     return;
                 }
-
                 let selectedSamples = [];
                 self.dialogType = 'Exclude';
                 let dataSet = self.modelInfo.dataSet;
