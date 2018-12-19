@@ -224,6 +224,24 @@
                 this.fillProgressBars();
                 this.probandDisplay = this.getProbandDisplay();
                 this.subsetDisplay = this.getSubsetDisplay();
+            },
+            oneKGenomes: function() {
+                let self = this;
+                if (self.oneKGenomes !== '-') {
+                    self.oneKBar.moveProgressBar()(self.oneKGenomes);
+                }
+            },
+            exAc: function() {
+                let self = this;
+                if (self.exAc !== '-') {
+                    self.exAcBar.moveProgressBar()(self.exAc);
+                }
+            },
+            gnomad: function() {
+                let self = this;
+                if (self.gnomad !== '-') {
+                    self.gnomadBar.moveProgressBar()(self.gnomad);
+                }
             }
         }
     }

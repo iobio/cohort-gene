@@ -450,8 +450,6 @@
                 if (this.variant != null && this.variant.af1000G != null) {
                     if (this.variant.af1000G !== '.' && this.variant.af1000G !== '') {
                         return Math.round(this.variant.af1000G * 100) + "%";
-                    } else {
-                        return '0%';
                     }
                 }
                 return "-";
@@ -460,8 +458,6 @@
                 if (this.variant != null && this.variant.afgnomAD != null) {
                     if (this.variant.afgnomAD !== '.' && this.variant.afgnomAD !== '') {
                         return Math.round(this.variant.afgnomAD * 100) + "%";
-                    } else {
-                        return '0%';
                     }
                 }
                 return "-";
@@ -470,8 +466,6 @@
                 if (this.variant != null && this.variant.afExAC != null) {
                     if (this.variant.afExAC !== '.' && this.variant.afExAC !== '') {
                         return Math.round(this.variant.afExAC * 100) + "%";
-                    } else {
-                        return '0%';
                     }
                 }
                 return "-";
