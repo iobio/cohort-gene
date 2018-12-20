@@ -600,6 +600,7 @@ TD & SJG updated Nov2018 -->
                 let self = this;
                 self.$refs.variantCardRef.forEach(function (variantCard) {
                     variantCard.hideVariantCircle(false);
+                    variantCard.hideCoverageCircle();
                 });
                 self.$refs.enrichCardRef.forEach(function (enrichCard) {
                     enrichCard.hideVariantCircle(false);
@@ -615,6 +616,7 @@ TD & SJG updated Nov2018 -->
                     if (self.$refs.enrichCardRef) {
                         self.$refs.enrichCardRef.forEach((cardRef) => {
                             cardRef.hideVariantCircle(true);
+                            cardRef.hideCoverageCircle();
                         });
                     }
                 }

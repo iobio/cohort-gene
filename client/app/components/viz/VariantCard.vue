@@ -414,28 +414,27 @@ TD & SJG updated Apr2018 -->
                     this.$refs.depthVizRef.hideCurrentPoint();
                 }
             },
-            showCoverageCircle: function (variant) {
+            showCoverageCircle: function(variant) {
                 let self = this;
-                if (self.showDepthViz && self.subsetCohort.coverage != null) {
+
+                if (self.showDepthViz && self.dataSetModel.coverage != null) {
                     let theDepth = null;
-                    if (variant.bamDepth != null && variant.bamDepth !== '') {
-                        theDepth = variant.bamDepth;
-                    } else {
-                        var matchingVariants = self.dataSetModel.loadedVariants.features.filter(function (v) {
-                            return v.start === variant.start && v.alt === variant.alt && v.ref === variant.ref;
-                        });
-                        if (matchingVariants.length > 0) {
-                            theDepth = matchingVariants[0].bamDepth;
-                            // If samtools mpileup didn't return coverage for this position, use the variant's depth
-                            // field.
-                            if (theDepth == null || theDepth === '') {
-                                theDepth = matchingVariants[0].genotypeDepth;
-                            }
+                    let matchingVariants = self.dataSetModel.loadedVariants.features.filter(function (v) {
+                        return v.start === variant.start && v.alt === variant.alt && v.ref === variant.ref;
+                    });
+
+                    if (matchingVariants.length > 0) {
+                        theDepth = matchingVariants[0].bamDepth;
+                        // If samtools mpileup didn't return coverage for this position, use the variant's depth
+                        // field.
+                        if (theDepth == null || theDepth === '') {
+                            theDepth = matchingVariants[0].genotypeDepth;
                         }
                     }
-                    if (theDepth) {
-                        self.$refs.depthVizRef.showCurrentPoint({pos: variant.start, depth: theDepth});
-                    }
+
+                    // If we have the exact depth for this variant, show it.  Otherwise, we will show
+                    // the calculated (binned, averaged) depth at this position.
+                    self.$refs.depthVizRef.showCurrentPoint({pos: variant.start, depth: theDepth});
                 }
             },
             onKnownVariantsVizChange: function (viz) {
