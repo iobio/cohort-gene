@@ -612,11 +612,11 @@ TD & SJG updated Nov2018 -->
                 if (!keepVariantCircle && self.$refs.variantCardRef) {
                     self.$refs.variantCardRef.forEach((cardRef) => {
                         cardRef.hideVariantCircle(true);
+                        cardRef.hideCoverageCircle();
                     });
                     if (self.$refs.enrichCardRef) {
                         self.$refs.enrichCardRef.forEach((cardRef) => {
                             cardRef.hideVariantCircle(true);
-                            cardRef.hideCoverageCircle();
                         });
                     }
                 }
