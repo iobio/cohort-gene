@@ -287,6 +287,9 @@
                     .on('d3click', function (variant) {
                         self.onVariantClick(variant);
                     })
+                    .on('d3outsideclick', function() {
+                        self.onVariantClick(null);
+                    })
                     .on('d3mouseover', function (variant) {
                         self.onVariantHover(variant);
                     })
@@ -354,15 +357,21 @@
                 let self = this;
                 self.$emit("variantHoverEnd", variant);
             },
-            showVariantCircle: function (variant, container, lock) {
-                this.hideVariantCircle(container);
-                this.variantChart.showCircle()(variant,
-                    container,
-                    true,   // show missing variants
-                    lock);
+            showVariantCircle: function (variant, container, pinned) {
+                if (variant == null) {
+                    this.hideVariantCircle(container, pinned);
+                } else {
+                    if (pinned) {
+                        this.variantChart.hideCircle()(container, pinned);
+                    }
+                    this.variantChart.showCircle()(variant,
+                        container,
+                        true,
+                        pinned);
+                }
             },
-            hideVariantCircle: function (container) {
-                this.variantChart.hideCircle()(container);
+            hideVariantCircle: function (container, pinned) {
+                this.variantChart.hideCircle()(container, pinned);
             },
             setVariantChart: function () {
                 this.$emit('updateVariantChart', this.model);

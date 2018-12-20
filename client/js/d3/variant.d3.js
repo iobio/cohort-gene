@@ -1,5 +1,5 @@
 function variantD3() {
-    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout");
+    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3outsideclick", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout");
 
     // dimensions
     var yAxisWidth = 45;
@@ -123,19 +123,23 @@ function variantD3() {
 
 
 
-    var hideCircle = function (svgContainer, parentContainer) {
-        svgContainer.selectAll(".circle").transition()
-            .duration(100)
+    var hideCircle = function (svgContainer, pinned) {
+        var circleClazz = pinned ? '.pinned.circle' : '.hover.circle';
+        var pinnedArrowClazz = 'g.pinned.arrow';
+        var hoverArrowClazz  = 'g.hover.arrow';
+
+        svgContainer.select(circleClazz).transition()
+            .duration(500)
             .style("opacity", 0);
-        svgContainer.selectAll("g.arrow").selectAll('.arrow').transition()
-            .duration(100)
-            .style("opacity", 0);
-        if (parentContainer) {
-            parentContainer.select('.tooltip').transition()
+        if (pinned) {
+            svgContainer.select(pinnedArrowClazz).selectAll(".arrow").transition()
                 .duration(500)
-                .style("opacity", 0)
-                .style("z-index", 0)
-                .style("pointer-events", "none");
+                .style("opacity", 0);
+        }
+        if (!pinned) {
+            svgContainer.select(hoverArrowClazz).selectAll(".arrow").transition()
+                .duration(500)
+                .style("opacity", 0);
         }
     }
 
@@ -282,7 +286,6 @@ function variantD3() {
                 // Select the svg element, if it exists.
                 var svg = container.selectAll("svg").data([0]);
 
-
                 if (zoomVersion) {
                     svg.enter()
                         .append("svg")
@@ -303,8 +306,12 @@ function variantD3() {
                         .attr("preserveAspectRatio", "none")
                         .append("g")
                         .attr("class", "group")
-                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
                 }
+
+                svg.on("click", function(d) {
+                    dispatch.d3outsideclick(null);
+                });
 
                 var g = svg.select("g.group");
 
@@ -444,6 +451,7 @@ function variantD3() {
                 g.selectAll('.variant')
                     .on("click", function(d) {
                         dispatch.d3click(d);
+                        d3.event.stopPropagation();
                     })
                     .on("mouseover", function(d) {
                         dispatch.d3mouseover(d);
@@ -554,7 +562,6 @@ function variantD3() {
                         .duration(200)
                         .call(xAxis);
                 }
-
 
 
                 // add a circle and arrows for 'hover' event and 'pinned' event

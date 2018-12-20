@@ -59,7 +59,6 @@ TD & SJG updated Nov2018 -->
                                     :doneLoadingData="doneLoadingData"
                                     :doneLoadingExtras="doneLoadingExtras"
                                     :doubleMode="true"
-                                    @variantClick="onVariantClick"
                                     @dataSetVariantClick="onDataSetVariantClick"
                                     @dataSetVariantHover="onDataSetVariantHover"
                                     @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
@@ -506,9 +505,6 @@ TD & SJG updated Nov2018 -->
                 this.filterModel.regionEnd = null;
                 this.variantModel.setLoadedVariants(this.selectedGene);
             },
-            onVariantClick: function() {
-              alert('test test');
-            },
             onDataSetVariantClick: function (variant, dataSetKey) {
                 let self = this;
 
@@ -516,12 +512,15 @@ TD & SJG updated Nov2018 -->
                     // Circle selected variant
                     if (self.$refs.variantCardRef) {
                         self.$refs.variantCardRef.forEach((cardRef) => {
-                            cardRef.showVariantCircle(variant);
+                            cardRef.hideVariantCircle(true);
+                            cardRef.showVariantCircle(variant, true);
+                            cardRef.showCoverageCircle(variant);
                         });
                     }
                     if (self.$refs.enrichCardRef) {
                         self.$refs.enrichCardRef.forEach((cardRef) => {
-                            cardRef.showVariantCircle(variant);
+                            cardRef.hideVariantCircle(true);
+                            cardRef.showVariantCircle(variant, true);
                         });
                     }
 
@@ -585,36 +584,37 @@ TD & SJG updated Nov2018 -->
                 let self = this;
                 self.$refs.variantCardRef.forEach(function (variantCard) {
                     if (variantCard != sourceComponent) {
+                        variantCard.hideVariantCircle(false);
                         variantCard.showVariantCircle(variant, false);
                         variantCard.showCoverageCircle(variant);
                     }
                 });
-                if (self.$refs.enrichCardRef != null) {
-                    self.$refs.enrichCardRef.showVariantCircle(variant, false);
-                }
+                self.$refs.enrichCardRef.forEach(function (enrichCard) {
+                    if (enrichCard != sourceComponent) {
+                        enrichCard.hideVariantCircle(false);
+                        enrichCard.showVariantCircle(variant, false);
+                    }
+                });
             },
-            onDataSetVariantHoverEnd: function (sourceVariantCard) {
+            onDataSetVariantHoverEnd: function () {
                 let self = this;
-                if (self.$refs.variantCardRef) {
-                    self.$refs.variantCardRef.forEach(function (variantCard) {
-                        variantCard.hideVariantCircle(false);
-                        variantCard.hideCoverageCircle();
-                    });
-                }
-                if (self.$refs.enrichCardRef != null) {
-                    self.$refs.enrichCardRef.hideVariantCircle(variant, false);
-                }
+                self.$refs.variantCardRef.forEach(function (variantCard) {
+                    variantCard.hideVariantCircle(false);
+                });
+                self.$refs.enrichCardRef.forEach(function (enrichCard) {
+                    enrichCard.hideVariantCircle(false);
+                });
             },
             deselectVariant: function (keepVariantCircle = false) {
                 let self = this;
                 self.selectedVariant = null;
                 if (!keepVariantCircle && self.$refs.variantCardRef) {
                     self.$refs.variantCardRef.forEach((cardRef) => {
-                        cardRef.hideVariantCircle();
+                        cardRef.hideVariantCircle(true);
                     });
                     if (self.$refs.enrichCardRef) {
                         self.$refs.enrichCardRef.forEach((cardRef) => {
-                            cardRef.hideVariantCircle();
+                            cardRef.hideVariantCircle(true);
                         });
                     }
                 }

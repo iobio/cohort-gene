@@ -304,6 +304,16 @@ TD & SJG updated Apr2018 -->
                 }
             },
             onVariantClick: function (variant, dataSetKey) {
+                if (this.showDepthViz) {
+                    if (variant) {
+                        this.showCoverageCircle(variant);
+                    }
+                }
+                if (this.showVariantViz) {
+                    if (variant) {
+                        this.showVariantCircle(variant, true);
+                    }
+                }
                 this.$emit('dataSetVariantClick', variant, this, dataSetKey);
             },
             onVariantHover: function (variant, showTooltip = true) {
@@ -383,16 +393,16 @@ TD & SJG updated Apr2018 -->
                     .style("z-index", 0)
                     .style("pointer-events", "none");
             },
-            showVariantCircle: function (variant) {
+            showVariantCircle: function (variant, lock) {
                 let self = this;
                 if (self.showVariantViz && self.$refs.subsetVizRef != null) {
-                    self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
+                    self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), lock);
                 }
             },
-            hideVariantCircle: function () {
+            hideVariantCircle: function (lock) {
                 let self = this;
                 if (self.showVariantViz && self.$refs.subsetVizRef != null) {
-                    self.$refs.subsetVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.subsetVizRef.name));
+                    self.$refs.subsetVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.subsetVizRef.name), lock);
                 }
             },
             getVariantSVG: function (vizTrackName) {

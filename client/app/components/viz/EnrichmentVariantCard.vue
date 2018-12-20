@@ -355,6 +355,16 @@ Updated: SJG Dec2018
                 }
             },
             onVariantClick: function (variant, dataSetKey) {
+                if (this.showDepthViz) {
+                    if (variant) {
+                        this.showCoverageCircle(variant);
+                    }
+                }
+                if (this.showVariantViz) {
+                    if (variant) {
+                        this.showVariantCircle(variant, true);
+                    }
+                }
                 this.$emit('dataSetVariantClick', variant, this, dataSetKey);
             },
             onVariantZoom: function (selectedVarIds, xStart, yStart, drawBelow, graphWidth) {
@@ -402,7 +412,7 @@ Updated: SJG Dec2018
             },
             onVariantHoverEnd: function () {
                 if (this.showVariantViz) {
-                    this.hideVariantCircle();
+                    this.hideVariantCircle(false);
                     this.hideVariantTooltip(this);
                 }
                 this.$emit('dataSetVariantHoverEnd');
@@ -463,19 +473,19 @@ Updated: SJG Dec2018
                     .style("z-index", 0)
                     .style("pointer-events", "none");
             },
-            showVariantCircle: function (variant) {
+            showVariantCircle: function (variant, lock) {
                 let self = this;
                 if (self.showVariantViz && self.$refs.subsetVizRef != null) {
-                    self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), true);
+                    self.$refs.subsetVizRef.showVariantCircle(variant, self.getVariantSVG(self.$refs.subsetVizRef.name), lock);
                 }
                 if (self.$refs.zoomVizRef != null) {
-                    self.$refs.zoomVizRef.showVariantCircle(variant, self.getZoomSVG(), true);
+                    self.$refs.zoomVizRef.showVariantCircle(variant, self.getZoomSVG(), lock);
                 }
             },
-            hideVariantCircle: function () {
+            hideVariantCircle: function (lock) {
                 let self = this;
                 if (self.showVariantViz && self.$refs.subsetVizRef != null) {
-                    self.$refs.subsetVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.subsetVizRef.name));
+                    self.$refs.subsetVizRef.hideVariantCircle(self.getVariantSVG(self.$refs.subsetVizRef.name), lock);
                 }
             },
             getZoomSVG: function () {
