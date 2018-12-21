@@ -346,7 +346,17 @@
                 // JSON.stringify
                 let exportObj = {};
                 let entryArr = [];
-                let infoValues = Object.values(self.modelInfoMap);
+                let infoValues = [];
+                if (self.launchedFromHub) {
+                    self.entryIds.forEach((id) => {
+                        if (id !== 's0') {
+                            let infoVal = self.modelInfoMap[id];
+                            infoValues.push(infoVal);
+                        }
+                    });
+                } else {
+                    infoValues = Object.values(self.modelInfoMap);
+                }
                 infoValues.forEach((val) => {
                     let newVal = {};
                     newVal.id = val.id;
