@@ -42,6 +42,19 @@ class VariantModel {
         // </editor-fold>
 
         // <editor-fold desc="DEMO DATA">
+        this.hubDemoInfo = [{
+            'id': 's1',
+            'isSampleEntry': true,
+            'displayName': 'Platinum Demo',
+            'vcfs': ['https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz'],
+            'tbis': null,
+            'bams': ['https://s3.amazonaws.com/iobio/samples/bam/NA12878.exome.bam'],
+            'bais': null,
+            'subsetSampleIds': ['NA12877'],
+            'excludeSampleIds': [],
+            'selectedSample': 'NA12877'
+        }];
+
         this.demoInfo = [{
             'id': 's0',
             'isSampleEntry': false,
@@ -836,6 +849,15 @@ class VariantModel {
     //</editor-fold>
 
     // <editor-fold desc="HELPERS">
+
+    getDemoInfo(launchedFromHub) {
+        let self = this;
+        if (launchedFromHub) {
+            return self.hubDemoInfo;
+        } else {
+            return self.demoInfo;
+        }
+    }
 
     /* Returns true if all cohorts within the data set are alignments only. */
     isAlignmentsOnly() {

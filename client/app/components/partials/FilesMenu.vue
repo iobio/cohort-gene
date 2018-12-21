@@ -110,10 +110,9 @@
                 </v-flex>
 
                 <v-flex xs3 class="pr-0 pt-2">
-                    <v-menu :disabled="launchedFromHub">
+                    <v-menu>
                         <v-btn outline
                                color="cohortNavy"
-                               :disabled="launchedFromHub"
                                slot="activator">
                             Auto-Fill
                             <v-icon small>keyboard_arrow_down</v-icon>
@@ -383,18 +382,24 @@
                     let infosToLoad = null;
                     if (!customInfos) {
                         self.separateUrlForIndex = false;
-                        infosToLoad = self.variantModel.demoInfo;
+                        infosToLoad = self.variantModel.getDemoInfo(self.launchedFromHub);
                     } else {
                         infosToLoad = customInfos;
                         self.separateUrlForIndex = self.checkCustomIndex(customInfos);
                     }
 
                     // Reset modelInfoMap to get rid of any added info extras
-                    self.modelInfoMap = {};
+                    if (self.launchedFromHub) {
+                        let newModelInfoMap = {};
+                        newModelInfoMap['s0'] = self.modelInfoMap['s0'];
+                        self.modelInfoMap = newModelInfoMap;
+                    } else {
+                        self.modelInfoMap = {};
+                    }
 
                     // Add relevant infos to map and ids to sample array in correct order
                     let idList = [];
-                    let arrIndex = 0;
+                    let arrIndex = self.launchedFromHub ? 1 : 0;
                     infosToLoad.forEach(function (modelInfo) {
                         let id = modelInfo.id;
                         idList.push(id);
@@ -423,7 +428,7 @@
                     }
 
                     // Set ref build if different from current drop-down selection
-                    if (refBuild !== '' && refBuild !== self.buildName) {
+                    if (refBuild !== '' && refBuild !== self.buildName && !self.launchedFromHub) {
                         self.buildName = refBuild;
                     }
 
