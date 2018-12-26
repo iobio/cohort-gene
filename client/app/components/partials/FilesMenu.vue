@@ -333,11 +333,11 @@
                 let customFile = evt.target.files[0];
                 self.variantModel.promiseInitCustomFile(customFile)
                     .then((obj) => {
+                        if (!obj) {
+                            alertify.set('notifier', 'position', 'top-right');
+                            alertify.warning("The selected configuration file is malformed or incompatible. Please try again.");
+                        }
                         self.onAutoLoad(obj.infos, obj.refBuild);
-                    })
-                    .catch((e) => {
-                        console.log('Problem loading custom config file: ' + e);
-                        alert('There was a problem loading from the selected config file. Please try again.');
                     });
             },
             onDownloadCustomFile: function () {
@@ -400,9 +400,11 @@
 
                     // Reset modelInfoMap to get rid of any added info extras
                     if (self.launchedFromHub) {
-                        let newModelInfoMap = {};
-                        newModelInfoMap['s0'] = self.modelInfoMap['s0'];
-                        self.modelInfoMap = newModelInfoMap;
+                        self.entryIds.forEach((id) => {
+                          if (id !== 's0') {
+                              delete self.modelInfoMap[id];
+                          }
+                        })
                     } else {
                         self.modelInfoMap = {};
                     }
@@ -417,6 +419,10 @@
                         self.entryIds[arrIndex] = modelInfo.id;
                         arrIndex++;
                     });
+
+                    // Fool vue into forcing view update
+                    self.entryIds.push('foo');
+                    self.entryIds.pop();
 
                     // Get rid of any remaining extra samples names in array
                     if (self.entryIds.length > arrIndex) {
@@ -445,7 +451,7 @@
                     Promise.all(addPromises)
                         .then(() => {
                             // Turn on loading spinners
-                            for (let i = 0; i < self.$refs.entryDataRef.length; i++) {
+                            for (let i =  self.launchedFromHub ? 1 : 0; i < self.$refs.entryDataRef.length; i++) {
                                 self.$refs.entryDataRef[i].setLoadingFlags(true);
                             }
 
@@ -487,10 +493,17 @@
 
                     // Check all vcfs at same time for single entry
                     theDataSet.onVcfUrlEntered(nameList, theModelInfo.vcfs, theModelInfo.tbis, displayNameList)
-                        .then((successObj) => {
-                            if (successObj) {
+                        .then((entObj) => {
+                            if (entObj) {
+                                // Check for build mismatch
+                                if (entObj.mismatchBuild) {
+                                    alertify.set('notifier', 'position', 'top-right');
+                                    alertify.warning("The vcf file provided utilizes the " + entObj.fileBuild + ' reference build. Analysis may only be performed on files with synonymous builds.');
+                                    console.log('Mismatch build detected');
+                                }
+
                                 // Set samples prop
-                                theModelInfo.samples = successObj.samples;
+                                theModelInfo.samples = entObj.samples;
                                 for (let i = 0; i < self.$refs.entryDataRef.length; i++) {
                                     let currEntryRef = self.$refs.entryDataRef[i];
                                     if (currEntryRef.modelInfo.id === theDataSet.entryId) {
@@ -592,7 +605,6 @@
                 }
 
                 // Remove sample and delete info
-                debugger;
                 let entryIndex = self.entryIds.indexOf(entryId);
                 self.entryIds.splice(entryIndex, 1);
                 delete self.modelInfoMap[entryId];

@@ -401,7 +401,6 @@ TD & SJG updated Nov2018 -->
             },
             promiseLoadAnnotationDetails: function () {
                 let self = this;
-
                 return new Promise(function (resolve, reject) {
 
                 })
@@ -411,7 +410,7 @@ TD & SJG updated Nov2018 -->
 
                 self.promiseClearCache()
                     .then(function() {
-                        if (self.variantModel.filterModel == null) {
+                        if (self.variantModel.filterModel == null && self.selectedGene != null) {
                             self.initializeFiltering();
                         }
                         if (self.selectedGene && self.selectedGene.gene_name) {
@@ -426,7 +425,6 @@ TD & SJG updated Nov2018 -->
             },
             onGeneSelected: function (geneName) {
                 let self = this;
-                // TODO: if second launch, only refresh tracks that are new
                 self.deselectVariant();
                 self.wipeModels();
                 self.promiseLoadGene(geneName);
@@ -451,7 +449,7 @@ TD & SJG updated Nov2018 -->
 
                 return new Promise(function (resolve, reject) {
                     if (self.variantModel) {
-                        self.variantModel.clearLoadedData();
+                        self.variantModel.clearLoadedData(geneName);
                     }
                     self.geneModel.addGeneName(geneName);
                     self.geneModel.promiseGetGeneObject(geneName)
@@ -751,8 +749,8 @@ TD & SJG updated Nov2018 -->
                         let initialLaunch = !(self.paramProjectId === '0');
                         self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch, usingNewApi)
                             .then(function (idNumList) {
-                                let probandN = idNumList[0];
-                                let subsetN = idNumList[1];
+                                let probandN = idNumList[0].length;
+                                let subsetN = idNumList[1].length;
                                 if (self.$refs.variantSummaryCardRef != null) {
                                     self.$refs.variantSummaryCardRef.assignBarChartValues(probandN, subsetN);
                                 }

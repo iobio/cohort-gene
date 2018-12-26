@@ -559,30 +559,36 @@ class VariantModel {
         return new Promise((resolve, reject) => {
             let modelInfos = [];
             const reader = new FileReader();
-            reader.onload = (fileObj) => {
-                let fileText = fileObj.target.result;
-                let infoObj = JSON.parse(fileText);
-                let entries = infoObj['entries'];
-                let refBuild = infoObj['refBuild'];
-                entries.forEach((entry) =>  {
-                    let currInfo = {};
-                    currInfo.id = entry.id;
-                    currInfo.displayName = entry.displayName;
-                    currInfo['vcfs'] = entry.vcfs;
-                    currInfo['tbis'] = entry.tbis;
-                    currInfo['bams'] = entry.bams;
-                    currInfo['bais'] = entry.bais;
-                    currInfo['samples'] = entry.samples;
-                    currInfo['subsetSampleIds'] = entry.subsetSampleIds;
-                    currInfo['excludeSampleIds'] = entry.excludeSampleIds;
-                    currInfo['selectedSample'] = entry.selectedSample;
-                    currInfo['isSampleEntry'] = entry.isSampleEntry;
-                    modelInfos.push(currInfo);
-                });
-                let returnObj = {"infos": modelInfos, "refBuild": refBuild};
-                resolve(returnObj);
-            };
-            reader.readAsText(customFile);
+                reader.onload = (fileObj) => {
+                    let infoObj = null;
+                    let fileText = fileObj.target.result;
+                    try {
+                        infoObj = JSON.parse(fileText);
+                    } catch(error) {
+                        console.log(error);
+                        resolve(null);
+                    }
+                    let entries = infoObj['entries'];
+                    let refBuild = infoObj['refBuild'];
+                    entries.forEach((entry) =>  {
+                        let currInfo = {};
+                        currInfo.id = entry.id;
+                        currInfo.displayName = entry.displayName;
+                        currInfo['vcfs'] = entry.vcfs;
+                        currInfo['tbis'] = entry.tbis;
+                        currInfo['bams'] = entry.bams;
+                        currInfo['bais'] = entry.bais;
+                        currInfo['samples'] = entry.samples;
+                        currInfo['subsetSampleIds'] = entry.subsetSampleIds;
+                        currInfo['excludeSampleIds'] = entry.excludeSampleIds;
+                        currInfo['selectedSample'] = entry.selectedSample;
+                        currInfo['isSampleEntry'] = entry.isSampleEntry;
+                        modelInfos.push(currInfo);
+                    });
+                    let returnObj = {"infos": modelInfos, "refBuild": refBuild};
+                    resolve(returnObj);
+                };
+                reader.readAsText(customFile);
         })
     }
 
@@ -630,13 +636,24 @@ class VariantModel {
         let self = this;
 
         if (self.otherDataSets.length === 0) {
-            return self.mainDataSet.promiseLoadData(theGene, theTranscript);
+            if (self.mainDataSet.lastGeneLoaded === theGene.name && self.mainDataSet.loadedVariants != null) {
+                return Promise.resolve();
+            } else {
+                self.mainDataSet.lastGeneLoaded = theGene.name;
+                return self.mainDataSet.promiseLoadData(theGene, theTranscript);
+            }
         } else {
             return new Promise((resolve, reject) => {
                 let loadPromises = [];
-                loadPromises.push(self.mainDataSet.promiseLoadData(theGene, theTranscript));
+                if (self.mainDataSet.lastGeneLoaded !== theGene.name || self.mainDataSet.loadedVariants == null) {
+                    self.mainDataSet.lastGeneLoaded = theGene.name;
+                    loadPromises.push(self.mainDataSet.promiseLoadData(theGene, theTranscript));
+                }
                 self.otherDataSets.forEach((dataSet) => {
-                    loadPromises.push(dataSet.promiseLoadData(theGene, theTranscript));
+                    if (dataSet.lastGeneLoaded !== theGene.name || dataSet.loadedVariants == null) {
+                        dataSet.lastGeneLoaded = theGene.name;
+                        loadPromises.push(dataSet.promiseLoadData(theGene, theTranscript));
+                    }
                 });
 
                 Promise.all(loadPromises)
@@ -675,10 +692,10 @@ class VariantModel {
     }
 
     /* Clears any data in existing datasets. */
-    clearLoadedData() {
+    clearLoadedData(geneName) {
         let self = this;
         self.getAllDataSets().forEach((dataSet) => {
-            dataSet.clearLoadedData();
+            dataSet.clearLoadedData(geneName);
         })
     }
 

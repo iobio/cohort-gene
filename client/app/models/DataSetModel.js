@@ -55,6 +55,7 @@ class DataSetModel {
         this.efficiencyMode = true;         // True to only pull back variant locations and not functional impacts
         this.noMatchingSamples = false;     // Flag to display No Matching Variants chip
         this.annotationScheme = 'VEP';
+        this.lastGeneLoaded = null;
         this.inProgress = {
             'fetchingHubData': false,
             'verifyingVcfUrl': false,
@@ -1044,6 +1045,12 @@ class DataSetModel {
                             if (success) {
                                 me.vcfUrlsEntered = true;
                                 me.vcfFilesOpened = false;
+                                if (hdrBuildResult !== '' && hdrBuildResult !== me.getGenomeBuildHelper().currentBuild.name) {
+                                    let hdrObj = {};
+                                    hdrObj['mismatchBuild'] = true;
+                                    hdrObj['fileBuild'] = hdrBuildResult;
+                                    reject(hdrObj);
+                                }
                                 me.vcfs.push(currVcf);
                                 if (currTbi) {
                                     me.tbis.push(currTbi);
@@ -1563,7 +1570,7 @@ class DataSetModel {
                     theResultMap[self.entryId] = coverageData;
                     resolve(theResultMap);
                 });
-            }``
+            }
         });
     }
 
@@ -1625,31 +1632,37 @@ class DataSetModel {
         }
     }
 
-    /* Clears the variant data for each cohort. Falsifies flags used for chip display. */
-    clearLoadedData() {
+    /* Clears the variant data for each cohort if the last gene analyzed for this data set is different than the one provided.
+     * This coordinates display with loading new tracks once some tracks have already been analyzed.
+     * Falsifies flags used for chip display. */
+    clearLoadedData(geneName) {
         let self = this;
 
         self.extraAnnotationsLoaded = false;
-        self.getCohorts().forEach(function (cohort) {
-            cohort.loadedVariants = {
-                loadState: {},
-                features: [],
-                maxPosLevel: 0,
-                maxNegLevel: 0,
-                maxSubLevel: 0,
-                featureWidth: 0
-            };
-            cohort.calledVariants = {
-                loadState: {},
-                features: [],
-                maxPosLevel: 0,
-                maxNegLevel: 0,
-                maxSubLevel: 0,
-                featureWidth: 0
-            };
-            cohort.coverage = [[]];
-            cohort.noMatchingSamples = false;
-        })
+        if (self.lastGeneLoaded === geneName) {
+            return;
+        } else {
+            self.getCohorts().forEach(function (cohort) {
+                cohort.loadedVariants = {
+                    loadState: {},
+                    features: [],
+                    maxPosLevel: 0,
+                    maxNegLevel: 0,
+                    maxSubLevel: 0,
+                    featureWidth: 0
+                };
+                cohort.calledVariants = {
+                    loadState: {},
+                    features: [],
+                    maxPosLevel: 0,
+                    maxNegLevel: 0,
+                    maxSubLevel: 0,
+                    featureWidth: 0
+                };
+                cohort.coverage = [[]];
+                cohort.noMatchingSamples = false;
+            })
+        }
     }
 
     // Used in zoom functionality

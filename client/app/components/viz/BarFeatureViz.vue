@@ -61,7 +61,7 @@
         created: function () {
         },
         mounted: function () {
-            this.drawCharts();
+            //this.drawCharts();
         },
         methods: {
             drawCharts(probandSampleCount, subsetSampleCount) {
