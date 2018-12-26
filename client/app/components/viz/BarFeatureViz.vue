@@ -61,15 +61,13 @@
         created: function () {
         },
         mounted: function () {
-            //this.drawCharts();
         },
         methods: {
             drawCharts(probandSampleCount, subsetSampleCount) {
                 let self = this;
 
                 // If we're launching locally, we don't immediately have counts coming in
-                // TODO: make this dynamic
-                if (probandSampleCount == null) {
+                if (probandSampleCount == null || probandSampleCount === 0) {
                     probandSampleCount = 10;
                     subsetSampleCount = 10;
                 }

@@ -732,7 +732,7 @@ TD & SJG updated Nov2018 -->
                         let queryParams = Qs.parse(window.location.search.substring(1)); // if query params before the fragment
                         Object.assign(queryParams, self.$route.query);
                         source = queryParams.source;
-                        projectId = queryParams.project_id != 0 ? queryParams.project_id : queryParams.project_uuid;
+                        projectId = queryParams.project_id !== 0 ? queryParams.project_id : queryParams.project_uuid;
                         if (projectId == null) {
                             projectId = '0';
                         }
@@ -767,6 +767,10 @@ TD & SJG updated Nov2018 -->
                     } else {
                         // Otherwise, wait for user to launch files menu
                         self.launchedFromHub = false;
+                        // Draw zygosity charts
+                        if (self.$refs.variantSummaryCardRef != null) {
+                            self.$refs.variantSummaryCardRef.assignBarChartValues(0, 0);
+                        }
                         resolve();
                     }
                 });
