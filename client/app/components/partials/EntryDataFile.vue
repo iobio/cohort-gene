@@ -31,13 +31,13 @@
 
 </style>
 <template>
-
     <v-layout row wrap class="file-component">
         <v-flex xs9>
             <v-text-field
                     v-if="fileType === 'url'"
                     v-bind:label="urlLabel"
                     v-bind:disabled="isCohortFromHub"
+                    v-bind:error="isError"
                     hide-details
                     v-model="url"
                     color="cohortNavy"
@@ -46,6 +46,7 @@
             <v-text-field
                     v-if="((!isCohortFromHub) && (fileType === 'url') && (separateUrlForIndex || indexUrl))"
                     v-bind:label="'Enter ' + indexLabel +  ' URL'"
+                    v-bind:error="isError"
                     hide-details
                     v-model="indexUrl"
                     @change="onUrlChange"
@@ -97,7 +98,8 @@
             filePlaceholder: null,
             fileAccept: null,
             separateUrlForIndex: null,
-            isCohortFromHub: false
+            isCohortFromHub: false,
+            isError: false
         },
         data() {
             return {

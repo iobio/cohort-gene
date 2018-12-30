@@ -125,6 +125,7 @@
                             :fileAccept="fileAccept.vcf"
                             :separateUrlForIndex="separateUrlForIndex && !isCohortFromHub"
                             :isCohortFromHub="isCohortFromHub"
+                            :isError="vcfError"
                             @url-entered="onVcfUrlEntered"
                             @file-selected="onVcfFilesSelected">
                     </entry-data-file>
@@ -186,6 +187,7 @@
                             :filePlaceholder="filePlaceholder.bam"
                             :fileAccept="fileAccept.bam"
                             :separateUrlForIndex="separateUrlForIndex"
+                            :isError="bamError"
                             @url-entered="onBamUrlEntered"
                             @file-selected="onBamFilesSelected">
                     </entry-data-file>
@@ -254,7 +256,9 @@
                 firstBai: null,
                 dialogType: '',
                 retrievingIds: false,
-                checkingBam: false
+                checkingBam: false,
+                vcfError: false,
+                bamError: false
             }
         },
         watch: {
@@ -302,6 +306,7 @@
             },
             onVcfUrlEntered: function (vcfUrl, tbiUrl) {
                 let self = this;
+                self.vcfError = false;
                 self.retrievingIds = true;
                 self.$emit("sample-data-changed");
                 self.$set(self, "selectedSample", null);
@@ -332,6 +337,7 @@
                             self.$emit("sample-data-changed");
                         })
                         .catch((errObj) => {
+                            self.vcfError = true;
                             self.retrievingIds = false;
                             self.$emit("sample-data-changed");
                             if (errObj.isBadFile) {
@@ -371,10 +377,11 @@
                                 self.selectedSample = null;
                             }
                         }
+                        self.vcfError = false;
                         self.$emit("sample-data-changed");
-                        //self.$emit("samples-available", self.modelInfo.id, self.samples);
                     })
                     .catch(function (error) {
+                        self.vcfError = true;
                         self.retrievingIds = false;
                         self.$emit("sample-data-changed");
                     })
@@ -389,6 +396,7 @@
             },
             onBamUrlEntered: function (bamUrl, baiUrl) {
                 let self = this;
+                self.bamError = false;
                 self.checkingBam = true;
                 self.$emit("sample-data-changed");
 
@@ -400,6 +408,8 @@
                             if (baiUrl) {
                                 self.modelInfo.bais = [baiUrl];
                             }
+                        } else {
+                            self.bamError = true;
                         }
                         self.$emit("sample-data-changed");
                     })
@@ -417,9 +427,11 @@
                 let self = this;
                 self.modelInfo.dataSet.promiseBamFilesSelected(fileSelection)
                     .then(function () {
+                        self.bamError = false;
                         self.$emit("sample-data-changed");
                     })
                     .catch(function (error) {
+                        self.bamError = true;
                         self.$emit("sample-data-changed");
                     })
             },
@@ -556,6 +568,10 @@
                     self.checkingBam = flagState;
                 }
             }
+        },
+        created: function() {
+          this.vcfError = false;
+          this.bamError = false;
         },
         mounted: function () {
             let self = this;
