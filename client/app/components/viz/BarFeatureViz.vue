@@ -24,7 +24,7 @@
 <template>
     <v-flex xs12>
         <v-layout row>
-            <v-flex xs12 class="field-label-header" style="text-align:left">Zygosity Counts</v-flex>
+            <v-flex xs12 class="field-label-header" style="text-align:left">Cohort Zygosity Counts</v-flex>
         </v-layout>
         <v-layout row>
             <v-flex xs2 class="summary-field-label">Probands:</v-flex>

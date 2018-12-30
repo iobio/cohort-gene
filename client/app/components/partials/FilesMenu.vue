@@ -162,6 +162,7 @@
                             :launchedFromHub="launchedFromHub"
                             :isSampleEntry="modelInfoMap[entry].isSampleEntry"
                             @sample-data-changed="validate"
+                            @cohort-data-changed="setCohortChangedFlag"
                             @remove-entry="removeEntry"
                             @subset-ids-entered="subsetIdsEntered"
                             @exclude-ids-entered="excludeIdsEntered">
@@ -213,6 +214,7 @@
                 speciesName: null,
                 buildName: null,
                 activeTab: null,
+                cohortDataChanged: false,
 
                 modelInfoMap: {},
                 entryIds: [],       // One per file menu entry
@@ -319,9 +321,15 @@
                     }
                 }
 
-                let performAnalyzeAll = self.autofillAction ? true : false;
+                //let performAnalyzeAll = self.autofillAction ? true : false;
                 self.inProgress = false;
-                self.$emit("on-files-loaded", performAnalyzeAll);
+
+                let cohortInfo = self.modelInfoMap['s0'];
+                if (cohortInfo == null) {
+                    cohortInfo = self.modelInfoMap['Hub'];
+                }
+                self.$emit("on-files-loaded", cohortInfo.samples.length, cohortInfo.subsetSampleIds.length, self.cohortDataChanged);
+                self.cohortDataChanged = false;
                 self.showFilesMenu = false;
             },
             onCancel: function () {
@@ -554,6 +562,10 @@
                         self.isValid &= (self.modelInfoMap[currKey] != null && self.modelInfoMap[currKey].dataSet.isReadyToLoad());
                     }
                 }
+            },
+            setCohortChangedFlag: function() {
+                let self = this;
+                self.cohortDataChanged = true;
             },
             // Called each time files menu opened
             init: function() {

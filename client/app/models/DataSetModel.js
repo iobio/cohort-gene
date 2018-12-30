@@ -34,6 +34,7 @@ class DataSetModel {
         this.vcfRefNamesMap = {};       // The map of all chromosomes present in all vcf files for this data set
         this.displayName = '';          // Name displayed in chips for analysis sources & in file loader for local launched files
         this.maxDepth = 0;
+        this.coverage = [[]];           // Data displayed in coverage track
 
         // TODO: these might be depreciated if color scheme is no longer used...
         this.subsetEnrichedVars = {};
@@ -63,6 +64,8 @@ class DataSetModel {
             'drawingVariants': false,
             'loadingCoverage': false
         };
+        this.lastVcfAlertify = null;
+        this.lastBamAlertify = null;
         // </editor-fold>
 
         // <editor-fold desc="MODEL PROPS">
@@ -76,11 +79,6 @@ class DataSetModel {
         this.invalidVcfNames = [];      // List of names corresponding to invalid vcfs
         this.invalidVcfReasons = [];   // List of reasons corresponding to invalid vcfs - matching order as invalidVcfNames
         // </editor-fold>
-
-        // Moved from cohort model TODO: classify these into groups
-        this.lastVcfAlertify = null;
-        this.lastBamAlertify = null;
-        this.coverage = [[]];
     }
 
     //<editor-fold desc="GETTERS & SETTERS">

@@ -15,12 +15,11 @@ function barChart() {
     var parentId,
         barColor = '#6c94b7',
         comingSoonFlag = false,
-        yValueMax = 575,
-        yValueTicks = 5;
+        yValueMax = 575;
 
     // Private variables (can be made public if necessary except for _x and _y)
     var _x, _y,
-        margin = {top: 10, right: 0, bottom: 40, left: 50},
+        margin = {top: 10, right: 0, bottom: 40, left: 40},
         height = 200 - margin.bottom - margin.top,
         width = 300 - margin.left - margin.right,
         roundedCorners = 2;
@@ -64,21 +63,21 @@ function barChart() {
         }
     };
 
-    var redrawYAxis = function (newYValueMax, newYValueTicks = 5) {
-        _y = d3.scale.linear().range([height, 0]);
-
-        var yAxis = d3.svg.axis()
-            .scale(_y)
-            .orient("left")
-            .ticks(newYValueTicks);
-
-        _y.domain([0, newYValueMax]);
-
-        var currAxis = d3.select('#' + parentId).select('svg').select('y axis');
-        currAxis.transition()
-            .duration(700)
-            .style("opacity", 1);
-    }
+    // var redrawYAxis = function (newYValueMax, newYValueTicks = 5) {
+    //     _y = d3.scale.linear().range([height, 0]);
+    //
+    //     var yAxis = d3.svg.axis()
+    //         .scale(_y)
+    //         .orient("left")
+    //         .ticks(newYValueTicks);
+    //
+    //     _y.domain([0, newYValueMax]);
+    //
+    //     var currAxis = d3.select('#' + parentId).select('svg').select('y axis');
+    //     currAxis.transition()
+    //         .duration(700)
+    //         .style("opacity", 1);
+    // };
 
     /* Draws outline of chart and axes */
     function chart(dataMap) {
@@ -96,10 +95,15 @@ function barChart() {
             .scale(_x)
             .orient("bottom, center");
 
+        // Avoid decimals
+        // TODO: this isn't working...
+        let yTicksMax = 5;
+        let yValueTicks = yValueMax < yTicksMax ? (yValueMax + 1) : yTicksMax;
+
         var yAxis = d3.svg.axis()
             .scale(_y)
             .orient("left")
-            .ticks(yValueTicks);    // One tick per number - can be scaled up/down as needed by multiplying/dividing
+            .ticks(yValueTicks);    // Max of 5 ticks
 
         _x.domain(dataMap.map(function (d) {
             return d.label;
@@ -107,7 +111,6 @@ function barChart() {
         _y.domain([0, yValueMax]);
 
         // Draw axes and labels
-        // Note: transform by 50 on both axes to fit y axes and labeling
         svg.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + height + ")")
@@ -118,31 +121,15 @@ function barChart() {
             .attr("transform", "rotate(-35)");
 
         svg.append("g")
-            //.attr("transform", "translate(50,0)")
             .attr("class", "y axis")
             .call(yAxis)
             .append("text")
             .attr("transform", "rotate(-90)")
-            .attr("y", 0) // Distance label is from y-axis
+            .attr("y", 0)
             .attr("dx", "-3em")
-            .attr("dy", "-3em")
+            .attr("dy", "-4em")
             .style("text-anchor", "end")
             .text("# Samples");
-
-        if (comingSoonFlag) {
-            svg.append("g")
-                .attr("class", "y axis")
-                .append("text")
-                .attr("transform", "rotate(-35)")
-                .attr("y", 5) // Distance label is from y-axis
-                .attr("dx", "7em")
-                .attr("dy", "6em")
-                .style('font-size', '18px')
-                .style("text-anchor", "end")
-                .style("fill", barColor)
-                .text("COMING SOON");
-        }
-
 
         // Draw bars
         if (dataMap.length > 0) {
@@ -201,14 +188,6 @@ function barChart() {
             return yValueMax;
         }
         yValueMax = _;
-        return chart;
-    };
-
-    chart.yValueTicks = function (_) {
-        if (!arguments.length) {
-            return yValueTicks;
-        }
-        yValueTicks = _;
         return chart;
     };
 

@@ -306,6 +306,10 @@
                 self.$emit("sample-data-changed");
                 self.$set(self, "selectedSample", null);
                 self.$set(self, "samples", []);
+                if (self.modelInfo.entryId === 's0') {
+                    self.$emit('cohort-data-changed');
+                }
+
 
                 if (self.modelInfo && self.modelInfo.dataSet) {
                     self.modelInfo.dataSet.onVcfUrlEntered([self.modelInfo.id], [vcfUrl], [tbiUrl], [self.modelInfo.displayName])
@@ -347,6 +351,9 @@
                 self.$set(self, "selectedSample", null);
                 self.$set(self, "samples", []);
                 fileSelection.id = self.modelInfo.id;
+                if (self.modelInfo.entryId === 's0') {
+                    self.$emit('cohort-data-changed');
+                }
                 self.modelInfo.dataSet.promiseVcfFilesSelected(fileSelection)
                     .then(function (data) {
                         if (data && data.sampleNames.length > 0) {

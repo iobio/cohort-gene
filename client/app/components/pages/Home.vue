@@ -222,6 +222,7 @@ TD & SJG updated Nov2018 -->
                 allGenes: allGenesData,
                 simonsIdMap: simonsIdMap,
                 launchedFromHub: false,
+                firstLaunch: true,
 
                 variantModel: null,
                 geneModel: null,
@@ -405,8 +406,13 @@ TD & SJG updated Nov2018 -->
 
                 })
             },
-            onFilesLoaded: function () {
+            onFilesLoaded: function (probandN, subsetN, cohortDataChanged) {
                 let self = this;
+
+                // Draw zygosity charts only on first launch (when cohort info loaded)
+                if (self.$refs.variantSummaryCardRef != null && (self.firstLaunch || cohortDataChanged)) {
+                    self.$refs.variantSummaryCardRef.assignBarChartValues(probandN, subsetN);
+                }
 
                 self.promiseClearCache()
                     .then(function() {
@@ -422,6 +428,7 @@ TD & SJG updated Nov2018 -->
                             alertify.warning("Please enter a gene name");
                         }
                     });
+                self.firstLaunch = false;
             },
             onGeneSelected: function (geneName) {
                 let self = this;
@@ -743,6 +750,7 @@ TD & SJG updated Nov2018 -->
 
                     // If we have a project ID here, coming from Hub launch
                     if (projectId !== '0') {
+                        self.firstLaunch = false;       // Mark first launch as complete
                         self.showVariantCards = true;   // Show for hub launch
                         self.launchedFromHub = true;
                         let hubEndpoint = new HubEndpoint(source, usingNewApi);
@@ -767,10 +775,7 @@ TD & SJG updated Nov2018 -->
                     } else {
                         // Otherwise, wait for user to launch files menu
                         self.launchedFromHub = false;
-                        // Draw zygosity charts
-                        if (self.$refs.variantSummaryCardRef != null) {
-                            self.$refs.variantSummaryCardRef.assignBarChartValues(0, 0);
-                        }
+                        self.firstLaunch = true;
                         resolve();
                     }
                 });
