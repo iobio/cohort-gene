@@ -324,11 +324,18 @@
                 //let performAnalyzeAll = self.autofillAction ? true : false;
                 self.inProgress = false;
 
-                let cohortInfo = self.modelInfoMap['s0'];
-                if (cohortInfo == null) {
-                    cohortInfo = self.modelInfoMap['Hub'];
+                let probandN, subsetN = 0;
+                if (!self.launchedFromHub) {
+                    let cohortInfo = self.modelInfoMap['s0'];
+                    if (cohortInfo == null) {
+                        console.log('Could not detect local cohort info for dynamic bar chart labeling.');
+                    } else {
+                        probandN = cohortInfo.samples.length;
+                        subsetN = cohortInfo.subsetSampleIds.length;
+                    }
                 }
-                self.$emit("on-files-loaded", cohortInfo.samples.length, cohortInfo.subsetSampleIds.length, self.cohortDataChanged);
+
+                self.$emit("on-files-loaded", probandN, subsetN, self.cohortDataChanged);
                 self.cohortDataChanged = false;
                 self.showFilesMenu = false;
             },
@@ -546,6 +553,7 @@
                             }
                         })
                         .catch((error) => {
+                            self.isValid = false;
                             console.log(error);
                             reject(error);
                         })

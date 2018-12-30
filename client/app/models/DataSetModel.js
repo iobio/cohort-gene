@@ -162,6 +162,15 @@ class DataSetModel {
         return self.name;
     }
 
+    getProbandIds() {
+        let self = this;
+        if (self.getProbandCohort() && self.getProbandCohort.sampleIds && self.ProbandCohort.sampleIds.length > 0) {
+            return self.getProbandCohort().sampleIds;
+        } else {
+            return [];
+        }
+    }
+
     getSubsetIds() {
         let self = this;
         if (self.getSubsetCohort() && self.getSubsetCohort().sampleIds && self.getSubsetCohort().sampleIds.length > 0) {
@@ -1060,9 +1069,13 @@ class DataSetModel {
                                     resolve();
                                 });
                             } else {
+                                me.vcfUrlsEntered = false;
+                                let errObj = {};
                                 openErrorFiles.push(currFileName);
-                                console.log('Could not open either: ' + vcfUrls[i] + 'or ' + tbiUrls[i] + ' - ' + errorMsg);
-                                reject(errorMsg);
+                                console.log('Could not open: ' + vcfUrls[i] + ' or its index - ' + errorMsg);
+                                errObj.badFile = vcfUrls[i];
+                                errObj.isBadFile = true;
+                                reject(errObj);
                             }
                         });
                     });
@@ -1207,6 +1220,9 @@ class DataSetModel {
                         updatedListObj['invalidReasons'] = invalidVcfReasons;
                         updatedListObj['displayNames'] = displayNames;
                         resolve(updatedListObj);
+                    })
+                    .catch((errObj) => {
+                        reject(errObj);
                     });
             }
         });

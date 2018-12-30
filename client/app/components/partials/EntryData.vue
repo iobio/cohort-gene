@@ -42,7 +42,7 @@
         .sample-select-label
             font-size: 12px !important
             font-weight: bold !important
-            color: rgba(0,0,0,0.54) !important
+            color: rgba(0, 0, 0, 0.54) !important
 
 </style>
 <style lang="css">
@@ -258,25 +258,25 @@
             }
         },
         watch: {
-            'modelInfo.vcfs': function(newVal, oldVal) {
+            'modelInfo.vcfs': function (newVal, oldVal) {
                 let self = this;
                 if (newVal) {
                     self.firstVcf = newVal[0];
                 }
             },
-            'modelInfo.tbis': function(newVal, oldVal) {
+            'modelInfo.tbis': function (newVal, oldVal) {
                 let self = this;
                 if (newVal) {
                     self.firstTbi = newVal[0];
                 }
             },
-            'modelInfo.bams': function(newVal, oldVal) {
+            'modelInfo.bams': function (newVal, oldVal) {
                 let self = this;
                 if (newVal) {
                     self.firstBam = newVal[0];
                 }
             },
-            'modelInfo.bais': function(newVal, oldVal) {
+            'modelInfo.bais': function (newVal, oldVal) {
                 let self = this;
                 if (newVal) {
                     self.firstBai = newVal[0];
@@ -284,7 +284,7 @@
             }
         },
         computed: {
-            isCohortFromHub: function() {
+            isCohortFromHub: function () {
                 let self = this;
 
                 if (self.launchedFromHub && self.modelInfo.id === 's0') {
@@ -310,31 +310,34 @@
                     self.$emit('cohort-data-changed');
                 }
 
-
                 if (self.modelInfo && self.modelInfo.dataSet) {
                     self.modelInfo.dataSet.onVcfUrlEntered([self.modelInfo.id], [vcfUrl], [tbiUrl], [self.modelInfo.displayName])
                         .then((listObj) => {
                             self.retrievingIds = false;
                             if (listObj) {
-                            self.samples = listObj['samples'];
-                            self.modelInfo.samples = listObj['samples'];
-                            if (self.samples.length === 1) {
-                                self.selectedSample = self.samples[0];
-                                self.modelInfo.selectedSample = self.samples[0];
-                                self.modelInfo.dataSet.setSelectedSample(self.samples[0]);
-                            } else {
-                                self.selectedSample = null;
+                                self.samples = listObj['samples'];
+                                self.modelInfo.samples = listObj['samples'];
+                                if (self.samples.length === 1) {
+                                    self.selectedSample = self.samples[0];
+                                    self.modelInfo.selectedSample = self.samples[0];
+                                    self.modelInfo.dataSet.setSelectedSample(self.samples[0]);
+                                } else {
+                                    self.selectedSample = null;
+                                }
+                                self.modelInfo.vcfs = [vcfUrl];
+                                if (tbiUrl != null) {
+                                    self.modelInfo.tbis = [tbiUrl];
+                                }
                             }
-                            self.modelInfo.vcfs = [vcfUrl];
-                            if (tbiUrl != null) {
-                                self.modelInfo.tbis = [tbiUrl];
-                            }
-                        }
-                        self.$emit("sample-data-changed");
+                            self.$emit("sample-data-changed");
                         })
-                        .catch((error) => {
-                            console.log(error);
+                        .catch((errObj) => {
                             self.retrievingIds = false;
+                            self.$emit("sample-data-changed");
+                            if (errObj.isBadFile) {
+                                alertify.set('notifier', 'position', 'top-right');
+                                alertify.warning("The entered file " + errObj.badFile + ' or its index could not be opened.');
+                            }
                         })
                 }
                 if (vcfUrl === '') {
@@ -424,7 +427,7 @@
                 let self = this;
                 self.$emit("remove-entry", self.modelInfo.id);
             },
-            openSubsetDialog: function() {
+            openSubsetDialog: function () {
                 let self = this;
 
                 if (self.isCohortFromHub) {
@@ -444,7 +447,7 @@
                 let unselectedSamples = self.getAvailableSamples(selectedSamples, self.dialogType);
                 self.$refs.sampleDialogRef.displayDialog(unselectedSamples, selectedSamples);
             },
-            openExcludeDialog: function() {
+            openExcludeDialog: function () {
                 let self = this;
 
                 if (self.isCohortFromHub) {
@@ -463,7 +466,7 @@
                 let unselectedSamples = self.getAvailableSamples(selectedSamples, self.dialogType);
                 self.$refs.sampleDialogRef.displayDialog(unselectedSamples, selectedSamples);
             },
-            saveSampleSelection: function(dialogType, selectedSamples) {
+            saveSampleSelection: function (dialogType, selectedSamples) {
                 let self = this;
 
                 if (dialogType === 'Subset') {
@@ -493,7 +496,7 @@
              * For instance, if the selected dialog is a subset selection dialog,
              * returns all samples that are not already selected in the subset group,
              * or in the exclude samples group.*/
-            getAvailableSamples: function(selectedSamples, dialogType) {
+            getAvailableSamples: function (selectedSamples, dialogType) {
                 let self = this;
 
                 let allSamples = self.modelInfo.samples;
@@ -513,7 +516,7 @@
                 });
             },
             /* Returns all samples IDs that are not excluded. */
-            getProbandIds: function() {
+            getProbandIds: function () {
                 let self = this;
                 let allSamples = self.modelInfo.samples;
                 return allSamples.filter((sample) => {
@@ -546,7 +549,7 @@
                     self.excludeSampleDisplay = excludeSampleIds.join(', ');
                 }
             },
-            setLoadingFlags: function(flagState) {
+            setLoadingFlags: function (flagState) {
                 let self = this;
                 self.retrievingIds = flagState;
                 if (self.modelInfo.bams.length > 0) {
