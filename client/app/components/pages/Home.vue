@@ -587,13 +587,17 @@ TD & SJG updated Nov2018 -->
             },
             onDataSetVariantHover: function (variant, sourceComponent) {
                 let self = this;
-                self.$refs.variantCardRef.forEach(function (variantCard) {
-                    if (variantCard != sourceComponent) {
-                        variantCard.hideVariantCircle(false);
-                        variantCard.showVariantCircle(variant, false);
-                        variantCard.showCoverageCircle(variant);
-                    }
-                });
+
+                // May only have enrichment card
+                if (self.$refs.variantCardRef) {
+                    self.$refs.variantCardRef.forEach(function (variantCard) {
+                        if (variantCard != sourceComponent) {
+                            variantCard.hideVariantCircle(false);
+                            variantCard.showVariantCircle(variant, false);
+                            variantCard.showCoverageCircle(variant);
+                        }
+                    });
+                }
                 self.$refs.enrichCardRef.forEach(function (enrichCard) {
                     if (enrichCard != sourceComponent) {
                         enrichCard.hideVariantCircle(false);
@@ -603,10 +607,15 @@ TD & SJG updated Nov2018 -->
             },
             onDataSetVariantHoverEnd: function () {
                 let self = this;
-                self.$refs.variantCardRef.forEach(function (variantCard) {
-                    variantCard.hideVariantCircle(false);
-                    variantCard.hideCoverageCircle();
-                });
+
+                // May only have enrichment card
+                if (self.$refs.variantCardRef) {
+                    self.$refs.variantCardRef.forEach(function (variantCard) {
+                        variantCard.hideVariantCircle(false);
+                        variantCard.hideCoverageCircle();
+                    });
+                }
+
                 self.$refs.enrichCardRef.forEach(function (enrichCard) {
                     enrichCard.hideVariantCircle(false);
                 });
