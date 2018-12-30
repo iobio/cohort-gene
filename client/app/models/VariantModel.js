@@ -617,7 +617,7 @@ class VariantModel {
         let removeIndices = [];
         for (let i = 0; i < self.otherDataSets.length; i++) {
             let currDataSet = self.otherDataSets[i];
-            if (!validIdList.contains(currDataSet.id)) {
+            if (!validIdList.includes(currDataSet.id)) {
                 removeIndices.push(i);
             }
         }
