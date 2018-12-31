@@ -53,6 +53,7 @@
             .switch
                 display: inline-block
                 width: 100px
+
     .menu-selection
         .btn__content
             color: #888888 !important
@@ -153,19 +154,19 @@
                         :id="entry"
                         v-if="modelInfoMap && modelInfoMap[entry]">
                     <entry-data :id="entry"
-                            ref="entryDataRef"
-                            v-if="modelInfoMap && modelInfoMap[entry]"
-                            :modelInfo="modelInfoMap[entry]"
-                            :dragId="entry"
-                            :arrIndex=entryIds.indexOf(entry)
-                            :separateUrlForIndex="separateUrlForIndex"
-                            :launchedFromHub="launchedFromHub"
-                            :isSampleEntry="modelInfoMap[entry].isSampleEntry"
-                            @sample-data-changed="validate"
-                            @cohort-data-changed="setCohortChangedFlag"
-                            @remove-entry="removeEntry"
-                            @subset-ids-entered="subsetIdsEntered"
-                            @exclude-ids-entered="excludeIdsEntered">
+                                ref="entryDataRef"
+                                v-if="modelInfoMap && modelInfoMap[entry]"
+                                :modelInfo="modelInfoMap[entry]"
+                                :dragId="entry"
+                                :arrIndex=entryIds.indexOf(entry)
+                                :separateUrlForIndex="separateUrlForIndex"
+                                :launchedFromHub="launchedFromHub"
+                                :isSampleEntry="modelInfoMap[entry].isSampleEntry"
+                                @sample-data-changed="validate"
+                                @cohort-vcf-data-changed="setCohortVcfChangedFlag"
+                                @remove-entry="removeEntry"
+                                @subset-ids-entered="subsetIdsEntered"
+                                @exclude-ids-entered="excludeIdsEntered">
                     </entry-data>
                 </v-flex>
                 <v-flex xs6 class="mt-2 text-xs-left">
@@ -214,7 +215,8 @@
                 speciesName: null,
                 buildName: null,
                 activeTab: null,
-                cohortDataChanged: false,
+                cohortVcfDataChanged: false,
+                cohortAnyDataChanged: false,
 
                 modelInfoMap: {},
                 entryIds: [],       // One per file menu entry
@@ -335,8 +337,7 @@
                     }
                 }
 
-                self.$emit("on-files-loaded", probandN, subsetN, self.cohortDataChanged);
-                self.cohortDataChanged = false;
+                self.$emit("on-files-loaded", probandN, subsetN, self.cohortVcfDataChanged);
                 self.showFilesMenu = false;
             },
             onCancel: function () {
@@ -416,9 +417,9 @@
                     // Reset modelInfoMap to get rid of any added info extras
                     if (self.launchedFromHub) {
                         self.entryIds.forEach((id) => {
-                          if (id !== 's0') {
-                              delete self.modelInfoMap[id];
-                          }
+                            if (id !== 's0') {
+                                delete self.modelInfoMap[id];
+                            }
                         })
                     } else {
                         self.modelInfoMap = {};
@@ -466,7 +467,7 @@
                     Promise.all(addPromises)
                         .then(() => {
                             // Turn on loading spinners
-                            for (let i =  self.launchedFromHub ? 1 : 0; i < self.$refs.entryDataRef.length; i++) {
+                            for (let i = self.launchedFromHub ? 1 : 0; i < self.$refs.entryDataRef.length; i++) {
                                 self.$refs.entryDataRef[i].setLoadingFlags(true);
                             }
 
@@ -571,17 +572,17 @@
                     }
                 }
             },
-            setCohortChangedFlag: function() {
+            setCohortVcfChangedFlag: function () {
                 let self = this;
-                self.cohortDataChanged = true;
+                self.cohortVcfDataChanged = true;
             },
             // Called each time files menu opened
-            init: function() {
+            init: function () {
                 let self = this;
                 // If we already have model information from Hub, we want to display that in the file loader
                 if (self.variantModel && self.variantModel.getAllDataSets().length > 0) {
                     self.initModelInfo();
-                // Otherwise add single entry for initial launch
+                    // Otherwise add single entry for initial launch
                 } else {
                     self.promiseAddEntry(false, false);
                 }
@@ -630,11 +631,11 @@
                 delete self.modelInfoMap[entryId];
                 self.variantModel.removeEntry(entryId);
             },
-            subsetIdsEntered: function() {
+            subsetIdsEntered: function () {
                 let self = this;
                 self.validate();
             },
-            excludeIdsEntered: function() {
+            excludeIdsEntered: function () {
                 let self = this;
                 self.validate();
             }

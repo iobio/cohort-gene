@@ -56,7 +56,8 @@ class DataSetModel {
         this.efficiencyMode = true;         // True to only pull back variant locations and not functional impacts
         this.noMatchingSamples = false;     // Flag to display No Matching Variants chip
         this.annotationScheme = 'VEP';
-        this.lastGeneLoaded = null;
+        this.lastGeneLoaded = null;         // Helps determine if we need to reload variants on load from files menu
+        this.entryDataChanged = false;      // If true, we need to reload variants on load from files menu
         this.inProgress = {
             'fetchingHubData': false,
             'verifyingVcfUrl': false,
@@ -239,6 +240,11 @@ class DataSetModel {
         let self = this;
         self.loadedVariants = null;
         self.getSubsetCohort().updateChips();
+    }
+
+    markEntryDataChanged() {
+        let self = this;
+        self.entryDataChanged = true;
     }
 
     /* Takes in a variant and returns the corresponding one from this dataset.
@@ -441,6 +447,7 @@ class DataSetModel {
 
             Promise.all(promises)
                 .then(function() {
+                    self.entryDataChanged = false;
                     resolve();
                 })
         });

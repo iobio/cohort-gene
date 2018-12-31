@@ -242,9 +242,9 @@
                     'bam': '.bam, .bai'
                 },
                 samples: [],                    // the available samples to choose from
-                subsetSampleIds: null,          // the samples composing the subset
-                excludeSampleIds: null,         // the samples to exclude from all cohorts
-                selectedSample: null,           // if isSampleEntry, user must select single sample for track
+                subsetSampleIds: null,          // the samples composing the subset - TODO: put watch
+                excludeSampleIds: null,         // the samples to exclude from all cohorts - TODO: put watch
+                selectedSample: null,           // if isSampleEntry, user must select single sample for track - TODO: put watch
                 subsetSampleDisplay: 'click to edit',
                 excludeSampleDisplay: 'click to edit',
                 isMainCohort: false,
@@ -285,6 +285,24 @@
                 if (newVal) {
                     self.firstBai = newVal[0];
                 }
+            },
+            subsetSampleIds: function(newVal, oldVal) {
+                let self = this;
+                if (newVal !== oldVal && self.modelInfo && self.modelInfo.dataSet) {
+                    self.modelInfo.dataSet.markEntryDataChanged();
+                }
+            },
+            excludeSampleIds: function(newVal, oldVal) {
+                let self = this;
+                if (newVal !== oldVal && self.modelInfo && self.modelInfo.dataSet) {
+                    self.modelInfo.dataSet.markEntryDataChanged();
+                }
+            },
+            selectedSample: function(newVal, oldVal) {
+                let self = this;
+                if (newVal !== oldVal && self.modelInfo && self.modelInfo.dataSet) {
+                    self.modelInfo.dataSet.markEntryDataChanged();
+                }
             }
         },
         computed: {
@@ -312,7 +330,7 @@
                 self.$set(self, "selectedSample", null);
                 self.$set(self, "samples", []);
                 if (self.modelInfo.entryId === 's0') {
-                    self.$emit('cohort-data-changed');
+                    self.$emit('cohort-vcf-data-changed');
                 }
 
                 if (self.modelInfo && self.modelInfo.dataSet) {
@@ -361,7 +379,7 @@
                 self.$set(self, "samples", []);
                 fileSelection.id = self.modelInfo.id;
                 if (self.modelInfo.entryId === 's0') {
-                    self.$emit('cohort-data-changed');
+                    self.$emit('cohort-vcf-data-changed');
                 }
                 self.modelInfo.dataSet.promiseVcfFilesSelected(fileSelection)
                     .then(function (data) {
@@ -483,6 +501,11 @@
 
                 if (dialogType === 'Subset') {
                     self.subsetSampleIds = selectedSamples;
+
+                    // Trick vue to update reactivity
+                    self.subsetSampleIds.push('foo');
+                    self.subsetSampleIds.pop();
+
                     if (selectedSamples.length > 0) {
                         self.subsetSampleDisplay = selectedSamples.join(', ');
                     } else {
@@ -492,7 +515,12 @@
                     self.modelInfo.dataSet.setSubsetIds(selectedSamples);
                     self.$emit('subset-ids-entered');
                 } else if (dialogType === "Exclude") {
+
                     self.excludeSampleIds = selectedSamples;
+                    // Trick vue to update reactivity
+                    self.excludeSampleIds.push('foo');
+                    self.excludeSampleIds.pop();
+
                     if (selectedSamples.length > 0) {
                         self.excludeSampleDisplay = selectedSamples.join(', ');
                     } else {

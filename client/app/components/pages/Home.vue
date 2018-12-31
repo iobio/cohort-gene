@@ -406,11 +406,11 @@ TD & SJG updated Nov2018 -->
 
                 })
             },
-            onFilesLoaded: function (probandN, subsetN, cohortDataChanged) {
+            onFilesLoaded: function (probandN, subsetN, cohortVcfDataChanged) {
                 let self = this;
 
                 // Draw zygosity charts only on first launch (when cohort info loaded)
-                if (self.$refs.variantSummaryCardRef != null && (self.firstLaunch || cohortDataChanged)) {
+                if (self.$refs.variantSummaryCardRef != null && (self.firstLaunch || cohortVcfDataChanged)) {
                     self.$refs.variantSummaryCardRef.assignBarChartValues(probandN, subsetN);
                 }
 

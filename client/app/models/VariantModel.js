@@ -636,22 +636,22 @@ class VariantModel {
         let self = this;
 
         if (self.otherDataSets.length === 0) {
-            if (self.mainDataSet.lastGeneLoaded === theGene.name && self.mainDataSet.loadedVariants != null) {
+            if (self.mainDataSet.lastGeneLoaded === theGene.gene_name && self.mainDataSet.loadedVariants != null && !self.mainDataSet.entryDataChanged) {
                 return Promise.resolve();
             } else {
-                self.mainDataSet.lastGeneLoaded = theGene.name;
+                self.mainDataSet.lastGeneLoaded = theGene.gene_name;
                 return self.mainDataSet.promiseLoadData(theGene, theTranscript);
             }
         } else {
             return new Promise((resolve, reject) => {
                 let loadPromises = [];
-                if (self.mainDataSet.lastGeneLoaded !== theGene.name || self.mainDataSet.loadedVariants == null) {
-                    self.mainDataSet.lastGeneLoaded = theGene.name;
+                if (self.mainDataSet.lastGeneLoaded !== theGene.gene_name || self.mainDataSet.loadedVariants == null || self.mainDataSet.entryDataChanged) {
+                    self.mainDataSet.lastGeneLoaded = theGene.gene_name;
                     loadPromises.push(self.mainDataSet.promiseLoadData(theGene, theTranscript));
                 }
                 self.otherDataSets.forEach((dataSet) => {
-                    if (dataSet.lastGeneLoaded !== theGene.name || dataSet.loadedVariants == null) {
-                        dataSet.lastGeneLoaded = theGene.name;
+                    if (dataSet.lastGeneLoaded !== theGene.gene_name || dataSet.loadedVariants == null || dataSet.entryDataChanged) {
+                        dataSet.lastGeneLoaded = theGene.gene_name;
                         loadPromises.push(dataSet.promiseLoadData(theGene, theTranscript));
                     }
                 });

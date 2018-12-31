@@ -177,8 +177,8 @@
             onFlaggedVariantsImported: function () {
                 this.$emit("flagged-variants-imported")
             },
-            onFilesLoaded: function (probandN, subsetN, cohortDataChanged) {
-                this.$emit("on-files-loaded", probandN, subsetN, cohortDataChanged);
+            onFilesLoaded: function (probandN, subsetN, cohortVcfDataChanged) {
+                this.$emit("on-files-loaded", probandN, subsetN, cohortVcfDataChanged);
             }
         },
         created: function () {
