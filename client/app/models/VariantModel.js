@@ -640,6 +640,7 @@ class VariantModel {
                 return Promise.resolve();
             } else {
                 self.mainDataSet.lastGeneLoaded = theGene.gene_name;
+                self.mainDataSet.wipeGeneData();
                 return self.mainDataSet.promiseLoadData(theGene, theTranscript);
             }
         } else {
@@ -647,11 +648,13 @@ class VariantModel {
                 let loadPromises = [];
                 if (self.mainDataSet.lastGeneLoaded !== theGene.gene_name || self.mainDataSet.loadedVariants == null || self.mainDataSet.entryDataChanged) {
                     self.mainDataSet.lastGeneLoaded = theGene.gene_name;
+                    self.mainDataSet.wipeGeneData();
                     loadPromises.push(self.mainDataSet.promiseLoadData(theGene, theTranscript));
                 }
                 self.otherDataSets.forEach((dataSet) => {
                     if (dataSet.lastGeneLoaded !== theGene.gene_name || dataSet.loadedVariants == null || dataSet.entryDataChanged) {
                         dataSet.lastGeneLoaded = theGene.gene_name;
+                        dataSet.wipeGeneData();
                         loadPromises.push(dataSet.promiseLoadData(theGene, theTranscript));
                     }
                 });
