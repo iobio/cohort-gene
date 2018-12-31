@@ -430,10 +430,14 @@
                     let arrIndex = self.launchedFromHub ? 1 : 0;
                     infosToLoad.forEach(function (modelInfo) {
                         let id = modelInfo.id;
-                        idList.push(id);
-                        self.modelInfoMap[id] = modelInfo;
-                        self.entryIds[arrIndex] = modelInfo.id;
-                        arrIndex++;
+
+                        // Have to ignore s0 if we've launched from Hub and uploaded a config w/ a cohort entry
+                        if (self.launchedFromHub && id !== 's0') {
+                            idList.push(id);
+                            self.modelInfoMap[id] = modelInfo;
+                            self.entryIds[arrIndex] = modelInfo.id;
+                            arrIndex++;
+                        }
                     });
 
                     // Fool vue into forcing view update
