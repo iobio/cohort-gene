@@ -57,6 +57,7 @@
 
             <v-spacer></v-spacer>
             <files-menu
+                    ref="fileMenuRef"
                     :variantModel="variantModel"
                     :launchedFromHub="launchedFromHub"
                     @on-files-loaded="onFilesLoaded"

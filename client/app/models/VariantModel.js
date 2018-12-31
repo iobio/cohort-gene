@@ -70,6 +70,7 @@ class VariantModel {
             'excludeSampleIds': [],
             'selectedSample': null
         }];
+        this.demoGene = 'POGZ';
         // </editor-fold>
     }
 

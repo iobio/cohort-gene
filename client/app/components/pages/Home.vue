@@ -35,7 +35,7 @@ TD & SJG updated Nov2018 -->
             <div id="warning-authorize" class="warning-authorize"></div>
             <v-container fluid style="padding-top: 3px">
                 <v-layout>
-                    <v-flex xs9>
+                    <v-flex xs9 v-if="!showWelcome">
                         <div v-for="dataSet in allDataSets" v-if="showVariantCards">
                             <enrichment-variant-card
                                     v-if="!dataSet.isSingleSample"
@@ -98,7 +98,7 @@ TD & SJG updated Nov2018 -->
                             </variant-card>
                         </div>
                     </v-flex>
-                    <v-flex xs3>
+                    <v-flex xs3 v-if="!showWelcome">
                         <v-card class="ml-1">
                             <v-tabs centered icons-and-text>
                                 <v-tabs-slider color="cohortDarkBlue"></v-tabs-slider>
@@ -142,6 +142,11 @@ TD & SJG updated Nov2018 -->
                             </v-tabs>
                         </v-card>
                     </v-flex>
+                    <v-flex xs12 v-if="showWelcome">
+                        <welcome
+                                @load-demo-data="onLoadDemoData">
+                        </welcome>
+                    </v-flex>
                 </v-layout>
             </v-container>
         </v-content>
@@ -157,6 +162,7 @@ TD & SJG updated Nov2018 -->
     import VariantSummaryCard from '../viz/VariantSummaryCard.vue'
     import VariantZoomCard from '../viz/ZoomModalViz.vue'
     import FilterSettingsMenu from '../partials/FilterSettingsMenu.vue'
+    import Welcome from '../viz/Welcome.vue'
 
     // Models
     import GeneModel from '../../models/GeneModel.js'
@@ -176,7 +182,8 @@ TD & SJG updated Nov2018 -->
             VariantZoomCard,
             VariantCard,
             EnrichmentVariantCard,
-            FilterSettingsMenu
+            FilterSettingsMenu,
+            Welcome
         },
         props: {
             paramProjectId: {
@@ -235,7 +242,8 @@ TD & SJG updated Nov2018 -->
                 cardWidth: 0,
                 showClinvarVariants: false,
                 activeBookmarksDrawer: null,
-                showCoverageCutoffs: false,  // TODO: not sure what this does/needs to be
+                showCoverageCutoffs: false,
+                showWelcome: false,
 
                 DEMO_GENE: 'BRCA2'   // SJG TODO: get rid of this outside of demo
             }
@@ -350,6 +358,26 @@ TD & SJG updated Nov2018 -->
                 let self = this;
                 return self.cacheHelper._promiseClearCache(self.cacheHelper.launchTimestampToClear);
             },
+            onLoadDemoData: function () {
+                let self = this;
+                self.promiseClearCache()
+                    .then(function () {
+                        self.onGeneSelected(self.variantModel.demoGene);
+                        if (self.$refs.fileMenuRef) {
+                            return self.$refs.fileMenuRef.onAutoLoad();
+                        }
+                    })
+                    .then(function () {
+                        if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
+                            return self.promiseLoadData();
+                                // .then(function () {
+                                //     if (self.cohortModel && self.cohortModel.isLoaded && !self.isEduMode) {
+                                //         self.cacheHelper.analyzeAll(self.cohortModel, false);
+                                //     }
+                                // });
+                        }
+                    })
+            },
             promiseLoadData: function () {
                 let self = this;
                 self.showVariantCards = true;   // Show for local launch
@@ -455,6 +483,7 @@ TD & SJG updated Nov2018 -->
                 let self = this;
 
                 return new Promise(function (resolve, reject) {
+                    self.showWelcome = false;
                     if (self.variantModel) {
                         self.variantModel.clearLoadedData(geneName);
                     }
@@ -783,6 +812,7 @@ TD & SJG updated Nov2018 -->
                             })
                     } else {
                         // Otherwise, wait for user to launch files menu
+                        self.showWelcome = true;
                         self.launchedFromHub = false;
                         self.firstLaunch = true;
                         resolve();
