@@ -288,19 +288,19 @@
             },
             subsetSampleIds: function(newVal, oldVal) {
                 let self = this;
-                if (newVal !== oldVal && self.modelInfo && self.modelInfo.dataSet) {
+                if (newVal != null && newVal !== oldVal && self.modelInfo && self.modelInfo.dataSet) {
                     self.modelInfo.dataSet.markEntryDataChanged();
                 }
             },
             excludeSampleIds: function(newVal, oldVal) {
                 let self = this;
-                if (newVal !== oldVal && self.modelInfo && self.modelInfo.dataSet) {
+                if (newVal != null && newVal !== oldVal && self.modelInfo && self.modelInfo.dataSet) {
                     self.modelInfo.dataSet.markEntryDataChanged();
                 }
             },
             selectedSample: function(newVal, oldVal) {
                 let self = this;
-                if (newVal !== oldVal && self.modelInfo && self.modelInfo.dataSet) {
+                if (newVal != null && newVal !== oldVal && self.modelInfo && self.modelInfo.dataSet) {
                     self.modelInfo.dataSet.markEntryDataChanged();
                 }
             }
