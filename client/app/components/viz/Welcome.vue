@@ -196,6 +196,7 @@
                     font-size: 15px !important
             .how-it-works-image, .features-image
                 margin-right: 0px
+                padding-left: 50px
                 img
                     max-width: 400px
                     min-width: 200px
@@ -206,12 +207,12 @@
                 font-size: 18px
                 display: inline-block
                 line-height: 24px
-                margin-right: 30px
+                margin-right: 50px
             /*width: 400px*/
             .how-it-works-title, .features-title
                 margin-right: 10px
-                min-width: 250px
-                max-width: 250px
+                min-width: 350px
+                max-width: 350px
             .features-title
                 color: $header-color
                 font-weight: 500
@@ -368,7 +369,7 @@
         }
 
         .how-it-works-panel {
-            padding: 30px;
+            padding: 20px;
         }
     }
 </style>
@@ -416,9 +417,9 @@
                                 <span class="white--text headline">1</span>
                             </v-avatar>
                             <span class="how-it-works-title">SELECT cohort data from your machine, the cloud, or our project-hosting platform <i>Mosaic</i></span>
-                            <!--<div class="how-it-works-image"  >-->
-                            <!--<img  src="../../../assets/images/landing_page/search_gene_or_phenotype.png" style=""></img>-->
-                            <!--</div>-->
+                            <div class="how-it-works-image">
+                                <img  src="../../../assets/images/file_menu_cohort.png" style=""></img>
+                            </div>
                         </div>
 
                         <v-divider></v-divider>
@@ -428,9 +429,9 @@
                                 <span class="white--text headline">2</span>
                             </v-avatar>
                             <span class="how-it-works-title">ENTER a gene of interest</span>
-                            <!--<div class="how-it-works-image">-->
-                            <!--<img  src="../../../assets/images/landing_page/analyzing_genes.gif" style="width:230px"></img>-->
-                            <!--</div>-->
+                            <div class="how-it-works-image">
+                            <img  src="../../../assets/images/gene_selection_cohort.png" style="width:230px"></img>
+                            </div>
                         </div>
                         <v-divider></v-divider>
 
@@ -440,9 +441,9 @@
                                 <span class="white--text headline">3</span>
                             </v-avatar>
                             <span class="how-it-works-title">IDENTIFY enriched genomic variants within the selected cohort</span>
-                            <!--<div class="how-it-works-image">-->
-                            <!--<img  src="../../../assets/images/landing_page/trio_variant_cards.png" style="max-width:500px"></img>-->
-                            <!--</div>-->
+                            <div class="how-it-works-image">
+                            <img  src="../../../assets/images/better_highlight_cohort.png" style="max-width:500px"></img>
+                            </div>
                         </div>
                         <v-divider></v-divider>
 
