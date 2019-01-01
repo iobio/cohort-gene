@@ -27,7 +27,7 @@ Vue.use(Vuetify, {
         cohortBlue: '#95b0c6',
         cohortDarkBlue: '#6c94b7',
         cohortNavy: '#516e87',
-        cohortPeriwinkle: '#6c7cb7',
+        cohortPeriwinkle: '#516187',
         limeGreen: '#00d60e',
         cherryRed: '#FF000D',
         appGray: '#888888'

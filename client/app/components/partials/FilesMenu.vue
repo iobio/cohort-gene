@@ -130,7 +130,7 @@
                             <v-list-tile>
                                 <label class="file-select">
                                     <!-- We can't use a normal button element here, it would become the target of the label. -->
-                                    <div class="select-button">
+                                    <div id="uploadButton" class="select-button">
                                         <span>Upload Config</span>
                                     </div>
                                     <!-- Hidden file input -->
@@ -228,7 +228,8 @@
                 stateUnchanged: true,
                 arrId: 0,
                 debugMe: false,
-                inputClass: 'fileSelect'
+                inputClass: 'fileSelect',
+                loadDemoFromWelcome: false
             }
         },
         watch: {
@@ -409,6 +410,10 @@
                     if (!customInfos) {
                         self.separateUrlForIndex = false;
                         infosToLoad = self.variantModel.getDemoInfo(self.launchedFromHub);
+                        if (!self.launchedFromHub) {
+                            self.buildName = 'GRCh37';
+                            self.variantModel.genomeBuildHelper.setCurrentBuild(self.buildName);
+                        }
                     } else {
                         infosToLoad = customInfos;
                         self.separateUrlForIndex = self.checkCustomIndex(customInfos);
@@ -432,7 +437,7 @@
                         let id = modelInfo.id;
 
                         // Have to ignore s0 if we've launched from Hub and uploaded a config w/ a cohort entry
-                        if (self.launchedFromHub && id !== 's0') {
+                        if (!(self.launchedFromHub && id === 's0')) {
                             idList.push(id);
                             self.modelInfoMap[id] = modelInfo;
                             self.entryIds[arrIndex] = modelInfo.id;
@@ -485,7 +490,14 @@
                                 .then(() => {
                                     resolve();
                                 })
+                                .catch((error) => {
+                                    console.log('Promise setting model on auto load: ' + error);
+                                });
                         })
+                        .catch((error) => {
+                           console.log('Something went wrong with autoload: ' + error);
+                           reject(error);
+                        });
                 });
             },
             checkCustomIndex: function (infos) {
@@ -548,6 +560,9 @@
                                             reject('No bam to check');
                                         }
                                     })
+                                } else {
+                                    // No bams to check, just return
+                                    resolve();
                                 }
                             } else {
                                 // Turn off loading spinners
@@ -588,7 +603,17 @@
                     self.initModelInfo();
                     // Otherwise add single entry for initial launch
                 } else {
-                    self.promiseAddEntry(false, false);
+                    self.promiseAddEntry(false, false)
+                        .then(() => {
+                            // If we've clicked run w/ demo data on welcome screen, want to get that process going
+                            if (self.loadDemoFromWelcome) {
+                                self.onAutoLoad(false)
+                                    .then(() => {
+                                        self.loadDemoFromWelcome = false;
+                                        self.onLoad();
+                                    })
+                            }
+                        })
                 }
             },
             initModelInfo: function () {
@@ -642,6 +667,16 @@
             excludeIdsEntered: function () {
                 let self = this;
                 self.validate();
+            },
+            openFileSelection: function() {
+                let self = this;
+                self.showFilesMenu = true;
+                $('#uploadButton').click();
+            },
+            promiseLoadDemoFromWelcome: function() {
+                let self = this;
+                self.loadDemoFromWelcome = true;
+                self.showFilesMenu = true;
             }
         },
         computed: {

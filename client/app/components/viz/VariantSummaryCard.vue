@@ -251,7 +251,8 @@
                                  :affectedProbandCount="affectedProbandCount"
                                  :affectedSubsetCount="affectedSubsetCount"
                                  :totalProbandCount="totalProbandCount"
-                                 :totalSubsetCount="totalSubsetCount">
+                                 :totalSubsetCount="totalSubsetCount"
+                                 @zyg-bars-mounted="zygBarsMounted">
                 </bar-feature-viz>
             </v-layout>
         </v-container>
@@ -565,6 +566,10 @@
             setCohortFieldsApplicable: function() {
                 let self = this;
                 self.cohortFieldsValid = true;
+            },
+            zygBarsMounted: function() {
+                let self = this;
+                self.$emit('zyg-bars-mounted');
             }
         }
     }

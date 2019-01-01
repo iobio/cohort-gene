@@ -61,6 +61,8 @@
         created: function () {
         },
         mounted: function () {
+            let self = this;
+            self.$emit('zyg-bars-mounted');
         },
         methods: {
             drawCharts(probandSampleCount, subsetSampleCount) {

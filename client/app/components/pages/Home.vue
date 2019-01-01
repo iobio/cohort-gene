@@ -30,11 +30,18 @@ TD & SJG updated Nov2018 -->
                 @clear-cache="clearCache"
                 @apply-genes="onApplyGenes"
                 @on-files-loaded="onFilesLoaded"
+                @demo-welcome-ready="startLoadDemoData"
         ></navigation>
         <v-content>
             <div id="warning-authorize" class="warning-authorize"></div>
             <v-container fluid style="padding-top: 3px">
                 <v-layout>
+                    <v-flex xs12 v-if="showWelcome">
+                        <welcome
+                                @load-demo-data="onLoadDemoData"
+                                @open-file-selection="openFileSelection">
+                        </welcome>
+                    </v-flex>
                     <v-flex xs9 v-if="!showWelcome">
                         <div v-for="dataSet in allDataSets" v-if="showVariantCards">
                             <enrichment-variant-card
@@ -121,6 +128,7 @@ TD & SJG updated Nov2018 -->
                                                 :loadingExtraAnnotations="loadingExtraAnnotations"
                                                 :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations"
                                                 @summaryCardVariantDeselect="deselectVariant"
+                                                @zyg-bars-mounted="drawZygCharts"
                                                 ref="variantSummaryCardRef">
                                         </variant-summary-card>
                                     </v-container>
@@ -141,11 +149,6 @@ TD & SJG updated Nov2018 -->
                                 </v-tab-item>
                             </v-tabs>
                         </v-card>
-                    </v-flex>
-                    <v-flex xs12 v-if="showWelcome">
-                        <welcome
-                                @load-demo-data="onLoadDemoData">
-                        </welcome>
                     </v-flex>
                 </v-layout>
             </v-container>
@@ -243,9 +246,12 @@ TD & SJG updated Nov2018 -->
                 showClinvarVariants: false,
                 activeBookmarksDrawer: null,
                 showCoverageCutoffs: false,
-                showWelcome: false,
+                showWelcome: true,
 
-                DEMO_GENE: 'BRCA2'   // SJG TODO: get rid of this outside of demo
+                probandN: 0,
+                subsetN: 0,
+
+                DEMO_GENE: 'BRCA2'
             }
         },
         computed: {
@@ -265,9 +271,17 @@ TD & SJG updated Nov2018 -->
                 }
             }
         },
+        created: function() {
+            // Quick check so no flashes before splash screen
+            // TODO: need to test this w/ hub launch
+            if (this.paramProjectId !== '0' || this.paramOldProjectId !== '0') {
+                this.showWelcome = false;
+            }
+        },
         mounted: function () {
             // Initialize models & get data loading
             let self = this;
+
             self.cardWidth = self.$el.offsetWidth;
 
             // Initialize with ref from frameshift if provided
@@ -360,23 +374,22 @@ TD & SJG updated Nov2018 -->
             },
             onLoadDemoData: function () {
                 let self = this;
+
                 self.promiseClearCache()
                     .then(function () {
-                        self.onGeneSelected(self.variantModel.demoGene);
-                        if (self.$refs.fileMenuRef) {
-                            return self.$refs.fileMenuRef.onAutoLoad();
-                        }
-                    })
-                    .then(function () {
-                        if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
-                            return self.promiseLoadData();
-                                // .then(function () {
-                                //     if (self.cohortModel && self.cohortModel.isLoaded && !self.isEduMode) {
-                                //         self.cacheHelper.analyzeAll(self.cohortModel, false);
-                                //     }
-                                // });
-                        }
-                    })
+                        self.geneModel.addGeneName(self.variantModel.demoGene);
+                        self.geneModel.promiseGetGeneObject(self.variantModel.demoGene)
+                            .then(function (theGeneObject) {
+                                self.selectedGene = theGeneObject;
+                                if (self.$refs.navRef) {
+                                    self.$refs.navRef.onAutoLoad();
+                                }
+                            });
+                    });
+            },
+            startLoadDemoData: function() {
+                let self = this;
+                self.onGeneSelected(self.variantModel.demoGene);
             },
             promiseLoadData: function () {
                 let self = this;
@@ -429,15 +442,16 @@ TD & SJG updated Nov2018 -->
                 })
             },
             promiseLoadAnnotationDetails: function () {
-                let self = this;
-                return new Promise(function (resolve, reject) {
 
-                })
             },
             onFilesLoaded: function (probandN, subsetN, cohortVcfDataChanged) {
                 let self = this;
 
-                // Draw zygosity charts only on first launch (when cohort info loaded)
+                // Store raw values until summary card mounted so we can fetch them
+                self.probandN = probandN;
+                self.subsetN = subsetN;
+
+                // Draw zygosity charts if we've changed the cohort vcf data (local launch only)
                 if (self.$refs.variantSummaryCardRef != null && (self.firstLaunch || cohortVcfDataChanged)) {
                     self.$refs.variantSummaryCardRef.assignBarChartValues(probandN, subsetN);
                 }
@@ -456,6 +470,7 @@ TD & SJG updated Nov2018 -->
                             alertify.warning("Please enter a gene name");
                         }
                     });
+
                 self.firstLaunch = false;
             },
             onGeneSelected: function (geneName) {
@@ -832,6 +847,12 @@ TD & SJG updated Nov2018 -->
                 let cohortKey = 's0';   // Hard-coding for now since only cohort track can be zoomed
                 self.onDataSetVariantClick(variant, cohortKey);
             },
+            drawZygCharts: function() {
+                let self = this;
+                if (self.$refs.variantSummaryCardRef != null) {
+                    self.$refs.variantSummaryCardRef.assignBarChartValues(self.probandN, self.subsetN);
+                }
+            },
             onFilterSettingsApplied: function () {
                 // TODO: implement this - pass info to filter model
 
@@ -850,6 +871,12 @@ TD & SJG updated Nov2018 -->
                 //         self.onSendFiltersToClin();
                 //     }
                 // })
+            },
+            openFileSelection: function() {
+                let self = this;
+                if (self.$refs.navRef) {
+                    self.$refs.navRef.openFileSelection();
+                }
             }
         }
     }

@@ -61,7 +61,8 @@
                     :variantModel="variantModel"
                     :launchedFromHub="launchedFromHub"
                     @on-files-loaded="onFilesLoaded"
-                    @load-demo-data="onLoadDemoData">
+                    @load-demo-data="onLoadDemoData"
+                    @demo-welcome-ready="demoWelcomeReady">
             </files-menu>
             <v-menu
                     offset-y
@@ -104,7 +105,6 @@
             Typeahead,
             GenesMenu,
             FilesMenu,
-            //FlaggedVariantsCard,
             LegendPanel
         },
         props: {
@@ -160,18 +160,6 @@
             onApplyGenes: function (genesToApply) {
                 this.$emit("apply-genes", genesToApply);
             },
-            onVariants: function () {
-                // this.leftDrawerContents = "flagged-variants";
-                // this.leftDrawer = true;
-            },
-            onLegend: function () {
-                // this.leftDrawerContents = "legend";
-                // this.leftDrawer = true;
-            },
-            onShowFlaggedVariants: function () {
-                // this.leftDrawerContents = "flagged-variants";
-                // this.leftDrawer = true;
-            },
             onFlaggedVariantSelected: function (variant) {
                 this.$emit("flagged-variant-selected", variant)
             },
@@ -180,6 +168,22 @@
             },
             onFilesLoaded: function (probandN, subsetN, cohortVcfDataChanged) {
                 this.$emit("on-files-loaded", probandN, subsetN, cohortVcfDataChanged);
+            },
+            openFileSelection: function() {
+                let self = this;
+                if (self.$refs.fileMenuRef) {
+                    self.$refs.fileMenuRef.openFileSelection();
+                }
+            },
+            onAutoLoad: function() {
+                let self = this;
+                if (self.$refs.fileMenuRef) {
+                    self.$refs.fileMenuRef.promiseLoadDemoFromWelcome();
+                }
+            },
+            demoWelcomeReady: function() {
+                let self = this;
+                self.$emit('demo-welcome-ready');
             }
         },
         created: function () {
