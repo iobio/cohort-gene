@@ -599,7 +599,7 @@
             init: function () {
                 let self = this;
                 // If we already have model information from Hub, we want to display that in the file loader
-                if (self.variantModel && self.variantModel.getAllDataSets().length > 0) {
+                if (self.variantModel && self.variantModel.getAllDataSets().length > 0 && !self.loadDemoFromWelcome) {
                     self.initModelInfo();
                     // Otherwise add single entry for initial launch
                 } else {
@@ -672,6 +672,11 @@
                 let self = this;
                 self.showFilesMenu = true;
                 $('#uploadButton').click();
+            },
+            closeFileMenu: function() {
+                let self = this;
+                self.loadDemoFromWelcome = true;
+                self.showFilesMenu = false;
             },
             promiseLoadDemoFromWelcome: function() {
                 let self = this;

@@ -61,8 +61,7 @@
                     :variantModel="variantModel"
                     :launchedFromHub="launchedFromHub"
                     @on-files-loaded="onFilesLoaded"
-                    @load-demo-data="onLoadDemoData"
-                    @demo-welcome-ready="demoWelcomeReady">
+                    @load-demo-data="onLoadDemoData">
             </files-menu>
             <v-menu
                     offset-y
@@ -181,9 +180,11 @@
                     self.$refs.fileMenuRef.promiseLoadDemoFromWelcome();
                 }
             },
-            demoWelcomeReady: function() {
+            closeFileMenu: function() {
                 let self = this;
-                self.$emit('demo-welcome-ready');
+                if (self.$refs.fileMenuRef) {
+                    self.$refs.fileMenuRef.closeFileMenu();
+                }
             }
         },
         created: function () {

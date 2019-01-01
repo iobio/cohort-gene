@@ -30,7 +30,6 @@ TD & SJG updated Nov2018 -->
                 @clear-cache="clearCache"
                 @apply-genes="onApplyGenes"
                 @on-files-loaded="onFilesLoaded"
-                @demo-welcome-ready="startLoadDemoData"
         ></navigation>
         <v-content>
             <div id="warning-authorize" class="warning-authorize"></div>
@@ -377,6 +376,9 @@ TD & SJG updated Nov2018 -->
 
                 self.promiseClearCache()
                     .then(function () {
+                        if (self.$refs.navRef) {
+                            self.$refs.navRef.closeFileMenu();
+                        }
                         self.geneModel.addGeneName(self.variantModel.demoGene);
                         self.geneModel.promiseGetGeneObject(self.variantModel.demoGene)
                             .then(function (theGeneObject) {
@@ -386,10 +388,6 @@ TD & SJG updated Nov2018 -->
                                 }
                             });
                     });
-            },
-            startLoadDemoData: function() {
-                let self = this;
-                self.onGeneSelected(self.variantModel.demoGene);
             },
             promiseLoadData: function () {
                 let self = this;

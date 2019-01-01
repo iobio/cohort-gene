@@ -409,7 +409,7 @@
                         <v-avatar size="28px" color="teal">
                             <span class="white--text headline">1</span>
                         </v-avatar>
-                        <span class="how-it-works-title">Enter a gene or search on a phenotype</span>
+                        <span class="how-it-works-title">Enter a gene of interest</span>
                         <!--<div class="how-it-works-image"  >-->
                         <!--<img  src="../../../assets/images/landing_page/search_gene_or_phenotype.png" style=""></img>-->
                         <!--</div>-->
