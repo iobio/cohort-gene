@@ -847,7 +847,8 @@ TD & SJG updated Nov2018 -->
             },
             drawZygCharts: function() {
                 let self = this;
-                if (self.$refs.variantSummaryCardRef != null) {
+                let firstHubLaunch = self.firstLaunch && self.launchedFromHub;
+                if (self.$refs.variantSummaryCardRef != null && !firstHubLaunch) {
                     self.$refs.variantSummaryCardRef.assignBarChartValues(self.probandN, self.subsetN);
                 }
             },
