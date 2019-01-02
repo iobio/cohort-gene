@@ -418,7 +418,7 @@
                             </v-avatar>
                             <span class="how-it-works-title">SELECT cohort data from your machine, the cloud, or our project-hosting platform <i>Mosaic</i></span>
                             <div class="how-it-works-image">
-                                <img  src="../../../assets/images/file_menu_cohort.png" style=""></img>
+                                <img src="../../../assets/images/file_menu_cohort.png" style=""></img>
                             </div>
                         </div>
 
@@ -430,7 +430,7 @@
                             </v-avatar>
                             <span class="how-it-works-title">ENTER a gene of interest</span>
                             <div class="how-it-works-image">
-                            <img  src="../../../assets/images/gene_selection_cohort.png" style="width:230px"></img>
+                                <img src="../../../assets/images/gene_selection_cohort.png" style="width:230px"></img>
                             </div>
                         </div>
                         <v-divider></v-divider>
@@ -442,32 +442,31 @@
                             </v-avatar>
                             <span class="how-it-works-title">IDENTIFY enriched genomic variants within the selected cohort</span>
                             <div class="how-it-works-image">
-                            <img  src="../../../assets/images/better_highlight_cohort.png" style="max-width:500px"></img>
+                                <img src="../../../assets/images/better_highlight_cohort.png"
+                                     style="max-width:600px"></img>
                             </div>
                         </div>
-                        <v-divider></v-divider>
 
-
-                        <div class="how-it-works-item">
+                        <div class="how-it-works-item" style="margin-top: -95px">
                             <v-avatar size="28px" color="teal">
                                 <span class="white--text headline">4</span>
                             </v-avatar>
                             <span class="how-it-works-title">HIGHLIGHT common variants in both the cohort and individual patient samples</span>
-                            <!--<div class="how-it-works-image">-->
-                            <!--<img src="../../../assets/images/landing_page/filters_during_analysis.gif"></img>-->
-                            <!--</div>-->
                         </div>
-
                         <v-divider></v-divider>
+                        <v-divider></v-divider>
+
 
                         <div class="how-it-works-item">
                             <v-avatar size="28px" color="teal">
                                 <span class="white--text headline">5</span>
                             </v-avatar>
                             <span class="how-it-works-title">CLICK on a variant to view the most up-to-date annotations from ClinVar, VEP, gnomAD</span>
-                            <!--<div class="how-it-works-image">-->
-                            <!--<img src="../../../assets/images/landing_page/flagged_variants.png" style="width: 270px;"></img>-->
-                            <!--</div>-->
+                            <div class="how-it-works-image">
+                                <img src="../../../assets/images/anno_details_cohort.png" style="width: 270px;"></img>
+                                <img src="../../../assets/images/freq_cohort.png"
+                                     style="max-width:350px; margin-left: 20px"></img>
+                            </div>
                         </div>
 
                         <v-divider></v-divider>
@@ -476,9 +475,9 @@
                             <v-avatar size="28px" color="teal">
                                 <span class="white--text headline">6</span>
                             </v-avatar>
-                            <span class="how-it-works-title">DOWNLOAD custom configuration files for quick launch on subsequent analyses</span>
+                            <span class="how-it-works-title">FILTER variants by enrichment, impact, and frequency</span>
                             <!--<div class="how-it-works-image">-->
-                            <!--<img  src="../../../assets/images/landing_page/variant_detail_card.png" style="max-width:500px;"></img>-->
+                            <!--<img  src="../../../assets/images/freq_cohort.png" style="max-width:500px;"></img>-->
                             <!--</div>-->
                         </div>
                         <v-divider></v-divider>
@@ -500,7 +499,7 @@
                                 <v-avatar color="teal">
                                     <span class="grey--text">vt</span>
                                 </v-avatar>
-                                <v-avatar  color="teal">
+                                <v-avatar color="teal">
                                     <span class="grey--text">GNomAD</span>
                                 </v-avatar>
                                 <v-avatar color="teal">
