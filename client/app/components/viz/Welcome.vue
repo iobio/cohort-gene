@@ -419,7 +419,7 @@
                             </v-avatar>
                             <span class="how-it-works-title">SELECT cohort data from your machine, the cloud, or our project-hosting platform <i>Mosaic</i></span>
                             <div class="how-it-works-image">
-                                <img src="../../../assets/images/file_menu_cohort.png" style=""></img>
+                                <img src="../../../assets/images/file_menu_cohort.png" style="">
                             </div>
                         </div>
 
@@ -431,7 +431,7 @@
                             </v-avatar>
                             <span class="how-it-works-title">ENTER a gene of interest</span>
                             <div class="how-it-works-image">
-                                <img src="../../../assets/images/gene_selection_cohort.png" style="width:230px"></img>
+                                <img src="../../../assets/images/gene_selection_cohort.png" style="width:230px">
                             </div>
                         </div>
                         <v-divider></v-divider>
@@ -443,8 +443,8 @@
                             </v-avatar>
                             <span class="how-it-works-title">IDENTIFY enriched genomic variants within the selected cohort</span>
                             <div class="how-it-works-image">
-                                <img src="../../../assets/images/multitracks_cohort.png"
-                                     style="max-width:600px"></img>
+                                <img src="../../../assets/images/track_highlight_cohort.png"
+                                     style="max-width:600px">
                             </div>
                         </div>
 
@@ -464,9 +464,9 @@
                             </v-avatar>
                             <span class="how-it-works-title">CLICK on a variant to view the most up-to-date annotations from ClinVar, VEP, gnomAD</span>
                             <div class="how-it-works-image">
-                                <img src="../../../assets/images/anno_details_cohort.png" style="width: 270px;"></img>
+                                <img src="../../../assets/images/anno_details_cohort.png" style="width: 270px;">
                                 <img src="../../../assets/images/freq_cohort.png"
-                                     style="max-width:350px; margin-left: 20px"></img>
+                                     style="max-width:350px; margin-left: 20px">
                             </div>
                         </div>
 
