@@ -443,7 +443,7 @@
                             </v-avatar>
                             <span class="how-it-works-title">IDENTIFY enriched genomic variants within the selected cohort</span>
                             <div class="how-it-works-image">
-                                <img src="../../../assets/images/highlight_cohort.png"
+                                <img src="../../../assets/images/multitracks_cohort.png"
                                      style="max-width:600px"></img>
                             </div>
                         </div>
