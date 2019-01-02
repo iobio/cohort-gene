@@ -78,7 +78,7 @@ class VariantModel {
             'excludeSampleIds': [],
             'selectedSample': 'NA12891'
         }];
-        this.demoGene = 'POGZ';
+        this.demoGene = 'TTN';
         // </editor-fold>
     }
 

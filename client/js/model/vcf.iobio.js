@@ -2014,8 +2014,8 @@ vcfiobio = function module() {
 
                             if (enrichMode) {
                                 variant.zygosity = enrichResult.gx;
-                                variant.totalProbandCount = (+enrichResult.counts[0] + +enrichResult.counts[1] + +enrichResult.counts[2]);  // NOTE: not including no calls in totals
-                                variant.totalSubsetCount = (+enrichResult.counts[4] + +enrichResult.counts[5] + +enrichResult.counts[6]);
+                                variant.totalProbandCount = (+enrichResult.counts[0] + +enrichResult.counts[1] + +enrichResult.counts[2] + +enrichResult.counts[3]);    // NOTE: includes no calls
+                                variant.totalSubsetCount = (+enrichResult.counts[4] + +enrichResult.counts[5] + +enrichResult.counts[6] + +enrichResult.counts[7]);
                                 variant.affectedProbandCount = (+enrichResult.counts[1] + +enrichResult.counts[2]);
                                 variant.affectedSubsetCount = (+enrichResult.counts[5] + +enrichResult.counts[6]);
                                 variant.probandZygCounts = [+enrichResult.counts[0], +enrichResult.counts[1], +enrichResult.counts[2], +enrichResult.counts[3]];
