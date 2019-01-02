@@ -476,9 +476,6 @@
                                 <span class="white--text headline">6</span>
                             </v-avatar>
                             <span class="how-it-works-title">FILTER variants by enrichment, impact, and frequency</span>
-                            <!--<div class="how-it-works-image">-->
-                            <!--<img  src="../../../assets/images/freq_cohort.png" style="max-width:500px;"></img>-->
-                            <!--</div>-->
                         </div>
                         <v-divider></v-divider>
 

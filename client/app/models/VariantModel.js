@@ -61,14 +61,22 @@ class VariantModel {
             'displayName': 'Platinum Demo',
             'vcfs': ['https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz'],
             'tbis': null,
-            'bams': ['https://s3.amazonaws.com/iobio/samples/bam/NA12878.exome.bam',
-                'https://s3.amazonaws.com/iobio/samples/bam/NA12892.exome.bam',
-                'https://s3.amazonaws.com/iobio/samples/bam/NA12891.exome.bam',
-                'https://s3.amazonaws.com/iobio/samples/bam/NA12891.exome.bam'],
+            'bams': [],
             'bais': null,
-            'subsetSampleIds': ['NA12877'],
+            'subsetSampleIds': ['NA12877', 'NA12878'],
             'excludeSampleIds': [],
             'selectedSample': null
+        }, {
+            'id': 's1',
+            'isSampleEntry': true,
+            'displayName': 'Platinum Patient A',
+            'vcfs': ['https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz'],
+            'tbis': null,
+            'bams': ['https://s3.amazonaws.com/iobio/samples/bam/NA12891.exome.bam'],
+            'bais': null,
+            'subsetSampleIds': [],
+            'excludeSampleIds': [],
+            'selectedSample': 'NA12891'
         }];
         this.demoGene = 'POGZ';
         // </editor-fold>
