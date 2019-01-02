@@ -19,7 +19,7 @@ function barChart() {
 
     // Private variables (can be made public if necessary except for _x and _y)
     var _x, _y,
-        margin = {top: 10, right: 0, bottom: 40, left: 40},
+        margin = {top: 10, right: 0, bottom: 40, left: 50},
         height = 200 - margin.bottom - margin.top,
         width = 300 - margin.left - margin.right,
         roundedCorners = 2;
