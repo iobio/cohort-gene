@@ -314,6 +314,7 @@
 
                 // Reset filters
                 self.excludeFilters = [];
+                self.noPassingResults = false;
 
                 if (self.data) {
                     // Get available vertical space to send into scaled variant d3

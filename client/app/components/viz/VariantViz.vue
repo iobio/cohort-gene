@@ -292,6 +292,7 @@
 
                 // Reset filters
                 self.excludeFilters = [];
+                self.noPassingResults = false;
 
                 if (self.data) {
                     // Set the vertical layer count so that the height of the chart can be recalculated
