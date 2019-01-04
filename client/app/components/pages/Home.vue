@@ -871,14 +871,9 @@ TD & SJG updated Nov2018 -->
             },
             onFilterSettingsApplied: function (filterInfo) {
                 let self = this;
-                if (filterInfo.cohortOnly) {
-                    self.$refs.enrichCardRef.forEach((enrichRef) => {
-                      enrichRef.filterVariants(filterInfo);
-                    })
-                } else if(self.$refs.variantCardRef) {
-                    self.$refs.enrichCardRef.forEach((enrichRef) => {
-                        enrichRef.filterVariants(filterInfo);
-                    });
+                self.$refs.enrichCardRef[0].filterVariants(filterInfo);
+
+                if (self.$refs.variantCardRef && !filterInfo.cohortOnly) {
                     self.$refs.variantCardRef.forEach((cardRef) => {
                         cardRef.filterVariants(filterInfo);
                     });
