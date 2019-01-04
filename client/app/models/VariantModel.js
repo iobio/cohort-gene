@@ -852,6 +852,8 @@ class VariantModel {
         let af1000gRange = "";
         let afExacRange = "";
         let afGnomadRange = "";
+        let probandFreq = "";
+        let subsetFreq = "";
 
         let effectList = (annotationScheme == null || annotationScheme.toLowerCase() === 'snpeff' ? d.effect : d.vepConsequence);
         for (let key in effectList) {
@@ -922,11 +924,38 @@ class VariantModel {
             }
         }
 
+        if (d.totalProbandCount > 0) {
+            let probandCalc = d.affectedProbandCount / d.totalProbandCount;
+            if (probandCalc < 0.25) {
+                probandFreq = 'proband_025';
+            } else if (probandCalc < 0.50) {
+                probandFreq = 'proband_2550';
+            } else if (probandCalc < 0.75) {
+                probandFreq = 'proband_5075';
+            } else {
+                probandFreq = 'proband_75100';
+            }
+        }
+
+        if (d.totalSubsetCount > 0) {
+            let subsetCalc = d.affectedSubsetCount / d.totalSubsetCount;
+            if (subsetCalc < 0.25) {
+                subsetFreq = 'subset_025';
+            } else if (subsetCalc < 0.50) {
+                subsetFreq = 'subset_2550';
+            } else if (subsetCalc < 0.75) {
+                subsetFreq = 'subset_5075';
+            } else {
+                subsetFreq = 'subset_75100';
+            }
+        }
+
+
         return 'variant ' + d.type.toLowerCase() + ' ' + d.zygosity.toLowerCase() + ' '
             + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' '
             + sift + ' ' + polyphen + ' ' + regulatory + ' ' + +' ' + d.clinvar + ' '
             + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts + ' ' + af1000gRange + ' '
-            + afExacRange + ' ' + afGnomadRange;
+            + afExacRange + ' ' + afGnomadRange + ' ' + probandFreq + ' ' + subsetFreq;
     }
 
     /* Coordinates applying filter criteria to the appropriate data sets and cohorts. */

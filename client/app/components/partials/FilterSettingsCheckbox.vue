@@ -80,13 +80,13 @@
                         {name: 'gnomad_5075', displayName: '50 - 75%', model: true},
                         {name: 'gnomad_75100', displayName: '75 - 100%', model: true},
                     ],
-                    proband: [
+                    probandFreq: [
                         {name: 'proband_025', displayName: '0 - 25%', model: true},
                         {name: 'proband_2550', displayName: '25 - 50%', model: true},
                         {name: 'proband_5075', displayName: '50 - 75%', model: true},
                         {name: 'proband_75100', displayName: '75 - 100%', model: true},
                     ],
-                    subset: [
+                    subsetFreq: [
                         {name: 'subset_025', displayName: '0 - 25%', model: true},
                         {name: 'subset_2550', displayName: '25 - 50%', model: true},
                         {name: 'subset_5075', displayName: '50 - 75%', model: true},
