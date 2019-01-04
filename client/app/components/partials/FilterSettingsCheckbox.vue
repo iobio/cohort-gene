@@ -80,13 +80,13 @@
                         {name: 'LOW', displayName: 'LOW', model: true}
                     ],
                     type: [
-                        {name: 'snp', displayName: 'SNP', model: true},
-                        {name: 'mnp', displayName: 'MNP', model: true},
+                        {name: 'del', displayName: 'DELETION', model: true},
                         {name: 'ins', displayName: 'INSERTION', model: true},
-                        {name: 'del', displayName: 'DELETION', model: true}
+                        {name: 'mnp', displayName: 'MNP', model: true},
+                        {name: 'snp', displayName: 'SNP', model: true}
                     ],
                     zygosities: [
-                        {name: 'hom', displayName: 'HOMOZYGOUS ALTERNATE', model: true},
+                        {name: 'hom', displayName: 'HOMOZYGOUS', model: true},
                         {name: 'het', displayName: 'HETEROZYGOUS', model: true}
                     ]
                 }
@@ -106,11 +106,7 @@
             }
         },
         computed: {},
-        created: function () {
-        },
-        mounted: function () {
-            // this.theFilter = this.filter;
-            // this.init();
-        }
+        created: function () {},
+        mounted: function () {}
     }
 </script>

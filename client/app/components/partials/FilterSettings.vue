@@ -70,9 +70,9 @@
                 minGenotypeDepth: null,
                 categories: {
                     'annotation': [
-                        {name: 'effect', display: 'Effect', active: false, type: 'checkbox'},
                         {name: 'impact', display: 'Impact', active: false, type: 'checkbox'},
-                        {name: 'type', display: 'Type', active: false, type: 'checkbox'}],
+                        {name: 'type', display: 'Type', active: false, type: 'checkbox'},
+                        {name: 'zygosities', display: 'Zygosities', active: false, type: 'checkbox'},],
                     'coverage': [
                         {name: 'coverage', display: 'Coverage', active: false, type: 'range'}],
                     'enrichment': [
@@ -86,10 +86,7 @@
                         {name: 'subsetFreq', display: 'Subset', active: false, type: 'range'}],
                     'rawCounts': [
                         {name: 'rawCounts', display: 'Raw Counts', active: false, type: 'range'}],
-                    'samplePresence': [{name: 'samplePresence', display: 'Sample Presence', active: false, type: 'checkbox'}],
-                    'zygosities': [
-                        {name: 'hets', display: 'Heterozygous Variants', active: false, type: 'checkbox'},
-                        {name: 'homalts', display: 'Homozygous Alternates Variants', active: false, type: 'checkbox'}]
+                    'samplePresence': [{name: 'samplePresence', display: 'Sample Presence', active: false, type: 'checkbox'}]
                 }
             }
         },
