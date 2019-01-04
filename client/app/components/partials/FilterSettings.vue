@@ -81,11 +81,11 @@
                         {name: 'pValue', display: 'P-value', active: false, type: 'range'},
                         {name: 'deltaFreq', display: 'Fold Change', active: false, type: 'range'}],
                     'frequencies': [
-                        {name: '1000G', display: '1000G', active: false, type: 'range'},
-                        {name: 'exac', display: 'ExAC', active: false, type: 'range'},
-                        {name: 'gnomad', display: 'GnomAD', active: false, type: 'range'},
-                        {name: 'probandFreq', display: 'Proband', active: false, type: 'range'},
-                        {name: 'subsetFreq', display: 'Subset', active: false, type: 'range'}],
+                        {name: 'g1000', display: '1000G', active: false, type: 'checkbox'},
+                        {name: 'exac', display: 'ExAC', active: false, type: 'checkbox'},
+                        {name: 'gnomad', display: 'gnomAD', active: false, type: 'checkbox'},
+                        {name: 'probandFreq', display: 'Proband', active: false, type: 'checkbox'},
+                        {name: 'subsetFreq', display: 'Subset', active: false, type: 'checkbox'}],
                     'rawCounts': [
                         {name: 'rawCounts', display: 'Raw Counts', active: false, type: 'range'}],
                     'samplePresence': [{name: 'samplePresence', display: 'Sample Presence', active: false, type: 'checkbox'}]

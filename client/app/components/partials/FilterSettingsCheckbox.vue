@@ -5,6 +5,7 @@
         .input-group
             label
                 padding-top: 5px
+                padding-left: 15px
                 font-size: 14px
                 font-weight: normal
                 color: black !important
@@ -12,14 +13,14 @@
 
 <template>
     <v-layout row wrap class="filter-form mx-2 px-2" style="max-width:500px;">
-        <v-flex id="name" xs12 class="mb-3">
+        <v-flex id="name" xs12>
             <v-container fluid>
                 <v-checkbox v-for="item in checkboxLists[parentFilterName]"
                             :key="item.name"
                             :label="item.displayName"
                             v-model="item.model"
-                            class="checkbox-label"
                             color="cohortBlue"
+                            style="padding-left: 15px; margin-top: 0; margin-bottom: 0"
                             @click="boxChecked(item)">
                 </v-checkbox>
             </v-container>
@@ -38,42 +39,7 @@
         data() {
             return {
                 checkboxLists: {
-                    // effect: [
-                    //     'transcript_ablation',
-                    //     'splice_acceptor_variant',
-                    //     'splice_donor_variant',
-                    //     'stop_gained',
-                    //     'frameshift_variant',
-                    //     'stop_lost',
-                    //     'start_lost',
-                    //     'transcript_amplification',
-                    //     'inframe_insertion',
-                    //     'inframe_deletion',
-                    //     'missense_variant',
-                    //     'protein_altering_variant',
-                    //     'splice_region_variant',
-                    //     'incomplete_terminal_codon_variant',
-                    //     'stop_retained_variant',
-                    //     'synonymous_variant',
-                    //     'coding_sequence_variant',
-                    //     'mature_miRNA_variant',
-                    //     '5_prime_UTR_variant',
-                    //     '3_prime_UTR_variant',
-                    //     'non_coding_transcript_exon_variant',
-                    //     'intron_variant',
-                    //     'NMD_transcript_variant',
-                    //     'non_coding_transcript_variant',
-                    //     'upstream_gene_variant',
-                    //     'downstream_gene_variant',
-                    //     'TFBS_ablation',
-                    //     'TFBS_amplification',
-                    //     'TF_binding_site_variant',
-                    //     'regulatory_region_ablation',
-                    //     'regulatory_region_amplification',
-                    //     'feature_elongation',
-                    //     'regulatory_region_variant',
-                    //     'feature_truncation',
-                    //     'intergenic_variant'],
+                    // Annotation categories
                     impact: [
                         {name: 'HIGH', displayName: 'HIGH', model: true},
                         {name: 'MODERATE', displayName: 'MODERATE', model: true},
@@ -89,7 +55,46 @@
                     zygosities: [
                         {name: 'hom', displayName: 'HOMOZYGOUS', model: true},
                         {name: 'het', displayName: 'HETEROZYGOUS', model: true}
-                    ]
+                    ],
+
+                    // Coverage
+
+                    // Enrichment
+
+                    // Frequencies
+                    g1000: [
+                        {name: 'g1000_025', displayName: '0 - 25%', model: true},
+                        {name: 'g1000_2550', displayName: '25 - 50%', model: true},
+                        {name: 'g1000_5075', displayName: '50 - 75%', model: true},
+                        {name: 'g1000_75100', displayName: '75 - 100%', model: true},
+                    ],
+                    exac: [
+                        {name: 'exac_025', displayName: '0 - 25%', model: true},
+                        {name: 'exac_2550', displayName: '25 - 50%', model: true},
+                        {name: 'exac_5075', displayName: '50 - 75%', model: true},
+                        {name: 'exac_75100', displayName: '75 - 100%', model: true},
+                    ],
+                    gnomad: [
+                        {name: 'gnomad_025', displayName: '0 - 25%', model: true},
+                        {name: 'gnomad_2550', displayName: '25 - 50%', model: true},
+                        {name: 'gnomad_5075', displayName: '50 - 75%', model: true},
+                        {name: 'gnomad_75100', displayName: '75 - 100%', model: true},
+                    ],
+                    proband: [
+                        {name: 'proband_025', displayName: '0 - 25%', model: true},
+                        {name: 'proband_2550', displayName: '25 - 50%', model: true},
+                        {name: 'proband_5075', displayName: '50 - 75%', model: true},
+                        {name: 'proband_75100', displayName: '75 - 100%', model: true},
+                    ],
+                    subset: [
+                        {name: 'subset_025', displayName: '0 - 25%', model: true},
+                        {name: 'subset_2550', displayName: '25 - 50%', model: true},
+                        {name: 'subset_5075', displayName: '50 - 75%', model: true},
+                        {name: 'subset_75100', displayName: '75 - 100%', model: true},
+                    ],
+
+                    // Sample Presence
+
                 }
             }
         },
@@ -107,7 +112,6 @@
                 self.checkboxLists[self.parentFilterName].forEach((filter) => {
                    anyFilterInParentActive |= !filter.model;
                 });
-
                 self.$emit('filter-toggled', filterName, updatedState, self.parentFilterName, self.grandparentFilterName, anyFilterInParentActive);
             }
         },

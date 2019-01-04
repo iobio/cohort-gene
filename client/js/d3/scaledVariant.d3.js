@@ -304,11 +304,13 @@ function scaledVariantD3() {
         // If we're out of active filters, display all variants
         if (filterClasses.length === 0) {
             allVariants.style("opacity", 1);
+            allVariants.style("pointer-events", 'auto');
         }
 
         // Remove filtered class for any variants that contain the given class criteria
         filterClasses.forEach((filterClass) => {
-           allVariants.filter(filterClass).classed({'filtered': false});
+            allVariants.filter(filterClass).classed({'filtered': false});
+            allVariants.style("pointer-events", 'none');
         });
 
         // Include previously filtered variants into the equation
@@ -316,11 +318,13 @@ function scaledVariantD3() {
 
         // Hide all variants
         allVariants.style("opacity", 0)
+            .style("pointer-events", "none")
             .transition()
             .duration(1000);
 
         // Reveal variants that pass filter
-        filteredVars.style("opacity", 1);
+        filteredVars.style("opacity", 1)
+            .style("pointer-events", "auto");
     };
 
     /* Takes in ONLY a single class name (aka .snp or .impact_HIGH)*/

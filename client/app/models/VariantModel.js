@@ -778,64 +778,64 @@ class VariantModel {
     //<editor-fold desc="VARIANT CLASSIFICATION & FILTERING">
 
     /* Assigns classes to each variant to control visual display in the DOM. */
-    classifyByEnrichment(d, annotationScheme) {
-        var impacts = "";
-        // var toggleImpact = "";  // Grouping classes, added & removed based on impact mode
-        // var colorimpacts = "";  // Color classes, constant
-        var effects = "";
-        var sift = "";
-        var polyphen = "";
-        var regulatory = "";
-        var enrichment = "";   // Grouping classes, added & removed based on impact mode
-        var enrichColor = "";  // Color classes, constant
-
-        /* Still want to keep color scheme based on subset delta fold frequency for now*/
-        var subsetEnrichment = d.subsetDelta;
-        var roundedSubset = Math.round(d.subsetDelta * 10) / 10;
-
-        if (roundedSubset >= 2.0) {
-            enrichment = "eUP";
-            enrichColor = "enrichment_subset_UP";
-        }
-        else if (subsetEnrichment <= 0.5) {
-            enrichment = "eDOWN";
-            enrichColor = "enrichment_subset_DOWN";
-        }
-        else if (d.totalSubsetCount > 0) {
-            enrichment = "eLOW";
-            enrichColor = "enrichment_LOW";
-        }
-        else {
-            enrichment = "eNA";
-            enrichColor = "enrichment_NA";
-        }
-
-        var effectList = (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.effect : d.vepConsequence);
-        for (var key in effectList) {
-            if (annotationScheme.toLowerCase() == 'vep' && key.indexOf("&") > 0) {
-                var tokens = key.split("&");
-                tokens.forEach(function (token) {
-                    effects += " " + token;
-
-                });
-            } else {
-                effects += " " + key;
-            }
-        }
-        for (var key in d.sift) {
-            sift += " " + key;
-        }
-        for (var key in d.polyphen) {
-            polyphen += " " + key;
-        }
-        for (var key in d.regulatory) {
-            regulatory += " " + key;
-        }
-
-        return 'variant ' + d.type.toLowerCase() + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "")
-            + ' ua_' + d.ua + ' ' + sift + ' ' + polyphen + ' ' + regulatory + ' ' + +' ' + d.clinvar + ' ' + impacts + ' ' + effects +
-            ' ' + d.consensus + ' ' + enrichment + ' ' + enrichColor;
-    }
+    // classifyByEnrichment(d, annotationScheme) {
+    //     var impacts = "";
+    //     // var toggleImpact = "";  // Grouping classes, added & removed based on impact mode
+    //     // var colorimpacts = "";  // Color classes, constant
+    //     var effects = "";
+    //     var sift = "";
+    //     var polyphen = "";
+    //     var regulatory = "";
+    //     var enrichment = "";   // Grouping classes, added & removed based on impact mode
+    //     var enrichColor = "";  // Color classes, constant
+    //
+    //     /* Still want to keep color scheme based on subset delta fold frequency for now*/
+    //     var subsetEnrichment = d.subsetDelta;
+    //     var roundedSubset = Math.round(d.subsetDelta * 10) / 10;
+    //
+    //     if (roundedSubset >= 2.0) {
+    //         enrichment = "eUP";
+    //         enrichColor = "enrichment_subset_UP";
+    //     }
+    //     else if (subsetEnrichment <= 0.5) {
+    //         enrichment = "eDOWN";
+    //         enrichColor = "enrichment_subset_DOWN";
+    //     }
+    //     else if (d.totalSubsetCount > 0) {
+    //         enrichment = "eLOW";
+    //         enrichColor = "enrichment_LOW";
+    //     }
+    //     else {
+    //         enrichment = "eNA";
+    //         enrichColor = "enrichment_NA";
+    //     }
+    //
+    //     var effectList = (annotationScheme == null || annotationScheme.toLowerCase() == 'snpeff' ? d.effect : d.vepConsequence);
+    //     for (var key in effectList) {
+    //         if (annotationScheme.toLowerCase() == 'vep' && key.indexOf("&") > 0) {
+    //             var tokens = key.split("&");
+    //             tokens.forEach(function (token) {
+    //                 effects += " " + token;
+    //
+    //             });
+    //         } else {
+    //             effects += " " + key;
+    //         }
+    //     }
+    //     for (var key in d.sift) {
+    //         sift += " " + key;
+    //     }
+    //     for (var key in d.polyphen) {
+    //         polyphen += " " + key;
+    //     }
+    //     for (var key in d.regulatory) {
+    //         regulatory += " " + key;
+    //     }
+    //
+    //     return 'variant ' + d.type.toLowerCase() + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "")
+    //         + ' ua_' + d.ua + ' ' + sift + ' ' + polyphen + ' ' + regulatory + ' ' + +' ' + d.clinvar + ' ' + impacts + ' ' + effects +
+    //         ' ' + d.consensus + ' ' + enrichment + ' ' + enrichColor;
+    // }
 
     classifyByImpact(d, annotationScheme, isEnrichmentTrack, extraAnnotationsLoaded) {
         let emptyImpact = 'impact_none';
@@ -849,6 +849,7 @@ class VariantModel {
         let sift = "";
         let polyphen = "";
         let regulatory = "";
+        let af1000gRange = "";
 
         let effectList = (annotationScheme == null || annotationScheme.toLowerCase() === 'snpeff' ? d.effect : d.vepConsequence);
         for (let key in effectList) {
@@ -883,7 +884,22 @@ class VariantModel {
             regulatory += " " + key;
         }
 
-        return 'variant ' + d.type.toLowerCase() + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' ' + sift + ' ' + polyphen + ' ' + regulatory + ' ' + +' ' + d.clinvar + ' ' + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts;
+        if (d.af1000G) {
+            if (d.af1000G < 0.25) {
+                af1000gRange = 'g1000_025';
+            } else if (d.af1000G < 0.50) {
+                af1000gRange = 'g1000_2550';
+            } else if (d.af1000G < 0.75) {
+                af1000gRange = 'g1000_5075';
+            } else {
+                af1000gRange = 'g1000_75100';
+            }
+        }
+
+        return 'variant ' + d.type.toLowerCase() + ' ' + d.zygosity.toLowerCase() + ' '
+            + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' '
+            + sift + ' ' + polyphen + ' ' + regulatory + ' ' + +' ' + d.clinvar + ' '
+            + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts + ' ' + af1000gRange;
     }
 
     /* Coordinates applying filter criteria to the appropriate data sets and cohorts. */

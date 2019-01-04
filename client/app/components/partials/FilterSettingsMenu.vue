@@ -79,8 +79,7 @@
                     {name: 'enrichment', display: 'ENRICHMENT', active: false, custom: false, description: 'Filter by enrichment statistics'},
                     {name: 'frequencies', display: 'FREQUENCIES', active: false, custom: false, description: 'Filter by variant frequency within population databases or within the cohort'},
                     {name: 'rawCounts', display: 'RAW COUNTS', active: false, custom: false, description: 'Display variants that appear a specified number of times within the cohort'},
-                    {name: 'samplePresence', display: 'SAMPLE PRESENCE', active: false, custom: false, description: 'Filter cohort variants by only displaying those also within a single sample track'},
-                    {name: 'zygosities', display: 'ZYGOSITIES', active: false, custom: false, description: 'Display only variants with a specific zygosity'}
+                    {name: 'samplePresence', display: 'SAMPLE PRESENCE', active: false, custom: false, description: 'Filter cohort variants by only displaying those also within a single sample track'}
                 ],
                 clinvarCategories: [
                 {'key': 'clinvar', 'selected': true, value: 'clinvar_path', text: 'Pathogenic'},
