@@ -253,7 +253,8 @@
                 extraAnnotationsLoaded: {
                     type: Boolean,
                     default: false
-                }
+                },
+                activeFilters: []
             }
         },
         mounted: function () {
@@ -399,6 +400,29 @@
             resetPreAnnotateColor: function() {
                 let self = this;
                 self.extraAnnotationsLoaded = false;
+            },
+            filterVariants: function(filterInfo, svg) {
+                let self =this;
+
+                if (filterInfo.state === true) {
+                    let compoundFilterClass = '.' + filterInfo.name;
+                    self.activeFilters.push(compoundFilterClass);
+                    if (self.activeFilters.length > 0) {
+                        compoundFilterClass = self.activeFilters.join('');
+                    }
+                    self.variantChart.filterVariants()(compoundFilterClass, svg);
+                } else {
+                    // Remove from active filter state
+                    self.activeFilters.splice(self.activeFilters.indexOf('.' + filterInfo.name), 1);
+
+                    // Remove active filter status for variants with this class
+                    let compoundFilterClass = '.' + filterInfo.name;
+                    self.variantChart.unfilterVariants()(compoundFilterClass, svg);
+
+                    // Re-apply active filters in case of multiple filters
+                    compoundFilterClass = self.activeFilters.join('');
+                    self.variantChart.filterVariants()(compoundFilterClass, svg);
+                }
             }
         },
         watch: {

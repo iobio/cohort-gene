@@ -574,6 +574,12 @@ TD & SJG updated Apr2018 -->
                         .data([exon]);
                 }
             },
+            filterVariants: function(filterInfo) {
+                let self = this;
+                if (self.$refs.subsetVizRef) {
+                    self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name));
+                }
+            }
         }
     }
 </script>

@@ -143,7 +143,47 @@ function variantD3() {
         }
     }
 
+    var filterVariants = function(filterClassName, svgContainer) {
+        let allVariants = svgContainer.selectAll(".variant");
 
+        // Mark variants for current filter
+        let showVariants = svgContainer.selectAll(filterClassName);
+        showVariants.classed({'filtered': true});
+
+        // Include previously filtered variants into the equation
+        let filteredVars = svgContainer.selectAll('.filtered');
+
+        // Hide all variants
+        allVariants.style("opacity", 0)
+            .transition()
+            .duration(1000);
+
+        // Reveal variants that pass filter
+        filteredVars.style("opacity", 1);
+    };
+
+    var unfilterVariants = function(filterClassName, svgContainer) {
+        let allVariants = svgContainer.selectAll(".variant");
+
+        // Remove filter status for vars corresponding to the given filter name
+        let filterClassedVars = svgContainer.selectAll(filterClassName);
+        filterClassedVars.classed({'filtered': false});
+
+        // Retrieve updated variants that pass filters
+        let filteredVars = svgContainer.selectAll('.filtered');
+
+        // If we still have active filters, only display those
+        if (filteredVars && filteredVars[0].length > 0) {
+            allVariants.style("opacity", 0)
+                .transition()
+                .duration(1000);
+
+            filteredVars.style("opacity", 1);
+            // Otherwise re-display all variants
+        } else {
+            allVariants.style("opacity", 1);
+        }
+    };
 
 
 
@@ -835,11 +875,11 @@ function variantD3() {
         hideCircle = _;
         return chart;
     }
-    chart.highlightVariant = function(_) {
-        if (!arguments.length) return highlightVariant;
-        highlightVariant = _;
-        return chart;
-    }
+    // chart.highlightVariant = function(_) {
+    //     if (!arguments.length) return highlightVariant;
+    //     highlightVariant = _;
+    //     return chart;
+    // }
 
     chart.zoomVersion = function (_) {
         if (!arguments.length) return zoomVersion;
@@ -847,7 +887,17 @@ function variantD3() {
         return chart;
     }
 
+    chart.filterVariants = function (_) {
+        if (!arguments.length) return filterVariants;
+        filterVariants = _;
+        return chart;
+    };
 
+    chart.unfilterVariants = function (_) {
+        if (!arguments.length) return unfilterVariants;
+        unfilterVariants = _;
+        return chart;
+    };
 
     // This adds the "on" methods to our custom exports
     d3.rebind(chart, dispatch, "on");

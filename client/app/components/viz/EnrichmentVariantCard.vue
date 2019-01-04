@@ -568,24 +568,16 @@ Updated: SJG Dec2018
                 let self = this;
                 self.showZoomModal = false;
             },
-            // TODO: modify this as needed for cohort - check out filter model first
-            onFilterSettingsApplied: function () {
-                let self = this;
-                self.customFilters = [];
-                for (let filterName in self.filterModel.flagCriteria) {
-                    if (self.filterModel.flagCriteria[filterName].active && self.filterModel.flagCriteria[filterName].custom) {
-                        self.customFilters.push({
-                            name: filterName,
-                            display: self.filterModel.flagCriteria[filterName].name
-                        });
-                    }
-                }
-                this.$emit('filter-settings-applied');
-            },
             refreshVariantColors: function() {
                 let self = this;
                 if (self.$refs.subsetVizRef) {
                     self.$refs.subsetVizRef.refreshVariantColors();
+                }
+            },
+            filterVariants: function(filterInfo) {
+                let self = this;
+                if (self.$refs.subsetVizRef) {
+                    self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name));
                 }
             }
         }

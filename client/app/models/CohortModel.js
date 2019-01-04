@@ -15,6 +15,7 @@ class CohortModel {
 
         // <editor-fold desc="DATA PROPS">
         this.vcfData = null;            // Annotated VCF data
+        this.filteredVcfData = null;    // Base vcf data with filters applied
         this.fbData = null;
         this.bamData = null;
         this.coverage = [[]];

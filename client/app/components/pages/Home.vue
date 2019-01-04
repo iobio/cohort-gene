@@ -142,7 +142,8 @@ TD & SJG updated Nov2018 -->
                                                 :filterModel="filterModel"
                                                 :showCoverageCutoffs="showCoverageCutoffs"
                                                 @filter-settings-applied="onFilterSettingsApplied"
-                                                @filter-settings-closed="$emit('filter-settings-closed')">
+                                                @filter-settings-closed="$emit('filter-settings-closed')"
+                                                @filter-box-toggled="filterBoxToggled">
                                         </filter-settings-menu>
                                     </v-container>
                                 </v-tab-item>
@@ -852,24 +853,33 @@ TD & SJG updated Nov2018 -->
                     self.$refs.variantSummaryCardRef.assignBarChartValues(self.probandN, self.subsetN);
                 }
             },
-            onFilterSettingsApplied: function () {
-                // TODO: implement this - pass info to filter model
-
-                // Previous gene stuff:
-                // let self = this;
-                // self.cohortModel.cacheHelper.refreshGeneBadges(function () {
-                //     if (self.$refs.genesCardRef) {
-                //         self.$refs.genesCardRef.updateGeneBadgeCounts();
-                //         self.$refs.genesCardRef.determineFlaggedGenes();
-                //         self.cohortModel.flaggedVariants = self.flaggedVariants;
-                //     }
-                //     if (!self.isEduMode && self.cohortModel.flaggedVariants && self.cohortModel.flaggedVariants.length > 0) {
-                //         self.$refs.navRef.onShowFlaggedVariants();
-                //     }
-                //     if (self.launchedFromClin) {
-                //         self.onSendFiltersToClin();
-                //     }
-                // })
+            filterBoxToggled: function(filterName, filterState) {
+                let self = this;
+                let filterInfo = {
+                    name: filterName,
+                    cohortOnly: false,
+                    type: 'checkbox',
+                    state: filterState,
+                    rangeState: null,
+                    lowRange: null,
+                    highRange: null
+                };
+                self.onFilterSettingsApplied(filterInfo);
+            },
+            onFilterSettingsApplied: function (filterInfo) {
+                let self = this;
+                if (filterInfo.cohortOnly) {
+                    self.$refs.enrichCardRef.forEach((enrichRef) => {
+                      enrichRef.filterVariants(filterInfo);
+                    })
+                } else if(self.$refs.variantCardRef) {
+                    self.$refs.enrichCardRef.forEach((enrichRef) => {
+                        enrichRef.filterVariants(filterInfo);
+                    });
+                    self.$refs.variantCardRef.forEach((cardRef) => {
+                        cardRef.filterVariants(filterInfo);
+                    });
+                }
             },
             openFileSelection: function() {
                 let self = this;

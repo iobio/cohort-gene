@@ -1,5 +1,5 @@
 /*
-SJG Mar2018
+SJG Jan2019
 Adapted from http://bl.ocks.org/d3noob/8952219
 
 This is a bar chart that initially displays just the graph outline, then populates when fillChart is called,

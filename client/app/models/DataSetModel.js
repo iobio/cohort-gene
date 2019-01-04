@@ -26,6 +26,7 @@ class DataSetModel {
         this.affectedInfo = null;
         this.calledVariants = null;
         this.loadedVariants = null;     // Variants displayed in track
+        this.filteredVariants = null;   // Filtered variant display
         this.selectedVariants = null;   // Selected in zoom panel
         this.trackName = '';            // Displays in italics before chips
         this.excludeIds = [];           // Samples from any vcf file to be removed from analysis
@@ -1343,6 +1344,9 @@ class DataSetModel {
             null,
             true,       // keepVariantsCombined
             true);      // enrichment mode (aka subset delta calculations only - no annotation)
+    }
+
+    applyVariantFilter(filterInfo) {
     }
 
     // </editor-fold>

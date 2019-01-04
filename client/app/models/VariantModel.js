@@ -77,6 +77,17 @@ class VariantModel {
             'subsetSampleIds': [],
             'excludeSampleIds': [],
             'selectedSample': 'NA12891'
+        }, {
+            'id': 's2',
+            'isSampleEntry': true,
+            'displayName': 'Platinum Patient B',
+            'vcfs': ['https://s3.amazonaws.com/iobio/samples/vcf/platinum-exome.vcf.gz'],
+            'tbis': null,
+            'bams': ['https://s3.amazonaws.com/iobio/samples/bam/NA12892.exome.bam'],
+            'bais': null,
+            'subsetSampleIds': [],
+            'excludeSampleIds': [],
+            'selectedSample': 'NA12892'
         }];
         this.demoGene = 'TTN';
         // </editor-fold>
@@ -764,7 +775,7 @@ class VariantModel {
 
     //</editor-fold>
 
-    //<editor-fold desc="VARIANT CLASSIFICATION">
+    //<editor-fold desc="VARIANT CLASSIFICATION & FILTERING">
 
     /* Assigns classes to each variant to control visual display in the DOM. */
     classifyByEnrichment(d, annotationScheme) {
@@ -874,6 +885,21 @@ class VariantModel {
 
         return 'variant ' + d.type.toLowerCase() + ' ' + d.zygosity.toLowerCase() + ' ' + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' ' + sift + ' ' + polyphen + ' ' + regulatory + ' ' + +' ' + d.clinvar + ' ' + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts;
     }
+
+    /* Coordinates applying filter criteria to the appropriate data sets and cohorts. */
+    // filterVariants(filterInfo) {
+    //     let self = this;
+    //
+    //     // If we're only applying filter to cohort track
+    //     if (filterInfo.cohortOnly) {
+    //         self.mainDataSet.applyVariantFilter(filterInfo);
+    //     } else if (self.otherDataSets.length > 0) {
+    //         self.mainDataSet.applyVariantFilter(filterInfo);
+    //         self.otherDataSets.forEach((dataSet) => {
+    //             dataSet.applyVariantFilter(filterInfo);
+    //         })
+    //     }
+    // }
 
     //</editor-fold>
 

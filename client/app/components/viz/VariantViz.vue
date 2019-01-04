@@ -215,7 +215,8 @@
         data() {
             return {
                 variantChart: {},
-                name: ''
+                name: '',
+                activeFilters: []
             }
         },
         computed: {
@@ -345,6 +346,32 @@
             changeVariantColorScheme: function (enrichmentMode, svg) {
                 let self = this;
                 self.variantChart.switchColorScheme()(enrichmentMode, svg);
+            },
+            filterVariants: function(filterInfo, svg) {
+                let self = this;
+
+                if (filterInfo.state === true) {
+                    let compoundFilterClass = '.' + filterInfo.name;
+                    if (self.activeFilters.length > 0) {
+                        self.activeFilters.push(filterInfo.name);
+                        compoundFilterClass = '.' + self.activeFilters.split('.');
+                    }
+                    self.variantChart.filterVariants()(compoundFilterClass, svg);
+                } else {
+                    // Remove from active filter state
+                    self.activeFilters.splice(self.activeFilters.indexOf(filterInfo.name), 1);
+
+                    // Re-display variants that no longer meet filtering criteria
+                    let compoundFilterClass = '.' + filterInfo.name;
+                    self.variantChart.unfilterVariants()(compoundFilterClass, svg);
+
+                    // Re-filter just in case overlap b/w active and non-active variants
+                    if (self.activeFilters.length > 0) {
+                        self.activeFilters.push(filterInfo.name);
+                        compoundFilterClass = '.' + self.activeFilters.split('.');
+                    }
+                    self.variantChart.filterVariants()(compoundFilterClass, svg);
+                }
             }
         }
     }
