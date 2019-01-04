@@ -16,7 +16,8 @@
                         :key="category.name"
                         :value="category.active">
                     <div slot="header">
-                        <v-avatar v-if="category.active" size="10px" color="green"></v-avatar>
+                        <v-avatar v-if="category.active" size="12px" color="cohortBlue" style="margin-right: 10px"></v-avatar>
+                        <v-avatar v-else size="10px" color="white" style="margin-right: 12px"></v-avatar>
                         <span class="filter-title">
                             {{ category.display }}
                         </span>
@@ -26,6 +27,7 @@
                                 v-if="category.type === 'checkbox'"
                                 v-bind:ref="category.name + 'SettingsRef'"
                                 :parentFilterName="category.name"
+                                :grandparentFilterName="filterName"
                                 @filter-toggled="onFilterToggled">
                         </filter-settings-checkbox>
                         <filter-settings-range
@@ -135,9 +137,24 @@
             onChangeName: function () {
                 this.theFilter.display = this.name;
             },
-            onFilterToggled: function(filterName, filterState) {
+            onFilterToggled: function(filterName, filterState, parentFilterName, grandparentFilterName, parentFilterState) {
                 let self = this;
-                self.$emit('filter-toggled', filterName, filterState);
+
+                // Turn on indicator
+                let filterObj = self.categories[grandparentFilterName].filter((cat) => {
+                    return cat.name === parentFilterName;
+                });
+                if (filterObj.length > 0) {
+                    filterObj[0].active = parentFilterState;
+                }
+
+                let grandparentFilterState = false;
+                let parentFilters = self.categories[grandparentFilterName];
+                parentFilters.forEach((filt) => {
+                    grandparentFilterState |= filt.active;
+                });
+
+                self.$emit('filter-toggled', filterName, filterState, grandparentFilterName, grandparentFilterState);
             }
         },
         computed: {},

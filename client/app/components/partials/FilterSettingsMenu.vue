@@ -24,14 +24,15 @@
 
 <template>
     <v-flex xs12 style="padding-top: 10px">
-        <v-expansion-panel focusable>
+        <v-expansion-panel>
             <v-expansion-panel-content
                     v-for="filter in filters"
                     :ref="filter.name + 'ExpansionRef'"
                     :key="filter.name"
                     :value="filter.active">
                 <div slot="header" class="filter-settings-form">
-                    <v-avatar v-if="filter.active" size="10px" color="green"></v-avatar>
+                    <v-avatar v-if="filter.active" size="12px" color="cohortBlue"></v-avatar>
+                    <v-avatar v-else size="12px" color="white"></v-avatar>
                     <span class="filter-title">
                         {{ filter.display }}
                     </span>
@@ -74,7 +75,7 @@
                 showMenu: true,
                 filters: [
                     {name: 'annotation', display: 'ANNOTATION', active: false, custom: false, description: 'Filter by variant effect, impact, or type'},
-                    {name: 'coverage', display: 'COVERAGE', active: false, custom: false, description: 'Filter by fold coverage counts'},
+                    {name: 'coverage', display: 'COVERAGE', active: false, custom: false, description: 'Filter individual sample traacks by fold coverage counts'},
                     {name: 'enrichment', display: 'ENRICHMENT', active: false, custom: false, description: 'Filter by enrichment statistics'},
                     {name: 'frequencies', display: 'FREQUENCIES', active: false, custom: false, description: 'Filter by variant frequency within population databases or within the cohort'},
                     {name: 'rawCounts', display: 'RAW COUNTS', active: false, custom: false, description: 'Display variants that appear a specified number of times within the cohort'},
@@ -147,8 +148,14 @@
                     this.filters.splice(idx, 1);
                 }
             },
-            filterBoxToggled: function(filterName, filterState) {
+            filterBoxToggled: function(filterName, filterState, parentFilterName, parentFilterState) {
                 let self = this;
+                let filterObj = self.filters.filter((filt) => {
+                    return filt.name === parentFilterName;
+                });
+                if (filterObj.length > 0) {
+                    filterObj[0].active = parentFilterState;
+                }
                 self.$emit('filter-box-toggled', filterName, filterState);
             }
         },

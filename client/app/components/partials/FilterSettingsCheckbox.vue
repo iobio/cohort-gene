@@ -32,7 +32,8 @@
         name: 'filter-settings-checkbox',
         components: {},
         props: {
-            parentFilterName: null
+            parentFilterName: null,
+            grandparentFilterName: null
         },
         data() {
             return {
@@ -102,7 +103,12 @@
                 if (self.parentFilterName === 'impact') {
                     filterName = self.parentFilterName + '_' + filterObj.name;
                 }
-                self.$emit('filter-toggled', filterName, updatedState);
+                let anyFilterInParentActive = false;
+                self.checkboxLists[self.parentFilterName].forEach((filter) => {
+                   anyFilterInParentActive |= !filter.model;
+                });
+
+                self.$emit('filter-toggled', filterName, updatedState, self.parentFilterName, self.grandparentFilterName, anyFilterInParentActive);
             }
         },
         computed: {},
