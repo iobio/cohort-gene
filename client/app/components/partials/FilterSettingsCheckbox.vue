@@ -9,11 +9,13 @@
                 font-size: 14px
                 font-weight: normal
                 color: black !important
+                pointer-events: none !important
+                cursor: default
 </style>
 
 <template>
     <v-layout row wrap class="filter-form mx-2 px-2" style="max-width:500px;">
-        <v-flex id="name" xs12>
+        <v-flex xs12>
             <v-container fluid>
                 <v-checkbox v-for="item in checkboxLists[parentFilterName]"
                             :key="item.name"

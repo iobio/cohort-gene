@@ -29,7 +29,7 @@
                     v-for="filter in filters"
                     :ref="filter.name + 'ExpansionRef'"
                     :key="filter.name"
-                    :value="filter.active">
+                    :value="filter.custom">
                 <div slot="header" class="filter-settings-form">
                     <v-avatar v-if="filter.active" size="12px" color="cohortBlue"></v-avatar>
                     <v-avatar v-else size="12px" color="white"></v-avatar>

@@ -484,6 +484,9 @@ TD & SJG updated Nov2018 -->
                         card.resetZoom();
                     });
                 }
+                if (self.$refs.filterSettingsMenuRef) {
+                    self.$refs.filterSettingsMenuRef.clearFilters();
+                }
             },
             wipeModels: function () {
                 let self = this;
@@ -676,9 +679,6 @@ TD & SJG updated Nov2018 -->
                             cardRef.hideVariantCircle(true);
                         });
                     }
-                }
-                if (self.$refs.filterSettingsMenuRef) {
-                    self.$refs.filterSettingsMenuRef.clearFilters();
                 }
             },
             startZoomMode: function (selectedVarIds) {

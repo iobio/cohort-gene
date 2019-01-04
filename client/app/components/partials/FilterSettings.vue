@@ -14,7 +14,7 @@
                         v-for="category in categories[filterName]"
                         :ref="category.name + 'ExpansionRef'"
                         :key="category.name"
-                        :value="category.active">
+                        :value="category.open">
                     <div slot="header">
                         <v-avatar v-if="category.active" size="12px" color="cohortBlue" style="margin-right: 10px"></v-avatar>
                         <v-avatar v-else size="10px" color="white" style="margin-right: 12px"></v-avatar>
@@ -65,23 +65,23 @@
                 minGenotypeDepth: null,
                 categories: {
                     'annotation': [
-                        {name: 'impact', display: 'Impact', active: false, type: 'checkbox'},
-                        {name: 'type', display: 'Type', active: false, type: 'checkbox'},
-                        {name: 'zygosities', display: 'Zygosities', active: false, type: 'checkbox'},],
+                        {name: 'impact', display: 'Impact', active: false, open: false, type: 'checkbox'},
+                        {name: 'type', display: 'Type', active: false, open: false, type: 'checkbox'},
+                        {name: 'zygosities', display: 'Zygosities', active: false, open: false, type: 'checkbox'},],
                     'coverage': [
-                        {name: 'coverage', display: 'Coverage', active: false, type: 'range'}],
+                        {name: 'coverage', display: 'Coverage', active: false, open: false, type: 'range'}],
                     'enrichment': [
-                        {name: 'pValue', display: 'P-value', active: false, type: 'checkbox'},
-                        {name: 'subsetDelta', display: 'Fold Change', active: false, type: 'checkbox'}],
+                        {name: 'pValue', display: 'P-value', active: false, open: false, type: 'checkbox'},
+                        {name: 'subsetDelta', display: 'Fold Change', active: false, open: false, type: 'checkbox'}],
                     'frequencies': [
-                        {name: 'g1000', display: '1000G', active: false, type: 'checkbox'},
-                        {name: 'exac', display: 'ExAC', active: false, type: 'checkbox'},
-                        {name: 'gnomad', display: 'gnomAD', active: false, type: 'checkbox'},
-                        {name: 'probandFreq', display: 'Proband', active: false, type: 'checkbox'},
-                        {name: 'subsetFreq', display: 'Subset', active: false, type: 'checkbox'}],
+                        {name: 'g1000', display: '1000G', active: false, open: false, type: 'checkbox'},
+                        {name: 'exac', display: 'ExAC', active: false, open: false, type: 'checkbox'},
+                        {name: 'gnomad', display: 'gnomAD', active: false, open: false, type: 'checkbox'},
+                        {name: 'probandFreq', display: 'Proband', active: false, open: false, type: 'checkbox'},
+                        {name: 'subsetFreq', display: 'Subset', active: false, open: false, type: 'checkbox'}],
                     'rawCounts': [ // Currently unused - may incorporate later
-                        {name: 'rawCounts', display: 'Raw Counts', active: false, type: 'range'}],
-                    'samplePresence': [{name: 'samplePresence', display: 'Sample Presence', active: false, type: 'checkbox'}]
+                        {name: 'rawCounts', display: 'Raw Counts', active: false, open: false, type: 'range'}],
+                    'samplePresence': [{name: 'samplePresence', display: 'Sample Presence', active: false, open: false, type: 'checkbox'}]
                 }
             }
         },
