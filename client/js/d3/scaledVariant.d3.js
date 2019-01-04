@@ -99,7 +99,13 @@ function scaledVariantD3() {
                 let yBottom = yExtent;
                 let yTop = +(yExtent + (+extentRect.attr("height")));
                 let selectedVarIds = [];
-                selectedVariants = container.select('svg').selectAll(".variant").filter(function (variant) {
+
+                let candidateVars = container.select('svg').selectAll('.variant.filtered');
+                if (candidateVars.length > 0 && candidateVars[0].length === 0) {
+                    candidateVars = container.select('svg').selectAll('.variant');
+                }
+
+                selectedVariants = candidateVars.filter(function (variant) {
                     // Check to see if variant y coordinate b/w box top and bottom
                     if (y(variant.adjustedLevel) <= yTop && y(variant.adjustedLevel) >= yBottom) {
                         selectedVarIds.push(variant.id);
