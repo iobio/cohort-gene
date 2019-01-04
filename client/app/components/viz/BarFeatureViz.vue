@@ -68,10 +68,9 @@
             drawCharts(probandSampleCount, subsetSampleCount) {
                 let self = this;
 
-                // If we're launching locally, we don't immediately have counts coming in
+                // Don't draw charts until we have counts
                 if (probandSampleCount == null || probandSampleCount === 0) {
-                    probandSampleCount = 10;
-                    subsetSampleCount = 10;
+                    return;
                 }
 
                 self.probandZygChart = barChart()
