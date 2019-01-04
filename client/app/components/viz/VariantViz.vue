@@ -216,7 +216,7 @@
             return {
                 variantChart: {},
                 name: '',
-                activeFilters: []
+                excludeFilters: []
             }
         },
         computed: {
@@ -350,27 +350,22 @@
             filterVariants: function(filterInfo, svg) {
                 let self = this;
 
+                // Display variants with that feature UNLESS it's hidden by other active filters
                 if (filterInfo.state === true) {
-                    let compoundFilterClass = '.' + filterInfo.name;
-                    if (self.activeFilters.length > 0) {
-                        self.activeFilters.push(filterInfo.name);
-                        compoundFilterClass = '.' + self.activeFilters.split('.');
-                    }
-                    self.variantChart.filterVariants()(compoundFilterClass, svg);
-                } else {
                     // Remove from active filter state
-                    self.activeFilters.splice(self.activeFilters.indexOf(filterInfo.name), 1);
+                    self.excludeFilters.splice(self.excludeFilters.indexOf('.' + filterInfo.name), 1);
 
-                    // Re-display variants that no longer meet filtering criteria
-                    let compoundFilterClass = '.' + filterInfo.name;
-                    self.variantChart.unfilterVariants()(compoundFilterClass, svg);
+                    // Remove active filter status for variants with this class
+                    let filterClass = '.' + filterInfo.name;
+                    self.variantChart.unfilterVariants()(filterClass, svg);
 
-                    // Re-filter just in case overlap b/w active and non-active variants
-                    if (self.activeFilters.length > 0) {
-                        self.activeFilters.push(filterInfo.name);
-                        compoundFilterClass = '.' + self.activeFilters.split('.');
-                    }
-                    self.variantChart.filterVariants()(compoundFilterClass, svg);
+                    // Re-apply active filters in case of multiple filters
+                    self.variantChart.filterVariants()(self.excludeFilters, svg);
+                } else {
+                    // Hide variants with that class
+                    let filterClass = '.' + filterInfo.name;
+                    self.excludeFilters.push(filterClass);
+                    self.variantChart.filterVariants()(self.excludeFilters, svg);
                 }
             }
         }

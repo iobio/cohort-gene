@@ -74,19 +74,20 @@
                     //     'feature_truncation',
                     //     'intergenic_variant'],
                     impact: [
-                        {name: 'HIGH', displayName: 'HIGH', model: false},
-                        {name: 'MODERATE', displayName: 'MODERATE', model: false},
-                        {name: 'MODIFIER', displayName: 'MODIFIER', model: false},
-                        {name: 'LOW', displayName: 'LOW', model: false}
+                        {name: 'HIGH', displayName: 'HIGH', model: true},
+                        {name: 'MODERATE', displayName: 'MODERATE', model: true},
+                        {name: 'MODIFIER', displayName: 'MODIFIER', model: true},
+                        {name: 'LOW', displayName: 'LOW', model: true}
                     ],
                     type: [
-                        {name: 'snp', displayName: 'SNP', model: false},
-                        {name: 'ins', displayName: 'INSERTION', model: false},
-                        {name: 'del', displayName: 'DELETION', model: false}
+                        {name: 'snp', displayName: 'SNP', model: true},
+                        {name: 'mnp', displayName: 'MNP', model: true},
+                        {name: 'ins', displayName: 'INSERTION', model: true},
+                        {name: 'del', displayName: 'DELETION', model: true}
                     ],
                     zygosities: [
-                        {name: 'hom', displayName: 'HOMOZYGOUS ALTERNATE', model: false},
-                        {name: 'het', displayName: 'HETEROZYGOUS', model: false}
+                        {name: 'hom', displayName: 'HOMOZYGOUS ALTERNATE', model: true},
+                        {name: 'het', displayName: 'HETEROZYGOUS', model: true}
                     ]
                 }
             }

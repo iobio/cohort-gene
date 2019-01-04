@@ -254,7 +254,7 @@
                     type: Boolean,
                     default: false
                 },
-                activeFilters: []
+                excludeFilters: []  // List of filter classes; if variant contains any one of these, it will be hidden
             }
         },
         mounted: function () {
@@ -402,28 +402,49 @@
                 self.extraAnnotationsLoaded = false;
             },
             filterVariants: function(filterInfo, svg) {
-                let self =this;
+                let self = this;
 
+                // Display variants with that feature UNLESS it's hidden by other active filters
                 if (filterInfo.state === true) {
-                    let compoundFilterClass = '.' + filterInfo.name;
-                    self.activeFilters.push(compoundFilterClass);
-                    if (self.activeFilters.length > 0) {
-                        compoundFilterClass = self.activeFilters.join('');
-                    }
-                    self.variantChart.filterVariants()(compoundFilterClass, svg);
-                } else {
                     // Remove from active filter state
-                    self.activeFilters.splice(self.activeFilters.indexOf('.' + filterInfo.name), 1);
+                    self.excludeFilters.splice(self.excludeFilters.indexOf('.' + filterInfo.name), 1);
 
                     // Remove active filter status for variants with this class
-                    let compoundFilterClass = '.' + filterInfo.name;
-                    self.variantChart.unfilterVariants()(compoundFilterClass, svg);
+                    let filterClass = '.' + filterInfo.name;
+                    self.variantChart.unfilterVariants()(filterClass, svg);
 
                     // Re-apply active filters in case of multiple filters
-                    compoundFilterClass = self.activeFilters.join('');
-                    self.variantChart.filterVariants()(compoundFilterClass, svg);
+                    self.variantChart.filterVariants()(self.excludeFilters, svg);
+                } else {
+                    // Hide variants with that class
+                    let filterClass = '.' + filterInfo.name;
+                    self.excludeFilters.push(filterClass);
+                    self.variantChart.filterVariants()(self.excludeFilters, svg);
                 }
             }
+            // filterVariants: function(filterInfo, svg) {
+            //     let self =this;
+            //
+            //     if (filterInfo.state === true) {
+            //         let compoundFilterClass = '.' + filterInfo.name;
+            //         self.activeFilters.push(compoundFilterClass);
+            //         if (self.activeFilters.length > 0) {
+            //             compoundFilterClass = self.activeFilters.join('');
+            //         }
+            //         self.variantChart.filterVariants()(compoundFilterClass, svg);
+            //     } else {
+            //         // Remove from active filter state
+            //         self.activeFilters.splice(self.activeFilters.indexOf('.' + filterInfo.name), 1);
+            //
+            //         // Remove active filter status for variants with this class
+            //         let compoundFilterClass = '.' + filterInfo.name;
+            //         self.variantChart.unfilterVariants()(compoundFilterClass, svg);
+            //
+            //         // Re-apply active filters in case of multiple filters
+            //         compoundFilterClass = self.activeFilters.join('');
+            //         self.variantChart.filterVariants()(compoundFilterClass, svg);
+            //     }
+            // }
         },
         watch: {
             data: function () {

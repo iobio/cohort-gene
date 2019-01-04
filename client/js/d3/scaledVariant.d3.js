@@ -294,21 +294,22 @@ function scaledVariantD3() {
         }
     };
 
-    /* Takes in single or compound filter class name (aka snp.impact_HIGH.etc)*/
-    var filterVariants = function(filterClassName, svgContainer) {
+    /* Takes in a list of classes. If a variant contains any of them, it will be hidden. */
+    var filterVariants = function(filterClasses, svgContainer) {
         let allVariants = svgContainer.selectAll(".variant");
 
-        // Remove filtered class from all
-        allVariants.classed({'filtered': false});
+        // Add filtered class to all variants
+        allVariants.classed({'filtered': true});
 
         // If we're out of active filters, display all variants
-        if (filterClassName === '') {
+        if (filterClasses.length === 0) {
             allVariants.style("opacity", 1);
         }
 
-        // Mark variants for current filter
-        let showVariants = svgContainer.selectAll(filterClassName);
-        showVariants.classed({'filtered': true});
+        // Remove filtered class for any variants that contain the given class criteria
+        filterClasses.forEach((filterClass) => {
+           allVariants.filter(filterClass).classed({'filtered': false});
+        });
 
         // Include previously filtered variants into the equation
         let filteredVars = svgContainer.selectAll('.filtered');
@@ -324,26 +325,9 @@ function scaledVariantD3() {
 
     /* Takes in ONLY a single class name (aka .snp or .impact_HIGH)*/
     var unfilterVariants = function(filterClassName, svgContainer) {
-        //let allVariants = svgContainer.selectAll(".variant");
-
         // Remove filter status for vars corresponding to the given filter name
         let filterClassedVars = svgContainer.selectAll(filterClassName);
         filterClassedVars.classed({'filtered': false});
-
-        // // Retrieve updated variants that pass filters
-        // let filteredVars = svgContainer.selectAll('.filtered');
-        //
-        // // If we still have active filters, only display those
-        // if (filteredVars && filteredVars[0].length > 0) {
-        //     allVariants.style("opacity", 0)
-        //         .transition()
-        //         .duration(1000);
-        //
-        //     filteredVars.style("opacity", 1);
-        // // Otherwise re-display all variants
-        // } else {
-        //     allVariants.style("opacity", 1);
-        // }
     };
 
     var switchColorScheme = function (enrichmentMode, svgContainer) {
