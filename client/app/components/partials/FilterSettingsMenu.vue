@@ -24,7 +24,7 @@
 
 <template>
     <v-flex xs12 style="padding-top: 10px">
-        <v-expansion-panel>
+        <v-expansion-panel expand>
             <v-expansion-panel-content
                     v-for="filter in filters"
                     :ref="filter.name + 'ExpansionRef'"
@@ -41,7 +41,7 @@
                     <v-card-text><i>{{filter.description}}</i></v-card-text>
                     <filter-settings
                             v-if="filter.name !== 'coverage'"
-                            v-bind:ref="filter.name + 'SettingsRef'"
+                            ref="filterSettingsRef"
                             :filterName="filter.name"
                             :filterModel="filterModel"
                             :filter="filter"
@@ -75,77 +75,35 @@
                 showMenu: true,
                 filters: [
                     {name: 'annotation', display: 'ANNOTATION', active: false, custom: false, description: 'Filter by variant effect, impact, or type'},
-                    {name: 'coverage', display: 'COVERAGE', active: false, custom: false, description: 'Filter individual sample tracks by fold coverage counts'},
+                    // {name: 'coverage', display: 'COVERAGE', active: false, custom: false, description: 'Filter individual sample tracks by fold coverage counts'},
                     {name: 'enrichment', display: 'ENRICHMENT', active: false, custom: false, description: 'Filter by cohort variants by enrichment statistics'},
                     {name: 'frequencies', display: 'FREQUENCIES', active: false, custom: false, description: 'Filter by variant frequency within population databases or within the cohort'},
-                    {name: 'samplePresence', display: 'SAMPLE PRESENCE', active: false, custom: false, description: 'Filter cohort variants by only displaying those also present within a single sample track'}
-                ],
-                clinvarCategories: [
-                {'key': 'clinvar', 'selected': true, value: 'clinvar_path', text: 'Pathogenic'},
-                {'key': 'clinvar', 'selected': true, value: 'clinvar_lpath', text: 'Likely pathogenic'},
-                {'key': 'clinvar', 'selected': true, value: 'clinvar_uc', text: 'Uncertain significance'},
-                {'key': 'clinvar', 'selected': true, value: 'clinvar_cd', text: 'Conflicting data'},
-                {'key': 'clinvar', 'selected': false, value: 'clinvar_other', text: 'Other'},
-                {'key': 'clinvar', 'selected': false, value: 'clinvar_benign', text: 'Benign'},
-                {'key': 'clinvar', 'selected': false, value: 'clinvar_lbenign', text: 'Likely benign'}
-            ],
-                impacts: ['HIGH', 'MODERATE', 'MODIFIER', 'LOW'],
-                zygosities: ['HOM', 'HET']
+                    // {name: 'samplePresence', display: 'SAMPLE PRESENCE', active: false, custom: false, description: 'Filter cohort variants by only displaying those also present within a single sample track'}
+                ]
+            //     clinvarCategories: [
+            //     {'key': 'clinvar', 'selected': true, value: 'clinvar_path', text: 'Pathogenic'},
+            //     {'key': 'clinvar', 'selected': true, value: 'clinvar_lpath', text: 'Likely pathogenic'},
+            //     {'key': 'clinvar', 'selected': true, value: 'clinvar_uc', text: 'Uncertain significance'},
+            //     {'key': 'clinvar', 'selected': true, value: 'clinvar_cd', text: 'Conflicting data'},
+            //     {'key': 'clinvar', 'selected': false, value: 'clinvar_other', text: 'Other'},
+            //     {'key': 'clinvar', 'selected': false, value: 'clinvar_benign', text: 'Benign'},
+            //     {'key': 'clinvar', 'selected': false, value: 'clinvar_lbenign', text: 'Likely benign'}
+            // ],
+            //     impacts: ['HIGH', 'MODERATE', 'MODIFIER', 'LOW'],
+            //     zygosities: ['HOM', 'HET']
             }
         },
         watch: {
-            showCoverageCutoffs: function () {
-                if (this.showCoverageCutoffs) {
-                    this.showMenu = true;
-                    this.filters.forEach(function (f) {
-                        f.active = f.name === 'coverage';
-                    })
-                }
-            }
+            // showCoverageCutoffs: function () {
+            //     if (this.showCoverageCutoffs) {
+            //         this.showMenu = true;
+            //         this.filters.forEach(function (f) {
+            //             f.active = f.name === 'coverage';
+            //         })
+            //     }
+            // }
         },
         methods: {
-            onNewFilter: function () {
-                let self = this;
-                this.filters.forEach(function (filter) {
-                    filter.active = false;
-                    let refName = filter.name + 'ExpansionRef';
-                    self.$refs[refName].forEach(function (component) {
-                        component.isActive = false;
-                    })
-                });
-                this.filters.push({
-                    name: 'custom' + (this.filters.length - 7),
-                    display: 'custom',
-                    active: true,
-                    custom: true
-                });
-            },
-            onApply: function () {
-                let self = this;
-                this.filters.forEach(function (filter) {
-                    let refName = filter.name + 'SettingsRef';
-                    self.$refs[refName].forEach(function (component) {
-                        component.apply();
-                    })
-                });
-                self.$emit('filter-settings-applied');
-                this.$emit('filter-settings-closed');
-                this.showMenu = false;
-            },
-            onCancel: function () {
-                this.showMenu = false;
-                this.$emit('filter-settings-closed');
-            },
-            close: function () {
-                this.showMenu = false;
-                this.$emit('filter-settings-closed');
-            },
-            onRemoveCustomFilter: function (filter) {
-                let idx = this.filters.indexOf(filter);
-                if (idx >= 0) {
-                    this.filters.splice(idx, 1);
-                }
-            },
             filterBoxToggled: function(filterName, filterState, parentFilterName, parentFilterState) {
                 let self = this;
                 let filterObj = self.filters.filter((filt) => {
@@ -155,6 +113,17 @@
                     filterObj[0].active = parentFilterState;
                 }
                 self.$emit('filter-box-toggled', filterName, filterState);
+            },
+            clearFilters: function() {
+                let self = this;
+                self.filters.forEach((filter) => {
+                    filter.active = false;
+                });
+                if (self.$refs.filterSettingsRef) {
+                    self.$refs.filterSettingsRef.forEach((filtRef) => {
+                        filtRef.clearFilters();
+                    });
+                }
             }
         },
         computed: {},

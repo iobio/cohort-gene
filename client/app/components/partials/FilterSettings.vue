@@ -9,7 +9,7 @@
 <template>
     <v-layout row wrap class="filter-form px-2" style="max-width:500px;">
         <v-flex id="name" xs12 class="mb-3">
-            <v-expansion-panel>
+            <v-expansion-panel expand>
                 <v-expansion-panel-content
                         v-for="category in categories[filterName]"
                         :ref="category.name + 'ExpansionRef'"
@@ -24,18 +24,11 @@
                     </div>
                     <v-card>
                         <filter-settings-checkbox
-                                v-if="category.type === 'checkbox'"
-                                v-bind:ref="category.name + 'SettingsRef'"
+                                ref="filtCheckRef"
                                 :parentFilterName="category.name"
                                 :grandparentFilterName="filterName"
                                 @filter-toggled="onFilterToggled">
                         </filter-settings-checkbox>
-                        <filter-settings-range
-                                v-if="category.type === 'range'"
-                                v-bind:ref="category.name + 'SettingsRef'"
-                                :filterModel="filterModel"
-                                :filter="category">
-                        </filter-settings-range>
                     </v-card>
                 </v-expansion-panel-content>
             </v-expansion-panel>
@@ -94,49 +87,6 @@
         },
         watch: {},
         methods: {
-            init: function () {
-                let flagCriteria = this.filterModel.flagCriteria[this.theFilter.name];
-                if (flagCriteria == null) {
-                    flagCriteria = {};
-                    flagCriteria.custom = true;
-                    flagCriteria.active = false;
-                    flagCriteria.name = this.theFilter.display;
-                    flagCriteria.maxAf = null;
-                    flagCriteria.clinvar = null;
-                    flagCriteria.impact = null;
-                    flagCriteria.consequence = null;
-                    flagCriteria.inheritance = null;
-                    flagCriteria.zygosity = null;
-                    flagCriteria.genotypeDepth = null;
-                    this.filterModel.flagCriteria[this.theFilter.name] = flagCriteria;
-                }
-                this.name = flagCriteria.name;
-                this.maxAf = flagCriteria.maxAf ? flagCriteria.maxAf * 100 : null;
-                this.selectedClinvarCategories = flagCriteria.clinvar;
-                this.selectedImpacts = flagCriteria.impact;
-                this.selectedConsequences = flagCriteria.consequence;
-                this.selectedInheritanceModes = flagCriteria.inheritance;
-                this.selectedZygosity = flagCriteria.zygosity;
-                this.minGenotypeDepth = flagCriteria.minGenotypeDepth;
-            },
-            apply: function () {
-                let flagCriteria = this.filterModel.flagCriteria[this.theFilter.name];
-                flagCriteria.name = this.name;
-                if (flagCriteria.custom) {
-                    flagCriteria.title = this.name;
-                }
-                flagCriteria.maxAf = this.maxAf ? this.maxAf / 100 : null;
-                flagCriteria.clinvar = this.selectedClinvarCategories;
-                flagCriteria.impact = this.selectedImpacts;
-                flagCriteria.consequence = this.selectedConsequences;
-                flagCriteria.inheritance = this.selectedInheritanceModes;
-                flagCriteria.zygosity = this.selectedZygosity;
-                flagCriteria.minGenotypeDepth = this.minGenotypeDepth;
-                flagCriteria.active = true;
-            },
-            onChangeName: function () {
-                this.theFilter.display = this.name;
-            },
             onFilterToggled: function(filterName, filterState, parentFilterName, grandparentFilterName, parentFilterState) {
                 let self = this;
 
@@ -155,14 +105,23 @@
                 });
 
                 self.$emit('filter-toggled', filterName, filterState, grandparentFilterName, grandparentFilterState);
+            },
+            clearFilters: function() {
+                let self = this;
+                (Object.values(self.categories)).forEach((catList) => {
+                    catList.forEach((filt) => {
+                        filt.active = false;
+                    })
+                });
+                self.$refs.filtCheckRef.forEach((checkRef) => {
+                    checkRef.clearFilters();
+                })
             }
         },
         computed: {},
         created: function () {
         },
         mounted: function () {
-            this.theFilter = this.filter;
-            this.init();
         }
     }
 </script>

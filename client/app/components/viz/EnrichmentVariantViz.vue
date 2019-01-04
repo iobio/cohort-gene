@@ -135,6 +135,12 @@
                 No Variants Found
             </v-chip>
         </div>
+        <div v-bind:class="{ hide: !noPassingResults }"
+             style="text-align: center; padding-bottom: 20px; padding-top: 20px">
+            <v-chip color="cohortBlue" small outline style="font-size: 12px">
+                No Matching Results
+            </v-chip>
+        </div>
     </div>
 </template>
 
@@ -254,6 +260,7 @@
                     type: Boolean,
                     default: false
                 },
+                noPassingResults: false,
                 excludeFilters: []  // List of filter classes; if variant contains any one of these, it will be hidden
             }
         },
@@ -304,6 +311,9 @@
             update: function () {
                 let self = this;
                 self.model.inProgress.drawingVariants = false;
+
+                // Reset filters
+                self.excludeFilters = [];
 
                 if (self.data) {
                     // Get available vertical space to send into scaled variant d3
@@ -404,6 +414,10 @@
             filterVariants: function(filterInfo, svg) {
                 let self = this;
 
+                // Reset no vars
+                let noPassingVars = false;
+                self.noPassingResults = false;
+
                 // Display variants with that feature UNLESS it's hidden by other active filters
                 if (filterInfo.state === true) {
                     // Remove from active filter state
@@ -414,37 +428,18 @@
                     self.variantChart.unfilterVariants()(filterClass, svg);
 
                     // Re-apply active filters in case of multiple filters
-                    self.variantChart.filterVariants()(self.excludeFilters, svg);
+                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, svg);
                 } else {
                     // Hide variants with that class
                     let filterClass = '.' + filterInfo.name;
                     self.excludeFilters.push(filterClass);
-                    self.variantChart.filterVariants()(self.excludeFilters, svg);
+                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, svg);
+                }
+
+                if (noPassingVars) {
+                    self.noPassingResults = true;
                 }
             }
-            // filterVariants: function(filterInfo, svg) {
-            //     let self =this;
-            //
-            //     if (filterInfo.state === true) {
-            //         let compoundFilterClass = '.' + filterInfo.name;
-            //         self.activeFilters.push(compoundFilterClass);
-            //         if (self.activeFilters.length > 0) {
-            //             compoundFilterClass = self.activeFilters.join('');
-            //         }
-            //         self.variantChart.filterVariants()(compoundFilterClass, svg);
-            //     } else {
-            //         // Remove from active filter state
-            //         self.activeFilters.splice(self.activeFilters.indexOf('.' + filterInfo.name), 1);
-            //
-            //         // Remove active filter status for variants with this class
-            //         let compoundFilterClass = '.' + filterInfo.name;
-            //         self.variantChart.unfilterVariants()(compoundFilterClass, svg);
-            //
-            //         // Re-apply active filters in case of multiple filters
-            //         compoundFilterClass = self.activeFilters.join('');
-            //         self.variantChart.filterVariants()(compoundFilterClass, svg);
-            //     }
-            // }
         },
         watch: {
             data: function () {

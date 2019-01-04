@@ -677,6 +677,9 @@ TD & SJG updated Nov2018 -->
                         });
                     }
                 }
+                if (self.$refs.filterSettingsMenuRef) {
+                    self.$refs.filterSettingsMenuRef.clearFilters();
+                }
             },
             startZoomMode: function (selectedVarIds) {
                 let self = this;

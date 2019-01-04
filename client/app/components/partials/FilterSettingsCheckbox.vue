@@ -57,8 +57,6 @@
                         {name: 'het', displayName: 'HETEROZYGOUS', model: true}
                     ],
 
-                    // Coverage
-
                     // Enrichment
                     pValue: [
                         {name: 'pVal0_0001', displayName: '0 - 0.0001', model: true},
@@ -109,10 +107,7 @@
                         {name: 'subset_2550', displayName: '25 - 50%', model: true},
                         {name: 'subset_5075', displayName: '50 - 75%', model: true},
                         {name: 'subset_75100', displayName: '75 - 100%', model: true},
-                    ],
-
-                    // Sample Presence
-
+                    ]
                 }
             }
         },
@@ -131,6 +126,14 @@
                    anyFilterInParentActive |= !filter.model;
                 });
                 self.$emit('filter-toggled', filterName, updatedState, self.parentFilterName, self.grandparentFilterName, anyFilterInParentActive);
+            },
+            clearFilters: function() {
+                let self = this;
+                (Object.values(self.checkboxLists)).forEach((checkList) => {
+                    checkList.forEach((filt) => {
+                        filt.model = true;
+                    });
+                })
             }
         },
         computed: {},

@@ -325,6 +325,12 @@ function scaledVariantD3() {
         // Reveal variants that pass filter
         filteredVars.style("opacity", 1)
             .style("pointer-events", "auto");
+
+        if (filteredVars) {
+            return filteredVars[0].length === 0;
+        } else {
+            return false;
+        }
     };
 
     /* Takes in ONLY a single class name (aka .snp or .impact_HIGH)*/

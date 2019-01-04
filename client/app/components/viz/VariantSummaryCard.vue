@@ -183,20 +183,20 @@
         <v-flex xl9 offset-xl2 lg12>
             <div class='form-inline'>
                 <div class='form-group'>
-                    <v-icon color="limeGreen"
-                            v-bind:class="{hide: cohortFieldsValid === false || subsetDelta < 2}">arrow_upward
-                    </v-icon>
-                    <v-icon color="slateGray"
-                            v-bind:class="{hide: cohortFieldsValid === false || (subsetDelta <= 1 || subsetDelta >= 2)}">
-                        arrow_upward
-                    </v-icon>
-                    <v-icon color="slateGray"
-                            v-bind:class="{hide: cohortFieldsValid === false || (subsetDelta <= 0.5 || subsetDelta >= 1)}">
-                        arrow_downward
-                    </v-icon>
-                    <v-icon color="cherryRed"
-                            v-bind:class="{hide: cohortFieldsValid === false || subsetDelta > 0.5}">arrow_downward
-                    </v-icon>
+                    <!--<v-icon color="limeGreen"-->
+                            <!--v-bind:class="{hide: cohortFieldsValid === false || subsetDelta < 2}">arrow_upward-->
+                    <!--</v-icon>-->
+                    <!--<v-icon color="slateGray"-->
+                            <!--v-bind:class="{hide: cohortFieldsValid === false || (subsetDelta <= 1 || subsetDelta >= 2)}">-->
+                        <!--arrow_upward-->
+                    <!--</v-icon>-->
+                    <!--<v-icon color="slateGray"-->
+                            <!--v-bind:class="{hide: cohortFieldsValid === false || (subsetDelta <= 0.5 || subsetDelta >= 1)}">-->
+                        <!--arrow_downward-->
+                    <!--</v-icon>-->
+                    <!--<v-icon color="cherryRed"-->
+                            <!--v-bind:class="{hide: cohortFieldsValid === false || subsetDelta > 0.5}">arrow_downward-->
+                    <!--</v-icon>-->
                 </div>
                 <div class='form-group'>
                     <v-chip v-bind:class="{hide: variant == null}" v-bind:style="{margin: 0}" small outline

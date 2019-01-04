@@ -125,6 +125,12 @@
                 No Variants Found
             </v-chip>
         </div>
+        <div v-bind:class="{ hide: !noPassingResults }"
+             style="text-align: center; padding-bottom: 20px; padding-top: 20px">
+            <v-chip color="cohortBlue" small outline style="font-size: 12px">
+                No Matching Results
+            </v-chip>
+        </div>
     </div>
 </template>
 
@@ -216,7 +222,8 @@
             return {
                 variantChart: {},
                 name: '',
-                excludeFilters: []
+                excludeFilters: [],
+                noPassingResults: false
             }
         },
         computed: {
@@ -282,6 +289,9 @@
             update: function () {
                 let self = this;
                 self.model.inProgress.drawingVariants = false;
+
+                // Reset filters
+                self.excludeFilters = [];
 
                 if (self.data) {
                     // Set the vertical layer count so that the height of the chart can be recalculated
@@ -350,6 +360,10 @@
             filterVariants: function(filterInfo, svg) {
                 let self = this;
 
+                // Reset no vars
+                let noPassingVars = false;
+                self.noPassingResults = false;
+
                 // Display variants with that feature UNLESS it's hidden by other active filters
                 if (filterInfo.state === true) {
                     // Remove from active filter state
@@ -360,12 +374,16 @@
                     self.variantChart.unfilterVariants()(filterClass, svg);
 
                     // Re-apply active filters in case of multiple filters
-                    self.variantChart.filterVariants()(self.excludeFilters, svg);
+                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, svg);
                 } else {
                     // Hide variants with that class
                     let filterClass = '.' + filterInfo.name;
                     self.excludeFilters.push(filterClass);
-                    self.variantChart.filterVariants()(self.excludeFilters, svg);
+                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, svg);
+                }
+
+                if (noPassingVars) {
+                    self.noPassingResults = true;
                 }
             }
         }

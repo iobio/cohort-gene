@@ -170,6 +170,12 @@ function variantD3() {
 
         // Reveal variants that pass filter
         filteredVars.style("opacity", 1);
+
+        if (filteredVars) {
+            return filteredVars[0].length === 0;
+        } else {
+            return false;
+        }
     };
 
     /* Takes in ONLY a single class name (aka .snp or .impact_HIGH)*/
