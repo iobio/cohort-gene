@@ -78,15 +78,15 @@
                     'coverage': [
                         {name: 'coverage', display: 'Coverage', active: false, type: 'range'}],
                     'enrichment': [
-                        {name: 'pValue', display: 'P-value', active: false, type: 'range'},
-                        {name: 'deltaFreq', display: 'Fold Change', active: false, type: 'range'}],
+                        {name: 'pValue', display: 'P-value', active: false, type: 'checkbox'},
+                        {name: 'subsetDelta', display: 'Fold Change', active: false, type: 'checkbox'}],
                     'frequencies': [
                         {name: 'g1000', display: '1000G', active: false, type: 'checkbox'},
                         {name: 'exac', display: 'ExAC', active: false, type: 'checkbox'},
                         {name: 'gnomad', display: 'gnomAD', active: false, type: 'checkbox'},
                         {name: 'probandFreq', display: 'Proband', active: false, type: 'checkbox'},
                         {name: 'subsetFreq', display: 'Subset', active: false, type: 'checkbox'}],
-                    'rawCounts': [
+                    'rawCounts': [ // Currently unused - may incorporate later
                         {name: 'rawCounts', display: 'Raw Counts', active: false, type: 'range'}],
                     'samplePresence': [{name: 'samplePresence', display: 'Sample Presence', active: false, type: 'checkbox'}]
                 }

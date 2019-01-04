@@ -75,10 +75,10 @@
                 showMenu: true,
                 filters: [
                     {name: 'annotation', display: 'ANNOTATION', active: false, custom: false, description: 'Filter by variant effect, impact, or type'},
-                    {name: 'coverage', display: 'COVERAGE', active: false, custom: false, description: 'Filter individual sample traacks by fold coverage counts'},
-                    {name: 'enrichment', display: 'ENRICHMENT', active: false, custom: false, description: 'Filter by enrichment statistics'},
+                    {name: 'coverage', display: 'COVERAGE', active: false, custom: false, description: 'Filter individual sample tracks by fold coverage counts'},
+                    {name: 'enrichment', display: 'ENRICHMENT', active: false, custom: false, description: 'Filter by cohort variants by enrichment statistics'},
                     {name: 'frequencies', display: 'FREQUENCIES', active: false, custom: false, description: 'Filter by variant frequency within population databases or within the cohort'},
-                    {name: 'samplePresence', display: 'SAMPLE PRESENCE', active: false, custom: false, description: 'Filter cohort variants by only displaying those also within a single sample track'}
+                    {name: 'samplePresence', display: 'SAMPLE PRESENCE', active: false, custom: false, description: 'Filter cohort variants by only displaying those also present within a single sample track'}
                 ],
                 clinvarCategories: [
                 {'key': 'clinvar', 'selected': true, value: 'clinvar_path', text: 'Pathogenic'},

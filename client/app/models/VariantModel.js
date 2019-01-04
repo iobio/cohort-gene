@@ -854,6 +854,8 @@ class VariantModel {
         let afGnomadRange = "";
         let probandFreq = "";
         let subsetFreq = "";
+        let pValRange = "";
+        let deltaRange = "";
 
         let effectList = (annotationScheme == null || annotationScheme.toLowerCase() === 'snpeff' ? d.effect : d.vepConsequence);
         for (let key in effectList) {
@@ -950,12 +952,43 @@ class VariantModel {
             }
         }
 
+        if (d.pVal <= 0.0001) {
+            pValRange = 'pVal0_0001';
+        } else if (d.pVal <= 0.0005) {
+            pValRange = 'pVal0001_0005';
+        } else if (d.pVal <= 0.001) {
+            pValRange = 'pVal0005_001';
+        } else if (d.pVal <= 0.005) {
+            pValRange = 'pVal001_005';
+        } else if (d.pVal <= 0.01) {
+            pValRange = 'pVal005_01';
+        } else if (d.pVal <= 0.05) {
+            pValRange = 'pVal01_05';
+        } else if (d.pVal <= 0.1) {
+            pValRange = 'pVal05_1';
+        } else if (d.pVal <= 0.25) {
+            pValRange = 'pVal1_25';
+        } else if (d.pVal <= 0.5) {
+            pValRange = 'pVal25_50';
+        } else if (d.pVal <= 1) {
+            pValRange = 'pVal50_100';
+        }
+
+        if (d.subsetDelta >= 10) {
+            deltaRange = 'delta10';
+        } else if (d.subsetDelta >= 4) {
+            deltaRange = 'delta4';
+        } else if (d.subsetDelta >= 2) {
+            deltaRange = 'delta2';
+        }
+
 
         return 'variant ' + d.type.toLowerCase() + ' ' + d.zygosity.toLowerCase() + ' '
             + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' '
             + sift + ' ' + polyphen + ' ' + regulatory + ' ' + +' ' + d.clinvar + ' '
             + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts + ' ' + af1000gRange + ' '
-            + afExacRange + ' ' + afGnomadRange + ' ' + probandFreq + ' ' + subsetFreq;
+            + afExacRange + ' ' + afGnomadRange + ' ' + probandFreq + ' ' + subsetFreq + ' '
+            + pValRange + ' ' + ' ' + deltaRange;
     }
 
     /* Coordinates applying filter criteria to the appropriate data sets and cohorts. */

@@ -60,6 +60,24 @@
                     // Coverage
 
                     // Enrichment
+                    pValue: [
+                        {name: 'pVal0_0001', displayName: '0 - 0.0001', model: true},
+                        {name: 'pVal0001_0005', displayName: '0.0001 - 0.0005', model: true},
+                        {name: 'pVal0005_001', displayName: '0.0005 - 0.001', model: true},
+                        {name: 'pVal001_005', displayName: '0.001 - 0.005', model: true},
+                        {name: 'pVal005_01', displayName: '0.005 - 0.01', model: true},
+                        {name: 'pVal01_05', displayName: '0.01 - 0.05', model: true},
+                        {name: 'pVal05_1', displayName: '0.05 - 0.1', model: true},
+                        {name: 'pVal1_25', displayName: '0.1 - 0.25', model: true},
+                        {name: 'pVal25_50', displayName: '0.25 - 0.50', model: true},
+                        {name: 'pVal50_100', displayName: '0.50 - 1.0', model: true}
+                    ],
+
+                    subsetDelta: [
+                        {name: 'delta2', displayName: '>2x increase in subset', model: true},
+                        {name: 'delta4', displayName: '>4x increase in subset', model: true},
+                        {name: 'delta10', displayName: '>10x increase in subset', model: true}
+                    ],
 
                     // Frequencies
                     g1000: [

@@ -344,7 +344,11 @@
                     if (!this.cohortFieldsValid) {
                         return "N/A";
                     } else {
-                        return '< ' + this.variant.pVal * 100 / 100;
+                        if (+this.variant.pVal === 1) {
+                            return '1';
+                        } else {
+                            return '< ' + this.variant.pVal * 100 / 100;
+                        }
                     }
                 }
                 return "-";
