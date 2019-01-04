@@ -38,13 +38,11 @@
 
 <script>
     import FilterSettingsCheckbox from '../partials/FilterSettingsCheckbox.vue'
-    import FilterSettingsRange from '../partials/FilterSettingsRange.vue'
 
     export default {
         name: 'filter-settings',
         components: {
-            FilterSettingsCheckbox,
-            FilterSettingsRange
+            FilterSettingsCheckbox
         },
         props: {
             filter: null,
