@@ -850,6 +850,8 @@ class VariantModel {
         let polyphen = "";
         let regulatory = "";
         let af1000gRange = "";
+        let afExacRange = "";
+        let afGnomadRange = "";
 
         let effectList = (annotationScheme == null || annotationScheme.toLowerCase() === 'snpeff' ? d.effect : d.vepConsequence);
         for (let key in effectList) {
@@ -896,10 +898,35 @@ class VariantModel {
             }
         }
 
+        if (d.afExAC) {
+            if (d.afExAC < 0.25) {
+                afExacRange = 'exac_025';
+            } else if (d.afExAC < 0.50) {
+                afExacRange = 'exac_2550';
+            } else if (d.afExAC < 0.75) {
+                afExacRange = 'exac_5075';
+            } else {
+                afExacRange = 'exac_75100';
+            }
+        }
+
+        if (d.afgnomAD) {
+            if (d.afgnomAD < 0.25) {
+                afGnomadRange = 'gnomad_025';
+            } else if (d.afgnomAD < 0.50) {
+                afGnomadRange = 'gnomad_2550';
+            } else if (d.afgnomAD < 0.75) {
+                afGnomadRange = 'gnomad_5075';
+            } else {
+                afGnomadRange = 'gnomad_75100';
+            }
+        }
+
         return 'variant ' + d.type.toLowerCase() + ' ' + d.zygosity.toLowerCase() + ' '
             + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' '
             + sift + ' ' + polyphen + ' ' + regulatory + ' ' + +' ' + d.clinvar + ' '
-            + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts + ' ' + af1000gRange;
+            + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts + ' ' + af1000gRange + ' '
+            + afExacRange + ' ' + afGnomadRange;
     }
 
     /* Coordinates applying filter criteria to the appropriate data sets and cohorts. */
