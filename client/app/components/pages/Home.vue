@@ -282,6 +282,11 @@ TD & SJG updated Nov2018 -->
             // Initialize models & get data loading
             let self = this;
 
+            // Quick check for initial hub launch to accomodate zyg bars
+            if (self.paramProjectId !== '0' || self.paramOldProjectId !== '0') {
+                self.launchedFromHub = true;
+            }
+
             self.cardWidth = self.$el.offsetWidth;
 
             // Initialize with ref from frameshift if provided
