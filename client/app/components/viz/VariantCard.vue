@@ -417,7 +417,8 @@ TD & SJG updated Apr2018 -->
             showCoverageCircle: function(variant) {
                 let self = this;
 
-                if (self.showDepthViz && self.dataSetModel.coverage != null) {
+                if (self.showDepthViz && self.dataSetModel.coverage && self.dataSetModel.loadedVariants
+                    && self.dataSetModel.loadedVariants.features) {
                     let theDepth = null;
                     let matchingVariants = self.dataSetModel.loadedVariants.features.filter(function (v) {
                         return v.start === variant.start && v.alt === variant.alt && v.ref === variant.ref;
