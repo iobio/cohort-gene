@@ -432,7 +432,7 @@ class DataSetModel {
             promises.push(vcfP);
             let bamP = null;
 
-            if (self.isSingleSample) {
+            if (self.isSingleSample && self.bams.length > 0) {
                 bamP = self.promiseLoadCoverage(theGene, theTranscript)
                     .then(function() {
                         self.setCoverage();
