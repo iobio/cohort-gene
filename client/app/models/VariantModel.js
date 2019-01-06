@@ -654,14 +654,21 @@ class VariantModel {
     /* Promises to being loading process for each data set. */
     promiseLoadData(theGene, theTranscript) {
         let self = this;
+        let loadedCohortVars = true;
 
         if (self.otherDataSets.length === 0) {
             if (self.mainDataSet.lastGeneLoaded === theGene.gene_name && self.mainDataSet.loadedVariants != null && !self.mainDataSet.entryDataChanged) {
-                return Promise.resolve();
+                loadedCohortVars = false;
+                return Promise.resolve(loadedCohortVars);
             } else {
                 self.mainDataSet.lastGeneLoaded = theGene.gene_name;
                 self.mainDataSet.wipeGeneData();
-                return self.mainDataSet.promiseLoadData(theGene, theTranscript);
+                return new Promise((resolve, reject) => {
+                    self.mainDataSet.promiseLoadData(theGene, theTranscript)
+                        .then(() => {
+                            resolve(loadedCohortVars);
+                        });
+                });
             }
         } else {
             return new Promise((resolve, reject) => {
@@ -670,6 +677,8 @@ class VariantModel {
                     self.mainDataSet.lastGeneLoaded = theGene.gene_name;
                     self.mainDataSet.wipeGeneData();
                     loadPromises.push(self.mainDataSet.promiseLoadData(theGene, theTranscript));
+                } else {
+                    loadedCohortVars = false;
                 }
                 self.otherDataSets.forEach((dataSet) => {
                     if (dataSet.lastGeneLoaded !== theGene.gene_name || dataSet.loadedVariants == null || dataSet.entryDataChanged) {
@@ -681,7 +690,7 @@ class VariantModel {
 
                 Promise.all(loadPromises)
                     .then(() => {
-                        resolve();
+                        resolve(loadedCohortVars);
                     })
                     .catch((error) => {
                         reject("Error in promiseLoadData in VariantModel: " + error);

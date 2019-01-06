@@ -403,26 +403,30 @@ TD & SJG updated Nov2018 -->
                     if (self.variantModel) {
                         // Load positional information for quick display
                         self.variantModel.promiseLoadData(self.selectedGene, self.selectedTranscript)
-                            .then(() => {
+                            .then((loadedCohortData) => {
                                 self.doneLoadingData = true;  // Display variants
-                                let nextOptions = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': false};
-                                self.variantModel.promiseFullyAnnotateVariants(self.selectedGene,
-                                    self.selectedTranscript,
-                                    false,  // isBackground
-                                    nextOptions)
-                                    .then((resultMaps) => {
-                                        resultMaps.forEach((map) => {
-                                            let unwrappedMap = map[0];
-                                            self.variantModel.combineVariantInfo(unwrappedMap);
-                                        });
-                                        self.updateClasses();
-                                        self.doneLoadingExtras = true;
-                                        if (self.$refs.enrichCardRef) {
-                                            self.$refs.enrichCardRef.forEach((cardRef) => {
-                                                cardRef.refreshVariantColors();
-                                            })
-                                        }
-                                    })
+                                if (loadedCohortData) {
+                                    let nextOptions = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': false};
+                                    self.variantModel.promiseFullyAnnotateVariants(self.selectedGene,
+                                        self.selectedTranscript,
+                                        false,  // isBackground
+                                        nextOptions)
+                                        .then((resultMaps) => {
+                                            resultMaps.forEach((map) => {
+                                                let unwrappedMap = map[0];
+                                                self.variantModel.combineVariantInfo(unwrappedMap);
+                                            });
+                                            self.updateClasses();
+                                            self.doneLoadingExtras = true;
+                                            if (self.$refs.enrichCardRef) {
+                                                self.$refs.enrichCardRef.forEach((cardRef) => {
+                                                    cardRef.refreshVariantColors();
+                                                })
+                                            }
+                                        })
+                                } else {
+                                    resolve();
+                                }
                             })
                             .catch(function (error) {
                                 reject(error);

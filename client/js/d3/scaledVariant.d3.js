@@ -302,6 +302,7 @@ function scaledVariantD3() {
 
     /* Takes in a list of classes. If a variant contains any of them, it will be hidden. */
     var filterVariants = function(filterClasses, svgContainer) {
+        debugger;
         let allVariants = svgContainer.selectAll(".variant");
 
         // Add filtered class to all variants
