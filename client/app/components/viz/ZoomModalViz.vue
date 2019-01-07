@@ -6,7 +6,7 @@
         border: double 1px;
         box-shadow: 2px 4px rgba(0, 0, 0, .2);
         transition: all .3s ease;
-        max-height: 235px;
+        max-height: 500px;
         overflow-y: scroll;
         /*position: relative;*/
     }
