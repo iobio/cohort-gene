@@ -233,8 +233,8 @@ function scaledVariantD3() {
         } else if (indicateMissingVariant) {
             var mousex = x(d.start - yAxisWidth);
             var mousey = height - verticalPadding;
-
-            var garrow = svgContainer.select("g.arrow");
+            var arrowClazz = pinned ? 'g.pinned.arrow' : 'g.hover.arrow';
+            var garrow = svgContainer.select(arrowClazz);
             garrow.attr("transform", "translate(" + (mousex + margin.left - variantHeight / 2) + "," + (mousey + margin.top - 6) + ")");
             garrow.selectAll('.arrow').transition()
                 .duration(200)
