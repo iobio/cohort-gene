@@ -22,7 +22,7 @@
                             :label="item.displayName"
                             v-model="item.model"
                             color="cohortBlue"
-                            style="padding-left: 15px; margin-top: 0; margin-bottom: 0"
+                            style="padding-left: 15px; margin-top: 0; margin-bottom: 0; max-height: 30px"
                             @click="boxChecked(item)">
                 </v-checkbox>
             </v-container>
