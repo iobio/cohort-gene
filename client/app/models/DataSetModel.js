@@ -233,7 +233,6 @@ class DataSetModel {
 
     clearDisplayChips() {
         let self = this;
-
         self.getSubsetCohort().clearChips();
     }
 

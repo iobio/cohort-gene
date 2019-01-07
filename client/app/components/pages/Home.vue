@@ -233,6 +233,7 @@ TD & SJG updated Nov2018 -->
                 simonsIdMap: simonsIdMap,
                 launchedFromHub: false,
                 firstLaunch: true,
+                firstGeneSelection: true,
 
                 variantModel: null,
                 geneModel: null,
@@ -484,7 +485,11 @@ TD & SJG updated Nov2018 -->
             onGeneSelected: function (geneName) {
                 let self = this;
                 self.deselectVariant();
-                self.wipeModels();
+
+                // Only want to wipe if not first selection (otherwise conflicts with badge display)
+                if (!self.firstGeneSelection) {
+                    self.wipeModels();
+                }
                 self.promiseLoadGene(geneName);
                 self.doneLoadingData = false;
                 self.doneLoadingExtras = false;
@@ -496,6 +501,7 @@ TD & SJG updated Nov2018 -->
                 if (self.$refs.filterSettingsMenuRef) {
                     self.$refs.filterSettingsMenuRef.clearFilters();
                 }
+                self.firstGeneSelection = false;
             },
             wipeModels: function () {
                 let self = this;

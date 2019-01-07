@@ -662,7 +662,7 @@ class VariantModel {
                 return Promise.resolve(loadedCohortVars);
             } else {
                 self.mainDataSet.lastGeneLoaded = theGene.gene_name;
-                self.mainDataSet.wipeGeneData();
+                //self.mainDataSet.wipeGeneData();
                 return new Promise((resolve, reject) => {
                     self.mainDataSet.promiseLoadData(theGene, theTranscript)
                         .then(() => {
@@ -675,7 +675,7 @@ class VariantModel {
                 let loadPromises = [];
                 if (self.mainDataSet.lastGeneLoaded !== theGene.gene_name || self.mainDataSet.loadedVariants == null || self.mainDataSet.entryDataChanged) {
                     self.mainDataSet.lastGeneLoaded = theGene.gene_name;
-                    self.mainDataSet.wipeGeneData();
+                    //self.mainDataSet.wipeGeneData();
                     loadPromises.push(self.mainDataSet.promiseLoadData(theGene, theTranscript));
                 } else {
                     loadedCohortVars = false;
@@ -683,7 +683,7 @@ class VariantModel {
                 self.otherDataSets.forEach((dataSet) => {
                     if (dataSet.lastGeneLoaded !== theGene.gene_name || dataSet.loadedVariants == null || dataSet.entryDataChanged) {
                         dataSet.lastGeneLoaded = theGene.gene_name;
-                        dataSet.wipeGeneData();
+                        //dataSet.wipeGeneData();
                         loadPromises.push(dataSet.promiseLoadData(theGene, theTranscript));
                     }
                 });
