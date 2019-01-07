@@ -185,6 +185,17 @@ function variantD3() {
         filterClassedVars.classed({'filtered': false});
     };
 
+    /* Returns true if selected variant passes filter and is visible. */
+    var checkForSelectedVar = function(selectedVarId, svgContainer) {
+        let stillVisible = false;
+        svgContainer.selectAll('.filtered').each(function(d, i) {
+            if (d.id === selectedVarId) {
+                stillVisible = true;
+            }
+        });
+        return stillVisible;
+    };
+
     function chart(selection, options) {
         // merge options and defaults
         options = $.extend(defaults,options);
@@ -894,6 +905,12 @@ function variantD3() {
     chart.unfilterVariants = function (_) {
         if (!arguments.length) return unfilterVariants;
         unfilterVariants = _;
+        return chart;
+    };
+
+    chart.checkForSelectedVar = function (_) {
+        if (!arguments.length) return checkForSelectedVar;
+        checkForSelectedVar = _;
         return chart;
     };
 

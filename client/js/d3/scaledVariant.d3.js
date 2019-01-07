@@ -302,7 +302,6 @@ function scaledVariantD3() {
 
     /* Takes in a list of classes. If a variant contains any of them, it will be hidden. */
     var filterVariants = function(filterClasses, svgContainer) {
-        debugger;
         let allVariants = svgContainer.selectAll(".variant");
 
         // Add filtered class to all variants
@@ -345,6 +344,17 @@ function scaledVariantD3() {
         // Remove filter status for vars corresponding to the given filter name
         let filterClassedVars = svgContainer.selectAll(filterClassName);
         filterClassedVars.classed({'filtered': false});
+    };
+
+    /* Returns true if selected variant passes filter and is visible. */
+    var checkForSelectedVar = function(selectedVarId, svgContainer) {
+        let stillVisible = false;
+        svgContainer.selectAll('.filtered').each(function(d, i) {
+           if (d.id === selectedVarId) {
+               stillVisible = true;
+           }
+        });
+        return stillVisible;
     };
 
     var switchColorScheme = function (enrichmentMode, svgContainer) {
@@ -1224,6 +1234,12 @@ function scaledVariantD3() {
     chart.availableVertSpace = function (_) {
         if (!arguments.length) return availableVertSpace;
         availableVertSpace = _;
+        return chart;
+    };
+
+    chart.checkForSelectedVar = function (_) {
+        if (!arguments.length) return checkForSelectedVar;
+        checkForSelectedVar = _;
         return chart;
     };
 

@@ -217,6 +217,7 @@ TD & SJG updated Nov2018 -->
                 selectedGene: {},
                 selectedTranscript: {},
                 selectedVariant: null,
+                selectedTrackId: null,  // Which track has been clicked on
                 showVariantCards: false,
                 doneLoadingData: false,
                 doneLoadingExtras: false,
@@ -575,6 +576,9 @@ TD & SJG updated Nov2018 -->
                 let self = this;
 
                 if (variant) {
+                    // Keep track of which track we've clicked on
+                    self.selectedTrackId = dataSetKey;
+
                     // Circle selected variant
                     if (self.$refs.variantCardRef) {
                         self.$refs.variantCardRef.forEach((cardRef) => {
@@ -643,6 +647,7 @@ TD & SJG updated Nov2018 -->
                     }
                 }
                 else {
+                    self.selectedTrackId = null;
                     self.deselectVariant();
                 }
             },
@@ -886,11 +891,15 @@ TD & SJG updated Nov2018 -->
             },
             onFilterSettingsApplied: function (filterInfo) {
                 let self = this;
-                self.$refs.enrichCardRef[0].filterVariants(filterInfo);
+                let selectedVarId = null;
+                if (self.selectedVariant) {
+                    selectedVarId = self.selectedVariant.id;
+                }
+                self.$refs.enrichCardRef[0].filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
 
                 if (self.$refs.variantCardRef && !filterInfo.cohortOnly) {
                     self.$refs.variantCardRef.forEach((cardRef) => {
-                        cardRef.filterVariants(filterInfo);
+                        cardRef.filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
                     });
                 }
             },

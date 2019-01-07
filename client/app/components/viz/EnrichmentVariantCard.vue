@@ -365,7 +365,7 @@ Updated: SJG Dec2018
                         this.showVariantCircle(variant, true);
                     }
                 }
-                this.$emit('dataSetVariantClick', variant, this, dataSetKey);
+                this.$emit('dataSetVariantClick', variant, dataSetKey);
             },
             onVariantZoom: function (selectedVarIds, xStart, yStart, drawBelow, graphWidth) {
                 let self = this;
@@ -574,10 +574,14 @@ Updated: SJG Dec2018
                     self.$refs.subsetVizRef.refreshVariantColors();
                 }
             },
-            filterVariants: function(filterInfo) {
+            filterVariants: function(filterInfo, selectedTrackId, selectedVariantId) {
                 let self = this;
+                let checkForSelectedVariant = false;
+                if (self.dataSetModel.getName() === selectedTrackId && selectedVariantId) {
+                    checkForSelectedVariant = true;
+                }
                 if (self.$refs.subsetVizRef) {
-                    self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name));
+                    self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name), checkForSelectedVariant, selectedVariantId);
                 }
             }
         }

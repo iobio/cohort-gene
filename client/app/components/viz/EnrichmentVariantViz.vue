@@ -136,7 +136,7 @@
             </v-chip>
         </div>
         <div v-bind:class="{ hide: !noPassingResults }"
-             style="text-align: center; padding-bottom: 20px; padding-top: 20px">
+             style="text-align: center; padding-bottom: 10px; padding-top: 10px">
             <v-chip color="cohortBlue" small outline style="font-size: 12px">
                 No Matching Results
             </v-chip>
@@ -412,7 +412,7 @@
                 let self = this;
                 self.extraAnnotationsLoaded = false;
             },
-            filterVariants: function(filterInfo, svg) {
+            filterVariants: function(filterInfo, svg, checkForSelectedVar, selectedVarId) {
                 let self = this;
 
                 // Reset no vars
@@ -430,13 +430,30 @@
 
                     // Re-apply active filters in case of multiple filters
                     noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, svg);
+
+                    // Check to make sure we haven't hidden the selected variant
+                    if (checkForSelectedVar) {
+                        let selectedVarStillVisible = self.variantChart.checkForSelectedVar()(selectedVarId, svg);
+                        // If we have, send deselect message
+                        if (!selectedVarStillVisible) {
+                            self.$emit("variantClick", null, null);
+                        }
+                    }
                 } else {
                     // Hide variants with that class
                     let filterClass = '.' + filterInfo.name;
                     self.excludeFilters.push(filterClass);
                     noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, svg);
-                }
 
+                    // Check to make sure we haven't hidden the selected variant
+                    if (checkForSelectedVar) {
+                        let selectedVarStillVisible = self.variantChart.checkForSelectedVar()(selectedVarId, svg);
+                        // If we have, send deselect message
+                        if (!selectedVarStillVisible) {
+                            self.$emit("variantClick", null, null);
+                        }
+                    }
+                }
                 if (noPassingVars) {
                     self.noPassingResults = true;
                 }
