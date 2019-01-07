@@ -642,7 +642,7 @@ function scaledVariantD3() {
                     .call(yAxis)
                     .append("text")
                     .attr("transform", "rotate(-90)")
-                    .attr("dx", "-10em")
+                    .attr("dx", "-6em")
                     .attr("dy", "-2.5em")
                     .style('font-size', '14px')
                     .style("text-anchor", "middle")
