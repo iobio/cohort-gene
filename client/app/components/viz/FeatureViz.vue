@@ -9,7 +9,7 @@
             </v-flex>
         </v-layout>
         <v-layout row>
-            <v-flex xs2 class="summary-field-label">Freq ∆:</v-flex>
+            <v-flex xs2 class="summary-field-label">Fold change:</v-flex>
             <v-flex xs10 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
                 <span class="summary-field-value">{{ foldEnrichmentInfo }}</span>
             </v-flex>
@@ -21,6 +21,15 @@
             <v-flex xs2 class="summary-field-label">P-value:</v-flex>
             <v-flex xs10 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
                 <span class="summary-field-value">{{ pValueInfo }}</span>
+            </v-flex>
+            <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
+                <img src="../../../assets/images/wheel.gif">
+            </div>
+        </v-layout>
+        <v-layout row>
+            <v-flex xs2 class="summary-field-label">Scaled P-value:</v-flex>
+            <v-flex xs10 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
+                <span class="summary-field-value">{{ log10pValueInfo }}</span>
             </v-flex>
             <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
                 <img src="../../../assets/images/wheel.gif">
@@ -227,6 +236,10 @@
                 type: String
             },
             pValueInfo: {
+                default: "",
+                type: String
+            },
+            log10pValueInfo: {
                 default: "",
                 type: String
             },

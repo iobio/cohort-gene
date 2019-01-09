@@ -122,7 +122,9 @@ Updated: SJG Dec2018
                           v-bind:class="{ hide: !showGeneViz }"
                           :data="[selectedTranscript]"
                           :margin="geneVizMargin"
+                          :zoomPadding="0"
                           :width="width"
+                          :yAxisWidth="39"
                           :height="40"
                           :trackHeight="geneVizTrackHeight"
                           :cdsHeight="geneVizCdsHeight"
@@ -385,7 +387,9 @@ Updated: SJG Dec2018
                         showXAxis: true,
                         classifySymbolFunc: self.classifyZoomSymbolFunc,
                         doneLoadingData: self.doneLoadingData,
-                        modalWidth: graphWidth
+                        modalWidth: graphWidth,
+                        width: self.zoomWidth,
+                        selectedTranscript: self.selectedTranscript
                     },
                     {
                         draggable: '.modal-header',

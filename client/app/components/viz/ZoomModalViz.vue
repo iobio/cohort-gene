@@ -1,5 +1,35 @@
 <!-- SJG updated Dec2018 -->
 
+<style lang="sass">
+    @import ../../../assets/sass/variables
+
+    #gene-viz
+        .current
+            outline: none
+        .axis
+            padding-left: 0px
+            padding-right: 0px
+            margin-top: -10px
+            margin-bottom: 0px
+            padding-bottom: 0px
+            text
+                font-size: 11px
+                fill: rgb(120, 120, 120)
+            line, path
+                fill: none
+                stroke: lightgrey
+                shape-rendering: crispEdges
+                stroke-width: 1px
+            &.x
+                .tick
+                    line
+                        transform: translateY(-14px)
+                    text
+                        transform: translateY(12px)
+                path
+                    transform: translateY(-20px)
+                    display: none
+</style>
 <style lang="css">
     .modal-container {
         background-color: #fff;
@@ -23,15 +53,12 @@
         font-family: Quicksand;
         font-size: 18px;
         padding-top: 5px;
+        padding-bottom: 5px;
     }
 
-    .close-button {
-        padding-left: 0;
-        padding-right: 0;
-        margin-left: 2px;
-        margin-right: 2px;
-        margin-top: 2px;
-        margin-bottom: 2px;
+    .modal-sub-title {
+        font-size: 14px;
+        font-style: italic
     }
 
     .modal-body {
@@ -55,15 +82,12 @@
                     <v-layout>
                         <v-flex xs6>
                             <div class="modal-title">
-                                Selected Variants
+                                <div>Selected Variants</div>
+                                <div class="modal-sub-title">
+                                    Note: Variants in zoom not displayed according to enrichment along the y-axis
+                                </div>
                             </div>
                         </v-flex>
-                        <!--<v-flex xs6 text-xs-right>-->
-                            <!--<v-btn class="close-button" icon-->
-                                   <!--@click="closeModal">-->
-                                <!--<v-icon color="white">clear</v-icon>-->
-                            <!--</v-btn>-->
-                        <!--</v-flex>-->
                     </v-layout>
                 </div>
             </slot>
@@ -71,6 +95,24 @@
         <div class="modal-body">
             <slot name="body">
                 <div class="selected-variant-viz"></div>
+                <gene-viz id="gene-viz"
+                          :data="[selectedTranscript]"
+                          :margin="geneVizMargin"
+                          :zoomPadding="modalZoomPadding"
+                          :fixedWidth="modalWidth"
+                          :yAxisWidth="yAxisLeftPadding"
+                          :width="modalWidth"
+                          :trackHeight="geneVizTrackHeight"
+                          :cdsHeight="geneVizCdsHeight"
+                          :regionStart="regionStart"
+                          :regionEnd="regionEnd"
+                          :showXAxis="true"
+                          :showLabel="false"
+                          :showBrush="false"
+                          :featureClass="getExonClass">
+                </gene-viz>
+                <!--Padding to get rid of bar overlap-->
+                <div style="margin-top: 20px"></div>
             </slot>
         </div>
         <div>
@@ -84,11 +126,13 @@
 <script>
 
     import VModal from 'vue-js-modal'
+    import GeneViz from './GeneViz.vue'
 
     export default {
         name: 'zoom-modal-viz',
         components: {
-            VModal
+            VModal,
+            GeneViz
         },
         props: {
             modalWidth: {
@@ -118,7 +162,7 @@
                 type: Number
             },
             variantHeight: {
-                default: 8,
+                default: 10,
                 type: Number
             },
             variantPadding: {
@@ -155,11 +199,24 @@
             doneLoadingData: {
                 type: Boolean,
                 default: false
-            }
+            },
+            width: 0,
+            selectedTranscript: {}
         },
         data() {
             return {
-                selectionVarChart: {}
+                selectionVarChart: {},
+                geneVizMargin: {
+                    top: 0,
+                    right: 2,
+                    bottom: 20,
+                    left: 2
+                },
+                adjustedGeneVizTrackHeight: 40,
+                geneVizTrackHeight: 16,
+                geneVizCdsHeight: 12,
+                modalZoomPadding: 10,
+                yAxisLeftPadding: 3
             }
         },
         methods: {

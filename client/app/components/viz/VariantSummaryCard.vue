@@ -227,6 +227,7 @@
                              :revelText="revelText"
                              :foldEnrichmentInfo="foldEnrichmentInfo"
                              :pValueInfo="pValueInfo"
+                             :log10pValueInfo="log10pValueInfo"
                              :variantSelected="variantSelected"
                              :loadingExtraAnnotations="loadingExtraAnnotations"
                              :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations">
@@ -349,6 +350,16 @@
                         } else {
                             return '< ' + this.variant.pVal * 100 / 100;
                         }
+                    }
+                }
+                return "-";
+            },
+            log10pValueInfo: function () {
+                if (this.variant != null) {
+                    if (!this.cohortFieldsValid) {
+                        return "N/A";
+                    } else {
+                        return '' + (+this.variant.adjustedLevel).toFixed(2);
                     }
                 }
                 return "-";
