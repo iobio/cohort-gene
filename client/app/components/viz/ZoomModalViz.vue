@@ -101,7 +101,7 @@
                           :zoomPadding="modalZoomPadding"
                           :fixedWidth="modalWidth"
                           :yAxisWidth="yAxisLeftPadding"
-                          :width="modalWidth"
+                          :width="modalWidth - 15"
                           :trackHeight="geneVizTrackHeight"
                           :cdsHeight="geneVizCdsHeight"
                           :regionStart="regionStart"
