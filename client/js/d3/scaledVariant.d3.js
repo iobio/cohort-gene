@@ -80,7 +80,7 @@ function scaledVariantD3() {
                 let extentRect = d3.select("g.brush rect.extent");
                 let yExtent = +extentRect.attr("y");
 
-                extentRect.attr("y", yExtent - 1);
+                extentRect.attr("y", yExtent);
 
                 // Hide resize arrows if not a real area
                 if (brush.empty()) {
@@ -646,7 +646,7 @@ function scaledVariantD3() {
                     .attr("dy", "-2.5em")
                     .style('font-size', '14px')
                     .style("text-anchor", "middle")
-                    .text("-log10(pVal)");
+                    .text("Enrichment pVal");
 
                 // Create dividing line
                 g.selectAll(".divider").remove();

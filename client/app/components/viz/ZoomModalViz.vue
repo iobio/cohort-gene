@@ -79,7 +79,7 @@
             <slot name="header">
                 <div>
                     <v-layout>
-                        <v-flex xs6>
+                        <v-flex xs12>
                             <div class="modal-title">
                                 <div>Selected Variants</div>
                                 <div class="modal-sub-title">

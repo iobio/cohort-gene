@@ -74,7 +74,8 @@ Updated: SJG Jan2019
         <v-card-title primary-title>
             <v-flex xs6>
                 <v-layout align-left>
-                    <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 0">VARIANTS</span>
+                    <span style="font-size: 16px; padding-bottom: 0; padding-right: 5px">COHORT VARIANTS</span>
+                    <v-icon small color="cohortBlue" @mouseover="infoHover">info_outline</v-icon>
                 </v-layout>
             </v-flex>
             <v-flex xs6>
@@ -600,6 +601,9 @@ Updated: SJG Jan2019
                 if (self.$refs.subsetVizRef) {
                     self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name), checkForSelectedVariant, selectedVariantId);
                 }
+            },
+            infoHover: function() {
+                // TODO: put in info panel
             }
         }
     }

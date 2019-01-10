@@ -69,8 +69,8 @@ TD & SJG updated Apr2018 -->
     <v-card tile id="variant-card" class="app-card">
         <v-card-title primary-title>
             <v-layout align-left>
-                <v-flex xs6>
-                    <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 0">VARIANTS</span>
+                <v-flex xs6 style="padding-bottom: 5px">
+                    <span style="min-width: 200px; max-width: 200px; font-size: 16px;">SINGLE SAMPLE VARIANTS</span>
                 </v-flex>
             </v-layout>
             <div style="width:100%">
