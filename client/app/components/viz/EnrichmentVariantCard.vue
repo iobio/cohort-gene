@@ -1,10 +1,15 @@
 <!--
 Encapsulates Variant card
-Updated: SJG Dec2018
+Updated: SJG Jan2019
 -->
 <style lang="sass">
     @import ../../../assets/sass/variables
     #variant-card
+        .zoom-loader
+            padding-left: 30px
+            padding-top: 2px
+            img
+                width: 22px !important
         #gene-viz, #gene-viz-zoom
             .current
                 outline: none
@@ -68,24 +73,29 @@ Updated: SJG Dec2018
 <template>
     <v-card tile id="variant-card" class="app-card">
         <v-card-title primary-title>
-            <v-layout align-left>
-                <v-flex xs6>
+            <v-flex xs6>
+                <v-layout align-left>
                     <span style="min-width: 200px; max-width: 200px; font-size: 16px; padding-bottom: 0">VARIANTS</span>
-                </v-flex>
-            </v-layout>
-            <v-layout text-xs-right align-right>
-                <v-flex xs8>
-                    <!--spacing-->
-                </v-flex>
-                <v-flex xs4>
-                    <v-switch label="Zoom Mode"
-                              hide-details
-                              color="cohortNavy"
-                              v-model="zoomMode"
-                              v-bind:disabled="!doneLoadingExtras">
-                    </v-switch>
-                </v-flex>
-            </v-layout>
+                </v-layout>
+            </v-flex>
+            <v-flex xs6>
+                <v-layout justify-right>
+                    <v-flex md9 xs8>
+                        <!--spacing-->
+                    </v-flex>
+                    <v-flex xs1 class="zoom-loader" v-bind:hide="doneLoadingExtras">
+                        <img src="../../../assets/images/wheel.gif">
+                    </v-flex>
+                    <v-flex md3 xs4>
+                        <v-switch label="Zoom Mode"
+                                  hide-details
+                                  color="cohortNavy"
+                                  v-model="zoomMode"
+                                  v-bind:disabled="!doneLoadingExtras">
+                        </v-switch>
+                    </v-flex>
+                </v-layout>
+            </v-flex>
             <div style="width:100%">
                 <enrichment-variant-viz
                         v-if="dataSetModel && dataSetModel.getSubsetCohort()"
@@ -291,13 +301,14 @@ Updated: SJG Dec2018
                 });
                 self.formattedInvalidReasons = sortedInvalidReasons;
             },
-            zoomMode: function() {
+            zoomMode: function () {
                 if (this.zoomMode) {
                     this.displayVariantBrush();
                 }
                 else {
                     this.hideVariantBrush();
-                }            }
+                }
+            }
         },
         created: function () {
             this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
@@ -572,7 +583,7 @@ Updated: SJG Dec2018
                 let self = this;
                 self.showZoomModal = false;
             },
-            refreshVariantColors: function() {
+            refreshVariantColors: function () {
                 let self = this;
                 if (self.$refs.subsetVizRef) {
                     self.$refs.subsetVizRef.refreshVariantColors();
@@ -581,7 +592,7 @@ Updated: SJG Dec2018
                     self.zoomMode = true;
                 }
             },
-            filterVariants: function(filterInfo, selectedTrackId, selectedVariantId) {
+            filterVariants: function (filterInfo, selectedTrackId, selectedVariantId) {
                 let self = this;
                 let checkForSelectedVariant = false;
                 if (self.dataSetModel.getName() === selectedTrackId && selectedVariantId) {
