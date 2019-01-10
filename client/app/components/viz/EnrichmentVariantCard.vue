@@ -82,7 +82,7 @@ Updated: SJG Dec2018
                               hide-details
                               color="cohortNavy"
                               v-model="zoomMode"
-                              v-bind:class="{hide: !doneLoadingData}">
+                              v-bind:class="{disable: !doneLoadingExtras}">
                     </v-switch>
                 </v-flex>
             </v-layout>
@@ -576,6 +576,9 @@ Updated: SJG Dec2018
                 let self = this;
                 if (self.$refs.subsetVizRef) {
                     self.$refs.subsetVizRef.refreshVariantColors();
+                }
+                if (self.zoomMode) {
+                    self.zoomMode = true;
                 }
             },
             filterVariants: function(filterInfo, selectedTrackId, selectedVariantId) {
