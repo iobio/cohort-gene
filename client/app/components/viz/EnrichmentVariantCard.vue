@@ -6,7 +6,6 @@ Updated: SJG Jan2019
     @import ../../../assets/sass/variables
     #variant-card
         .zoom-loader
-            padding-left: 30px
             padding-top: 2px
             img
                 width: 22px !important
@@ -79,14 +78,14 @@ Updated: SJG Jan2019
                 </v-layout>
             </v-flex>
             <v-flex xs6>
-                <v-layout justify-right>
-                    <v-flex md9 xs8>
+                <v-layout>
+                    <v-flex xl9 md7>
                         <!--spacing-->
                     </v-flex>
                     <v-flex xs1 class="zoom-loader" v-bind:hide="doneLoadingExtras">
                         <img src="../../../assets/images/wheel.gif">
                     </v-flex>
-                    <v-flex md3 xs4>
+                    <v-flex xl3 md4>
                         <v-switch label="Zoom Mode"
                                   hide-details
                                   color="cohortNavy"

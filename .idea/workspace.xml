@@ -5,9 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="17d38fed-e0f5-492f-b455-1d8321fb2586" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantCard.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantCard.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/dist/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/dist/build.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/client/dist/" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -37,8 +35,8 @@
       <file leaf-file-name="EnrichmentVariantCard.vue" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantCard.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="288">
-              <caret line="18" column="33" lean-forward="true" selection-start-line="18" selection-start-column="33" selection-end-line="18" selection-end-column="33" />
+            <state relative-caret-position="392">
+              <caret line="85" column="46" lean-forward="true" selection-start-line="85" selection-start-column="46" selection-end-line="85" selection-end-column="46" />
               <folding>
                 <element signature="n#style#0;n#span#0;n#v-flex#0;n#v-layout#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#div#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
@@ -330,12 +328,12 @@
       <workItem from="1545670395636" duration="9550000" />
       <workItem from="1546194124637" duration="109994000" />
       <workItem from="1546639347593" duration="5344000" />
-      <workItem from="1546878593700" duration="43408000" />
+      <workItem from="1546878593700" duration="43735000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1156740000" />
+    <option name="totallyTimeSpent" value="1157067000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1923" y="167" width="1917" height="1057" extended-state="6" />
@@ -757,8 +755,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantCard.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
-          <caret line="18" column="33" lean-forward="true" selection-start-line="18" selection-start-column="33" selection-end-line="18" selection-end-column="33" />
+        <state relative-caret-position="392">
+          <caret line="85" column="46" lean-forward="true" selection-start-line="85" selection-start-column="46" selection-end-line="85" selection-end-column="46" />
           <folding>
             <element signature="n#style#0;n#span#0;n#v-flex#0;n#v-layout#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#div#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
