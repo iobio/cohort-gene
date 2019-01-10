@@ -69,9 +69,22 @@ TD & SJG updated Apr2018 -->
     <v-card tile id="variant-card" class="app-card">
         <v-card-title primary-title>
             <v-layout align-left>
-                <v-flex xs6 style="padding-bottom: 5px">
-                    <span style="min-width: 200px; max-width: 200px; font-size: 16px;">SINGLE SAMPLE VARIANTS</span>
-                </v-flex>
+                <v-icon>person</v-icon>
+                <span style="min-width: 200px; max-width: 200px; font-size: 16px;">SINGLE SAMPLE VARIANTS</span>
+                <div>
+                    <v-menu open-on-hover offset-x transition="slide-x-transition" max-width="400px">
+                        <v-btn flat icon small color="cohortBlue" slot="activator" class="info-button">
+                            <v-icon small>info_outline</v-icon>
+                        </v-btn>
+                        <v-card>
+                            <v-card-title style="font-family: Poppins; font-size: 18px; font-weight: 500; padding-top: 2px">Single Sample Track Details</v-card-title>
+                            <v-divider></v-divider>
+                            <v-card-text style="padding-top: 0">
+                                Variants displayed within the single sample track are arranged in a non-overlapping pileup view along the y-axis, not according to enrichment.
+                            </v-card-text>
+                        </v-card>
+                    </v-menu>
+                </div>
             </v-layout>
             <div style="width:100%">
                 <variant-viz

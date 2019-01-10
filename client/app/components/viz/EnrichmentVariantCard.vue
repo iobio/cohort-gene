@@ -5,6 +5,15 @@ Updated: SJG Jan2019
 <style lang="sass">
     @import ../../../assets/sass/variables
     #variant-card
+        .info-title
+            font-family: Poppins !important
+            font-size: 18px !important
+            padding-bottom: 0
+        .info-button
+            margin: 0
+            padding: 0
+            width: 25px
+            height: 26px
         .zoom-loader
             padding-top: 2px
             img
@@ -74,8 +83,25 @@ Updated: SJG Jan2019
         <v-card-title primary-title>
             <v-flex xs6>
                 <v-layout align-left>
-                    <span style="font-size: 16px; padding-bottom: 0; padding-right: 5px">COHORT VARIANTS</span>
-                    <v-icon small color="cohortBlue" @mouseover="infoHover">info_outline</v-icon>
+                    <v-icon>people</v-icon>
+                    <span style="font-size: 16px; padding-bottom: 0; padding-right: 3px">COHORT VARIANTS</span>
+                    <div>
+                        <v-menu open-on-hover offset-x transition="slide-x-transition" max-width="400px">
+                            <v-btn flat icon small color="cohortBlue" slot="activator" class="info-button">
+                                <v-icon small>info_outline</v-icon>
+                            </v-btn>
+                            <v-card>
+                                <v-card-title style="font-family: Poppins; font-size: 18px; font-weight: 500; padding-top: 2px">Cohort Track Details</v-card-title>
+                                <v-divider></v-divider>
+                                <v-card-text style="padding-top: 0">
+                                    Variants displayed within the cohort track are arranged according to how enriched they are within the selected subset cohort relative to the
+                                    entire proband group: specifically, the higher the variant is along the y-axis, the more enriched it is.
+                                    Enrichment is determined using a Cochran-Armitage Trend Test to calculate a p-value, and that p-value is log-transformed and negated to determine
+                                    the y-coordinate akin to a Manhattan Plot. To display cohort variants in a non-overlapping fashion, use the zoom tool.
+                                </v-card-text>
+                            </v-card>
+                        </v-menu>
+                    </div>
                 </v-layout>
             </v-flex>
             <v-flex xs6>
@@ -601,9 +627,6 @@ Updated: SJG Jan2019
                 if (self.$refs.subsetVizRef) {
                     self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name), checkForSelectedVariant, selectedVariantId);
                 }
-            },
-            infoHover: function() {
-                // TODO: put in info panel
             }
         }
     }

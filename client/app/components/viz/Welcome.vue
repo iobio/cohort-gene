@@ -5,8 +5,6 @@
 <style lang="sass">
     @import ../../../assets/sass/variables
     $landing-page-font: Poppins
-    //$accent-color:       #787878
-    //$accent-color-light: #787878
     $accent-color: #5b9795
     $accent-color-light: #67a4a2
     $powered-by-accent-color: #67a4a2
