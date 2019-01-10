@@ -82,7 +82,7 @@ Updated: SJG Dec2018
                               hide-details
                               color="cohortNavy"
                               v-model="zoomMode"
-                              v-bind:class="{disable: !doneLoadingExtras}">
+                              v-bind:disabled="!doneLoadingExtras">
                     </v-switch>
                 </v-flex>
             </v-layout>

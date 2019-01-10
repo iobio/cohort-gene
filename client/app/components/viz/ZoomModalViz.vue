@@ -36,9 +36,8 @@
         border: double 1px;
         box-shadow: 2px 4px rgba(0, 0, 0, .2);
         transition: all .3s ease;
-        max-height: 500px;
+        max-height: 800px;
         overflow-y: scroll;
-        /*position: relative;*/
     }
 
     .modal-header {
@@ -209,7 +208,7 @@
                 geneVizMargin: {
                     top: 0,
                     right: 2,
-                    bottom: 20,
+                    bottom: 10,
                     left: 2
                 },
                 adjustedGeneVizTrackHeight: 40,

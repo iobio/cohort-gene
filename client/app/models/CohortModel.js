@@ -1267,7 +1267,7 @@ class CohortModel {
                     v.level = 0;
                 });
                 let factor = posToPixelFactor / (i * 2);
-                maxLevel = me.vcf.pileupVcfRecords(theFeatures, start, factor, featureWidth + 1);
+                maxLevel = combinedVcf.pileupVcfRecords(theFeatures, start, factor, featureWidth + 1);
                 if (maxLevel <= 50) {
                     i = posToPixelFactor;
                     break;
