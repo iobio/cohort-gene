@@ -646,7 +646,7 @@ function scaledVariantD3() {
                     .attr("dy", "-2.5em")
                     .style('font-size', '14px')
                     .style("text-anchor", "middle")
-                    .text("Enrichment pVal");
+                    .text("Adjusted p-value");
 
                 // Create dividing line
                 g.selectAll(".divider").remove();

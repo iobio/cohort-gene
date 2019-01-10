@@ -1,5 +1,13 @@
 <!-- Displays variant impact classification from various sources -->
 <style lang="sass">
+    .info-button
+        margin: 0
+        padding-left: 0
+        padding-right: 0
+        padding-top: 0
+        padding-bottom: 2px
+        width: 22px !important
+        height: 22px !important
 </style>
 
 <template>
@@ -9,27 +17,83 @@
             </v-flex>
         </v-layout>
         <v-layout row>
-            <v-flex xs2 class="summary-field-label">Fold change:</v-flex>
-            <v-flex xs10 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
-                <span class="summary-field-value">{{ foldEnrichmentInfo }}</span>
+            <v-flex xl3 lg4 md6 class="summary-field-label">
+                <span>Raw p-value:</span>
+                <v-menu open-on-hover offset-y transition="slide-y-transition" max-width="300px">
+                    <v-btn flat icon small color="cohortBlue" slot="activator" class="info-button">
+                        <v-icon small>info_outline</v-icon>
+                    </v-btn>
+                    <v-card>
+                        <v-card-title style="font-family: Poppins; font-size: 16px; font-weight: 500; padding-top: 2px">
+                            Raw p-value
+                        </v-card-title>
+                        <v-divider></v-divider>
+                        <v-card-text>
+                            This value represents statistically-significant enrichment, with values closer to
+                            zero indicating a higher amount of enrichment of a variant within the subset cohort relative
+                            to the larger proband group. This number is calculated via a Cochran Armitage Trend Test.
+                        </v-card-text>
+                    </v-card>
+                </v-menu>
+            </v-flex>
+            <v-flex xl7 md6 v-bind:class="{hide: loadingExtraAnnotations === true}" class="cohort-summary-field-value">
+                <span>{{ pValueInfo }}</span>
             </v-flex>
             <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
                 <img src="../../../assets/images/wheel.gif">
             </div>
         </v-layout>
         <v-layout row>
-            <v-flex xs2 class="summary-field-label">P-value:</v-flex>
-            <v-flex xs10 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
-                <span class="summary-field-value">{{ pValueInfo }}</span>
+            <v-flex xl3 lg4 md6 class="summary-field-label">
+                <span>Adj. p-value:</span>
+                <v-menu open-on-hover offset-y transition="slide-y-transition" max-width="300px">
+                    <v-btn flat icon small color="cohortBlue" slot="activator" class="info-button">
+                        <v-icon small>info_outline</v-icon>
+                    </v-btn>
+                    <v-card>
+                        <v-card-title style="font-family: Poppins; font-size: 16px; font-weight: 500; padding-top: 2px">
+                            Adjusted p-value
+                        </v-card-title>
+                        <v-divider></v-divider>
+                        <v-card-text>
+                            This value represents statstically-significant enrichment, with higher values indicating
+                            a higher amount of enrichment of a variant within the subset cohort relative to the
+                            larger proband group. This number is calculated by taking the -log(base 10) of the
+                            raw p-value above, and is the y-coordinate by which the variants are displayed
+                            within the cohort track.
+                        </v-card-text>
+                    </v-card>
+                </v-menu>
+            </v-flex>
+            <v-flex lg7 md6 v-bind:class="{hide: loadingExtraAnnotations === true}" class="cohort-summary-field-value">
+                <span>{{ log10pValueInfo }}</span>
             </v-flex>
             <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
                 <img src="../../../assets/images/wheel.gif">
             </div>
         </v-layout>
         <v-layout row>
-            <v-flex xs2 class="summary-field-label">Scaled P-value:</v-flex>
-            <v-flex xs10 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
-                <span class="summary-field-value">{{ log10pValueInfo }}</span>
+            <v-flex xl3 lg4 md6 class="summary-field-label">
+                <span>Fold change:</span>
+                <v-menu open-on-hover offset-y transition="slide-y-transition" max-width="300px">
+                    <v-btn flat icon small color="cohortBlue" slot="activator" class="info-button">
+                        <v-icon small>info_outline</v-icon>
+                    </v-btn>
+                    <v-card>
+                        <v-card-title style="font-family: Poppins; font-size: 16px; font-weight: 500; padding-top: 2px">
+                            Fold Change in Variant Frequency
+                        </v-card-title>
+                        <v-divider></v-divider>
+                        <v-card-text style="padding-top: 0">
+                            This value represents the difference between the frequency in which a variant is found in
+                            the subset and proband cohorts. This value relies on raw alternate (combined homozygous and
+                            heterozygous) counts, but may not be statistically significant.
+                        </v-card-text>
+                    </v-card>
+                </v-menu>
+            </v-flex>
+            <v-flex xl7 md6 v-bind:class="{hide: loadingExtraAnnotations === true}" class="cohort-summary-field-value">
+                <span>{{ foldEnrichmentInfo }}</span>
             </v-flex>
             <div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">
                 <img src="../../../assets/images/wheel.gif">

@@ -91,7 +91,10 @@ Updated: SJG Jan2019
                                 <v-icon small>info_outline</v-icon>
                             </v-btn>
                             <v-card>
-                                <v-card-title style="font-family: Poppins; font-size: 18px; font-weight: 500; padding-top: 2px">Cohort Track Details</v-card-title>
+                                <v-card-title style="font-family: Poppins; font-size: 18px; font-weight: 500; padding-top: 2px">
+                                <v-icon>people</v-icon>
+                                    Cohort Track Details
+                                </v-card-title>
                                 <v-divider></v-divider>
                                 <v-card-text style="padding-top: 0">
                                     Variants displayed within the cohort track are arranged according to how enriched they are within the selected subset cohort relative to the

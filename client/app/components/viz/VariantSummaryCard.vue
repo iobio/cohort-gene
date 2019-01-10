@@ -32,6 +32,7 @@
             padding-left: 2px
             text-align: right
 
+
         .field-label-header
             color: #7f7f7f
             font-style: italic
@@ -50,12 +51,17 @@
             word-break: break-word
 
         .summary-field-value
-            // padding-right: 25px
-            // padding-left: 5px
             font-size: 12px
             word-break: break-word
             padding-left: 1px
             padding-right: 1px
+
+        .cohort-summary-field-value
+            font-size: 12px
+            word-break: break-word
+            padding-left: 1px
+            padding-right: 1px
+            padding-top: 5px !important
 
         #inheritance
             height: 18px

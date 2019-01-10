@@ -77,7 +77,10 @@ TD & SJG updated Apr2018 -->
                             <v-icon small>info_outline</v-icon>
                         </v-btn>
                         <v-card>
-                            <v-card-title style="font-family: Poppins; font-size: 18px; font-weight: 500; padding-top: 2px">Single Sample Track Details</v-card-title>
+                            <v-card-title style="font-family: Poppins; font-size: 18px; font-weight: 500; padding-top: 2px">
+                                <v-icon>person</v-icon>
+                                Single Sample Track Details
+                            </v-card-title>
                             <v-divider></v-divider>
                             <v-card-text style="padding-top: 0">
                                 Variants displayed within the single sample track are arranged in a non-overlapping pileup view along the y-axis, not according to enrichment.
