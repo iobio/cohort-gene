@@ -98,17 +98,15 @@
                           :data="[selectedTranscript]"
                           :margin="geneVizMargin"
                           :zoomPadding="modalZoomPadding"
-                          :fixedWidth="modalWidth"
+                          :fixedWidth="modalWidth - 9"
                           :yAxisWidth="yAxisLeftPadding"
-                          :width="modalWidth - 15"
                           :trackHeight="geneVizTrackHeight"
                           :cdsHeight="geneVizCdsHeight"
                           :regionStart="regionStart"
                           :regionEnd="regionEnd"
                           :showXAxis="true"
                           :showLabel="false"
-                          :showBrush="false"
-                          :featureClass="getExonClass">
+                          :showBrush="false">
                 </gene-viz>
                 <!--Padding to get rid of bar overlap-->
                 <div style="margin-top: 20px"></div>
@@ -208,7 +206,7 @@
                 geneVizMargin: {
                     top: 0,
                     right: 2,
-                    bottom: 10,
+                    bottom: 18,
                     left: 2
                 },
                 adjustedGeneVizTrackHeight: 40,

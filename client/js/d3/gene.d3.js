@@ -78,7 +78,7 @@ function geneD3() {
 
             // calculate height
             var padding = data.length > 1 ? geneD3_trackHeight / 2 : 0;
-            geneD3_height = data.length * (geneD3_trackHeight + padding);   // TODO: height calculated based on track height
+            geneD3_height = data.length * (geneD3_trackHeight + padding);
 
             // determine inner height (w/o margins)
             var innerHeight = geneD3_height - margin.top - margin.bottom;
@@ -140,7 +140,6 @@ function geneD3() {
             container.selectAll("svg")
                 .attr("width", geneD3_widthPercent ? geneD3_widthPercent : geneD3_width)
                 .attr("height", geneD3_heightPercent ? geneD3_heightPercent : geneD3_height + margin.top + margin.bottom + zoomPadding);
-
 
             // Otherwise, create the skeletal chart.
             var gEnter = svg.selectAll("g").data([0]).enter().append('g');
@@ -233,7 +232,7 @@ function geneD3() {
                     svg.selectAll('.transcript.current').classed("current", false);
                     d3.select(this.parentNode).classed("current", true);
                     dispatch.d3selected(selectedTranscript);
-                })
+                });
 
             transcript.selectAll(".reference").remove();
             transcript.selectAll('.reference')
