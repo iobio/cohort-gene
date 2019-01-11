@@ -45,6 +45,7 @@
                             :filterName="filter.name"
                             :filterModel="filterModel"
                             :filter="filter"
+                            :fullAnnotationComplete="fullAnnotationComplete"
                             @filter-toggled="filterBoxToggled">
                     </filter-settings>
                 </v-card>
@@ -68,7 +69,8 @@
         },
         props: {
             filterModel: null,
-            showCoverageCutoffs: null
+            showCoverageCutoffs: null,
+            fullAnnotationComplete: false
         },
         data() {
             return {

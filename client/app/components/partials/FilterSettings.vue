@@ -4,6 +4,13 @@
         .input-group
             label
                 font-size: 13px
+        .filter-loader
+            padding-top: 4px
+            padding-right: 7px
+            max-width: 25px
+            margin: 0 !important
+        img
+            width: 18px !important
 </style>
 
 <template>
@@ -17,7 +24,10 @@
                         :value="category.open">
                     <div slot="header">
                         <v-avatar v-if="category.active" size="12px" color="cohortBlue" style="margin-right: 10px"></v-avatar>
-                        <v-avatar v-else size="10px" color="white" style="margin-right: 12px"></v-avatar>
+                        <v-avatar v-else-if="!category.active && (!isAnnotationCategory(category.name) || (isAnnotationCategory(category.name) && fullAnnotationComplete))" size="10px" color="white" style="margin-right: 12px"></v-avatar>
+                        <span v-bind:hidden="!isAnnotationCategory(category.name) || fullAnnotationComplete" class="filter-loader">
+                            <img src="../../../assets/images/wheel.gif">
+                        </span>
                         <span class="filter-title">
                             {{ category.display }}
                         </span>
@@ -27,6 +37,7 @@
                                 ref="filtCheckRef"
                                 :parentFilterName="category.name"
                                 :grandparentFilterName="filterName"
+                                :fullAnnotationComplete="fullAnnotationComplete"
                                 @filter-toggled="onFilterToggled">
                         </filter-settings-checkbox>
                     </v-card>
@@ -48,7 +59,8 @@
             filter: null,
             filterName: '',
             filterModel: null,
-            idx: null
+            idx: null,
+            fullAnnotationComplete: false
         },
         data() {
             return {
@@ -83,7 +95,16 @@
                 }
             }
         },
-        watch: {},
+        watch: {
+            // fullAnnotationComplete: function() {
+            //     let self = this;
+            //     if (self.fullAnnotationComplete === true) {
+            //         $('.filter-loader').hide();
+            //     } else {
+            //         $('.filter-loader').show();
+            //     }
+            // }
+        },
         methods: {
             onFilterToggled: function(filterName, filterState, parentFilterName, grandparentFilterName, parentFilterState) {
                 let self = this;
@@ -114,9 +135,18 @@
                 self.$refs.filtCheckRef.forEach((checkRef) => {
                     checkRef.clearFilters();
                 })
+            },
+            isAnnotationCategory: function (currentCat) {
+                if (currentCat === 'impact' || currentCat === 'g1000' ||
+                    currentCat === 'exac' || currentCat === 'gnomad') {
+                    return true;
+                } else {
+                    return false;
+                }
             }
         },
-        computed: {},
+        computed: {
+        },
         created: function () {
         },
         mounted: function () {

@@ -141,6 +141,7 @@ TD & SJG updated Nov2018 -->
                                                 ref="filterSettingsMenuRef"
                                                 :filterModel="filterModel"
                                                 :showCoverageCutoffs="showCoverageCutoffs"
+                                                :fullAnnotationComplete="doneLoadingExtras"
                                                 @filter-settings-applied="onFilterSettingsApplied"
                                                 @filter-settings-closed="$emit('filter-settings-closed')"
                                                 @filter-box-toggled="filterBoxToggled">

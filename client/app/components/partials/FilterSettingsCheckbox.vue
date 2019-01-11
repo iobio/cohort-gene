@@ -20,6 +20,7 @@
                 <v-checkbox v-for="item in checkboxLists[parentFilterName]"
                             :key="item.name"
                             :label="item.displayName"
+                            v-bind:disabled="!fullAnnotationComplete && isAnnotationCategory"
                             v-model="item.model"
                             color="cohortBlue"
                             style="padding-left: 15px; margin-top: 0; margin-bottom: 0; max-height: 30px"
@@ -36,7 +37,8 @@
         components: {},
         props: {
             parentFilterName: null,
-            grandparentFilterName: null
+            grandparentFilterName: null,
+            fullAnnotationComplete: true
         },
         data() {
             return {
@@ -138,7 +140,17 @@
                 })
             }
         },
-        computed: {},
+        computed: {
+            isAnnotationCategory: function() {
+                let self = this;
+                if (self.parentFilterName === 'impact' || self.parentFilterName === 'g1000' ||
+                    self.parentFilterName === 'exac' || self.parentFilterName === 'gnomad') {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        },
         created: function () {},
         mounted: function () {}
     }
