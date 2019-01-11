@@ -15,7 +15,9 @@ Updated: SJG Jan2019
             width: 25px
             height: 26px
         .zoom-loader
-            padding-top: 2px
+            padding-top: 4px
+            padding-right: 7px
+            max-width: 30px
             img
                 width: 22px !important
         #gene-viz, #gene-viz-zoom
@@ -112,9 +114,9 @@ Updated: SJG Jan2019
                     <v-flex xl9 md7>
                         <!--spacing-->
                     </v-flex>
-                    <v-flex xs1 class="zoom-loader" v-bind:hide="doneLoadingExtras">
+                    <div class="zoom-loader" id="zoomLoaderDiv">
                         <img src="../../../assets/images/wheel.gif">
-                    </v-flex>
+                    </div>
                     <v-flex xl3 md4>
                         <v-switch label="Zoom Mode"
                                   hide-details
@@ -336,6 +338,16 @@ Updated: SJG Jan2019
                 }
                 else {
                     this.hideVariantBrush();
+                }
+            },
+            doneLoadingExtras: function() {
+                // NOTE: had to use jquery here, couldn't get flex styling to position loader
+                // where I wanted it
+                if (this.doneLoadingExtras === true) {
+                    $('#zoomLoaderDiv').hide();
+                }
+                else {
+                    $('#zoomLoaderDiv').show();
                 }
             }
         },
