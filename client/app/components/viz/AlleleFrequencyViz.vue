@@ -109,6 +109,22 @@
                 default: 0,
                 type: Number
             },
+            hetProbandCount: {
+                default: 0,
+                type: Number
+            },
+            homAltProbandCount: {
+                default: 0,
+                type: Number
+            },
+            hetSubsetCount: {
+                default: 0,
+                type: Number
+            },
+            homAltSubsetCount: {
+                default: 0,
+                type: Number
+            },
             loadingExtraAnnotations: {
                 default: false,
                 type: Boolean
@@ -126,11 +142,14 @@
                 } else if (this.totalProbandCount === 0) {
                     return "0";
                 }
-                let freq = (Math.round((this.affectedProbandCount / this.totalProbandCount) * 100));
-                if (freq === 0 && this.affectedProbandCount > 0) {
+                let numMutantAlleles = this.hetProbandCount + (2 * this.homAltProbandCount);
+                let totalAlleleCount = this.totalProbandCount * 2;
+
+                let freq = (Math.round((numMutantAlleles / totalAlleleCount) * 100));
+                if (freq === 0 && numMutantAlleles > 0) {
                     return "1%";
                 }
-                return (Math.round((this.affectedProbandCount / this.totalProbandCount) * 100)) + "";
+                return (Math.round((numMutantAlleles / totalAlleleCount) * 100)) + "";
             },
             affectedSubsetPercentage: function () {
                 if (this.totalSubsetCount < 0) {
@@ -138,11 +157,15 @@
                 } else if (this.totalSubsetCount === 0) {
                     return "0";
                 }
-                let freq = (Math.round((this.affectedSubsetCount / this.totalSubsetCount) * 100));
-                if (freq === 0 && this.affectedSubsetCount > 0) {
+
+                let numMutantAlleles = this.hetSubsetCount + (2 * this.homAltSubsetCount);
+                let totalAlleleCount = this.totalSubsetCount * 2;
+
+                let freq = (Math.round((numMutantAlleles / totalAlleleCount) * 100));
+                if (freq === 0 && numMutantAlleles > 0) {
                     return "1%";
                 }
-                return (Math.round((this.affectedSubsetCount / this.totalSubsetCount) * 100)) + "";
+                return (Math.round((numMutantAlleles / totalAlleleCount) * 100)) + "";
             }
         },
         methods: {
@@ -200,8 +223,11 @@
                 if (this.selectedVariant == null) return "-";
                 else if (this.totalProbandCount === 0) return "0%";
                 else {
-                    let freq = Math.round((this.affectedProbandCount / this.totalProbandCount) * 100);
-                    if (freq === 0 && this.affectedProbandCount > 0) {
+                    let numMutantAlleles = this.hetProbandCount + (2 * this.homAltProbandCount);
+                    let totalAlleleCount = this.totalProbandCount * 2;
+
+                    let freq = Math.round((numMutantAlleles / totalAlleleCount) * 100);
+                    if (freq === 0 && numMutantAlleles > 0) {
                         return "<1%";
                     }
                     return freq + "%";
@@ -211,8 +237,11 @@
                 if (this.selectedVariant == null) return "-";
                 else if (this.totalSubsetCount === 0) return "0%";
                 else {
-                    let freq = Math.round((this.affectedSubsetCount / this.totalSubsetCount) * 100);
-                    if (freq === 0 && this.affectedSubsetCount > 0) {
+                    let numMutantAlleles = this.hetSubsetCount + (2 * this.homAltSubsetCount);
+                    let totalAlleleCount = this.totalSubsetCount * 2;
+
+                    let freq = Math.round((numMutantAlleles / totalAlleleCount) * 100);
+                    if (freq === 0 && numMutantAlleles > 0) {
                         return "<1%";
                     }
                     return freq + "%";

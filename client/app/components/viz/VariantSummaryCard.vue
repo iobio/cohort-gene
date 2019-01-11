@@ -189,22 +189,6 @@
         <v-flex xl9 offset-xl2 lg12>
             <div class='form-inline'>
                 <div class='form-group'>
-                    <!--<v-icon color="limeGreen"-->
-                            <!--v-bind:class="{hide: cohortFieldsValid === false || subsetDelta < 2}">arrow_upward-->
-                    <!--</v-icon>-->
-                    <!--<v-icon color="slateGray"-->
-                            <!--v-bind:class="{hide: cohortFieldsValid === false || (subsetDelta <= 1 || subsetDelta >= 2)}">-->
-                        <!--arrow_upward-->
-                    <!--</v-icon>-->
-                    <!--<v-icon color="slateGray"-->
-                            <!--v-bind:class="{hide: cohortFieldsValid === false || (subsetDelta <= 0.5 || subsetDelta >= 1)}">-->
-                        <!--arrow_downward-->
-                    <!--</v-icon>-->
-                    <!--<v-icon color="cherryRed"-->
-                            <!--v-bind:class="{hide: cohortFieldsValid === false || subsetDelta > 0.5}">arrow_downward-->
-                    <!--</v-icon>-->
-                </div>
-                <div class='form-group'>
                     <v-chip v-bind:class="{hide: variant == null}" v-bind:style="{margin: 0}" small outline
                             color="cohortDarkBlue"
                             @input="summaryCardVariantDeselect()">
@@ -248,6 +232,10 @@
                                       :affectedSubsetCount="affectedSubsetCount"
                                       :totalProbandCount="totalProbandCount"
                                       :totalSubsetCount="totalSubsetCount"
+                                      :hetProbandCount="hetProbandCount"
+                                      :homAltProbandCount="homAltProbandCount"
+                                      :hetSubsetCount="hetSubsetCount"
+                                      :homAltSubsetCount="homAltSubsetCount"
                                       :loadingExtraAnnotations="loadingExtraAnnotations">
                 </allele-frequency-viz>
                 <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz" style="padding-top: 10px"
@@ -292,6 +280,7 @@
             }
         },
         computed: {
+            // NOTE: total and affected counts are number of SAMPLES not ALLELES
             totalProbandCount: function () {
                 if (!this.cohortFieldsValid) {
                     return -1;
@@ -314,6 +303,26 @@
             affectedSubsetCount: function () {
                 if (this.variant != null)
                     return this.variant.affectedSubsetCount;
+                return 0;
+            },
+            hetProbandCount: function() {
+                if (this.variant != null)
+                    return this.variant.probandZygCounts[1];
+                return 0;
+            },
+            homAltProbandCount: function() {
+                if (this.variant != null)
+                    return this.variant.probandZygCounts[2];
+                return 0;
+            },
+            hetSubsetCount: function() {
+                if (this.variant != null)
+                    return this.variant.subsetZygCounts[1];
+                return 0;
+            },
+            homAltSubsetCount: function() {
+                if (this.variant != null)
+                    return this.variant.subsetZygCounts[2];
                 return 0;
             },
             subsetDelta: function () {

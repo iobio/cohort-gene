@@ -2002,7 +2002,7 @@ vcfiobio = function module() {
                                 'highestREVEL': highestREVEL,
 
                                 // cohort specific
-                                'pVal': 2,  // Marker value
+                                'pVal': 2,  // Marker value to accommodate filtering
                                 'subsetDelta': +0,
                                 'totalProbandCount': +0,
                                 'totalSubsetCount': +0,
