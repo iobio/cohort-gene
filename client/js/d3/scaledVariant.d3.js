@@ -301,15 +301,15 @@ function scaledVariantD3() {
     };
 
     /* Takes in a list of filter classes. If a variant contains any of them, it will be hidden.
-    *  Takes in a filter cutoff object that a variant must meet or be lower than. */
-    var filterVariants = function(filterClasses, svgContainer) {
+    *  Takes in a filter cutoff object that a variant must meet or be lower than - if not, it will be hidden. */
+    var filterVariants = function(filterClasses, filterCutoffs, svgContainer) {
         let allVariants = svgContainer.selectAll(".variant");
 
         // Add filtered class to all variants
         allVariants.classed({'filtered': true});
 
         // If we're out of active filters, display all variants
-        if (filterClasses.length === 0) {
+        if (filterClasses.length === 0 && filterCutoffs.length === 0) {
             allVariants.style("opacity", 1);
             allVariants.style("pointer-events", 'auto');
         }
@@ -324,14 +324,128 @@ function scaledVariantD3() {
         let filteredVars = svgContainer.selectAll('.filtered');
 
         // Remove filtered class for any variants that don't meet cutoffs
-        let cutoffs = Object.keys(filterCutoffs);
+        let cutoffs = Object.values(filterCutoffs);
         if (cutoffs.length > 0) {
             filteredVars.each(function (d, i) {
                 cutoffs.forEach((cutoff) => {
-                    if (d[cutoff] > filterCutoffs[cutoff]) {
-                        // TODO: check to make sure this actually works
-                        d.classed({'filtered': false});
-                        d.style('pointer-events', 'none');
+                    let filterName = cutoff[0];
+                    let filterLogic = cutoff[1];
+                    let filterCutoffVal = parseFloat(cutoff[2]);
+                    let varVal = 0;
+
+                    switch(filterLogic) {
+                        case '<':
+                            if (filterName === 'probandFreq') {
+                                let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
+                                let totalAlleleCount = d.totalProbandCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (filterName === 'subsetFreq') {
+                                let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
+                                let totalAlleleCount = d.totalSubsetCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
+                                varVal = Math.round(d[filterName] * 100);
+                            } else {
+                                varVal = d[filterName] * 100 / 100;
+                            }
+
+                            if (!(varVal < filterCutoffVal)) {
+                                let selectionId = '#' + d.id;
+                                let domD = d3.select(selectionId);
+                                domD.classed({'filtered': false});
+                                domD.style('pointer-events', 'none');
+                            }
+                            break;
+                        case '<=':
+                            if (filterName === 'probandFreq') {
+                                let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
+                                let totalAlleleCount = d.totalProbandCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (filterName === 'subsetFreq') {
+                                let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
+                                let totalAlleleCount = d.totalSubsetCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
+                                varVal = Math.round(d[filterName] * 100);
+                            } else {
+                                varVal = d[filterName] * 100 / 100;
+                            }
+
+                            if (!(varVal <= filterCutoffVal)) {
+                                let selectionId = '#' + d.id;
+                                let domD = d3.select(selectionId);
+                                domD.classed({'filtered': false});
+                                domD.style('pointer-events', 'none');
+                            }
+                            break;
+                        case '=':
+                            if (filterName === 'probandFreq') {
+                                let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
+                                let totalAlleleCount = d.totalProbandCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (filterName === 'subsetFreq') {
+                                let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
+                                let totalAlleleCount = d.totalSubsetCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
+                                varVal = Math.round(d[filterName] * 100);
+                            } else {
+                                varVal = d[filterName] * 100 / 100;
+                            }
+
+                            if (!(varVal === filterCutoffVal)) {
+                                let selectionId = '#' + d.id;
+                                let domD = d3.select(selectionId);
+                                domD.classed({'filtered': false});
+                                domD.style('pointer-events', 'none');
+                            }
+                            break;
+                        case '>=':
+                            if (filterName === 'probandFreq') {
+                                let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
+                                let totalAlleleCount = d.totalProbandCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (filterName === 'subsetFreq') {
+                                let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
+                                let totalAlleleCount = d.totalSubsetCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
+                                varVal = Math.round(d[filterName] * 100);
+                            } else {
+                                varVal = d[filterName] * 100 / 100;
+                            }
+
+                            if (!(varVal >= filterCutoffVal)) {
+                                let selectionId = '#' + d.id;
+                                let domD = d3.select(selectionId);
+                                domD.classed({'filtered': false});
+                                domD.style('pointer-events', 'none');
+                            }
+                            break;
+                        case '>':
+                            if (filterName === 'probandFreq') {
+                                let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
+                                let totalAlleleCount = d.totalProbandCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (filterName === 'subsetFreq') {
+                                let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
+                                let totalAlleleCount = d.totalSubsetCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
+                                varVal = d[filterName] * 100;
+                            } else {
+                                varVal = d[filterName] * 100 / 100;
+                            }
+
+                            if (!(varVal > filterCutoffVal)) {
+                                let selectionId = '#' + d.id;
+                                let domD = d3.select(selectionId);
+                                domD.classed({'filtered': false});
+                                domD.style('pointer-events', 'none');
+                            }
+                            break;
+                        default:
+                            // Do nothing
                     }
                 })
             });
@@ -369,7 +483,9 @@ function scaledVariantD3() {
     /* Takes in a single cutoff criteria and removes filtered class. To be used
     *  immediately prior to filterVariants. */
     var unfilterVariantsByCutoff = function(filterCutoffName, svgContainer) {
-
+        // Remove filter status for vars corresponding to the given cutoff filter name
+        let filterClassedVars = svgContainer.selectAll(filterCutoffName);
+        filterClassedVars.classed({'filtered': false});
     };
 
     /* Returns true if selected variant passes filter and is visible. */
@@ -1236,6 +1352,12 @@ function scaledVariantD3() {
     chart.unfilterVariants = function (_) {
         if (!arguments.length) return unfilterVariants;
         unfilterVariants = _;
+        return chart;
+    };
+
+    chart.unfilterVariantsByCutoff = function (_) {
+        if (!arguments.length) return unfilterVariantsByCutoff;
+        unfilterVariantsByCutoff = _;
         return chart;
     };
 

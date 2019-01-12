@@ -337,6 +337,7 @@
                 return 1;
             },
             foldEnrichmentInfo: function () {
+                // NOTE: not displaying for now
                 if (this.variant != null) {
                     let delta = this.variant.subsetDelta;
                     let adjDelta = this.variant.subsetDelta;
@@ -363,7 +364,8 @@
                         if (+this.variant.pVal === 1) {
                             return '1';
                         } else {
-                            return '< ' + this.variant.pVal * 100 / 100;
+                            let pValText = (+this.variant.pVal) * 100 / 100;
+                            return '' + pValText;
                         }
                     }
                 }
@@ -374,7 +376,7 @@
                     if (!this.cohortFieldsValid) {
                         return "N/A";
                     } else {
-                        return '' + (+this.variant.adjustedLevel).toFixed(2);
+                        return '' + (+this.variant.adjustedLevel) * 100 / 100;
                     }
                 }
                 return "-";
@@ -580,7 +582,6 @@
             summaryCardVariantDeselect: function () {
                 let self = this;
                 self.$refs.summaryFrequencyViz.clear();
-                //self.$refs.summaryBarFeatureViz.clear();  SJG NOTE: took out bars for now
                 self.$emit("summaryCardVariantDeselect");
             },
             assignBarChartValues: function (probandN, subsetN) {

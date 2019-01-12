@@ -47,7 +47,8 @@
                             :filter="filter"
                             :fullAnnotationComplete="fullAnnotationComplete"
                             @filter-toggled="filterBoxToggled"
-                            @filter-applied="filterCutoffApplied">
+                            @filter-applied="filterCutoffApplied"
+                            @cutoff-filter-cleared="filterCutoffCleared">
                     </filter-settings>
                 </v-card>
             </v-expansion-panel-content>
@@ -126,6 +127,16 @@
                     filterObj[0].active = parentFilterState;
                 }
                 self.$emit('filter-cutoff-applied', filterName, filterLogic, cutoffValue);
+            },
+            filterCutoffCleared: function(filterName, parentFilterName, parentFilterState) {
+                let self = this;
+                let filterObj = self.filters.filter((filt) => {
+                    return filt.name === parentFilterName;
+                });
+                if (filterObj.length > 0) {
+                    filterObj[0].active = parentFilterState;
+                }
+                self.$emit('filter-cutoff-cleared', filterName);
             },
             clearFilters: function() {
                 let self = this;

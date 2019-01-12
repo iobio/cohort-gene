@@ -1961,7 +1961,7 @@ vcfiobio = function module() {
                                 'strand': geneObject.strand,
                                 'chrom': refName,
                                 'type': annot.typeAnnotated && annot.typeAnnotated !== '' ? annot.typeAnnotated : type,
-                                'id': (rec.pos + '.' + refName + '.' + geneObject.strand + '.' + rec.ref + '.' + rec.alt),  // key = start.chromosome.strand.ref.alt
+                                'id': ('id_' + rec.pos + '_' + refName + '_' + geneObject.strand + '_' + rec.ref + '_' + rec.alt),  // key = start.chromosome.strand.ref.alt
                                 'ref': rec.ref,
                                 'alt': alt,
                                 'qual': rec.qual,

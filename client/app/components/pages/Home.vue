@@ -143,7 +143,8 @@ TD & SJG updated Nov2018 -->
                                                 :showCoverageCutoffs="showCoverageCutoffs"
                                                 :fullAnnotationComplete="doneLoadingExtras"
                                                 @filter-box-toggled="filterBoxToggled"
-                                                @filter-cutoff-applied="filterCutoffApplied">
+                                                @filter-cutoff-applied="filterCutoffApplied"
+                                                @filter-cutoff-cleared="filterCutoffCleared">
                                         </filter-settings-menu>
                                     </v-container>
                                 </v-tab-item>
@@ -883,15 +884,37 @@ TD & SJG updated Nov2018 -->
                     cohortOnly: false,
                     type: 'checkbox',
                     state: filterState,
-                    rangeState: null,
-                    lowRange: null,
-                    highRange: null
+                    cutoffValue: null,
                 };
                 self.onFilterSettingsApplied(filterInfo);
             },
             filterCutoffApplied: function(filterName, filterLogic, cutoffValue) {
                 let self = this;
-                // TODO: implement
+
+                let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
+
+                let filterInfo = {
+                    name: translatedFilterName,
+                    cohortOnly: false,
+                    type: 'cutoff',
+                    state: filterLogic,
+                    cutoffValue: cutoffValue
+                };
+                self.onFilterSettingsApplied(filterInfo);
+            },
+            filterCutoffCleared: function(filterName) {
+                let self = this;
+
+                let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
+
+                let filterInfo = {
+                    name: translatedFilterName,
+                    cohortOnly: false,
+                    type: 'cutoff',
+                    state: false,
+                    cutoffValue: null
+                };
+                self.onFilterSettingsApplied(filterInfo);
             },
             onFilterSettingsApplied: function (filterInfo) {
                 let self = this;

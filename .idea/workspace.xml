@@ -5,14 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="17d38fed-e0f5-492f-b455-1d8321fb2586" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/client/app/components/partials/FilterSettingsCutoff.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/app/components/pages/Home.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/pages/Home.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/app/components/partials/FilterSettings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/partials/FilterSettings.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/app/components/partials/FilterSettingsCutoff.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/partials/FilterSettingsCutoff.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/app/components/partials/FilterSettingsMenu.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/partials/FilterSettingsMenu.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/app/routes.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/routes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/app/components/viz/VariantSummaryCard.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/viz/VariantSummaryCard.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/dist/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/dist/build.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/js/model/translator.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/js/model/translator.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/js/model/vcf.iobio.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/js/model/vcf.iobio.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/client/dist/" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -30,8 +33,8 @@
       <file leaf-file-name="Home.vue" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/app/components/pages/Home.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="481">
-              <caret line="893" column="34" selection-start-line="893" selection-start-column="34" selection-end-line="893" selection-end-column="34" />
+            <state relative-caret-position="501">
+              <caret line="913" column="33" selection-start-line="913" selection-start-column="33" selection-end-line="913" selection-end-column="33" />
               <folding>
                 <element signature="n#style#0;n#v-container#0;n#v-content#0;n#div#0;n#template#0;n#!!top" expanded="true" />
               </folding>
@@ -39,17 +42,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="EnrichmentVariantCard.vue" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantCard.vue">
+      <file leaf-file-name="VariantModel.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/client/app/models/VariantModel.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="40">
-              <caret line="598" column="32" lean-forward="true" selection-start-line="598" selection-start-column="32" selection-end-line="598" selection-end-column="32" />
-              <folding>
-                <element signature="n#style#0;n#span#0;n#v-layout#0;n#v-flex#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#v-card-title#0;n#v-card#0;n#v-menu#0;n#div#0;n#v-layout#0;n#v-flex#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#v-card-text#0;n#v-card#0;n#v-menu#0;n#div#0;n#v-layout#0;n#v-flex#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#div#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
-              </folding>
+            <state relative-caret-position="528">
+              <caret line="34" column="39" lean-forward="true" selection-start-line="34" selection-start-column="39" selection-end-line="34" selection-end-column="39" />
             </state>
           </provider>
         </entry>
@@ -57,8 +54,8 @@
       <file leaf-file-name="EnrichmentVariantViz.vue" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="313">
-              <caret line="413" column="14" lean-forward="true" selection-start-line="413" selection-start-column="14" selection-end-line="413" selection-end-column="14" />
+            <state relative-caret-position="580">
+              <caret line="479" column="63" lean-forward="true" selection-start-line="479" selection-start-column="63" selection-end-line="479" selection-end-column="63" />
               <folding>
                 <element signature="n#style#0;n#v-chip#0;n#div#1;n#div#0;n#template#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#div#3;n#div#0;n#template#0;n#!!top" expanded="true" />
@@ -68,39 +65,44 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="FilterSettingsMenu.vue" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilterSettingsMenu.vue">
+      <file leaf-file-name="VariantViz.vue" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/client/app/components/viz/VariantViz.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="252">
-              <caret line="119" column="12" selection-start-line="119" selection-start-column="12" selection-end-line="119" selection-end-column="12" />
+            <state relative-caret-position="744">
+              <caret line="404" column="49" selection-start-line="404" selection-start-column="49" selection-end-line="404" selection-end-column="49" />
               <folding>
-                <element signature="n#style#0;n#v-flex#0;n#template#0;n#!!top" expanded="true" />
-                <marker date="1547276112039" expanded="true" signature="2859:3024" ph="..." />
+                <element signature="n#style#0;n#div#2;n#div#0;n#template#0;n#!!top" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="FilterSettings.vue" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilterSettings.vue">
+      <file leaf-file-name="VariantSummaryCard.vue" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/client/app/components/viz/VariantSummaryCard.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="477">
-              <caret line="133" column="19" lean-forward="true" selection-start-line="133" selection-start-column="19" selection-end-line="133" selection-end-column="19" />
+            <state relative-caret-position="441">
+              <caret line="489" column="33" lean-forward="true" selection-start-line="489" selection-start-column="33" selection-end-line="489" selection-end-column="33" />
               <folding>
-                <element signature="n#style#0;n#v-layout#0;n#template#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#v-avatar#0;n#div#0;n#v-expansion-panel-content#0;n#v-expansion-panel#0;n#v-flex#0;n#v-layout#0;n#template#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#v-avatar#1;n#div#0;n#v-expansion-panel-content#0;n#v-expansion-panel#0;n#v-flex#0;n#v-layout#0;n#template#0;n#!!top" expanded="true" />
-                <element signature="e#2770#2845#0" expanded="true" />
+                <element signature="n#style#0;n#v-container#0;n#template#0;n#!!top" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="FilterSettingsCutoff.vue" pinned="false" current-in-tab="true">
+      <file leaf-file-name="FilterSettingsCutoff.vue" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilterSettingsCutoff.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="181">
-              <caret line="67" column="141" selection-start-line="67" selection-start-column="141" selection-end-line="67" selection-end-column="141" />
+            <state relative-caret-position="406">
+              <caret line="135" column="32" lean-forward="true" selection-start-line="135" selection-start-column="32" selection-end-line="135" selection-end-column="32" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="scaledVariant.d3.js" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="647">
+              <caret line="403" column="63" lean-forward="true" selection-start-line="403" selection-start-column="63" selection-end-line="403" selection-end-column="63" />
             </state>
           </provider>
         </entry>
@@ -116,15 +118,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>library</find>
-      <find>info-button</find>
-      <find>enrichment p</find>
-      <find>adjusted p</find>
-      <find>v-divi</find>
-      <find>Adju</find>
-      <find>combine</find>
-      <find>pval</find>
-      <find>parseEnrichmentInfo</find>
       <find>frequency</find>
       <find>proband</find>
       <find>probandProgress</find>
@@ -146,6 +139,15 @@
       <find>selectedstat</find>
       <find>parentFilterName</find>
       <find>parentfiltername</find>
+      <find>onFilterSettingsApplied</find>
+      <find>delete</find>
+      <find>unfilterVariants</find>
+      <find>affected</find>
+      <find>num</find>
+      <find>gettranslator</find>
+      <find>translator</find>
+      <find>id</find>
+      <find>1000g</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/client/js/model</dir>
@@ -181,14 +183,12 @@
         <option value="$PROJECT_DIR$/client/app/App.vue" />
         <option value="$PROJECT_DIR$/client/js/d3/barChart.d3.js" />
         <option value="$PROJECT_DIR$/client/app/components/partials/FilterSettingsRange.vue" />
-        <option value="$PROJECT_DIR$/client/js/model/translator.js" />
         <option value="$PROJECT_DIR$/client/assets/sass/_symbols.sass" />
         <option value="$PROJECT_DIR$/client/app/components/viz/BarFeatureViz.vue" />
         <option value="$PROJECT_DIR$/client/app/models/DataSetModel.js" />
         <option value="$PROJECT_DIR$/client/app/models/VariantModel.js" />
         <option value="$PROJECT_DIR$/client/js/d3/variant.d3.js" />
         <option value="$PROJECT_DIR$/client/app/components/viz/VariantViz.vue" />
-        <option value="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue" />
         <option value="$PROJECT_DIR$/client/js/model/hubEndpoint.js" />
         <option value="$PROJECT_DIR$/client/app/components/viz/GeneViz.vue" />
         <option value="$PROJECT_DIR$/client/app/models/CohortModel.js" />
@@ -197,18 +197,20 @@
         <option value="$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue" />
         <option value="$PROJECT_DIR$/client/app/components/viz/VariantCard.vue" />
         <option value="$PROJECT_DIR$/client/app/components/viz/Welcome.vue" />
-        <option value="$PROJECT_DIR$/client/js/model/vcf.iobio.js" />
-        <option value="$PROJECT_DIR$/client/app/components/viz/VariantSummaryCard.vue" />
         <option value="$PROJECT_DIR$/client/app/components/viz/AlleleFrequencyViz.vue" />
         <option value="$PROJECT_DIR$/client/app/components/viz/FeatureViz.vue" />
         <option value="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantCard.vue" />
         <option value="$PROJECT_DIR$/client/app/components/partials/FilterSettingsCheckbox.vue" />
-        <option value="$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js" />
         <option value="$PROJECT_DIR$/client/app/routes.js" />
-        <option value="$PROJECT_DIR$/client/app/components/partials/FilterSettingsMenu.vue" />
-        <option value="$PROJECT_DIR$/client/app/components/pages/Home.vue" />
         <option value="$PROJECT_DIR$/client/app/components/partials/FilterSettings.vue" />
+        <option value="$PROJECT_DIR$/client/app/components/partials/FilterSettingsMenu.vue" />
+        <option value="$PROJECT_DIR$/client/js/model/translator.js" />
+        <option value="$PROJECT_DIR$/client/app/components/pages/Home.vue" />
         <option value="$PROJECT_DIR$/client/app/components/partials/FilterSettingsCutoff.vue" />
+        <option value="$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue" />
+        <option value="$PROJECT_DIR$/client/js/model/vcf.iobio.js" />
+        <option value="$PROJECT_DIR$/client/app/components/viz/VariantSummaryCard.vue" />
+        <option value="$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js" />
       </list>
     </option>
   </component>
@@ -227,9 +229,10 @@
     </packageJsonPaths>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="y" value="23" />
-    <option name="width" value="1440" />
-    <option name="height" value="877" />
+    <option name="x" value="1920" />
+    <option name="y" value="183" />
+    <option name="width" value="1920" />
+    <option name="height" value="1057" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -386,18 +389,18 @@
       <workItem from="1546194124637" duration="109994000" />
       <workItem from="1546639347593" duration="5344000" />
       <workItem from="1546878593700" duration="61230000" />
-      <workItem from="1547223488299" duration="24380000" />
+      <workItem from="1547223488299" duration="40997000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1198942000" />
+    <option name="totallyTimeSpent" value="1215559000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1440" height="877" extended-state="6" />
+    <frame x="1920" y="167" width="1920" height="1057" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.25486112" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.19114584" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" weight="0.07427938" />
@@ -426,7 +429,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="25" />
+      <option name="time" value="26" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -518,13 +521,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/js/model/translator.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="686">
-          <caret line="110" column="100" selection-start-line="110" selection-start-column="91" selection-end-line="110" selection-end-column="100" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/client/assets/sass/site.sass">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -546,16 +542,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="32">
           <caret line="10" selection-start-line="10" selection-end-line="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/viz/VariantViz.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="359">
-          <caret line="337" column="24" lean-forward="true" selection-start-line="337" selection-start-column="24" selection-end-line="337" selection-end-column="24" />
-          <folding>
-            <element signature="n#style#0;n#div#2;n#div#0;n#template#0;n#!!top" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -623,19 +609,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/viz/Welcome.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="281">
-          <caret line="390" column="100" lean-forward="true" selection-start-line="390" selection-start-column="100" selection-end-line="390" selection-end-column="100" />
-          <folding>
-            <element signature="n#style#0;n#div#0;n#template#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#img#0;n#div#0;n#div#1;n#div#1;n#div#1;n#div#0;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#img#0;n#div#0;n#div#2;n#div#1;n#div#1;n#div#0;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#3;n#div#1;n#div#1;n#div#0;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/client/app/models/CohortModel.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="146">
@@ -655,47 +628,72 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/models/VariantModel.js">
+    <entry file="file://$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="248">
-          <caret line="1058" column="18" lean-forward="true" selection-start-line="1058" selection-start-column="18" selection-end-line="1058" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/viz/AlleleFrequencyViz.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="662">
-          <caret line="164" column="57" lean-forward="true" selection-start-line="164" selection-start-column="57" selection-end-line="164" selection-end-column="57" />
+        <state relative-caret-position="16">
+          <caret line="92" column="14" selection-start-line="92" selection-start-column="14" selection-end-line="92" selection-end-column="14" />
           <folding>
-            <element signature="n#style#0;n#v-flex#3;n#v-layout#4;n#v-flex#0;n#template#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#1;n#slot#0;n#div#1;n#div#0;n#template#0;n#!!top" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/viz/FeatureViz.vue">
+    <entry file="file://$PROJECT_DIR$/client/app/components/partials/EntryData.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="265">
-          <caret line="79" column="66" lean-forward="true" selection-start-line="79" selection-start-column="66" selection-end-line="79" selection-end-column="66" />
+        <state relative-caret-position="3456">
+          <caret line="291" column="43" selection-start-line="291" selection-start-column="43" selection-end-line="291" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilterSettingsCheckbox.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="231">
+          <caret line="128" column="79" lean-forward="true" selection-start-line="128" selection-start-column="79" selection-end-line="128" selection-end-column="79" />
           <folding>
-            <element signature="n#style#0;n#v-card-title#0;n#v-card#0;n#v-menu#0;n#v-flex#0;n#v-layout#1;n#v-flex#0;n#template#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#v-card-title#0;n#v-card#0;n#v-menu#0;n#v-flex#0;n#v-layout#2;n#v-flex#0;n#template#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#v-checkbox#0;n#v-container#0;n#v-flex#0;n#v-layout#0;n#template#0;n#!!top" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/viz/VariantSummaryCard.vue">
+    <entry file="file://$PROJECT_DIR$/client/app/routes.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="331">
-          <caret line="232" column="76" lean-forward="true" selection-start-line="232" selection-start-column="76" selection-end-line="232" selection-end-column="76" />
+        <state relative-caret-position="459">
+          <caret line="32" column="29" lean-forward="true" selection-start-line="32" selection-start-column="29" selection-end-line="32" selection-end-column="29" />
           <folding>
-            <element signature="n#style#0;n#v-container#0;n#template#0;n#!!top" expanded="true" />
+            <element signature="e#104#123#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/components/viz/Welcome.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="448">
+          <caret line="28" column="26" lean-forward="true" selection-start-line="28" selection-start-column="26" selection-end-line="28" selection-end-column="26" />
+          <folding>
+            <element signature="n#style#0;n#div#0;n#template#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#img#0;n#div#0;n#div#1;n#div#1;n#div#1;n#div#0;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#img#0;n#div#0;n#div#2;n#div#1;n#div#1;n#div#0;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#3;n#div#1;n#div#1;n#div#0;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantCard.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="730">
+          <caret line="641" column="46" lean-forward="true" selection-start-line="641" selection-start-column="46" selection-end-line="641" selection-end-column="46" />
+          <folding>
+            <element signature="n#style#0;n#span#0;n#v-layout#0;n#v-flex#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#v-card-title#0;n#v-card#0;n#v-menu#0;n#div#0;n#v-layout#0;n#v-flex#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#v-card-text#0;n#v-card#0;n#v-menu#0;n#div#0;n#v-layout#0;n#v-flex#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/client/app/components/viz/VariantCard.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
+        <state relative-caret-position="-7480">
           <caret line="86" column="42" lean-forward="true" selection-start-line="86" selection-start-column="42" selection-end-line="86" selection-end-column="42" />
           <folding>
             <element signature="n#style#0;n#v-card-title#0;n#v-card#0;n#v-menu#0;n#div#0;n#v-layout#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
@@ -711,114 +709,28 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/viz/ZoomModalViz.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="16">
-          <caret line="92" column="14" selection-start-line="92" selection-start-column="14" selection-end-line="92" selection-end-column="14" />
-          <folding>
-            <element signature="n#style#0;n#div#1;n#slot#0;n#div#1;n#div#0;n#template#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/js/model/vcf.iobio.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="329">
-          <caret line="2164" column="66" selection-start-line="2164" selection-start-column="66" selection-end-line="2164" selection-end-column="66" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="313">
-          <caret line="413" column="14" lean-forward="true" selection-start-line="413" selection-start-column="14" selection-end-line="413" selection-end-column="14" />
-          <folding>
-            <element signature="n#style#0;n#v-chip#0;n#div#1;n#div#0;n#template#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#3;n#div#0;n#template#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#4;n#div#0;n#template#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantCard.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="40">
-          <caret line="598" column="32" lean-forward="true" selection-start-line="598" selection-start-column="32" selection-end-line="598" selection-end-column="32" />
-          <folding>
-            <element signature="n#style#0;n#span#0;n#v-layout#0;n#v-flex#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#v-card-title#0;n#v-card#0;n#v-menu#0;n#div#0;n#v-layout#0;n#v-flex#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#v-card-text#0;n#v-card#0;n#v-menu#0;n#div#0;n#v-layout#0;n#v-flex#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#0;n#v-card-title#0;n#v-card#0;n#template#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="387">
-          <caret line="308" column="48" lean-forward="true" selection-start-line="308" selection-start-column="48" selection-end-line="308" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilesMenu.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7259">
-          <caret line="581" column="20" selection-start-line="581" selection-start-column="12" selection-end-line="581" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/partials/EntryData.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3456">
-          <caret line="291" column="43" selection-start-line="291" selection-start-column="43" selection-end-line="291" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/routes.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="347">
-          <caret line="25" column="12" lean-forward="true" selection-start-line="25" selection-start-column="12" selection-end-line="25" selection-end-column="12" />
-          <folding>
-            <element signature="e#104#123#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilterSettingsCheckbox.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="231">
-          <caret line="128" column="79" lean-forward="true" selection-start-line="128" selection-start-column="79" selection-end-line="128" selection-end-column="79" />
-          <folding>
-            <element signature="n#style#0;n#v-checkbox#0;n#v-container#0;n#v-flex#0;n#v-layout#0;n#template#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/pages/Home.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="481">
-          <caret line="893" column="34" selection-start-line="893" selection-start-column="34" selection-end-line="893" selection-end-column="34" />
-          <folding>
-            <element signature="n#style#0;n#v-container#0;n#v-content#0;n#div#0;n#template#0;n#!!top" expanded="true" />
-          </folding>
+        <state relative-caret-position="812">
+          <caret line="425" column="32" selection-start-line="425" selection-start-column="32" selection-end-line="425" selection-end-column="32" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilterSettingsMenu.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="252">
-          <caret line="119" column="12" selection-start-line="119" selection-start-column="12" selection-end-line="119" selection-end-column="12" />
+        <state relative-caret-position="389">
+          <caret line="36" column="44" lean-forward="true" selection-start-line="36" selection-start-column="44" selection-end-line="36" selection-end-column="44" />
           <folding>
             <element signature="n#style#0;n#v-flex#0;n#template#0;n#!!top" expanded="true" />
-            <marker date="1547276112039" expanded="true" signature="2859:3024" ph="..." />
+            <marker date="1547312941136" expanded="true" signature="2932:3097" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilterSettings.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="477">
-          <caret line="133" column="19" lean-forward="true" selection-start-line="133" selection-start-column="19" selection-end-line="133" selection-end-column="19" />
+        <state relative-caret-position="625">
+          <caret line="97" column="36" lean-forward="true" selection-start-line="97" selection-start-column="36" selection-end-line="97" selection-end-column="36" />
           <folding>
             <element signature="n#style#0;n#v-layout#0;n#template#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#v-avatar#0;n#div#0;n#v-expansion-panel-content#0;n#v-expansion-panel#0;n#v-flex#0;n#v-layout#0;n#template#0;n#!!top" expanded="true" />
@@ -828,10 +740,101 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/models/VariantModel.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="528">
+          <caret line="34" column="39" lean-forward="true" selection-start-line="34" selection-start-column="39" selection-end-line="34" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/components/pages/Home.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="501">
+          <caret line="913" column="33" selection-start-line="913" selection-start-column="33" selection-end-line="913" selection-end-column="33" />
+          <folding>
+            <element signature="n#style#0;n#v-container#0;n#v-content#0;n#div#0;n#template#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/js/model/vcf.iobio.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="595">
+          <caret line="1959" column="54" lean-forward="true" selection-start-line="1959" selection-start-column="54" selection-end-line="1959" selection-end-column="54" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/components/viz/FeatureViz.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1263">
+          <caret line="79" column="66" lean-forward="true" selection-start-line="79" selection-start-column="66" selection-end-line="79" selection-end-column="66" />
+          <folding>
+            <element signature="n#style#0;n#v-card-title#0;n#v-card#0;n#v-menu#0;n#v-flex#0;n#v-layout#1;n#v-flex#0;n#template#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#v-card-title#0;n#v-card#0;n#v-menu#0;n#v-flex#0;n#v-layout#2;n#v-flex#0;n#template#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/components/viz/AlleleFrequencyViz.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2368">
+          <caret line="148" column="57" selection-start-line="148" selection-start-column="57" selection-end-line="148" selection-end-column="57" />
+          <folding>
+            <element signature="n#style#0;n#v-flex#3;n#v-layout#4;n#v-flex#0;n#template#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/js/model/translator.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="728">
+          <caret line="125" column="2" selection-start-line="125" selection-start-column="2" selection-end-line="125" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilterSettingsCutoff.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="181">
-          <caret line="67" column="141" selection-start-line="67" selection-start-column="141" selection-end-line="67" selection-end-column="141" />
+        <state relative-caret-position="406">
+          <caret line="135" column="32" lean-forward="true" selection-start-line="135" selection-start-column="32" selection-end-line="135" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/components/viz/EnrichmentVariantViz.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="580">
+          <caret line="479" column="63" lean-forward="true" selection-start-line="479" selection-start-column="63" selection-end-line="479" selection-end-column="63" />
+          <folding>
+            <element signature="n#style#0;n#v-chip#0;n#div#1;n#div#0;n#template#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#3;n#div#0;n#template#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#4;n#div#0;n#template#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/components/viz/VariantViz.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="744">
+          <caret line="404" column="49" selection-start-line="404" selection-start-column="49" selection-end-line="404" selection-end-column="49" />
+          <folding>
+            <element signature="n#style#0;n#div#2;n#div#0;n#template#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/app/components/viz/VariantSummaryCard.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="441">
+          <caret line="489" column="33" lean-forward="true" selection-start-line="489" selection-start-column="33" selection-end-line="489" selection-end-column="33" />
+          <folding>
+            <element signature="n#style#0;n#v-container#0;n#template#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/client/js/d3/scaledVariant.d3.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="647">
+          <caret line="403" column="63" lean-forward="true" selection-start-line="403" selection-start-column="63" selection-end-line="403" selection-end-column="63" />
         </state>
       </provider>
     </entry>

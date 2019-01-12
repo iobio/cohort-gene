@@ -18,7 +18,7 @@
         <v-flex xs12>
             <v-container fluid>
                 <v-layout>
-                    <v-flex d-flex xs8>
+                    <v-flex d-flex xs8 xl10>
                         <v-select
                                 :items="dropDownOptions"
                                 label="Select"
@@ -60,12 +60,12 @@
                                 @change="checkApplyButtonState">
                         </v-text-field>
                     </v-flex>
-                    <v-flex d-flex xs2>
+                    <v-flex d-flex xs2 justify-end align-center>
                         <v-tooltip color="appGray" top>
                             <v-btn fab
                                    icon
                                    outline
-                                   v-bind:style="{marginTop: '20px', maxWidth: '30px', color: filterButtonColor, marginRight: '5px !important'}"
+                                   v-bind:style="{maxWidth: '30px', color: filterButtonColor}"
                                    slot="activator"
                                    @click="onApplyFilter"
                                    :disabled="!readyToApply || (!fullAnnotationComplete && isFrequencyField)">
@@ -74,12 +74,12 @@
                             <span>{{buttonTipText}}</span>
                         </v-tooltip>
                     </v-flex>
-                    <v-flex d-flex xs2>
+                    <v-flex d-flex xs2 justify-start align-center>
                         <v-tooltip color="appGray" top>
                             <v-btn fab
                                    icon
                                    outline
-                                   v-bind:style="{marginTop: '20px', maxWidth: '30px', marginLeft: '5px !important', color: '#95b0c6'}"
+                                   v-bind:style="{maxWidth: '30px', color: '#95b0c6'}"
                                    slot="activator"
                                    @click="clearFilters">
                                 <v-icon>clear</v-icon>
@@ -115,23 +115,22 @@
                 cutoffValue: null,
                 readyToApply: false,
                 isRawPVal: false,
-                filterButtonColor: 'green'
+                filterButtonColor: '#8BC34A'
             }
         },
         watch: {},
         methods: {
             clearFilters: function() {
                 let self = this;
-                (Object.values(self.checkboxLists)).forEach((checkList) => {
-                    checkList.forEach((filt) => {
-                        filt.model = true;
-                    });
-                })
+                self.filterLogic = null;
+                self.cutoffValue = null;
+                self.readyToApply = false;
+                self.$emit('cutoff-filter-cleared', self.filterName, self.parentFilterName);
             },
             onApplyFilter: function() {
                 let self = this;
                 self.filterButtonColor = '#95b0c6';     // Flip button color
-                self.$emit('filter-applied', self.filterName, self.filterLogic, self.cutoffValue, self.parentFilterName);
+                self.$emit('filter-applied', self.filterName, self.filterLogic.text, self.cutoffValue, self.parentFilterName);
             },
             checkApplyButtonState: function() {
                 let self = this;
@@ -146,7 +145,7 @@
                 }
                 self.readyToApply = self.filterLogic && inputValid;
                 if (self.readyToApply) {
-                    self.filterButtonColor = 'green';
+                    self.filterButtonColor = '#8BC34A';
                 }
             }
         },

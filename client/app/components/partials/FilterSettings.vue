@@ -47,7 +47,8 @@
                             :filterName="category.name"
                             :parentFilterName="filterName"
                             :fullAnnotationComplete="fullAnnotationComplete"
-                            @filter-applied="onFilterApplied">
+                            @filter-applied="onFilterApplied"
+                            @cutoff-filter-cleared="onFilterCleared">
                         </filter-settings-cutoff>
                     </v-card>
                 </v-expansion-panel-content>
@@ -142,6 +143,24 @@
                 });
 
                 self.$emit('filter-applied', filterName, filterLogic, cutoffValue, grandparentFilterName, grandparentFilterState);
+            },
+            onFilterCleared: function(filterName, grandparentFilterName) {
+                let self = this;
+
+                // Turn on indicator
+                let filterObj = self.categories[grandparentFilterName].filter((cat) => {
+                    return cat.name === filterName;
+                });
+                if (filterObj.length > 0) {
+                    filterObj[0].active = false;
+                }
+                let grandparentFilterState = false;
+                let parentFilters = self.categories[grandparentFilterName];
+                parentFilters.forEach((filt) => {
+                    grandparentFilterState |= filt.active;
+                });
+
+                self.$emit('cutoff-filter-cleared', filterName, grandparentFilterName, grandparentFilterState);
             },
             clearFilters: function() {
                 let self = this;
