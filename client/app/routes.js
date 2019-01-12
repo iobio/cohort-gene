@@ -32,8 +32,7 @@ Vue.use(Vuetify, {
         cohortGold: '#a4a267',
         limeGreen: '#00d60e',
         cherryRed: '#FF000D',
-        appGray: '#888888',
-        appLightGray: 'rgba(0,0,0,0.54)'
+        appGray: '#888888'
     }
 })
 

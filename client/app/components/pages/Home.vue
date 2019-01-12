@@ -142,9 +142,8 @@ TD & SJG updated Nov2018 -->
                                                 :filterModel="filterModel"
                                                 :showCoverageCutoffs="showCoverageCutoffs"
                                                 :fullAnnotationComplete="doneLoadingExtras"
-                                                @filter-settings-applied="onFilterSettingsApplied"
-                                                @filter-settings-closed="$emit('filter-settings-closed')"
-                                                @filter-box-toggled="filterBoxToggled">
+                                                @filter-box-toggled="filterBoxToggled"
+                                                @filter-cutoff-applied="filterCutoffApplied">
                                         </filter-settings-menu>
                                     </v-container>
                                 </v-tab-item>
@@ -889,6 +888,10 @@ TD & SJG updated Nov2018 -->
                     highRange: null
                 };
                 self.onFilterSettingsApplied(filterInfo);
+            },
+            filterCutoffApplied: function(filterName, filterLogic, cutoffValue) {
+                let self = this;
+                // TODO: implement
             },
             onFilterSettingsApplied: function (filterInfo) {
                 let self = this;

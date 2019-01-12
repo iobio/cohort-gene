@@ -300,7 +300,8 @@ function scaledVariantD3() {
         }
     };
 
-    /* Takes in a list of classes. If a variant contains any of them, it will be hidden. */
+    /* Takes in a list of filter classes. If a variant contains any of them, it will be hidden.
+    *  Takes in a filter cutoff object that a variant must meet or be lower than. */
     var filterVariants = function(filterClasses, svgContainer) {
         let allVariants = svgContainer.selectAll(".variant");
 
@@ -322,6 +323,23 @@ function scaledVariantD3() {
         // Include previously filtered variants into the equation
         let filteredVars = svgContainer.selectAll('.filtered');
 
+        // Remove filtered class for any variants that don't meet cutoffs
+        let cutoffs = Object.keys(filterCutoffs);
+        if (cutoffs.length > 0) {
+            filteredVars.each(function (d, i) {
+                cutoffs.forEach((cutoff) => {
+                    if (d[cutoff] > filterCutoffs[cutoff]) {
+                        // TODO: check to make sure this actually works
+                        d.classed({'filtered': false});
+                        d.style('pointer-events', 'none');
+                    }
+                })
+            });
+        }
+
+        // Re-check for all filtered variants
+        filteredVars = svgContainer.selectAll('.filtered');
+
         // Hide all variants
         allVariants.style("opacity", 0)
             .style("pointer-events", "none")
@@ -339,11 +357,19 @@ function scaledVariantD3() {
         }
     };
 
-    /* Takes in ONLY a single class name (aka .snp or .impact_HIGH)*/
+    /* Takes in ONLY a single class name (aka .snp or .impact_HIGH) and removes
+    *  filtered class on any items that have the given class. To be used immediately
+    *  prior to filterVariants method. */
     var unfilterVariants = function(filterClassName, svgContainer) {
         // Remove filter status for vars corresponding to the given filter name
         let filterClassedVars = svgContainer.selectAll(filterClassName);
         filterClassedVars.classed({'filtered': false});
+    };
+
+    /* Takes in a single cutoff criteria and removes filtered class. To be used
+    *  immediately prior to filterVariants. */
+    var unfilterVariantsByCutoff = function(filterCutoffName, svgContainer) {
+
     };
 
     /* Returns true if selected variant passes filter and is visible. */

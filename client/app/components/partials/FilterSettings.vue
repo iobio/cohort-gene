@@ -34,12 +34,21 @@
                     </div>
                     <v-card>
                         <filter-settings-checkbox
+                                v-if="category.type==='checkbox'"
                                 ref="filtCheckRef"
                                 :parentFilterName="category.name"
                                 :grandparentFilterName="filterName"
                                 :fullAnnotationComplete="fullAnnotationComplete"
                                 @filter-toggled="onFilterToggled">
                         </filter-settings-checkbox>
+                        <filter-settings-cutoff
+                            v-else-if="category.type==='cutoff'"
+                            ref="filterCutoffRef"
+                            :filterName="category.name"
+                            :parentFilterName="filterName"
+                            :fullAnnotationComplete="fullAnnotationComplete"
+                            @filter-applied="onFilterApplied">
+                        </filter-settings-cutoff>
                     </v-card>
                 </v-expansion-panel-content>
             </v-expansion-panel>
@@ -49,11 +58,13 @@
 
 <script>
     import FilterSettingsCheckbox from '../partials/FilterSettingsCheckbox.vue'
+    import FilterSettingsCutoff from '../partials/FilterSettingsCutoff.vue'
 
     export default {
         name: 'filter-settings',
         components: {
-            FilterSettingsCheckbox
+            FilterSettingsCheckbox,
+            FilterSettingsCutoff
         },
         props: {
             filter: null,
@@ -79,32 +90,23 @@
                         {name: 'type', display: 'Type', active: false, open: false, type: 'checkbox'},
                         {name: 'zygosities', display: 'Zygosities', active: false, open: false, type: 'checkbox'},],
                     'coverage': [
-                        {name: 'coverage', display: 'Coverage', active: false, open: false, type: 'range'}],
+                        {name: 'coverage', display: 'Coverage', active: false, open: false, type: 'cutoff'}],
                     'enrichment': [
-                        {name: 'pValue', display: 'P-value', active: false, open: false, type: 'checkbox'},
-                        {name: 'subsetDelta', display: 'Fold Change', active: false, open: false, type: 'checkbox'}],
+                        {name: 'pValue', display: 'p-value', active: false, open: false, type: 'cutoff'},
+                        {name: 'adjPVal', display: 'Adj p-value', active: false, open: false, type: 'cutoff'}],
                     'frequencies': [
-                        {name: 'g1000', display: '1000G', active: false, open: false, type: 'checkbox'},
-                        {name: 'exac', display: 'ExAC', active: false, open: false, type: 'checkbox'},
-                        {name: 'gnomad', display: 'gnomAD', active: false, open: false, type: 'checkbox'},
-                        {name: 'probandFreq', display: 'Proband', active: false, open: false, type: 'checkbox'},
-                        {name: 'subsetFreq', display: 'Subset', active: false, open: false, type: 'checkbox'}],
+                        {name: 'g1000', display: '1000G', active: false, open: false, type: 'cutoff'},
+                        {name: 'exac', display: 'ExAC', active: false, open: false, type: 'cutoff'},
+                        {name: 'gnomad', display: 'gnomAD', active: false, open: false, type: 'cutoff'},
+                        {name: 'probandFreq', display: 'Proband', active: false, open: false, type: 'cutoff'},
+                        {name: 'subsetFreq', display: 'Subset', active: false, open: false, type: 'cutoff'}],
                     'rawCounts': [ // Currently unused - may incorporate later
-                        {name: 'rawCounts', display: 'Raw Counts', active: false, open: false, type: 'range'}],
+                        {name: 'rawCounts', display: 'Raw Counts', active: false, open: false, type: 'cutoff'}],
                     'samplePresence': [{name: 'samplePresence', display: 'Sample Presence', active: false, open: false, type: 'checkbox'}]
                 }
             }
         },
-        watch: {
-            // fullAnnotationComplete: function() {
-            //     let self = this;
-            //     if (self.fullAnnotationComplete === true) {
-            //         $('.filter-loader').hide();
-            //     } else {
-            //         $('.filter-loader').show();
-            //     }
-            // }
-        },
+        watch: {},
         methods: {
             onFilterToggled: function(filterName, filterState, parentFilterName, grandparentFilterName, parentFilterState) {
                 let self = this;
@@ -116,14 +118,30 @@
                 if (filterObj.length > 0) {
                     filterObj[0].active = parentFilterState;
                 }
+                let grandparentFilterState = false;
+                let parentFilters = self.categories[grandparentFilterName];
+                parentFilters.forEach((filt) => {
+                    grandparentFilterState |= filt.active;
+                });
+                self.$emit('filter-toggled', filterName, filterState, grandparentFilterName, grandparentFilterState);
+            },
+            onFilterApplied: function(filterName, filterLogic, cutoffValue, grandparentFilterName) {
+                let self = this;
 
+                // Turn on indicator
+                let filterObj = self.categories[grandparentFilterName].filter((cat) => {
+                    return cat.name === filterName;
+                });
+                if (filterObj.length > 0) {
+                    filterObj[0].active = true;
+                }
                 let grandparentFilterState = false;
                 let parentFilters = self.categories[grandparentFilterName];
                 parentFilters.forEach((filt) => {
                     grandparentFilterState |= filt.active;
                 });
 
-                self.$emit('filter-toggled', filterName, filterState, grandparentFilterName, grandparentFilterState);
+                self.$emit('filter-applied', filterName, filterLogic, cutoffValue, grandparentFilterName, grandparentFilterState);
             },
             clearFilters: function() {
                 let self = this;
