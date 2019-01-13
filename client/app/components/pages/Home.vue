@@ -585,7 +585,7 @@ TD & SJG updated Nov2018 -->
                         self.$refs.variantCardRef.forEach((cardRef) => {
                             cardRef.hideVariantCircle(true);
                             cardRef.showVariantCircle(variant, true);
-                            cardRef.showCoverageCircle(variant);
+                            cardRef.showCoverageCircle(variant, true);
                         });
                     }
                     if (self.$refs.enrichCardRef) {
@@ -661,7 +661,7 @@ TD & SJG updated Nov2018 -->
                         if (variantCard != sourceComponent) {
                             variantCard.hideVariantCircle(false);
                             variantCard.showVariantCircle(variant, false);
-                            variantCard.showCoverageCircle(variant);
+                            variantCard.showCoverageCircle(variant, false);
                         }
                     });
                 }
@@ -679,7 +679,7 @@ TD & SJG updated Nov2018 -->
                 if (self.$refs.variantCardRef) {
                     self.$refs.variantCardRef.forEach(function (variantCard) {
                         variantCard.hideVariantCircle(false);
-                        variantCard.hideCoverageCircle();
+                        variantCard.hideCoverageCircle(false);
                     });
                 }
 
@@ -693,7 +693,7 @@ TD & SJG updated Nov2018 -->
                 if (!keepVariantCircle && self.$refs.variantCardRef) {
                     self.$refs.variantCardRef.forEach((cardRef) => {
                         cardRef.hideVariantCircle(true);
-                        cardRef.hideCoverageCircle();
+                        cardRef.hideCoverageCircle(true);
                     });
                     if (self.$refs.enrichCardRef) {
                         self.$refs.enrichCardRef.forEach((cardRef) => {

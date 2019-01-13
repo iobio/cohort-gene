@@ -60,7 +60,7 @@ export default function lineD3() {
     var formatCircleText = function(pos, depth) {
         return pos + ',' + depth;
     }
-    var showCircle = function(start, theDepth) {
+    var showCircle = function(start, theDepth, pinned) {
         if (container == null) {
             return;
         }
@@ -74,7 +74,6 @@ export default function lineD3() {
                 }
             }
         }
-
 
         // Get the x for this position
         if (d) {
@@ -94,16 +93,17 @@ export default function lineD3() {
                 circleText += ' ' + posx + ':' + depthy + ' ' + invertedx + ':' + invertedy;
             }
 
-            var label = container.select(".circle-label");
+            var labelClazz =  pinned ? '.pinned_circle_label' : '.hover_circle_label';
+            var label = container.select('svg').selectAll(labelClazz);
             label.transition()
                 .duration(200)
                 .style("opacity", 1);
             label.attr("x", 0)
                 .attr("y", margin.top + 5)
-                .attr("class", "circle-label")
+                // .attr("class", labelClazz)
                 .text(circleText);
 
-            container.select(".circle-label")
+            container.select(labelClazz)
                 .attr( "x", function (d,i) {
                     var w = this.getBBox().width;
                     var x = mousex + margin.left - (w/2) + 3;
@@ -122,39 +122,50 @@ export default function lineD3() {
                     return x;
                 });
 
-            var circle = container.select(".circle");
+            var circleClazz = pinned ? '.pinned_circle' : '.hover_circle';
+            var circle = container.select('svg').selectAll(circleClazz);
+
             circle.transition()
                 .duration(200)
                 .style("opacity", .7);
             circle.attr("cx", mousex + margin.left + 2 )
-                .attr("cy", mousey + margin.top )
+                .attr("cy", mousey + margin.top)
                 .attr("r", 3)
+
+            // Original
+            // var circle = container.select(".circle");
+            // circle.transition()
+            //     .duration(200)
+            //     .style("opacity", .7);
+            // circle.attr("cx", mousex + margin.left + 2 )
+            //     .attr("cy", mousey + margin.top )
+            //     .attr("r", 3)
 
         }
     };
 
-    var hideCircle = function() {
+    var hideCircle = function(pinned) {
         if (container == null) {
             return;
         }
-        container.select(".circle").transition()
+
+        var circleClazz = pinned ? '.pinned_circle' : '.hover_circle';
+        var labelClazz =  pinned ? '.pinned_circle_label' : '.hover_circle_label';
+        container.selectAll(circleClazz).transition()
             .duration(500)
             .style("opacity", 0);
 
-        container.select(".circle-label").transition()
+        container.selectAll(labelClazz).transition()
             .duration(500)
             .style("opacity", 0);
 
-    }
+    };
 
     function exports(selection, cb) {
-
-
         selection.each(function(data) {
             theData = data;
 
             container = d3.select(this);
-
 
             var svg = d3.select(this)
                 .selectAll("svg")
@@ -173,20 +184,41 @@ export default function lineD3() {
                 .filter(function() {
                     return this.parentNode === container.node();
                 })
-                .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + (parseInt(width) + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height))
+                .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + (parseInt(width) + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height));
+
+
+            // add a circle and arrows for 'hover' event and 'pinned' event
+            ['hover', 'pinned'].forEach(function(clazz) {
+                var circleClazz = clazz + '_circle';
+                var labelClazz = clazz + '_circle_label';
+                // if (svg.selectAll(circleClazz).empty()) {
+                svg.selectAll(circleClazz).data([0])
+                        .enter().append('circle')
+                        .attr("class", circleClazz + ' circle')
+                        .attr("r", 3)
+                        .style("opacity", 0);
+
+                svg.selectAll(labelClazz).data([0])
+                        .enter().append('text')
+                        .attr("class", labelClazz + ' circle-label')
+                        .attr("x", 0)
+                        .attr("y", 0)
+                        .style("opacity", 0);
+                // }
+            });
 
             // add a circle and label
-            var circle = svg.selectAll(".circle").data([0])
-                .enter().append('circle')
-                .attr("class", "circle")
-                .attr("r", 3)
-                .style("opacity", 0);
-            var circleLabel = svg.selectAll(".circle-label").data([0])
-                .enter().append('text')
-                .attr("class", "circle-label")
-                .attr("x", 0)
-                .attr("y", 0)
-                .style("opacity", 0);
+            // var circle = svg.selectAll(".circle").data([0])
+            //     .enter().append('circle')
+            //     .attr("class", "circle")
+            //     .attr("r", 3)
+            //     .style("opacity", 0);
+            // var circleLabel = svg.selectAll(".circle-label").data([0])
+            //     .enter().append('text')
+            //     .attr("class", "circle-label")
+            //     .attr("x", 0)
+            //     .attr("y", 0)
+            //     .style("opacity", 0);
 
             if (kind == KIND_AREA && showGradient) {
                 var defs = svg.selectAll("defs").data([data]).enter()
@@ -271,11 +303,11 @@ export default function lineD3() {
                 yAxis.orient("right");
             }
 
-            if (yTicks && yTicks == 3) {
+            if (yTicks && yTicks === 3) {
                 var newTickValues = [];
                 newTickValues.push(0);
                 newTickValues.push(d3.round(y.domain()[1]/2));
-                newTickValues.push(y.domain()[1])
+                newTickValues.push(y.domain()[1]);
                 yAxis.tickValues(newTickValues);
             } else if (yTicks) {
                 xAxis.ticks(yTicks);
@@ -402,8 +434,6 @@ export default function lineD3() {
             if (!showTransition) {
                 dispatch.d3rendered();
             }
-
-
         });
     }
 

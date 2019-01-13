@@ -39,6 +39,11 @@
             fill: $current-color
             pointer-events: none
 
+        .circle_label
+            stroke: rgba(128,128,128,.81)
+            stroke-width: 1
+            fill: none
+
         .region
             stroke-width: 1px
             stroke: $coverage-problem-region-color
@@ -225,11 +230,11 @@
             setDepthChart: function() {
                 this.$emit('updateDepthChart', this.depthChart);
             },
-            showCurrentPoint: function(point) {
-                this.depthChart.showCircle()(point.pos, point.depth);
+            showCurrentPoint: function(point, lock) {
+                this.depthChart.showCircle()(point.pos, point.depth, lock);
             },
-            hideCurrentPoint: function(point) {
-                this.depthChart.hideCircle()();
+            hideCurrentPoint: function(lock) {
+                this.depthChart.hideCircle()(lock);
             }
         },
         watch: {

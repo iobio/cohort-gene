@@ -324,7 +324,7 @@ TD & SJG updated Apr2018 -->
             onVariantClick: function (variant, dataSetKey) {
                 if (this.showDepthViz) {
                     if (variant) {
-                        this.showCoverageCircle(variant);
+                        this.showCoverageCircle(variant, true);
                     }
                 }
                 if (this.showVariantViz) {
@@ -337,7 +337,7 @@ TD & SJG updated Apr2018 -->
             onVariantHover: function (variant, showTooltip = true) {
                 if (this.selectedVariant == null) {
                     if (this.showDepthViz) {
-                        this.showCoverageCircle(variant);
+                        this.showCoverageCircle(variant, false);
                     }
                     if (this.showVariantViz) {
                         this.showVariantCircle(variant);
@@ -347,7 +347,7 @@ TD & SJG updated Apr2018 -->
             },
             onVariantHoverEnd: function () {
                 if (this.showDepthViz) {
-                    this.hideCoverageCircle();
+                    this.hideCoverageCircle(false);
                 }
                 if (this.showVariantViz) {
                     this.hideVariantCircle();
@@ -427,12 +427,12 @@ TD & SJG updated Apr2018 -->
                 var svg = d3.select(this.$el).select('#' + vizTrackName + ' > svg');
                 return svg;
             },
-            hideCoverageCircle: function () {
+            hideCoverageCircle: function (lock) {
                 if (this.showDepthViz) {
-                    this.$refs.depthVizRef.hideCurrentPoint();
+                    this.$refs.depthVizRef.hideCurrentPoint(lock);
                 }
             },
-            showCoverageCircle: function(variant) {
+            showCoverageCircle: function(variant, lock) {
                 let self = this;
 
                 if (self.showDepthViz && self.dataSetModel.coverage && self.dataSetModel.loadedVariants
@@ -453,7 +453,7 @@ TD & SJG updated Apr2018 -->
 
                     // If we have the exact depth for this variant, show it.  Otherwise, we will show
                     // the calculated (binned, averaged) depth at this position.
-                    self.$refs.depthVizRef.showCurrentPoint({pos: variant.start, depth: theDepth});
+                    self.$refs.depthVizRef.showCurrentPoint({pos: variant.start, depth: theDepth}, lock);
                 }
             },
             onKnownVariantsVizChange: function (viz) {
