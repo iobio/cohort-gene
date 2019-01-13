@@ -333,6 +333,8 @@
                     self.$emit('cohort-vcf-data-changed');
                 }
 
+                // TODO: Check to see if reference different
+
                 if (self.modelInfo && self.modelInfo.dataSet) {
                     self.modelInfo.dataSet.onVcfUrlEntered([self.modelInfo.id], [vcfUrl], [tbiUrl], [self.modelInfo.displayName])
                         .then((listObj) => {

@@ -1,11 +1,3 @@
-// TODO ADD PROJECT INFO
-// consumes data in following format
-// var data = [ {name: 'somename',
-//              features : [{start:someInt, end:someInt, feature_type:utr, strand:'+'},
-//                          {start:someInt, end:someInt, feature_type:cds}, ...]
-//            }, ... ]
-//
-
 function geneD3() {
     // defaults
 
@@ -342,7 +334,7 @@ function geneD3() {
                 })
 
                 .attr("pointer-events", "all")
-                .style("cursor", "pointer")
+                // .style("cursor", "pointer")  NOTE: took out for cohort b/c
                 .on("mouseover", function (d) {
                     // show the tooltip
                     var tooltip = container.select('.tooltip');

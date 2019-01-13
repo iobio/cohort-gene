@@ -69,7 +69,7 @@
                                    slot="activator"
                                    @click="onApplyFilter"
                                    :disabled="!readyToApply || (!fullAnnotationComplete && isFrequencyField)">
-                                <v-icon>filter_list</v-icon>
+                                <v-icon>check</v-icon>
                             </v-btn>
                             <span>{{buttonTipText}}</span>
                         </v-tooltip>
