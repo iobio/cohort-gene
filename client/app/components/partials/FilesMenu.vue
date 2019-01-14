@@ -107,6 +107,7 @@
                             :disabled="launchedFromHub"
                             :items="buildList"
                             color="cohortNavy"
+                            @change="updateBuildAndValidate"
                     ></v-select>
                 </v-flex>
 
@@ -307,7 +308,6 @@
                 self.inProgress = true;
 
                 self.variantModel.genomeBuildHelper.setCurrentBuild(self.buildName);
-                //self.variantModel.genomeBuildHelper.setCurrentSpecies(self.speciesName);
 
                 // Set display chips for variant
                 for (var infoName in self.modelInfoMap) {
@@ -471,6 +471,7 @@
                     // Set ref build if different from current drop-down selection
                     if (refBuild !== '' && refBuild !== self.buildName && !self.launchedFromHub) {
                         self.buildName = refBuild;
+                        self.variantModel.genomeBuildHelper.setCurrentBuild(self.buildName);
                     }
 
                     Promise.all(addPromises)
@@ -682,6 +683,17 @@
                 let self = this;
                 self.loadDemoFromWelcome = true;
                 self.showFilesMenu = true;
+            },
+            updateBuildAndValidate: function(newVal) {
+                let self = this;
+                if (newVal !== self.buildName) {    // self.buildName still oldVal at this point
+                    self.variantModel.genomeBuildHelper.setCurrentBuild(newVal);
+                    if (self.$refs.entryDataRef) {
+                        self.$refs.entryDataRef.forEach((entryRef) => {
+                            entryRef.retryEnteredUrls();
+                        })
+                    }
+                }
             }
         },
         computed: {

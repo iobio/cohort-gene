@@ -117,6 +117,7 @@
                 </v-flex>
                 <v-flex d-flex xs12 class="ml-3">
                     <entry-data-file
+                            ref="vcfFileRef"
                             :defaultUrl="firstVcf"
                             :defaultIndexUrl="firstTbi"
                             :label="`vcf`"
@@ -180,6 +181,7 @@
                 </v-flex>
                 <v-flex d-flex xs12 class="ml-3" v-if="isSampleEntry">
                     <entry-data-file
+                            ref="bamFileRef"
                             :defaultUrl="firstBam"
                             :defaultIndexUrl="firstBai"
                             :label="`bam`"
@@ -333,11 +335,15 @@
                     self.$emit('cohort-vcf-data-changed');
                 }
 
-                // TODO: Check to see if reference different
-
                 if (self.modelInfo && self.modelInfo.dataSet) {
                     self.modelInfo.dataSet.onVcfUrlEntered([self.modelInfo.id], [vcfUrl], [tbiUrl], [self.modelInfo.displayName])
                         .then((listObj) => {
+                            if (listObj.noBuildInfo === true) {
+                                alertify.set('notifier', 'position', 'top-right');
+                                alertify.warning("WARNING: The provided file does not contain reference information. Please ensure the reference is synonymous" +
+                                    "with that in the Genome Build drop-down.");
+                            }
+
                             self.retrievingIds = false;
                             if (listObj) {
                                 self.samples = listObj['samples'];
@@ -357,6 +363,12 @@
                             self.$emit("sample-data-changed");
                         })
                         .catch((errObj) => {
+                            if (errObj.mismatchBuild === true) {
+                                alertify.set('notifier', 'position', 'top-right');
+                                alertify.warning("WARNING: The provided file has a different reference build than the current reference selection. Please change the drop-down selection " +
+                                    "or provide a file aligned to the same reference.");
+                            }
+
                             self.vcfError = true;
                             self.retrievingIds = false;
                             self.$emit("sample-data-changed");
@@ -596,6 +608,15 @@
                 self.retrievingIds = flagState;
                 if (self.modelInfo.bams.length > 0) {
                     self.checkingBam = flagState;
+                }
+            },
+            retryEnteredUrls: function() {
+                let self = this;
+                if (self.$refs.vcfFileRef) {
+                    let fileRef = self.$refs.vcfFileRef;
+                    if (fileRef.url && fileRef.label === 'vcf') {
+                        self.onVcfUrlEntered(fileRef.url, fileRef.indexUrl);
+                    }
                 }
             }
         },

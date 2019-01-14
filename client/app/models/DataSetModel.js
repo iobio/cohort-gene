@@ -1044,6 +1044,7 @@ class DataSetModel {
                 let individualRefBuilds = {};
                 let openErrorFiles = [];
                 let sampleNames = [];       // Array of sample name arrays, in same order as vcfs
+                let noBuildInfo = false;
 
                 let openPromises = [];
                 for (let i = 0; i < vcfUrls.length; i++) {
@@ -1064,6 +1065,20 @@ class DataSetModel {
                                     hdrObj['mismatchBuild'] = true;
                                     hdrObj['fileBuild'] = hdrBuildResult;
                                     reject(hdrObj);
+                                } else if (hdrBuildResult === '') {
+                                    // If we couldn't obtain build info from header, try to look at chromosome annotation
+                                    currVcfEndpt.getChromosomesFromVcf(currVcf, currTbi, function(success, errorMsg, hdrBuildResult) {
+                                        if (success) {
+                                            if (hdrBuildResult !== '' && hdrBuildResult !== me.getGenomeBuildHelper().currentBuild.name) {
+                                                let hdrObj = {};
+                                                hdrObj['mismatchBuild'] = true;
+                                                hdrObj['fileBuild'] = hdrBuildResult;
+                                                reject(hdrObj);
+                                            } else if (hdrBuildResult === '') {
+                                                noBuildInfo = true;
+                                            }
+                                        }
+                                    })
                                 }
                                 me.vcfs.push(currVcf);
                                 if (currTbi) {
@@ -1092,6 +1107,8 @@ class DataSetModel {
                     .then(() => {
                         let errorMsg = '';
                         let updatedListObj = {};
+                        updatedListObj['noBuildInfo'] = noBuildInfo;
+
                         // Initialize return object w/ all files
                         updatedListObj['names'] = urlNames;
                         updatedListObj['vcfs'] = vcfUrls;

@@ -266,7 +266,7 @@ vcfiobio = function module() {
         cmd.run();
     }
 
-    /* Returns list of chromosomes found in supplied vcf file. */
+    /* Returns build information based on chromosome annotation. */
     exports.getChromosomesFromVcf = function(url, tbiUrl, callback) {
         let me = this;
         let success = null;
