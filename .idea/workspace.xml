@@ -5,9 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="17d38fed-e0f5-492f-b455-1d8321fb2586" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/app/components/partials/FilesMenu.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/partials/FilesMenu.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/dist/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/dist/build.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/client/dist/" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -43,8 +41,8 @@
       <file leaf-file-name="FilesMenu.vue" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilesMenu.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="623">
-              <caret line="579" column="33" selection-start-line="579" selection-start-column="33" selection-end-line="579" selection-end-column="33" />
+            <state relative-caret-position="361">
+              <caret line="162" column="74" lean-forward="true" selection-start-line="162" selection-start-column="74" selection-end-line="162" selection-end-column="74" />
             </state>
           </provider>
         </entry>
@@ -52,7 +50,7 @@
       <file leaf-file-name="EntryData.vue" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/app/components/partials/EntryData.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-13">
+            <state relative-caret-position="1903">
               <caret line="326" column="12" selection-start-line="326" selection-start-column="12" selection-end-line="326" selection-end-column="12" />
             </state>
           </provider>
@@ -113,7 +111,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>filteredvars[0</find>
       <find>filtered</find>
       <find>adju</find>
       <find>.pval</find>
@@ -143,6 +140,7 @@
       <find>build</find>
       <find>tab-</find>
       <find>retryent</find>
+      <find>dragId</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/client/js/model</dir>
@@ -390,12 +388,12 @@
       <workItem from="1546194124637" duration="109994000" />
       <workItem from="1546639347593" duration="5344000" />
       <workItem from="1546878593700" duration="61230000" />
-      <workItem from="1547223488299" duration="75288000" />
+      <workItem from="1547223488299" duration="75522000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1249850000" />
+    <option name="totallyTimeSpent" value="1250084000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1920" height="1057" extended-state="6" />
@@ -867,15 +865,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/client/app/components/partials/EntryData.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-13">
+        <state relative-caret-position="1903">
           <caret line="326" column="12" selection-start-line="326" selection-start-column="12" selection-end-line="326" selection-end-column="12" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilesMenu.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="623">
-          <caret line="579" column="33" selection-start-line="579" selection-start-column="33" selection-end-line="579" selection-end-column="33" />
+        <state relative-caret-position="361">
+          <caret line="162" column="74" lean-forward="true" selection-start-line="162" selection-start-column="74" selection-end-line="162" selection-end-column="74" />
         </state>
       </provider>
     </entry>
