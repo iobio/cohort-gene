@@ -159,7 +159,7 @@ TD & SJG updated Nov2018 -->
                                         <history-tab
                                                 ref="historyTabRef"
                                                 :geneHistoryList="geneHistoryList"
-                                                @reload-gene-history="onGeneSelected(geneName)">
+                                                @reload-gene-history="reloadGene">
                                         </history-tab>
                                     </v-container>
                                 </v-tab-item>
@@ -522,10 +522,6 @@ TD & SJG updated Nov2018 -->
                     self.$refs.filterSettingsMenuRef.clearFilters();
                 }
                 self.firstGeneSelection = false;
-
-                // Add to history list
-                if (!self.geneHistoryList.includes(geneName))
-                    self.geneHistoryList.push(geneName);
             },
             wipeModels: function () {
                 let self = this;
@@ -558,7 +554,13 @@ TD & SJG updated Nov2018 -->
                         })
                         .catch(function (error) {
                             reject(error);
-                        })
+                        });
+
+                    // Add to gene history list
+                    if (!self.geneHistoryList.includes(geneName)) {
+                        self.geneHistoryList.push(geneName);
+                    }
+
                 })
             },
             onTranscriptSelected: function (transcript) {
@@ -956,6 +958,18 @@ TD & SJG updated Nov2018 -->
                 let self = this;
                 if (self.$refs.navRef) {
                     self.$refs.navRef.openFileSelection();
+                }
+            },
+            reloadGene: function(geneToReload) {
+                let self = this;
+
+                if (geneToReload !== self.selectedGene.gene_name) {
+
+                    // Load gene
+                    self.onGeneSelected(geneToReload);
+
+                    // Fill in text entry
+                    self.$refs.navRef.setSelectedGeneText(geneToReload);
                 }
             }
         }

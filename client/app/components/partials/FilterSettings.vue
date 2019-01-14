@@ -178,9 +178,11 @@
                         filt.active = false;
                     })
                 });
-                self.$refs.filtCheckRef.forEach((checkRef) => {
-                    checkRef.clearFilters();
-                })
+                if (self.$refs.filtCheckRef) {
+                    self.$refs.filtCheckRef.forEach((checkRef) => {
+                        checkRef.clearFilters();
+                    });
+                }
             },
             isAnnotationCategory: function (currentCat) {
                 if (currentCat === 'impact' || currentCat === 'g1000' ||

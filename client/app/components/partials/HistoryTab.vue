@@ -1,20 +1,26 @@
 <!--Adapted from gene.iobio and TDS 17Aug2018-->
 
 <style lang="sass">
-    @import ../../../assets/sass/variables
     .history-card
-        .history-title
-            font-size: 14px
-            font-family: 'Open Sans', 'Quattrocento Sans', 'sans serif'
+        .toolbar__title
+            font-size: 14px !important
+            font-family: 'Open Sans', 'Quattrocento Sans', 'sans serif' !important
+            color: #7f7f7f
+            font-style: italic
+            font-weight: 500 !important
+        .toolbar__content
+            background-color: white
+            height: 100px
 </style>
 
 <template>
     <v-layout row style="padding-top: 10px">
         <v-flex xs12>
             <v-card class="history-card">
-                <v-toolbar color="gray">
-                    <v-toolbar-title class="history-card">Re-visit genes previously analyzed by clicking the icon</v-toolbar-title>
+                <v-toolbar flat>
+                    <v-toolbar-title>Re-visit genes previously analyzed by clicking the icon</v-toolbar-title>
                 </v-toolbar>
+                <v-divider style="margin: 0"></v-divider>
                 <v-list>
                     <v-list-tile v-for="item in geneHistoryList" :key="item" avatar @click="reloadGene(item)">
                         <v-list-tile-action>
@@ -36,7 +42,10 @@
         name: 'history-tab',
         components: {},
         props: {
-            geneHistoryList: []
+            geneHistoryList: {
+                type: Array,
+                default: []
+            }
         },
         data() {
             return {}

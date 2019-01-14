@@ -185,6 +185,10 @@
                 if (self.$refs.fileMenuRef) {
                     self.$refs.fileMenuRef.closeFileMenu();
                 }
+            },
+            // Used for history list reload
+            setSelectedGeneText: function(selectedGeneName) {
+                $('#search-gene-name').val(selectedGeneName);
             }
         },
         created: function () {

@@ -136,7 +136,7 @@
             </v-chip>
         </div>
         <div v-bind:class="{ hide: !noPassingResults }"
-             style="text-align: center; padding-bottom: 10px; padding-top: 10px">
+             style="text-align: center; padding-bottom: 20px; padding-top: 20px">
             <v-chip color="cohortBlue" small outline style="font-size: 12px">
                 No Matching Results
             </v-chip>
