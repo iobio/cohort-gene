@@ -568,16 +568,28 @@
                         })
                         .catch((error) => {
                             if (error.mismatchBuild === true) {
+                                let retryUrlPs = [];
                                 if (self.$refs.entryDataRef) {
                                     self.$refs.entryDataRef.forEach((entryRef) => {
-                                        if (!(self.launchedFromHub && entryRef.dragId === 's0'))
-                                        entryRef.retryEnteredUrls();
+                                        if (!(self.launchedFromHub && entryRef.dragId === 's0')) {
+                                            let p = new Promise((resolve) => {
+                                                entryRef.retryEnteredUrls()
+                                                    .then(() => {
+                                                        resolve();
+                                                    })
+                                            });
+                                            retryUrlPs.push(p);
+                                        }
                                     })
                                 }
-                                // Turn off loading spinners
-                                for (let i = 0; i < self.$refs.entryDataRef.length; i++) {
-                                    self.$refs.entryDataRef[i].setLoadingFlags(false);
-                                }
+                                Promise.all(retryUrlPs)
+                                    .then(() => {
+                                        // Turn off loading spinners
+                                        for (let i = 0; i < self.$refs.entryDataRef.length; i++) {
+                                            self.$refs.entryDataRef[i].setLoadingFlags(false);
+                                        }
+                                });
+
                                 console.log('Mismatch build detected');
                                 //
                             } else {

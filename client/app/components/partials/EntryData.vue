@@ -326,58 +326,6 @@
             },
             onVcfUrlEntered: function (vcfUrl, tbiUrl) {
                 let self = this;
-                self.vcfError = false;
-                self.retrievingIds = true;
-                self.$emit("sample-data-changed");
-                self.$set(self, "selectedSample", null);
-                self.$set(self, "samples", []);
-                if (self.modelInfo.entryId === 's0') {
-                    self.$emit('cohort-vcf-data-changed');
-                }
-
-                if (self.modelInfo && self.modelInfo.dataSet) {
-                    self.modelInfo.dataSet.onVcfUrlEntered([self.modelInfo.id], [vcfUrl], [tbiUrl], [self.modelInfo.displayName])
-                        .then((listObj) => {
-                            if (listObj.noBuildInfo === true) {
-                                alertify.set('notifier', 'position', 'top-right');
-                                alertify.warning("WARNING: The provided file does not contain reference information. Please ensure the reference is synonymous" +
-                                    "with that in the Genome Build drop-down.");
-                            }
-
-                            self.retrievingIds = false;
-                            if (listObj) {
-                                self.samples = listObj['samples'];
-                                self.modelInfo.samples = listObj['samples'];
-                                if (self.samples.length === 1) {
-                                    self.selectedSample = self.samples[0];
-                                    self.modelInfo.selectedSample = self.samples[0];
-                                    self.modelInfo.dataSet.setSelectedSample(self.samples[0]);
-                                } else {
-                                    self.selectedSample = null;
-                                }
-                                self.modelInfo.vcfs = [vcfUrl];
-                                if (tbiUrl != null) {
-                                    self.modelInfo.tbis = [tbiUrl];
-                                }
-                            }
-                            self.$emit("sample-data-changed");
-                        })
-                        .catch((errObj) => {
-                            if (errObj.mismatchBuild === true) {
-                                alertify.set('notifier', 'position', 'top-right');
-                                alertify.warning("WARNING: The provided file has a different reference build than the current reference selection. Please change the drop-down selection " +
-                                    "or provide a file aligned to the same reference.");
-                            }
-
-                            self.vcfError = true;
-                            self.retrievingIds = false;
-                            self.$emit("sample-data-changed");
-                            if (errObj.isBadFile) {
-                                alertify.set('notifier', 'position', 'top-right');
-                                alertify.warning("The entered file " + errObj.badFile + ' or its index could not be opened.');
-                            }
-                        })
-                }
                 if (vcfUrl === '') {
                     self.modelInfo.vcfs = [];
                     self.firstVcf = null;
@@ -386,6 +334,63 @@
                     self.modelInfo.tbis = null;
                     self.firstTbi = null;
                 }
+
+                return new Promise((resolve, reject) => {
+                    self.vcfError = false;
+                    self.retrievingIds = true;
+                    self.$emit("sample-data-changed");
+                    self.$set(self, "selectedSample", null);
+                    self.$set(self, "samples", []);
+                    if (self.modelInfo.entryId === 's0') {
+                        self.$emit('cohort-vcf-data-changed');
+                    }
+
+                    if (self.modelInfo && self.modelInfo.dataSet) {
+                        self.modelInfo.dataSet.onVcfUrlEntered([self.modelInfo.id], [vcfUrl], [tbiUrl], [self.modelInfo.displayName])
+                            .then((listObj) => {
+                                if (listObj.noBuildInfo === true) {
+                                    alertify.set('notifier', 'position', 'top-right');
+                                    alertify.warning("WARNING: The provided file does not contain reference information. Please ensure the reference is synonymous" +
+                                        "with that in the Genome Build drop-down.");
+                                }
+
+                                self.retrievingIds = false;
+                                if (listObj) {
+                                    self.samples = listObj['samples'];
+                                    self.modelInfo.samples = listObj['samples'];
+                                    if (self.samples.length === 1) {
+                                        self.selectedSample = self.samples[0];
+                                        self.modelInfo.selectedSample = self.samples[0];
+                                        self.modelInfo.dataSet.setSelectedSample(self.samples[0]);
+                                    } else {
+                                        self.selectedSample = null;
+                                    }
+                                    self.modelInfo.vcfs = [vcfUrl];
+                                    if (tbiUrl != null) {
+                                        self.modelInfo.tbis = [tbiUrl];
+                                    }
+                                }
+                                self.$emit("sample-data-changed");
+                                resolve();
+                            })
+                            .catch((errObj) => {
+                                if (errObj.mismatchBuild === true) {
+                                    alertify.set('notifier', 'position', 'top-right');
+                                    alertify.warning("WARNING: The provided file has a different reference build than the current reference selection. Please change the drop-down selection " +
+                                        "or provide a file aligned to the same reference.");
+                                }
+
+                                self.vcfError = true;
+                                self.retrievingIds = false;
+                                self.$emit("sample-data-changed");
+                                if (errObj.isBadFile) {
+                                    alertify.set('notifier', 'position', 'top-right');
+                                    alertify.warning("The entered file " + errObj.badFile + ' or its index could not be opened.');
+                                }
+                                reject();
+                            })
+                    }
+                });
             },
             onVcfFilesSelected: function (fileSelection) {
                 let self = this;
@@ -615,7 +620,7 @@
                 if (self.$refs.vcfFileRef) {
                     let fileRef = self.$refs.vcfFileRef;
                     if (fileRef.url && fileRef.label === 'vcf') {
-                        self.onVcfUrlEntered(fileRef.url, fileRef.indexUrl);
+                        return self.onVcfUrlEntered(fileRef.url, fileRef.indexUrl);
                     }
                 }
             }
