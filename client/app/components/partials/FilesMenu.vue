@@ -528,13 +528,6 @@
                     theDataSet.onVcfUrlEntered(nameList, theModelInfo.vcfs, theModelInfo.tbis, displayNameList)
                         .then((entObj) => {
                             if (entObj) {
-                                // Check for build mismatch
-                                if (entObj.mismatchBuild) {
-                                    alertify.set('notifier', 'position', 'top-right');
-                                    alertify.warning("The vcf file provided utilizes the " + entObj.fileBuild + ' reference build. Analysis may only be performed on files with synonymous builds.');
-                                    console.log('Mismatch build detected');
-                                }
-
                                 // Set samples prop
                                 theModelInfo.samples = entObj.samples;
                                 for (let i = 0; i < self.$refs.entryDataRef.length; i++) {
@@ -574,9 +567,19 @@
                             }
                         })
                         .catch((error) => {
+
+                            if (error.mismatchBuild === true) {
+                                // If we error out because of mismatched ref
+                                alertify.set('notifier', 'position', 'top-right');
+                                alertify.warning("WARNING: The provided file has a different reference build than the current reference selection. Please change the drop-down selection " +
+                                    "or provide a file aligned to the same reference.");
+                                console.log('Mismatch build detected');
+                            } else {
+                                // Otherwise pass on the error
+                                console.log(error);
+                                reject(error);
+                            }
                             self.isValid = false;
-                            console.log(error);
-                            reject(error);
                         })
                 })
             },
