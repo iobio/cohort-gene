@@ -301,7 +301,7 @@ function scaledVariantD3() {
     };
 
     /* Takes in a list of filter classes. If a variant contains any of them, it will be hidden.
-    *  Takes in a filter cutoff object that a variant must meet or be lower than - if not, it will be hidden. */
+     *  Takes in a filter cutoff object that a variant must meet or be lower than - if not, it will be hidden. */
     var filterVariants = function(filterClasses, filterCutoffs, svgContainer) {
         let allVariants = svgContainer.selectAll(".variant");
 

@@ -372,10 +372,6 @@
                     // Remove from active filter state
                     self.excludeFilters.splice(self.excludeFilters.indexOf('.' + filterInfo.name), 1);
 
-                    // Remove active filter status for variants with this class
-                    let filterClass = '.' + filterInfo.name;
-                    self.variantChart.unfilterVariants()(filterClass, svg);
-
                     // Re-apply active filters in case of multiple filters
                     noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
 
@@ -405,7 +401,12 @@
                     // Apply cutoff filter
                 } else if (filterInfo.state != null && filterInfo.type === 'cutoff') {
 
-                    // Add to list
+                    // Remove any previous logic for this filter
+                    if (self.cutoffFilters[filterInfo.name]) {
+                        delete self.cutoffFilters[filterInfo.name];
+                    }
+
+                    // Add new logic
                     self.cutoffFilters[filterInfo.name] = [filterInfo.name, filterInfo.state, filterInfo.cutoffValue];
 
                     // Hide variants that do not meet given condition
