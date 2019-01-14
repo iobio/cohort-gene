@@ -311,7 +311,7 @@ function variantD3() {
         filteredVars.style("opacity", 1)
             .style("pointer-events", "auto");
 
-        if (filteredVars) {
+        if (filteredVars && filteredVars[0]) {
             return filteredVars[0].length === 0;
         } else {
             return false;

@@ -1604,14 +1604,16 @@ vcfiobio = function module() {
                             genotypes.push(fields[i]);
                         }
 
-                        altBuf.split(",").forEach(function (alt) {
-                            // Turn vcf record into a JSON object and add it to an array
-                            var vcfObject = {
-                                'pos': pos, 'start': +pos, 'id': 'id', 'ref': ref, 'alt': alt, 'chrom': refName,
-                                'qual': qual, 'filter': filter, 'info': info, 'format': format, 'genotypes': genotypes
-                            };
-                            vcfObjects.push(vcfObject);
-                        })
+                        if (altBuf) {
+                            altBuf.split(",").forEach(function (alt) {
+                                // Turn vcf record into a JSON object and add it to an array
+                                var vcfObject = {
+                                    'pos': pos, 'start': +pos, 'id': 'id', 'ref': ref, 'alt': alt, 'chrom': refName,
+                                    'qual': qual, 'filter': filter, 'info': info, 'format': format, 'genotypes': genotypes
+                                };
+                                vcfObjects.push(vcfObject);
+                            })
+                        }
 
                     }
                 });
