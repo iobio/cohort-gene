@@ -699,7 +699,9 @@
                     self.variantModel.genomeBuildHelper.setCurrentBuild(newVal);
                     if (self.$refs.entryDataRef) {
                         self.$refs.entryDataRef.forEach((entryRef) => {
-                            entryRef.retryEnteredUrls();
+                            if (!(self.launchedFromHub && entryRef.dragId === 's0')) {
+                                entryRef.retryEnteredUrls();
+                            }
                         })
                     }
                 }
