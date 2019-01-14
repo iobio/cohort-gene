@@ -312,6 +312,7 @@ function scaledVariantD3() {
         if (filterClasses.length === 0 && filterCutoffs.length === 0) {
             allVariants.style("opacity", 1);
             allVariants.style("pointer-events", 'auto');
+            return false;
         }
 
         // Remove filtered class for any variants that contain the given class criteria
@@ -327,6 +328,9 @@ function scaledVariantD3() {
         let cutoffs = Object.values(filterCutoffs);
         if (cutoffs.length > 0) {
             filteredVars.each(function (d, i) {
+                if (d === 0) {
+                    return;
+                }
                 cutoffs.forEach((cutoff) => {
                     let filterName = cutoff[0];
                     let filterLogic = cutoff[1];
@@ -351,7 +355,7 @@ function scaledVariantD3() {
 
                             if (!(varVal < filterCutoffVal)) {
                                 let selectionId = '#' + d.id;
-                                let domD = d3.select(selectionId);
+                                let domD = svgContainer.selectAll(selectionId);
                                 domD.classed({'filtered': false});
                                 domD.style('pointer-events', 'none');
                             }
@@ -373,7 +377,7 @@ function scaledVariantD3() {
 
                             if (!(varVal <= filterCutoffVal)) {
                                 let selectionId = '#' + d.id;
-                                let domD = d3.select(selectionId);
+                                let domD = svgContainer.selectAll(selectionId);
                                 domD.classed({'filtered': false});
                                 domD.style('pointer-events', 'none');
                             }
@@ -395,7 +399,7 @@ function scaledVariantD3() {
 
                             if (!(varVal === filterCutoffVal)) {
                                 let selectionId = '#' + d.id;
-                                let domD = d3.select(selectionId);
+                                let domD = svgContainer.selectAll(selectionId);
                                 domD.classed({'filtered': false});
                                 domD.style('pointer-events', 'none');
                             }
@@ -417,7 +421,7 @@ function scaledVariantD3() {
 
                             if (!(varVal >= filterCutoffVal)) {
                                 let selectionId = '#' + d.id;
-                                let domD = d3.select(selectionId);
+                                let domD = svgContainer.selectAll(selectionId);
                                 domD.classed({'filtered': false});
                                 domD.style('pointer-events', 'none');
                             }
@@ -439,7 +443,7 @@ function scaledVariantD3() {
 
                             if (!(varVal > filterCutoffVal)) {
                                 let selectionId = '#' + d.id;
-                                let domD = d3.select(selectionId);
+                                let domD = svgContainer.selectAll(selectionId);
                                 domD.classed({'filtered': false});
                                 domD.style('pointer-events', 'none');
                             }
@@ -469,23 +473,6 @@ function scaledVariantD3() {
         } else {
             return false;
         }
-    };
-
-    /* Takes in ONLY a single class name (aka .snp or .impact_HIGH) and removes
-    *  filtered class on any items that have the given class. To be used immediately
-    *  prior to filterVariants method. */
-    var unfilterVariants = function(filterClassName, svgContainer) {
-        // Remove filter status for vars corresponding to the given filter name
-        let filterClassedVars = svgContainer.selectAll(filterClassName);
-        filterClassedVars.classed({'filtered': false});
-    };
-
-    /* Takes in a single cutoff criteria and removes filtered class. To be used
-    *  immediately prior to filterVariants. */
-    var unfilterVariantsByCutoff = function(filterCutoffName, svgContainer) {
-        // Remove filter status for vars corresponding to the given cutoff filter name
-        let filterClassedVars = svgContainer.selectAll(filterCutoffName);
-        filterClassedVars.classed({'filtered': false});
     };
 
     /* Returns true if selected variant passes filter and is visible. */

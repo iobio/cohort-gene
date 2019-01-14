@@ -222,7 +222,8 @@
             return {
                 variantChart: {},
                 name: '',
-                excludeFilters: [],
+                excludeFilters: [],     // List of filter classes; if variant contains any one of these, it will be hidden
+                cutoffFilters: {},       // Hash of arrays {filterName: [filterName, logic, cutoffVal]}; if variant does not pass any of these, it will be hidden
                 noPassingResults: false
             }
         },
@@ -274,7 +275,7 @@
                     .on('d3click', function (variant) {
                         self.onVariantClick(variant);
                     })
-                    .on('d3outsideclick', function() {
+                    .on('d3outsideclick', function () {
                         self.onVariantClick(null);
                     })
                     .on('d3mouseover', function (variant) {
@@ -365,8 +366,9 @@
                 let noPassingVars = false;
                 self.noPassingResults = false;
 
-                // Display variants with that feature UNLESS it's hidden by other active filters
-                if (filterInfo.state === true) {
+                // Apply checkbox filter
+                if (filterInfo.state === true && filterInfo.type === 'checkbox') {
+
                     // Remove from active filter state
                     self.excludeFilters.splice(self.excludeFilters.indexOf('.' + filterInfo.name), 1);
 
@@ -375,9 +377,9 @@
                     self.variantChart.unfilterVariants()(filterClass, svg);
 
                     // Re-apply active filters in case of multiple filters
-                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, svg);
+                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
 
-                    // Check to make sure we haven't hidden the selected variant
+                    // Send deselect signal if we've hidden the selected variant
                     if (checkForSelectedVar) {
                         let selectedVarStillVisible = self.variantChart.checkForSelectedVar()(selectedVarId, svg);
                         // If we have, send deselect message
@@ -385,11 +387,12 @@
                             self.$emit("variantClick", null, null);
                         }
                     }
-                } else {
+                    // Removing checkbox filter
+                } else if (filterInfo.state === false && filterInfo.type === 'checkbox') {
                     // Hide variants with that class
                     let filterClass = '.' + filterInfo.name;
                     self.excludeFilters.push(filterClass);
-                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, svg);
+                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
 
                     // Check to make sure we haven't hidden the selected variant
                     if (checkForSelectedVar) {
@@ -399,6 +402,31 @@
                             self.$emit("variantClick", null, null);
                         }
                     }
+                    // Apply cutoff filter
+                } else if (filterInfo.state != null && filterInfo.type === 'cutoff') {
+
+                    // Add to list
+                    self.cutoffFilters[filterInfo.name] = [filterInfo.name, filterInfo.state, filterInfo.cutoffValue];
+
+                    // Hide variants that do not meet given condition
+                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
+
+                    // Send deselect signal if we've hidden the selected variant
+                    if (checkForSelectedVar) {
+                        let selectedVarStillVisible = self.variantChart.checkForSelectedVar()(selectedVarId, svg);
+                        // If we have, send deselect message
+                        if (!selectedVarStillVisible) {
+                            self.$emit("variantClick", null, null);
+                        }
+                    }
+
+                    // Remove cutoff filter
+                } else {
+                    // Remove from list
+                    delete self.cutoffFilters[filterInfo.name];
+
+                    // Re-apply active filters in case of multiple filters
+                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg)
                 }
 
                 if (noPassingVars) {

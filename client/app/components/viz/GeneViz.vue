@@ -239,8 +239,8 @@
 
                 this.geneChart = geneD3()
                     .width(this.fixedWidth > 0 ? this.fixedWidth : this.width)
-                    // .widthPercent("100%")
-                    // .heightPercent("100%")
+                    .widthPercent("100%")
+                    .heightPercent("100%")
                     .yAxisWidth(this.yAxisWidth)
                     .margin(this.margin)
                     .zoomPadding(this.zoomPadding)

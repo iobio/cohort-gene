@@ -87,20 +87,20 @@
                 minGenotypeDepth: null,
                 categories: {
                     'annotation': [
-                        {name: 'impact', display: 'Impact', active: false, open: false, type: 'checkbox'},
-                        {name: 'type', display: 'Type', active: false, open: false, type: 'checkbox'},
-                        {name: 'zygosities', display: 'Zygosities', active: false, open: false, type: 'checkbox'},],
+                        {name: 'impact', display: 'Impact', active: false, open: false, type: 'checkbox', cohortOnly: false},
+                        {name: 'type', display: 'Type', active: false, open: false, type: 'checkbox', cohortOnly: false},
+                        {name: 'zygosities', display: 'Zygosities', active: false, open: false, type: 'checkbox', cohortOnly: false},],
                     'coverage': [
                         {name: 'coverage', display: 'Coverage', active: false, open: false, type: 'cutoff'}],
                     'enrichment': [
-                        {name: 'pValue', display: 'p-value', active: false, open: false, type: 'cutoff'},
-                        {name: 'adjPVal', display: 'Adj p-value', active: false, open: false, type: 'cutoff'}],
+                        {name: 'pValue', display: 'p-value', active: false, open: false, type: 'cutoff', cohortOnly: true},
+                        {name: 'adjPVal', display: 'Adj p-value', active: false, open: false, type: 'cutoff', cohortOnly: true}],
                     'frequencies': [
-                        {name: 'g1000', display: '1000G', active: false, open: false, type: 'cutoff'},
-                        {name: 'exac', display: 'ExAC', active: false, open: false, type: 'cutoff'},
-                        {name: 'gnomad', display: 'gnomAD', active: false, open: false, type: 'cutoff'},
-                        {name: 'probandFreq', display: 'Proband', active: false, open: false, type: 'cutoff'},
-                        {name: 'subsetFreq', display: 'Subset', active: false, open: false, type: 'cutoff'}],
+                        {name: 'g1000', display: '1000G', active: false, open: false, type: 'cutoff', cohortOnly: false},
+                        {name: 'exac', display: 'ExAC', active: false, open: false, type: 'cutoff', cohortOnly: false},
+                        {name: 'gnomad', display: 'gnomAD', active: false, open: false, type: 'cutoff', cohortOnly: false},
+                        {name: 'probandFreq', display: 'Proband', active: false, open: false, type: 'cutoff', cohortOnly: true},
+                        {name: 'subsetFreq', display: 'Subset', active: false, open: false, type: 'cutoff', cohortOnly: true}],
                     'rawCounts': [ // Currently unused - may incorporate later
                         {name: 'rawCounts', display: 'Raw Counts', active: false, open: false, type: 'cutoff'}],
                     'samplePresence': [{name: 'samplePresence', display: 'Sample Presence', active: false, open: false, type: 'checkbox'}]
@@ -116,15 +116,18 @@
                 let filterObj = self.categories[grandparentFilterName].filter((cat) => {
                     return cat.name === parentFilterName;
                 });
+
+                let cohortOnly = false;
                 if (filterObj.length > 0) {
                     filterObj[0].active = parentFilterState;
+                    cohortOnly = filterObj[0].cohortOnly;
                 }
                 let grandparentFilterState = false;
                 let parentFilters = self.categories[grandparentFilterName];
                 parentFilters.forEach((filt) => {
                     grandparentFilterState |= filt.active;
                 });
-                self.$emit('filter-toggled', filterName, filterState, grandparentFilterName, grandparentFilterState);
+                self.$emit('filter-toggled', filterName, filterState, grandparentFilterName, grandparentFilterState, cohortOnly);
             },
             onFilterApplied: function(filterName, filterLogic, cutoffValue, grandparentFilterName) {
                 let self = this;
@@ -133,8 +136,11 @@
                 let filterObj = self.categories[grandparentFilterName].filter((cat) => {
                     return cat.name === filterName;
                 });
+
+                let cohortOnly = false;
                 if (filterObj.length > 0) {
                     filterObj[0].active = true;
+                    cohortOnly = filterObj[0].cohortOnly;
                 }
                 let grandparentFilterState = false;
                 let parentFilters = self.categories[grandparentFilterName];
@@ -142,7 +148,7 @@
                     grandparentFilterState |= filt.active;
                 });
 
-                self.$emit('filter-applied', filterName, filterLogic, cutoffValue, grandparentFilterName, grandparentFilterState);
+                self.$emit('filter-applied', filterName, filterLogic, cutoffValue, grandparentFilterName, grandparentFilterState, cohortOnly);
             },
             onFilterCleared: function(filterName, grandparentFilterName) {
                 let self = this;
@@ -151,8 +157,11 @@
                 let filterObj = self.categories[grandparentFilterName].filter((cat) => {
                     return cat.name === filterName;
                 });
+
+                let cohortOnly = false;
                 if (filterObj.length > 0) {
                     filterObj[0].active = false;
+                    cohortOnly = filterObj[0].cohortOnly;
                 }
                 let grandparentFilterState = false;
                 let parentFilters = self.categories[grandparentFilterName];
@@ -160,7 +169,7 @@
                     grandparentFilterState |= filt.active;
                 });
 
-                self.$emit('cutoff-filter-cleared', filterName, grandparentFilterName, grandparentFilterState);
+                self.$emit('cutoff-filter-cleared', filterName, grandparentFilterName, grandparentFilterState, cohortOnly);
             },
             clearFilters: function() {
                 let self = this;

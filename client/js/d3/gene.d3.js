@@ -115,12 +115,12 @@ function geneD3() {
             svg.enter()
                 .append("svg")
                 .style('padding-left', yAxisWidth + 'px')
-                .attr("width", geneD3_widthPercent ? geneD3_widthPercent : geneD3_width)
-                .attr("height", geneD3_heightPercent ? geneD3_heightPercent : geneD3_height + margin.top + margin.bottom + zoomPadding);
+                .attr("width", (geneD3_widthPercent && zoomPadding === 0) ? geneD3_widthPercent : geneD3_width)
+                .attr("height", (geneD3_heightPercent && zoomPadding === 0) ? geneD3_heightPercent : geneD3_height + margin.top + margin.bottom + zoomPadding);
 
             // The chart dimensions could change after instantiation, so update viewbox dimensions
             // every time we draw the chart.
-            if (geneD3_widthPercent && geneD3_heightPercent) {
+            if (geneD3_widthPercent && geneD3_heightPercent && zoomPadding === 0) {
                 d3.select(this).selectAll("svg")
                     .filter(function () {
                         return this.parentNode === container.node();
@@ -130,8 +130,8 @@ function geneD3() {
             }
 
             container.selectAll("svg")
-                .attr("width", geneD3_widthPercent ? geneD3_widthPercent : geneD3_width)
-                .attr("height", geneD3_heightPercent ? geneD3_heightPercent : geneD3_height + margin.top + margin.bottom + zoomPadding);
+                .attr("width", (geneD3_widthPercent && zoomPadding === 0) ? geneD3_widthPercent : geneD3_width)
+                .attr("height", (geneD3_heightPercent && zoomPadding === 0) ? geneD3_heightPercent : geneD3_height + margin.top + margin.bottom + zoomPadding);
 
             // Otherwise, create the skeletal chart.
             var gEnter = svg.selectAll("g").data([0]).enter().append('g');

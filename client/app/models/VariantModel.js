@@ -858,13 +858,6 @@ class VariantModel {
         let sift = "";
         let polyphen = "";
         let regulatory = "";
-        let af1000gRange = "";
-        let afExacRange = "";
-        let afGnomadRange = "";
-        let probandFreq = "";
-        let subsetFreq = "";
-        let pValRange = "";
-        let deltaRange = "";
 
         let effectList = (annotationScheme == null || annotationScheme.toLowerCase() === 'snpeff' ? d.effect : d.vepConsequence);
         for (let key in effectList) {
@@ -899,121 +892,11 @@ class VariantModel {
             regulatory += " " + key;
         }
 
-        if (d.af1000G) {
-            if (d.af1000G < 0.25) {
-                af1000gRange = 'g1000_025';
-            } else if (d.af1000G < 0.50) {
-                af1000gRange = 'g1000_2550';
-            } else if (d.af1000G < 0.75) {
-                af1000gRange = 'g1000_5075';
-            } else {
-                af1000gRange = 'g1000_75100';
-            }
-        }
-
-        if (d.afExAC) {
-            if (d.afExAC < 0.25) {
-                afExacRange = 'exac_025';
-            } else if (d.afExAC < 0.50) {
-                afExacRange = 'exac_2550';
-            } else if (d.afExAC < 0.75) {
-                afExacRange = 'exac_5075';
-            } else {
-                afExacRange = 'exac_75100';
-            }
-        }
-
-        if (d.afgnomAD) {
-            if (d.afgnomAD < 0.25) {
-                afGnomadRange = 'gnomad_025';
-            } else if (d.afgnomAD < 0.50) {
-                afGnomadRange = 'gnomad_2550';
-            } else if (d.afgnomAD < 0.75) {
-                afGnomadRange = 'gnomad_5075';
-            } else {
-                afGnomadRange = 'gnomad_75100';
-            }
-        }
-
-        if (d.totalProbandCount > 0) {
-            let probandCalc = d.affectedProbandCount / d.totalProbandCount;
-            if (probandCalc < 0.25) {
-                probandFreq = 'proband_025';
-            } else if (probandCalc < 0.50) {
-                probandFreq = 'proband_2550';
-            } else if (probandCalc < 0.75) {
-                probandFreq = 'proband_5075';
-            } else {
-                probandFreq = 'proband_75100';
-            }
-        }
-
-        if (d.totalSubsetCount > 0) {
-            let subsetCalc = d.affectedSubsetCount / d.totalSubsetCount;
-            if (subsetCalc < 0.25) {
-                subsetFreq = 'subset_025';
-            } else if (subsetCalc < 0.50) {
-                subsetFreq = 'subset_2550';
-            } else if (subsetCalc < 0.75) {
-                subsetFreq = 'subset_5075';
-            } else {
-                subsetFreq = 'subset_75100';
-            }
-        }
-
-        if (d.pVal <= 0.0001) {
-            pValRange = 'pVal0_0001';
-        } else if (d.pVal <= 0.0005) {
-            pValRange = 'pVal0001_0005';
-        } else if (d.pVal <= 0.001) {
-            pValRange = 'pVal0005_001';
-        } else if (d.pVal <= 0.005) {
-            pValRange = 'pVal001_005';
-        } else if (d.pVal <= 0.01) {
-            pValRange = 'pVal005_01';
-        } else if (d.pVal <= 0.05) {
-            pValRange = 'pVal01_05';
-        } else if (d.pVal <= 0.1) {
-            pValRange = 'pVal05_1';
-        } else if (d.pVal <= 0.25) {
-            pValRange = 'pVal1_25';
-        } else if (d.pVal <= 0.5) {
-            pValRange = 'pVal25_50';
-        } else if (d.pVal <= 1) {
-            pValRange = 'pVal50_100';
-        }
-
-        if (d.subsetDelta >= 10) {
-            deltaRange = 'delta10';
-        } else if (d.subsetDelta >= 4) {
-            deltaRange = 'delta4';
-        } else if (d.subsetDelta >= 2) {
-            deltaRange = 'delta2';
-        }
-
-
         return 'variant ' + d.type.toLowerCase() + ' ' + d.zygosity.toLowerCase() + ' '
             + (d.inheritance ? d.inheritance.toLowerCase() : "") + ' ua_' + d.ua + ' '
             + sift + ' ' + polyphen + ' ' + regulatory + ' ' + +' ' + d.clinvar + ' '
-            + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts + ' ' + af1000gRange + ' '
-            + afExacRange + ' ' + afGnomadRange + ' ' + probandFreq + ' ' + subsetFreq + ' '
-            + pValRange + ' ' + ' ' + deltaRange;
+            + impacts + ' ' + effects + ' ' + d.consensus + ' ' + colorimpacts;
     }
-
-    /* Coordinates applying filter criteria to the appropriate data sets and cohorts. */
-    // filterVariants(filterInfo) {
-    //     let self = this;
-    //
-    //     // If we're only applying filter to cohort track
-    //     if (filterInfo.cohortOnly) {
-    //         self.mainDataSet.applyVariantFilter(filterInfo);
-    //     } else if (self.otherDataSets.length > 0) {
-    //         self.mainDataSet.applyVariantFilter(filterInfo);
-    //         self.otherDataSets.forEach((dataSet) => {
-    //             dataSet.applyVariantFilter(filterInfo);
-    //         })
-    //     }
-    // }
 
     //</editor-fold>
 

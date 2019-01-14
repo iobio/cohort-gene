@@ -183,6 +183,7 @@
                     .heightPercent("100%")
                     .kind(this.kind)
                     .margin(this.margin)
+                    .sampleTrackPadding(39)
                     .showXAxis(this.showXAxis)
                     .showYAxis(this.showYAxis)
                     .yAxisLine(this.yAxisLine)

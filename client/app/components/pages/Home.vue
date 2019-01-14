@@ -877,41 +877,41 @@ TD & SJG updated Nov2018 -->
                     self.$refs.variantSummaryCardRef.assignBarChartValues(self.probandN, self.subsetN);
                 }
             },
-            filterBoxToggled: function(filterName, filterState) {
+            filterBoxToggled: function(filterName, filterState, cohortOnlyFilter) {
                 let self = this;
                 let filterInfo = {
                     name: filterName,
-                    cohortOnly: false,
+                    cohortOnly: cohortOnlyFilter,
                     type: 'checkbox',
                     state: filterState,
                     cutoffValue: null,
                 };
                 self.onFilterSettingsApplied(filterInfo);
             },
-            filterCutoffApplied: function(filterName, filterLogic, cutoffValue) {
+            filterCutoffApplied: function(filterName, filterLogic, cutoffValue, cohortOnlyFilter) {
                 let self = this;
 
                 let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
 
                 let filterInfo = {
                     name: translatedFilterName,
-                    cohortOnly: false,
+                    cohortOnly: cohortOnlyFilter,
                     type: 'cutoff',
                     state: filterLogic,
                     cutoffValue: cutoffValue
                 };
                 self.onFilterSettingsApplied(filterInfo);
             },
-            filterCutoffCleared: function(filterName) {
+            filterCutoffCleared: function(filterName, cohortOnlyFilter) {
                 let self = this;
 
                 let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
 
                 let filterInfo = {
                     name: translatedFilterName,
-                    cohortOnly: false,
+                    cohortOnly: cohortOnlyFilter,
                     type: 'cutoff',
-                    state: false,
+                    state: null,
                     cutoffValue: null
                 };
                 self.onFilterSettingsApplied(filterInfo);

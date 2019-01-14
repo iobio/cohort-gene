@@ -563,20 +563,6 @@ TD & SJG updated Apr2018 -->
                     self.$refs.subsetVizRef.clearVariants(self.getVariantSVG(self.$refs.subsetVizRef.name));
                 }
             },
-            // TODO: modify this as needed for cohort - check out filter model first
-            onFilterSettingsApplied: function () {
-                let self = this;
-                self.customFilters = [];
-                for (let filterName in self.filterModel.flagCriteria) {
-                    if (self.filterModel.flagCriteria[filterName].active && self.filterModel.flagCriteria[filterName].custom) {
-                        self.customFilters.push({
-                            name: filterName,
-                            display: self.filterModel.flagCriteria[filterName].name
-                        });
-                    }
-                }
-                this.$emit('filter-settings-applied');
-            },
             depthVizRegionGlyph: function (exon, regionGroup, regionX) {
                 let exonId = 'exon' + exon.exon_number.replace("/", "-");
                 if (regionGroup.select("g#" + exonId).empty()) {

@@ -2653,7 +2653,7 @@ vcfiobio = function module() {
                 idx++;
             })
         }
-``
+
         //
         // For each applicable genotype (of the sample indices provided),
         // parse the genotype field of the vcf record, creating an

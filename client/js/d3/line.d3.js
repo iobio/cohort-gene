@@ -28,8 +28,7 @@ export default function lineD3() {
     var formatXTick = null;
 
     var margin = {left: 50, right: 20, top: 10, bottom: 30};
-    var yAxisWidth = 45;
-    var yAxisPadding = 6;
+    var sampleTrackPadding = 0;
 
     var width = 600 - margin.left - margin.right;
     var height = 220 - margin.top - margin.bottom;
@@ -100,7 +99,6 @@ export default function lineD3() {
                 .style("opacity", 1);
             label.attr("x", 0)
                 .attr("y", margin.top + 5)
-                // .attr("class", labelClazz)
                 .text(circleText);
 
             container.select(labelClazz)
@@ -131,16 +129,6 @@ export default function lineD3() {
             circle.attr("cx", mousex + margin.left + 2 )
                 .attr("cy", mousey + margin.top)
                 .attr("r", 3)
-
-            // Original
-            // var circle = container.select(".circle");
-            // circle.transition()
-            //     .duration(200)
-            //     .style("opacity", .7);
-            // circle.attr("cx", mousex + margin.left + 2 )
-            //     .attr("cy", mousey + margin.top )
-            //     .attr("r", 3)
-
         }
     };
 
@@ -175,7 +163,8 @@ export default function lineD3() {
                 .append("svg")
                 .attr("width", widthPercent)
                 .attr("height", heightPercent)
-                .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + (parseInt(width) + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height))
+                .attr('viewBox', "0 0 " + (parseInt(width) + margin.left + margin.right) + " " + parseInt(height))
+                .style('padding-left', sampleTrackPadding + 'px')
                 .attr("preserveAspectRatio", "none");
 
             // The chart dimensions could change after instantiation, so update viewbox dimensions
@@ -184,7 +173,23 @@ export default function lineD3() {
                 .filter(function() {
                     return this.parentNode === container.node();
                 })
-                .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + (parseInt(width) + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height));
+                .attr('viewBox', "0 0 " + (parseInt(width) + margin.left + margin.right) + " " + parseInt(height));
+
+            // svg.enter()
+            //     .append("svg")
+            //     .attr("width", widthPercent)
+            //     .attr("height", heightPercent)
+            //     .attr('viewBox', (-yAxisWidth) + " 0 " + (parseInt(width) + margin.left + margin.right + yAxisWidth) + " " + parseInt(height))
+            //     // .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + (parseInt(width) + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height))
+            //     .attr("preserveAspectRatio", "none");
+            //
+            // // The chart dimensions could change after instantiation, so update viewbox dimensions
+            // // every time we draw the chart.
+            // d3.select(this).selectAll("svg")
+            //     .filter(function() {
+            //         return this.parentNode === container.node();
+            //     })
+            //     .attr('viewBox', (-yAxisWidth) + " 0 " + (parseInt(width) + margin.left + margin.right + yAxisWidth) + " " + parseInt(height));
 
 
             // add a circle and arrows for 'hover' event and 'pinned' event
@@ -204,21 +209,7 @@ export default function lineD3() {
                         .attr("x", 0)
                         .attr("y", 0)
                         .style("opacity", 0);
-                // }
             });
-
-            // add a circle and label
-            // var circle = svg.selectAll(".circle").data([0])
-            //     .enter().append('circle')
-            //     .attr("class", "circle")
-            //     .attr("r", 3)
-            //     .style("opacity", 0);
-            // var circleLabel = svg.selectAll(".circle-label").data([0])
-            //     .enter().append('text')
-            //     .attr("class", "circle-label")
-            //     .attr("x", 0)
-            //     .attr("y", 0)
-            //     .style("opacity", 0);
 
             if (kind == KIND_AREA && showGradient) {
                 var defs = svg.selectAll("defs").data([data]).enter()
@@ -682,6 +673,12 @@ export default function lineD3() {
     exports.formatCircleText = function(_) {
         if (!arguments.length) return formatCircleText;
         formatCircleText = _;
+        return exports;
+    }
+
+    exports.sampleTrackPadding = function(_) {
+        if (!arguments.length) return sampleTrackPadding;
+        sampleTrackPadding = _;
         return exports;
     }
 
