@@ -342,15 +342,15 @@ function scaledVariantD3() {
                             if (filterName === 'probandFreq') {
                                 let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
                                 let totalAlleleCount = d.totalProbandCount * 2;
-                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
                             } else if (filterName === 'subsetFreq') {
                                 let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
                                 let totalAlleleCount = d.totalSubsetCount * 2;
-                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
                             } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
                                 varVal = Math.round(d[filterName] * 100);
                             } else {
-                                varVal = d[filterName] * 100 / 100;
+                                varVal = Math.round(+d[filterName] * 100) / 100;
                             }
 
                             if (!(varVal < filterCutoffVal)) {
@@ -364,15 +364,15 @@ function scaledVariantD3() {
                             if (filterName === 'probandFreq') {
                                 let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
                                 let totalAlleleCount = d.totalProbandCount * 2;
-                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
                             } else if (filterName === 'subsetFreq') {
                                 let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
                                 let totalAlleleCount = d.totalSubsetCount * 2;
-                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
                             } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
                                 varVal = Math.round(d[filterName] * 100);
                             } else {
-                                varVal = d[filterName] * 100 / 100;
+                                varVal = Math.round(+d[filterName] * 100) / 100;
                             }
 
                             if (!(varVal <= filterCutoffVal)) {
@@ -386,15 +386,15 @@ function scaledVariantD3() {
                             if (filterName === 'probandFreq') {
                                 let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
                                 let totalAlleleCount = d.totalProbandCount * 2;
-                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
                             } else if (filterName === 'subsetFreq') {
                                 let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
                                 let totalAlleleCount = d.totalSubsetCount * 2;
-                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
                             } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
                                 varVal = Math.round(d[filterName] * 100);
                             } else {
-                                varVal = d[filterName] * 100 / 100;
+                                varVal = Math.round(+d[filterName] * 100) / 100;
                             }
 
                             if (!(varVal === filterCutoffVal)) {
@@ -408,15 +408,15 @@ function scaledVariantD3() {
                             if (filterName === 'probandFreq') {
                                 let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
                                 let totalAlleleCount = d.totalProbandCount * 2;
-                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
                             } else if (filterName === 'subsetFreq') {
                                 let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
                                 let totalAlleleCount = d.totalSubsetCount * 2;
-                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
                             } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
                                 varVal = Math.round(d[filterName] * 100);
                             } else {
-                                varVal = d[filterName] * 100 / 100;
+                                varVal = Math.round(+d[filterName] * 100) / 100;
                             }
 
                             if (!(varVal >= filterCutoffVal)) {
@@ -430,15 +430,15 @@ function scaledVariantD3() {
                             if (filterName === 'probandFreq') {
                                 let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
                                 let totalAlleleCount = d.totalProbandCount * 2;
-                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
                             } else if (filterName === 'subsetFreq') {
                                 let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
                                 let totalAlleleCount = d.totalSubsetCount * 2;
-                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
                             } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
-                                varVal = d[filterName] * 100;
+                                varVal = Math.round(d[filterName] * 100);
                             } else {
-                                varVal = d[filterName] * 100 / 100;
+                                varVal = Math.round(+d[filterName] * 100) / 100;
                             }
 
                             if (!(varVal > filterCutoffVal)) {

@@ -962,12 +962,9 @@ TD & SJG updated Nov2018 -->
             },
             reloadGene: function(geneToReload) {
                 let self = this;
-
                 if (geneToReload !== self.selectedGene.gene_name) {
-
                     // Load gene
                     self.onGeneSelected(geneToReload);
-
                     // Fill in text entry
                     self.$refs.navRef.setSelectedGeneText(geneToReload);
                 }

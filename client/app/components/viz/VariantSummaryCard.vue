@@ -376,7 +376,7 @@
                     if (!this.cohortFieldsValid) {
                         return "N/A";
                     } else {
-                        return '' + (+this.variant.adjustedLevel) * 100 / 100;
+                        return '' + ((+this.variant.adjustedLevel)).toFixed(2);
                     }
                 }
                 return "-";
