@@ -107,7 +107,7 @@ TD & SJG updated Nov2018 -->
                     <v-flex xs3 v-if="!showWelcome">
                         <v-card>
                             <v-tabs>
-                                <v-tabs-slider color="cohortDarkBlue"></v-tabs-slider>
+                                <v-tabs-slider style="max-width: 120px" color="cohortDarkBlue"></v-tabs-slider>
                                 <v-tab href="#summary-tab">
                                     Summary
                                     <v-icon style="margin-bottom: 0; padding-left: 5px">bar_chart</v-icon>

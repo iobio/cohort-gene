@@ -1079,29 +1079,29 @@ class DataSetModel {
                                             }
 
                                             // If we've gotten this far, add to list and get sample names
-                                            me.vcfs.push(currVcf);
-                                            if (currTbi) {
-                                                me.tbis.push(currTbi);
-                                            }
-                                            // Get the sample names from the vcf header
-                                            currVcfEndpt.getSampleNames(function (names) {
-                                                me.isMultiSample = !!(names && names.length > 1);
-                                                sampleNames.push(names);
-                                                resolve();
-                                            });
+                                            // me.vcfs.push(currVcf);
+                                            // if (currTbi) {
+                                            //     me.tbis.push(currTbi);
+                                            // }
+                                            // // Get the sample names from the vcf header
+                                            // currVcfEndpt.getSampleNames(function (names) {
+                                            //     me.isMultiSample = !!(names && names.length > 1);
+                                            //     sampleNames.push(names);
+                                            //     resolve();
+                                            // });
                                         }
                                     })
                                 }
-                                // me.vcfs.push(currVcf);
-                                // if (currTbi) {
-                                //     me.tbis.push(currTbi);
-                                // }
-                                // // Get the sample names from the vcf header
-                                // currVcfEndpt.getSampleNames(function (names) {
-                                //     me.isMultiSample = !!(names && names.length > 1);
-                                //     sampleNames.push(names);
-                                //     resolve();
-                                // });
+                                me.vcfs.push(currVcf);
+                                if (currTbi) {
+                                    me.tbis.push(currTbi);
+                                }
+                                // Get the sample names from the vcf header
+                                currVcfEndpt.getSampleNames(function (names) {
+                                    me.isMultiSample = !!(names && names.length > 1);
+                                    sampleNames.push(names);
+                                    resolve();
+                                });
                             } else {
                                 me.vcfUrlsEntered = false;
                                 let errObj = {};
