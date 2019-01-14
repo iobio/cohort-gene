@@ -577,6 +577,9 @@
                                                     .then(() => {
                                                         resolve();
                                                     })
+                                                    .catch((error) => {
+                                                        console.log(error);
+                                                    })
                                             });
                                             retryUrlPs.push(p);
                                         }
@@ -588,8 +591,8 @@
                                         for (let i = 0; i < self.$refs.entryDataRef.length; i++) {
                                             self.$refs.entryDataRef[i].setLoadingFlags(false);
                                         }
+                                        resolve();
                                 });
-
                                 console.log('Mismatch build detected');
                                 //
                             } else {

@@ -8,7 +8,6 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/app/components/partials/EntryData.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/partials/EntryData.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/app/components/partials/FilesMenu.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/app/components/partials/FilesMenu.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/dist/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/dist/build.js" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/client/dist/" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -41,20 +40,20 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="FilesMenu.vue" pinned="false" current-in-tab="true">
+      <file leaf-file-name="FilesMenu.vue" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilesMenu.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="600">
-              <caret line="581" column="41" lean-forward="true" selection-start-line="581" selection-start-column="41" selection-end-line="581" selection-end-column="41" />
+            <state relative-caret-position="390">
+              <caret line="580" column="75" selection-start-line="580" selection-start-column="75" selection-end-line="580" selection-end-column="75" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="EntryData.vue" pinned="false" current-in-tab="false">
+      <file leaf-file-name="EntryData.vue" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client/app/components/partials/EntryData.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="281">
-              <caret line="619" column="44" lean-forward="true" selection-start-line="619" selection-start-column="44" selection-end-line="619" selection-end-column="44" />
+            <state relative-caret-position="682">
+              <caret line="390" column="85" selection-start-line="390" selection-start-column="85" selection-end-line="390" selection-end-column="85" />
             </state>
           </provider>
         </entry>
@@ -114,8 +113,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>onvcfur</find>
-      <find>getref</find>
       <find>getReferenceLengths</find>
       <find>_promiseVcfRefName</find>
       <find>getChromosomesFromVcf</find>
@@ -123,7 +120,6 @@
       <find>debugger</find>
       <find>oldval</find>
       <find>entryDataRef</find>
-      <find>sample-data</find>
       <find>entryDataFileRef</find>
       <find>updateBuildAndValidate</find>
       <find>promise settin</find>
@@ -140,10 +136,13 @@
       <find>retryent</find>
       <find>dragId</find>
       <find>retr</find>
-      <find>retry</find>
       <find>retryEnteredUrls</find>
       <find>vcfUrl</find>
       <find>onVcfUrlEntered</find>
+      <find>onbam</find>
+      <find>onBamUrlEntered</find>
+      <find>sample-data</find>
+      <find>retry</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/client/js/model</dir>
@@ -205,8 +204,8 @@
         <option value="$PROJECT_DIR$/client/js/model/vcf.iobio.js" />
         <option value="$PROJECT_DIR$/client/app/components/pages/Home.vue" />
         <option value="$PROJECT_DIR$/client/app/models/DataSetModel.js" />
-        <option value="$PROJECT_DIR$/client/app/components/partials/EntryData.vue" />
         <option value="$PROJECT_DIR$/client/app/components/partials/FilesMenu.vue" />
+        <option value="$PROJECT_DIR$/client/app/components/partials/EntryData.vue" />
       </list>
     </option>
   </component>
@@ -391,12 +390,12 @@
       <workItem from="1546194124637" duration="109994000" />
       <workItem from="1546639347593" duration="5344000" />
       <workItem from="1546878593700" duration="61230000" />
-      <workItem from="1547223488299" duration="76132000" />
+      <workItem from="1547223488299" duration="76770000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1250694000" />
+    <option name="totallyTimeSpent" value="1251332000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1920" height="1057" extended-state="6" />
@@ -866,17 +865,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/partials/EntryData.vue">
+    <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilesMenu.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="281">
-          <caret line="619" column="44" lean-forward="true" selection-start-line="619" selection-start-column="44" selection-end-line="619" selection-end-column="44" />
+        <state relative-caret-position="390">
+          <caret line="580" column="75" selection-start-line="580" selection-start-column="75" selection-end-line="580" selection-end-column="75" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/client/app/components/partials/FilesMenu.vue">
+    <entry file="file://$PROJECT_DIR$/client/app/components/partials/EntryData.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="600">
-          <caret line="581" column="41" lean-forward="true" selection-start-line="581" selection-start-column="41" selection-end-line="581" selection-end-column="41" />
+        <state relative-caret-position="682">
+          <caret line="390" column="85" selection-start-line="390" selection-start-column="85" selection-end-line="390" selection-end-column="85" />
         </state>
       </provider>
     </entry>

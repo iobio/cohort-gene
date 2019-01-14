@@ -378,6 +378,7 @@
                                     alertify.set('notifier', 'position', 'top-right');
                                     alertify.warning("WARNING: The provided file has a different reference build than the current reference selection. Please change the drop-down selection " +
                                         "or provide a file aligned to the same reference.");
+                                    resolve();
                                 }
 
                                 self.vcfError = true;
@@ -387,7 +388,8 @@
                                     alertify.set('notifier', 'position', 'top-right');
                                     alertify.warning("The entered file " + errObj.badFile + ' or its index could not be opened.');
                                 }
-                                reject();
+                                console.log('There was a problem checking vcf urls');
+                                reject(errObj);
                             })
                     }
                 });
