@@ -105,16 +105,20 @@ TD & SJG updated Nov2018 -->
                         </div>
                     </v-flex>
                     <v-flex xs3 v-if="!showWelcome">
-                        <v-card class="ml-1">
-                            <v-tabs centered icons-and-text>
+                        <v-card>
+                            <v-tabs>
                                 <v-tabs-slider color="cohortDarkBlue"></v-tabs-slider>
                                 <v-tab href="#summary-tab">
                                     Summary
-                                    <v-icon style="margin-bottom: 0px;">bar_chart</v-icon>
+                                    <v-icon style="margin-bottom: 0; padding-left: 5px">bar_chart</v-icon>
                                 </v-tab>
                                 <v-tab href="#filter-tab">
                                     Filters
-                                    <v-icon style="margin-bottom: 0px">bubble_chart</v-icon>
+                                    <v-icon style="margin-bottom: 0; padding-left: 5px">bubble_chart</v-icon>
+                                </v-tab>
+                                <v-tab href="#history-tab">
+                                    History
+                                    <v-icon style="margin-bottom: 0; padding-left: 5px">history</v-icon>
                                 </v-tab>
                                 <v-tab-item
                                         :key="'summaryTab'"
@@ -148,6 +152,17 @@ TD & SJG updated Nov2018 -->
                                         </filter-settings-menu>
                                     </v-container>
                                 </v-tab-item>
+                                <v-tab-item
+                                        :key="'historyTab'"
+                                        :id="'history-tab'">
+                                    <v-container>
+                                        <history-tab
+                                                ref="historyTabRef"
+                                                :geneHistoryList="geneHistoryList"
+                                                @reload-gene-history="onGeneSelected(geneName)">
+                                        </history-tab>
+                                    </v-container>
+                                </v-tab-item>
                             </v-tabs>
                         </v-card>
                     </v-flex>
@@ -166,6 +181,7 @@ TD & SJG updated Nov2018 -->
     import VariantSummaryCard from '../viz/VariantSummaryCard.vue'
     import VariantZoomCard from '../viz/ZoomModalViz.vue'
     import FilterSettingsMenu from '../partials/FilterSettingsMenu.vue'
+    import HistoryTab from '../partials/HistoryTab.vue'
     import Welcome from '../viz/Welcome.vue'
 
     // Models
@@ -187,7 +203,8 @@ TD & SJG updated Nov2018 -->
             VariantCard,
             EnrichmentVariantCard,
             FilterSettingsMenu,
-            Welcome
+            Welcome,
+            HistoryTab
         },
         props: {
             paramProjectId: {
@@ -243,6 +260,7 @@ TD & SJG updated Nov2018 -->
                 filterModel: null,
                 cacheHelper: null,
                 genomeBuildHelper: null,
+                geneHistoryList: [],
 
                 variantTooltip: null,
                 cardWidth: 0,
@@ -504,6 +522,10 @@ TD & SJG updated Nov2018 -->
                     self.$refs.filterSettingsMenuRef.clearFilters();
                 }
                 self.firstGeneSelection = false;
+
+                // Add to history list
+                if (!self.geneHistoryList.includes(geneName))
+                    self.geneHistoryList.push(geneName);
             },
             wipeModels: function () {
                 let self = this;
