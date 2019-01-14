@@ -567,13 +567,23 @@
                             }
                         })
                         .catch((error) => {
-
                             if (error.mismatchBuild === true) {
-                                // If we error out because of mismatched ref
-                                alertify.set('notifier', 'position', 'top-right');
-                                alertify.warning("WARNING: The provided file has a different reference build than the current reference selection. Please change the drop-down selection " +
-                                    "or provide a file aligned to the same reference.");
+                                if (self.$refs.entryDataRef) {
+                                    self.$refs.entryDataRef.forEach((entryRef) => {
+                                        entryRef.retryEnteredUrls();
+                                    })
+                                }
+
+                                // Turn off loading spinners
+                                for (let i = 0; i < self.$refs.entryDataRef.length; i++) {
+                                    self.$refs.entryDataRef[i].setLoadingFlags(false);
+                                }
+                                // // If we error out because of mismatched ref
+                                // alertify.set('notifier', 'position', 'top-right');
+                                // alertify.warning("WARNING: The provided file has a different reference build than the current reference selection. Please change the drop-down selection " +
+                                //     "or provide a file aligned to the same reference.");
                                 console.log('Mismatch build detected');
+                                //
                             } else {
                                 // Otherwise pass on the error
                                 console.log(error);
