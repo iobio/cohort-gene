@@ -106,7 +106,7 @@
                 <v-flex d-flex xs2 v-if="!isMainCohort" style="padding-left: 30px">
 
                     <v-btn small flat icon style="margin: 0 !important"
-                           @click="removeSample">
+                           @click="openConfirmationDialog">
                         <v-icon color="cohortNavy">
                             clear
                         </v-icon>
@@ -208,6 +208,10 @@
                 :idType="dialogType"
                 @save-sample-selection="saveSampleSelection">
         </sample-select-dialog>
+        <confirmation-dialog
+                ref="confirmationDialogRef"
+                @confirm-delete-track="confirmDeleteTrack">
+        </confirmation-dialog>
     </v-layout>
 </template>
 
@@ -216,13 +220,15 @@
     import EntryDataFile from './EntryDataFile.vue'
     import draggable from 'vuedraggable'
     import SampleSelectDialog from "./SampleSelectDialog.vue";
+    import ConfirmationDialog from "./ConfirmationDialog.vue";
 
     export default {
         name: 'entry-data',
         components: {
             SampleSelectDialog,
             draggable,
-            EntryDataFile
+            EntryDataFile,
+            ConfirmationDialog
         },
         props: {
             modelInfo: null,
@@ -260,7 +266,8 @@
                 retrievingIds: false,
                 checkingBam: false,
                 vcfError: false,
-                bamError: false
+                bamError: false,
+                selectedTrackId: null
             }
         },
         watch: {
@@ -553,6 +560,14 @@
                 }
                 self.modelInfo.dataSet.setProbandIds(self.getProbandIds());
             },
+            openConfirmationDialog: function() {
+                let self = this;
+                self.$refs.confirmationDialogRef.displayDialog();
+            },
+            confirmDeleteTrack: function() {
+                let self = this;
+                self.removeSample();
+            },
             /* Returns unselected samples that are not within the opposite dialogType group.
              * For instance, if the selected dialog is a subset selection dialog,
              * returns all samples that are not already selected in the subset group,
@@ -660,5 +675,4 @@
             }
         }
     }
-
 </script>

@@ -103,12 +103,6 @@
         watch: {},
         computed: {},
         methods: {
-            // selectAll: function() {
-            //
-            // },
-            // deselectAll: function() {
-            //
-            // },
             addToList: function (evt) {
                 let self = this;
 
