@@ -106,7 +106,7 @@ TD & SJG updated Nov2018 -->
                     </v-flex>
                     <v-flex xs3 v-if="!showWelcome">
                         <v-card>
-                            <v-tabs>
+                            <v-tabs v-model="selectedTab">
                                 <v-tabs-slider style="max-width: 120px" color="cohortDarkBlue"></v-tabs-slider>
                                 <v-tab href="#summary-tab">
                                     Summary
@@ -268,6 +268,7 @@ TD & SJG updated Nov2018 -->
                 activeBookmarksDrawer: null,
                 showCoverageCutoffs: false,
                 showWelcome: true,
+                selectedTab: 'summary-tab',
 
                 probandN: 0,
                 subsetN: 0,
@@ -670,6 +671,8 @@ TD & SJG updated Nov2018 -->
                             self.selectedVariant = variant;
                         }
                     }
+                    // Tab to summary card
+                    self.selectedTab = 'summary-tab';
                 }
                 else {
                     self.selectedTrackId = null;
