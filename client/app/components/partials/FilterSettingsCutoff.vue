@@ -115,7 +115,7 @@
                 cutoffValue: null,
                 readyToApply: false,
                 isRawPVal: false,
-                filterButtonColor: '#8BC34A'
+                filterButtonColor: '#d18e00'
             }
         },
         watch: {},

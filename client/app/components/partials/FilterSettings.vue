@@ -23,7 +23,7 @@
                         :key="category.name"
                         :value="category.open">
                     <div slot="header">
-                        <v-avatar v-if="category.active" size="12px" color="cohortBlue" style="margin-right: 10px"></v-avatar>
+                        <v-avatar v-if="category.active" size="12px" color="cohortGold" style="margin-right: 10px"></v-avatar>
                         <v-avatar v-else-if="!category.active && (!isAnnotationCategory(category.name) || (isAnnotationCategory(category.name) && fullAnnotationComplete))" size="10px" color="white" style="margin-right: 12px"></v-avatar>
                         <span v-bind:hidden="!isAnnotationCategory(category.name) || fullAnnotationComplete" class="filter-loader">
                             <img src="../../../assets/images/wheel.gif">

@@ -903,7 +903,7 @@ TD & SJG updated Nov2018 -->
                     self.$refs.variantSummaryCardRef.assignBarChartValues(self.probandN, self.subsetN);
                 }
             },
-            filterBoxToggled: function(filterName, filterState, cohortOnlyFilter) {
+            filterBoxToggled: function(filterName, filterState, cohortOnlyFilter, parentFilterName, parentFilterState) {
                 let self = this;
                 let filterInfo = {
                     name: filterName,
@@ -912,9 +912,9 @@ TD & SJG updated Nov2018 -->
                     state: filterState,
                     cutoffValue: null,
                 };
-                self.onFilterSettingsApplied(filterInfo);
+                self.onFilterSettingsApplied(filterInfo, parentFilterName, parentFilterState);
             },
-            filterCutoffApplied: function(filterName, filterLogic, cutoffValue, cohortOnlyFilter) {
+            filterCutoffApplied: function(filterName, filterLogic, cutoffValue, cohortOnlyFilter, parentFilterName, parentFilterState) {
                 let self = this;
 
                 let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
@@ -926,9 +926,9 @@ TD & SJG updated Nov2018 -->
                     state: filterLogic,
                     cutoffValue: cutoffValue
                 };
-                self.onFilterSettingsApplied(filterInfo);
+                self.onFilterSettingsApplied(filterInfo, parentFilterName, parentFilterState);
             },
-            filterCutoffCleared: function(filterName, cohortOnlyFilter) {
+            filterCutoffCleared: function(filterName, cohortOnlyFilter, parentFilterName, parentFilterState) {
                 let self = this;
 
                 let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
@@ -940,19 +940,19 @@ TD & SJG updated Nov2018 -->
                     state: null,
                     cutoffValue: null
                 };
-                self.onFilterSettingsApplied(filterInfo);
+                self.onFilterSettingsApplied(filterInfo, parentFilterName, parentFilterState);
             },
-            onFilterSettingsApplied: function (filterInfo) {
+            onFilterSettingsApplied: function (filterInfo, parentFilterName, parentFilterState) {
                 let self = this;
                 let selectedVarId = null;
                 if (self.selectedVariant) {
                     selectedVarId = self.selectedVariant.id;
                 }
-                self.$refs.enrichCardRef[0].filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
+                self.$refs.enrichCardRef[0].filterVariants(filterInfo, self.selectedTrackId, selectedVarId, parentFilterName, parentFilterState);
 
                 if (self.$refs.variantCardRef && !filterInfo.cohortOnly) {
                     self.$refs.variantCardRef.forEach((cardRef) => {
-                        cardRef.filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
+                        cardRef.filterVariants(filterInfo, self.selectedTrackId, selectedVarId, parentFilterName, parentFilterState);
                     });
                 }
             },

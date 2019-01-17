@@ -91,6 +91,15 @@
             <v-chip v-if="numVariants" color="cohortNavy" small outline style="font-size: 12px">
                 {{numVariants}}
             </v-chip>
+            <v-chip v-if="annoFilterActive" color="cohortGold" small outline style="font-size: 12px">
+                Annotation Filter Active
+            </v-chip>
+            <v-chip v-if="enrichFilterActive" color="cohortGold" small outline style="font-size: 12px">
+                Enrichment Filter Active
+            </v-chip>
+            <v-chip v-if="freqFilterActive" color="cohortGold" small outline style="font-size: 12px">
+                Frequency Filter Active
+            </v-chip>
         </div>
         <div class="variant-viz" id="sourceFileLine">
             <span class="field-label-header">Analysis sources</span>
@@ -106,7 +115,7 @@
                         {{file}}
                         <v-icon right color="red">error_outline</v-icon>
                     </v-chip>
-                    <span style="color: red">{{getInvalidReason(index)}}</span>
+                    <!--<span style="color: red">{{getInvalidReason(index)}}</span>-->
                 </v-tooltip>
             </template>
         </div>
@@ -269,7 +278,10 @@
                 },
                 noPassingResults: false,
                 excludeFilters: [],     // List of filter classes; if variant contains any one of these, it will be hidden
-                cutoffFilters: {}       // Hash of arrays {filterName: [filterName, logic, cutoffVal]}; if variant does not pass any of these, it will be hidden
+                cutoffFilters: {},       // Hash of arrays {filterName: [filterName, logic, cutoffVal]}; if variant does not pass any of these, it will be hidden
+                annoFilterActive: false,
+                enrichFilterActive: false,
+                freqFilterActive: false
             }
         },
         mounted: function () {
@@ -277,6 +289,9 @@
             self.name = self.model.getName();
             self.extraAnnotationsLoaded = false;
             self.draw();
+            self.enrichFilterActive = false;
+            self.annoFilterActive = false;
+            self.freqFilterActive = false;
         },
         methods: {
             draw: function () {
@@ -420,8 +435,23 @@
                 let self = this;
                 self.extraAnnotationsLoaded = false;
             },
-            filterVariants: function(filterInfo, svg, checkForSelectedVar, selectedVarId) {
+            filterVariants: function(filterInfo, svg, checkForSelectedVar, selectedVarId, parentFilterName, parentFilterState) {
                 let self = this;
+
+                // Set chip indicators
+                switch (parentFilterName) {
+                    case 'annotation':
+                        self.annoFilterActive = parentFilterState;
+                        break;
+                    case 'enrichment':
+                        self.enrichFilterActive = parentFilterState;
+                        break;
+                    case 'frequencies':
+                        self.freqFilterActive = parentFilterState;
+                        break;
+                    default:
+                        // Do nothing
+                }
 
                 // Reset no vars
                 let noPassingVars = false;

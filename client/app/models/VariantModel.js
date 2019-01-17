@@ -226,7 +226,6 @@ class VariantModel {
         hubDataSet.initCohorts();
         let probandCohort = hubDataSet.getProbandCohort();
         let subsetCohort = hubDataSet.getSubsetCohort();
-        // TODO: assign appropriate data to unaffected group here
 
         // Initialize hub endpoint
         self.hubEndpoint = hubEndpoint;

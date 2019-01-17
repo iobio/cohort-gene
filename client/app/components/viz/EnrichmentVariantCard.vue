@@ -634,15 +634,17 @@ Updated: SJG Jan2019
                     self.zoomMode = true;
                 }
             },
-            filterVariants: function (filterInfo, selectedTrackId, selectedVariantId) {
+            filterVariants: function (filterInfo, selectedTrackId, selectedVariantId, parentFilterName, parentFilterState) {
                 let self = this;
                 let checkForSelectedVariant = false;
                 if (self.dataSetModel.getName() === selectedTrackId && selectedVariantId) {
                     checkForSelectedVariant = true;
                 }
                 if (self.$refs.subsetVizRef) {
-                    self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name), checkForSelectedVariant, selectedVariantId);
+                    self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name), checkForSelectedVariant, selectedVariantId,
+                        parentFilterName, parentFilterState);
                 }
+
             }
         }
     }

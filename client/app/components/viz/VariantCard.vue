@@ -580,7 +580,7 @@ TD & SJG updated Apr2018 -->
                         .data([exon]);
                 }
             },
-            filterVariants: function(filterInfo, selectedTrackId, selectedVariantId) {
+            filterVariants: function(filterInfo, selectedTrackId, selectedVariantId, parentFilterName, parentFilterState) {
                 let self = this;
 
                 let checkForSelectedVariant = false;
@@ -588,7 +588,8 @@ TD & SJG updated Apr2018 -->
                     checkForSelectedVariant = true;
                 }
                 if (self.$refs.subsetVizRef) {
-                    self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name), checkForSelectedVariant, selectedVariantId);
+                    self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name), checkForSelectedVariant, selectedVariantId,
+                        parentFilterName, parentFilterState);
                 }
             }
         }

@@ -24,35 +24,30 @@
 
 <template>
     <v-flex xs12 style="padding-top: 10px">
-        <v-expansion-panel expand>
-            <v-expansion-panel-content
-                    v-for="filter in filters"
-                    :ref="filter.name + 'ExpansionRef'"
-                    :key="filter.name"
-                    :value="filter.custom">
-                <div slot="header" class="filter-settings-form">
-                    <v-avatar v-if="filter.active" size="12px" color="cohortBlue"></v-avatar>
-                    <v-avatar v-else size="12px" color="white"></v-avatar>
-                    <span class="filter-title">
-                        {{ filter.display }}
-                    </span>
-                </div>
-                <v-card>
-                    <v-card-text><i>{{filter.description}}</i></v-card-text>
-                    <filter-settings
-                            v-if="filter.name !== 'coverage'"
-                            ref="filterSettingsRef"
-                            :filterName="filter.name"
-                            :filterModel="filterModel"
-                            :filter="filter"
-                            :fullAnnotationComplete="fullAnnotationComplete"
-                            @filter-toggled="filterBoxToggled"
-                            @filter-applied="filterCutoffApplied"
-                            @cutoff-filter-cleared="filterCutoffCleared">
-                    </filter-settings>
-                </v-card>
-            </v-expansion-panel-content>
-        </v-expansion-panel>
+        <v-card
+                v-for="filter in filters"
+                :ref="filter.name + 'ExpansionRef'"
+                :key="filter.name"
+                :value="filter.custom">
+            <v-card-title class="filter-settings-form">
+                <v-icon small style="padding-left: 5px; padding-right: 5px">
+                    {{filter.icon}}
+                </v-icon>
+                {{ filter.display }}
+            </v-card-title>
+            <v-card-text><i>{{filter.description}}</i></v-card-text>
+            <filter-settings
+                    v-if="filter.name !== 'coverage'"
+                    ref="filterSettingsRef"
+                    :filterName="filter.name"
+                    :filterModel="filterModel"
+                    :filter="filter"
+                    :fullAnnotationComplete="fullAnnotationComplete"
+                    @filter-toggled="filterBoxToggled"
+                    @filter-applied="filterCutoffApplied"
+                    @cutoff-filter-cleared="filterCutoffCleared">
+            </filter-settings>
+        </v-card>
     </v-flex>
 </template>
 
@@ -78,37 +73,36 @@
             return {
                 showMenu: true,
                 filters: [
-                    {name: 'annotation', display: 'ANNOTATION', active: false, custom: false, description: 'Filter by variant effect, impact, or type'},
-                    // {name: 'coverage', display: 'COVERAGE', active: false, custom: false, description: 'Filter individual sample tracks by fold coverage counts'},
-                    {name: 'enrichment', display: 'ENRICHMENT', active: false, custom: false, description: 'Filter by cohort variants by enrichment statistics'},
-                    {name: 'frequencies', display: 'FREQUENCIES', active: false, custom: false, description: 'Filter by variant frequency within population databases or within the cohort'},
-                    // {name: 'samplePresence', display: 'SAMPLE PRESENCE', active: false, custom: false, description: 'Filter cohort variants by only displaying those also present within a single sample track'}
+                    {
+                        name: 'annotation',
+                        display: 'ANNOTATION FILTERS',
+                        active: false,
+                        custom: false,
+                        description: 'Filter by variant effect, impact, or type',
+                        icon: 'category'
+                    },
+                    {
+                        name: 'enrichment',
+                        display: 'ENRICHMENT FILTERS',
+                        active: false,
+                        custom: false,
+                        description: 'Filter by cohort variants by enrichment statistics',
+                        icon: 'poll'
+                    },
+                    {
+                        name: 'frequencies',
+                        display: 'FREQUENCY FILTERS',
+                        active: false,
+                        custom: false,
+                        description: 'Filter by variant frequency within population databases or within the cohort',
+                        icon: 'people_outline'
+                    },
                 ]
-            //     clinvarCategories: [
-            //     {'key': 'clinvar', 'selected': true, value: 'clinvar_path', text: 'Pathogenic'},
-            //     {'key': 'clinvar', 'selected': true, value: 'clinvar_lpath', text: 'Likely pathogenic'},
-            //     {'key': 'clinvar', 'selected': true, value: 'clinvar_uc', text: 'Uncertain significance'},
-            //     {'key': 'clinvar', 'selected': true, value: 'clinvar_cd', text: 'Conflicting data'},
-            //     {'key': 'clinvar', 'selected': false, value: 'clinvar_other', text: 'Other'},
-            //     {'key': 'clinvar', 'selected': false, value: 'clinvar_benign', text: 'Benign'},
-            //     {'key': 'clinvar', 'selected': false, value: 'clinvar_lbenign', text: 'Likely benign'}
-            // ],
-            //     impacts: ['HIGH', 'MODERATE', 'MODIFIER', 'LOW'],
-            //     zygosities: ['HOM', 'HET']
             }
         },
-        watch: {
-            // showCoverageCutoffs: function () {
-            //     if (this.showCoverageCutoffs) {
-            //         this.showMenu = true;
-            //         this.filters.forEach(function (f) {
-            //             f.active = f.name === 'coverage';
-            //         })
-            //     }
-            // }
-        },
+        watch: {},
         methods: {
-            filterBoxToggled: function(filterName, filterState, parentFilterName, parentFilterState, cohortOnlyFilter) {
+            filterBoxToggled: function (filterName, filterState, parentFilterName, parentFilterState, cohortOnlyFilter) {
                 let self = this;
                 let filterObj = self.filters.filter((filt) => {
                     return filt.name === parentFilterName;
@@ -116,29 +110,29 @@
                 if (filterObj.length > 0) {
                     filterObj[0].active = parentFilterState;
                 }
-                self.$emit('filter-box-toggled', filterName, filterState, cohortOnlyFilter);
+                self.$emit('filter-box-toggled', filterName, filterState, cohortOnlyFilter, parentFilterName, parentFilterState);
             },
-            filterCutoffApplied: function(filterName, filterLogic, cutoffValue, parentFilterName, parentFilterState, cohortOnlyFilter) {
+            filterCutoffApplied: function (filterName, filterLogic, cutoffValue, currParentFiltName, currParFilterState, cohortOnlyFilter) {
                 let self = this;
                 let filterObj = self.filters.filter((filt) => {
-                    return filt.name === parentFilterName;
+                    return filt.name === currParentFiltName;
                 });
                 if (filterObj.length > 0) {
-                    filterObj[0].active = parentFilterState;
+                    filterObj[0].active = currParentFiltName;
                 }
-                self.$emit('filter-cutoff-applied', filterName, filterLogic, cutoffValue, cohortOnlyFilter);
+                self.$emit('filter-cutoff-applied', filterName, filterLogic, cutoffValue, cohortOnlyFilter, currParentFiltName, currParFilterState);
             },
-            filterCutoffCleared: function(filterName, parentFilterName, parentFilterState, cohortOnlyFilter) {
+            filterCutoffCleared: function (filterName, currParFilterName, currParFilterState, cohortOnlyFilter) {
                 let self = this;
                 let filterObj = self.filters.filter((filt) => {
-                    return filt.name === parentFilterName;
+                    return filt.name === currParFilterName;
                 });
                 if (filterObj.length > 0) {
-                    filterObj[0].active = parentFilterState;
+                    filterObj[0].active = currParFilterState;
                 }
-                self.$emit('filter-cutoff-cleared', filterName, cohortOnlyFilter);
+                self.$emit('filter-cutoff-cleared', filterName, cohortOnlyFilter, currParFilterName, currParFilterState);
             },
-            clearFilters: function() {
+            clearFilters: function () {
                 let self = this;
                 self.filters.forEach((filter) => {
                     filter.active = false;
