@@ -522,7 +522,6 @@ TD & SJG updated Nov2018 -->
                 if (self.$refs.filterSettingsMenuRef) {
                     self.$refs.filterSettingsMenuRef.clearFilters();
                 }
-                self.firstGeneSelection = false;
             },
             wipeModels: function () {
                 let self = this;
@@ -561,7 +560,7 @@ TD & SJG updated Nov2018 -->
                     if (!self.geneHistoryList.includes(geneName)) {
                         self.geneHistoryList.push(geneName);
                     }
-
+                    self.firstGeneSelection = false;
                 })
             },
             onTranscriptSelected: function (transcript) {

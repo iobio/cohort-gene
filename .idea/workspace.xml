@@ -23,8 +23,8 @@
       <file leaf-file-name="Home.vue" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client/app/components/pages/Home.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="321">
-              <caret line="674" column="53" selection-start-line="674" selection-start-column="53" selection-end-line="674" selection-end-column="53" />
+            <state relative-caret-position="661">
+              <caret line="562" column="52" selection-start-line="562" selection-start-column="52" selection-end-line="562" selection-end-column="52" />
               <folding>
                 <element signature="n#style#0;n#v-container#0;n#v-content#0;n#div#0;n#template#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#v-tabs-slider#0;n#v-tabs#0;n#v-card#0;n#v-flex#2;n#v-layout#0;n#v-container#0;n#v-content#0;n#div#0;n#template#0;n#!!top" expanded="true" />
@@ -154,7 +154,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>ref</find>
       <find>build</find>
       <find>tab-</find>
       <find>retryent</find>
@@ -184,6 +183,7 @@
       <find>phenotypes</find>
       <find>ondatasset</find>
       <find>ondata</find>
+      <find>firstGeneSelection</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/client/js/model</dir>
@@ -449,12 +449,12 @@
       <workItem from="1546639347593" duration="5344000" />
       <workItem from="1546878593700" duration="61230000" />
       <workItem from="1547223488299" duration="80323000" />
-      <workItem from="1547657407789" duration="2284000" />
+      <workItem from="1547657407789" duration="2509000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1257169000" />
+    <option name="totallyTimeSpent" value="1257394000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-1" y="24" width="1920" height="1057" extended-state="6" />
@@ -901,8 +901,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/client/app/components/pages/Home.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="321">
-          <caret line="674" column="53" selection-start-line="674" selection-start-column="53" selection-end-line="674" selection-end-column="53" />
+        <state relative-caret-position="661">
+          <caret line="562" column="52" selection-start-line="562" selection-start-column="52" selection-end-line="562" selection-end-column="52" />
           <folding>
             <element signature="n#style#0;n#v-container#0;n#v-content#0;n#div#0;n#template#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#v-tabs-slider#0;n#v-tabs#0;n#v-card#0;n#v-flex#2;n#v-layout#0;n#v-container#0;n#v-content#0;n#div#0;n#template#0;n#!!top" expanded="true" />
