@@ -540,7 +540,7 @@ class DataSetModel {
                                 combinedResults.features = destCohort.filterVarsOnPVal(combinedResults.features);
                             }
                             // Add variant number to chips
-                            me.getSubsetCohort().phenotypes.push(combinedResults.features.length + ' variants');
+                            me.getSubsetCohort().numVariants = combinedResults.features.length + ' variants';
 
                             // Assign data parameter
                             if (combinedResults) {
@@ -660,7 +660,7 @@ class DataSetModel {
                                         // Assign cohort model data
                                         let destCohort = self.getSubsetCohort();
                                         // Add variant number to chips
-                                        destCohort.phenotypes.push(results.features.length + ' variants');
+                                        destCohort.numVariants = results.features.length + ' variants';
                                         results.gene = theGene;
                                         destCohort.vcfData = results;
                                     }

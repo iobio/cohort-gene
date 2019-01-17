@@ -21,6 +21,7 @@ class CohortModel {
         this.coverage = [[]];
         this.sampleIds = [];            // Sample IDs that compose this cohort
         this.phenotypes = [];           // Phrases describing phenotypic filtering data; displayed in track chips
+        this.numVariants = null;          // Current number of variants within the loadedVariants from this cohort
         // </editor-fold>
 
         // TODO: TB DEPRECIATED
@@ -1518,9 +1519,7 @@ class CohortModel {
     /* Clear off the last selection detail chip containing the number of variants for the selected locus.*/
     updateChips() {
         let self = this;
-        if (self.phenotypes.length > 1) {
-            self.phenotypes.pop();
-        }
+        self.numVariants = null;
     }
 
     clearChips() {

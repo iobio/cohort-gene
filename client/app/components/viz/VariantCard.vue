@@ -98,6 +98,7 @@ TD & SJG updated Apr2018 -->
                         :data="dataSetModel.loadedVariants"
                         :title="dataSetModel.getName()"
                         :phenotypes="dataSetModel.getSubsetCohort().phenotypes"
+                        :numVariants="dataSetModel.getSubsetCohort().numVariants"
                         :validSourceFiles="formattedValidFiles"
                         :regionStart="regionStart"
                         :regionEnd="regionEnd"

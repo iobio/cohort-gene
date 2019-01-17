@@ -136,6 +136,7 @@ Updated: SJG Jan2019
                         :data="dataSetModel.loadedVariants"
                         :title="dataSetModel.getName()"
                         :phenotypes="dataSetModel.getSubsetCohort().phenotypes"
+                        :numVariants="dataSetModel.getSubsetCohort().numVariants"
                         :validSourceFiles="formattedValidFiles"
                         :invalidSourceFiles="formattedInvalidFiles"
                         :invalidSourceReasons="formattedInvalidReasons"

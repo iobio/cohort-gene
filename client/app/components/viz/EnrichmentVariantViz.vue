@@ -88,6 +88,9 @@
                     :key="phenotype">
                 {{phenotype}}
             </v-chip>
+            <v-chip v-if="numVariants" color="cohortNavy" small outline style="font-size: 12px">
+                {{numVariants}}
+            </v-chip>
         </div>
         <div class="variant-viz" id="sourceFileLine">
             <span class="field-label-header">Analysis sources</span>
@@ -214,6 +217,10 @@
             phenotypes: {
                 type: Array,
                 default: () => []
+            },
+            numVariants: {
+                type: String,
+                default: null
             },
             validSourceFiles: {
                 type: Array,
