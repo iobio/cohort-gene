@@ -128,14 +128,20 @@
 
                 // Format display name
                 if (parentFilterName === 'impact') {
-                    filterDisplayName += ' IMPACT';
+                    filterDisplayName = filterDisplayName.toLowerCase();
+                    filterDisplayName = filterDisplayName.charAt(0).toUpperCase() + filterDisplayName.slice(1);
+                    filterDisplayName += ' Impact';
                 } else if (parentFilterName === 'type') {
-                    filterDisplayName += 'S';
+                    if (filterDisplayName !== 'SNP' && filterDisplayName !== 'MNP') {
+                        filterDisplayName = filterDisplayName.toLowerCase();
+                        filterDisplayName = filterDisplayName.charAt(0).toUpperCase() + filterDisplayName.slice(1);
+                    }
+                    filterDisplayName += 's';
                 } else if (parentFilterName === 'zygosities') {
                     if (filterName === 'hom') {
-                        filterDisplayName = 'HOMOZYGOTES';
+                        filterDisplayName = 'Homozygotes';
                     } else {
-                        filterDisplayName = 'HETEROZYGOTES';
+                        filterDisplayName = 'Heterozygotes';
                     }
                 }
 

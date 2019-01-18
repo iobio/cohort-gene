@@ -438,7 +438,7 @@
                 let filterLabel = '';
                 // Turning checkbox ON
                 if (filterInfo.type === 'checkbox' && filterInfo.state === false) {
-                    filterLabel = 'NO ' + filterInfo.displayName;
+                    filterLabel = 'No ' + filterInfo.displayName;
                     // if (filterInfo.state === false) {
                     let filterObj = {name: filterInfo.name, filterLabel: filterLabel};
                     self.filterChips.push(filterObj);
