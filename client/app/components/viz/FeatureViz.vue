@@ -73,31 +73,31 @@
             </div>
         </v-layout>
         <!--<v-layout row> TODO: removing this for now, too confusing-->
-            <!--<v-flex xl3 lg4 md6 class="summary-field-label">-->
-                <!--<span>Fold change:</span>-->
-                <!--<v-menu open-on-hover offset-y transition="slide-y-transition" max-width="300px">-->
-                    <!--<v-btn flat icon small color="cohortBlue" slot="activator" class="info-button">-->
-                        <!--<v-icon small>info_outline</v-icon>-->
-                    <!--</v-btn>-->
-                    <!--<v-card>-->
-                        <!--<v-card-title style="font-family: Poppins; font-size: 16px; font-weight: 500; padding-top: 2px">-->
-                            <!--Fold Change in Variant Frequency-->
-                        <!--</v-card-title>-->
-                        <!--<v-divider></v-divider>-->
-                        <!--<v-card-text style="padding-top: 0">-->
-                            <!--This value represents the difference between the frequency in which a variant is found in-->
-                            <!--the subset and proband cohorts. This value relies on raw alternate (combined homozygous and-->
-                            <!--heterozygous) counts, but may not be statistically significant.-->
-                        <!--</v-card-text>-->
-                    <!--</v-card>-->
-                <!--</v-menu>-->
-            <!--</v-flex>-->
-            <!--<v-flex xl7 md6 v-bind:class="{hide: loadingExtraAnnotations === true}" class="cohort-summary-field-value">-->
-                <!--<span>{{ foldEnrichmentInfo }}</span>-->
-            <!--</v-flex>-->
-            <!--<div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">-->
-                <!--<img src="../../../assets/images/wheel.gif">-->
-            <!--</div>-->
+        <!--<v-flex xl3 lg4 md6 class="summary-field-label">-->
+        <!--<span>Fold change:</span>-->
+        <!--<v-menu open-on-hover offset-y transition="slide-y-transition" max-width="300px">-->
+        <!--<v-btn flat icon small color="cohortBlue" slot="activator" class="info-button">-->
+        <!--<v-icon small>info_outline</v-icon>-->
+        <!--</v-btn>-->
+        <!--<v-card>-->
+        <!--<v-card-title style="font-family: Poppins; font-size: 16px; font-weight: 500; padding-top: 2px">-->
+        <!--Fold Change in Variant Frequency-->
+        <!--</v-card-title>-->
+        <!--<v-divider></v-divider>-->
+        <!--<v-card-text style="padding-top: 0">-->
+        <!--This value represents the difference between the frequency in which a variant is found in-->
+        <!--the subset and proband cohorts. This value relies on raw alternate (combined homozygous and-->
+        <!--heterozygous) counts, but may not be statistically significant.-->
+        <!--</v-card-text>-->
+        <!--</v-card>-->
+        <!--</v-menu>-->
+        <!--</v-flex>-->
+        <!--<v-flex xl7 md6 v-bind:class="{hide: loadingExtraAnnotations === true}" class="cohort-summary-field-value">-->
+        <!--<span>{{ foldEnrichmentInfo }}</span>-->
+        <!--</v-flex>-->
+        <!--<div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">-->
+        <!--<img src="../../../assets/images/wheel.gif">-->
+        <!--</div>-->
         <!--</v-layout>-->
         <v-layout row style="padding-top: 10px">
             <v-flex xs12 class="field-label-header" style="text-align: left">Annotation Details</v-flex>
@@ -114,34 +114,34 @@
             </v-flex>
             <v-flex xs1 md2 class="summary-field-label">Impact:</v-flex>
             <v-flex xs5 md4 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
-         <span v-bind:class="{hide: impactText === ''}">
-           <svg v-bind:class="{hide: (type !== 'snp' && type !== 'mnp')}" class="impact-badge" height="12" width="12">
-             <g transform="translate(1,3)" class="filter-symbol" v-bind:class="impactColor">
-               <rect width="8" height="8"></rect>
-             </g>
-           </svg>
-           <svg v-bind:class="{hide: (type !== 'del')}" class="impact-badge" height="12" width="13">
-             <g transform="translate(5,6)" class="filter-symbol" v-bind:class="impactColor">
-               <path d="M0,-4.161791450287817L4.805622828269509,4.161791450287817 -4.805622828269509,4.161791450287817Z">
-               </path>
-             </g>
-           </svg>
-           <svg v-bind:class="{hide: (type !== 'ins')}" class="impact-badge" height="12" width="13">
-             <g transform="translate(7,7)" class="filter-symbol" v-bind:class="impactColor">
-               <path d="M0,3.5682482323055424A3.5682482323055424,3.5682482323055424 0 1,1 0,-3.5682482323055424A3.5682482323055424,3.5682482323055424 0 1,1 0,3.5682482323055424Z">
-               </path>
-             </g>
-           </svg>
-           <svg v-bind:class="{hide: (type !== 'complex')}" class="impact-badge" height="13" width="13">
-             <g transform="translate(4,6)" class="filter-symbol" v-bind:class="impactColor">
-               <path d="M0,-5.885661912765424L3.398088489694245,0 0,5.885661912765424 -3.398088489694245,0Z">
-               </path>
-             </g>
-           </svg>
-         </span>
+                 <span v-bind:class="{hide: impactText === ''}">
+                   <svg v-bind:class="{hide: (type !== 'snp' && type !== 'mnp')}" class="impact-badge" height="12" width="12">
+                     <g transform="translate(1,3)" class="filter-symbol" v-bind:class="impactColor">
+                       <rect width="8" height="8"></rect>
+                     </g>
+                   </svg>
+                   <svg v-bind:class="{hide: (type !== 'del')}" class="impact-badge" height="12" width="13">
+                     <g transform="translate(5,6)" class="filter-symbol" v-bind:class="impactColor">
+                       <path d="M0,-4.161791450287817L4.805622828269509,4.161791450287817 -4.805622828269509,4.161791450287817Z">
+                       </path>
+                     </g>
+                   </svg>
+                   <svg v-bind:class="{hide: (type !== 'ins')}" class="impact-badge" height="12" width="13">
+                     <g transform="translate(7,7)" class="filter-symbol" v-bind:class="impactColor">
+                       <path d="M0,3.5682482323055424A3.5682482323055424,3.5682482323055424 0 1,1 0,-3.5682482323055424A3.5682482323055424,3.5682482323055424 0 1,1 0,3.5682482323055424Z">
+                       </path>
+                     </g>
+                   </svg>
+                   <svg v-bind:class="{hide: (type !== 'complex')}" class="impact-badge" height="13" width="13">
+                     <g transform="translate(4,6)" class="filter-symbol" v-bind:class="impactColor">
+                       <path d="M0,-5.885661912765424L3.398088489694245,0 0,5.885661912765424 -3.398088489694245,0Z">
+                       </path>
+                     </g>
+                   </svg>
+                 </span>
                 <span>
-           {{impactText}}
-         </span>
+                   {{impactText}}
+                 </span>
             </v-flex>
             <v-flex xs5 md4 v-bind:class="{ hide: loadingExtraAnnotations === false }">
                 <div class="loader">
@@ -152,7 +152,33 @@
         <v-layout row>
             <v-flex xs1 md2 class="summary-field-label">Type:</v-flex>
             <v-flex xs5 md4 v-bind:class="{hide: loadingExtraAnnotations === true}" class="summary-field-value">
-                {{type}}
+                <span v-bind:class="{hide: type === ''}">
+                    <svg v-bind:class="{hide: (type !== 'snp')}" id="snp" class="legend-element" height="12" width="12" transform="translate(1,2)">
+                        <rect class="legend-symbol snp" rx="2" ry="1" x="1" width="10" y="1" height="10" style="opacity: 1; fill: none; stroke: rgb(0, 0, 0); stroke-width: 1px;">
+                        </rect>
+                    </svg>
+                    <svg v-bind:class="{hide: (type !== 'ins')}" id="ins" class="  legend-element" height="12" width="13" transform="translate(2,2)">
+                        <circle class="legend-symbol ins" cx="5" cy="5" r="5"
+                                style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 1px; opacity: 1;"></circle>
+                    </svg>
+
+                    <svg v-bind:class="{hide: (type !== 'del')}" id="del" class="  legend-element" height="12" width="13" transform="translate(1,2)">
+                        <polygon class="legend-symbol del  legend-element" points="0,10 5,0 10,10" rx="1" ry="1" x="1" y="2"
+                                 style="fill: none; stroke: rgb(0, 0, 0); stroke-width: 1px; opacity: 1;">
+                        </polygon>
+                    </svg>
+
+                    <svg v-bind:class="{hide: (type !== 'complex')}" id="complex" class="  legend-element" height="13" width="13" transform="translate(0,0)">
+                        <g transform="translate(7,6)">
+                            <path d="M0,-6.771323825530848L5.79617697938849,0 0,6.771323825530848 -5.79617697938849,0Z"
+                                  class="legend-symbol complex"
+                                  style="opacity: 1;fill: none;stroke-width: 1.5px !important;"></path>
+                        </g>
+                    </svg>
+                </span>
+                <span>
+                    {{type}}
+                </span>
             </v-flex>
             <v-flex xs5 md4 v-bind:class="{ hide: loadingExtraAnnotations === false }">
                 <div class="loader">
