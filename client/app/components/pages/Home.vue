@@ -903,56 +903,67 @@ TD & SJG updated Nov2018 -->
                     self.$refs.variantSummaryCardRef.assignBarChartValues(self.probandN, self.subsetN);
                 }
             },
-            filterBoxToggled: function(filterName, filterState, cohortOnlyFilter, parentFilterName, parentFilterState) {
+            filterBoxToggled: function(filterName, filterState, cohortOnlyFilter, parentFilterName, parentFilterState, filterDisplayName) {
                 let self = this;
                 let filterInfo = {
                     name: filterName,
+                    displayName: filterDisplayName,
                     cohortOnly: cohortOnlyFilter,
                     type: 'checkbox',
                     state: filterState,
                     cutoffValue: null,
+                    parentFilterName: parentFilterName,
+                    parentFilterState: parentFilterState
                 };
-                self.onFilterSettingsApplied(filterInfo, parentFilterName, parentFilterState);
+                self.onFilterSettingsApplied(filterInfo);
             },
-            filterCutoffApplied: function(filterName, filterLogic, cutoffValue, cohortOnlyFilter, parentFilterName, parentFilterState) {
+            filterCutoffApplied: function(filterName, filterLogic, cutoffValue, cohortOnlyFilter, parentFilterName, parentFilterState, filterDisplayName) {
                 let self = this;
 
                 let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
 
                 let filterInfo = {
                     name: translatedFilterName,
+                    displayName: filterDisplayName,
                     cohortOnly: cohortOnlyFilter,
                     type: 'cutoff',
                     state: filterLogic,
-                    cutoffValue: cutoffValue
+                    cutoffValue: cutoffValue,
+                    turnOff: false,
+                    parentFilterName: parentFilterName,
+                    parentFilterState: parentFilterState
                 };
-                self.onFilterSettingsApplied(filterInfo, parentFilterName, parentFilterState);
+                self.onFilterSettingsApplied(filterInfo);
             },
-            filterCutoffCleared: function(filterName, cohortOnlyFilter, parentFilterName, parentFilterState) {
+            filterCutoffCleared: function(filterName, cohortOnlyFilter, parentFilterName, parentFilterState, filterDisplayName) {
                 let self = this;
 
                 let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
 
                 let filterInfo = {
                     name: translatedFilterName,
+                    displayName: filterDisplayName,
                     cohortOnly: cohortOnlyFilter,
                     type: 'cutoff',
                     state: null,
-                    cutoffValue: null
+                    cutoffValue: null,
+                    turnOff: true,
+                    parentFilterName: parentFilterName,
+                    parentFilterState: parentFilterState
                 };
-                self.onFilterSettingsApplied(filterInfo, parentFilterName, parentFilterState);
+                self.onFilterSettingsApplied(filterInfo);
             },
-            onFilterSettingsApplied: function (filterInfo, parentFilterName, parentFilterState) {
+            onFilterSettingsApplied: function (filterInfo) {
                 let self = this;
                 let selectedVarId = null;
                 if (self.selectedVariant) {
                     selectedVarId = self.selectedVariant.id;
                 }
-                self.$refs.enrichCardRef[0].filterVariants(filterInfo, self.selectedTrackId, selectedVarId, parentFilterName, parentFilterState);
+                self.$refs.enrichCardRef[0].filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
 
                 if (self.$refs.variantCardRef && !filterInfo.cohortOnly) {
                     self.$refs.variantCardRef.forEach((cardRef) => {
-                        cardRef.filterVariants(filterInfo, self.selectedTrackId, selectedVarId, parentFilterName, parentFilterState);
+                        cardRef.filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
                     });
                 }
             },

@@ -102,7 +102,7 @@
         },
         watch: {},
         methods: {
-            filterBoxToggled: function (filterName, filterState, parentFilterName, parentFilterState, cohortOnlyFilter) {
+            filterBoxToggled: function (filterName, filterState, parentFilterName, parentFilterState, cohortOnlyFilter, filterDisplayName) {
                 let self = this;
                 let filterObj = self.filters.filter((filt) => {
                     return filt.name === parentFilterName;
@@ -110,9 +110,9 @@
                 if (filterObj.length > 0) {
                     filterObj[0].active = parentFilterState;
                 }
-                self.$emit('filter-box-toggled', filterName, filterState, cohortOnlyFilter, parentFilterName, parentFilterState);
+                self.$emit('filter-box-toggled', filterName, filterState, cohortOnlyFilter, parentFilterName, parentFilterState, filterDisplayName);
             },
-            filterCutoffApplied: function (filterName, filterLogic, cutoffValue, currParentFiltName, currParFilterState, cohortOnlyFilter) {
+            filterCutoffApplied: function (filterName, filterLogic, cutoffValue, currParentFiltName, currParFilterState, cohortOnlyFilter, filterDisplayName) {
                 let self = this;
                 let filterObj = self.filters.filter((filt) => {
                     return filt.name === currParentFiltName;
@@ -120,17 +120,17 @@
                 if (filterObj.length > 0) {
                     filterObj[0].active = currParentFiltName;
                 }
-                self.$emit('filter-cutoff-applied', filterName, filterLogic, cutoffValue, cohortOnlyFilter, currParentFiltName, currParFilterState);
+                self.$emit('filter-cutoff-applied', filterName, filterLogic, cutoffValue, cohortOnlyFilter, currParentFiltName, currParFilterState, filterDisplayName);
             },
-            filterCutoffCleared: function (filterName, currParFilterName, currParFilterState, cohortOnlyFilter) {
+            filterCutoffCleared: function (filterName, currParentFiltName, currParFilterState, cohortOnlyFilter, filterDisplayName) {
                 let self = this;
                 let filterObj = self.filters.filter((filt) => {
-                    return filt.name === currParFilterName;
+                    return filt.name === currParentFiltName;
                 });
                 if (filterObj.length > 0) {
                     filterObj[0].active = currParFilterState;
                 }
-                self.$emit('filter-cutoff-cleared', filterName, cohortOnlyFilter, currParFilterName, currParFilterState);
+                self.$emit('filter-cutoff-cleared', filterName, cohortOnlyFilter, currParentFiltName, currParFilterState, filterDisplayName);
             },
             clearFilters: function () {
                 let self = this;

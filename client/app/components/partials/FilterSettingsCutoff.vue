@@ -27,8 +27,6 @@
                                 color="colorNavy"
                                 @change="checkApplyButtonState"
                         ></v-select>
-                    <!--</v-flex>-->
-                    <!--<v-flex d-flex xs5 lg3>-->
                         <v-text-field
                             v-if="isFrequencyField"
                             v-model="cutoffValue"
@@ -129,7 +127,7 @@
             },
             onApplyFilter: function() {
                 let self = this;
-                self.filterButtonColor = '#95b0c6';     // Flip button color
+                self.filterButtonColor = '#d18e00';     // Flip button color
                 self.$emit('filter-applied', self.filterName, self.filterLogic.text, self.cutoffValue, self.parentFilterName);
             },
             checkApplyButtonState: function() {

@@ -91,11 +91,9 @@
             <v-chip v-if="numVariants" color="cohortNavy" small outline style="font-size: 12px">
                 {{numVariants}}
             </v-chip>
-            <v-chip v-if="annoFilterActive" color="cohortGold" small outline style="font-size: 12px">
-                Annotation Filter Active
-            </v-chip>
-            <v-chip v-if="freqFilterActive" color="cohortGold" small outline style="font-size: 12px">
-                Frequency Filter Active
+            <v-chip v-for="filterChip in filterChips" color="cohortGold" small outline style="font-size: 12px"
+                    :key="filterChip.name">
+                {{filterChip.filterLabel}}
             </v-chip>
         </div>
         <div class="variant-viz" id="sourceFileLine">
@@ -238,8 +236,7 @@
                 excludeFilters: [],     // List of filter classes; if variant contains any one of these, it will be hidden
                 cutoffFilters: {},       // Hash of arrays {filterName: [filterName, logic, cutoffVal]}; if variant does not pass any of these, it will be hidden
                 noPassingResults: false,
-                annoFilterActive: false,
-                freqFilterActive: false
+                filterChips: []
             }
         },
         computed: {
@@ -374,17 +371,39 @@
                 let self = this;
                 self.variantChart.switchColorScheme()(enrichmentMode, svg);
             },
-            filterVariants: function(filterInfo, svg, checkForSelectedVar, selectedVarId, parentFilterName, parentFilterState) {
+            filterVariants: function(filterInfo, svg, checkForSelectedVar, selectedVarId) {
                 let self = this;
 
                 // Set chip indicators
-                switch (parentFilterName) {
-                    case 'annotation':
-                        self.annoFilterActive = parentFilterState;
-                        break;
-                    case 'frequencies':
-                        self.freqFilterActive = parentFilterState;
-                        break;
+                let filterLabel = '';
+                // Turning checkbox ON
+                if (filterInfo.type === 'checkbox' && filterInfo.state === false) {
+                    filterLabel = 'NO ' + filterInfo.displayName;
+                    // if (filterInfo.state === false) {
+                    let filterObj = {name: filterInfo.name, filterLabel: filterLabel};
+                    self.filterChips.push(filterObj);
+
+                    // Turning cutoff ON
+                } else if (filterInfo.type === 'cutoff' && filterInfo.turnOff === false) {
+                    filterLabel = filterInfo.displayName + ' ' + filterInfo.state + ' ' + filterInfo.cutoffValue;
+
+                    // Replace label if this filter already active at different value
+                    let matchingFilters = self.filterChips.filter((obj) => {
+                        return obj.name === filterInfo.name
+                    });
+                    if (matchingFilters && matchingFilters[0]) {
+                        matchingFilters[0].filterLabel = filterLabel;
+
+                        // Otherwise add fresh
+                    } else {
+                        let filterObj = {name: filterInfo.name, filterLabel: filterLabel};
+                        self.filterChips.push(filterObj);
+                    }
+                    // Turning either type OFF
+                } else {
+                    self.filterChips = self.filterChips.filter((obj) => {
+                        return obj.name !== filterInfo.name;
+                    })
                 }
 
                 // Reset no vars

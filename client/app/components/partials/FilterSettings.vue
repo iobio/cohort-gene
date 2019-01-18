@@ -90,8 +90,6 @@
                         {name: 'impact', display: 'Impact', active: false, open: false, type: 'checkbox', cohortOnly: false},
                         {name: 'type', display: 'Type', active: false, open: false, type: 'checkbox', cohortOnly: false},
                         {name: 'zygosities', display: 'Zygosities', active: false, open: false, type: 'checkbox', cohortOnly: false},],
-                    'coverage': [
-                        {name: 'coverage', display: 'Coverage', active: false, open: false, type: 'cutoff'}],
                     'enrichment': [
                         {name: 'pValue', display: 'p-value', active: false, open: false, type: 'cutoff', cohortOnly: true},
                         {name: 'adjPVal', display: 'Adj p-value', active: false, open: false, type: 'cutoff', cohortOnly: true}],
@@ -109,7 +107,7 @@
         },
         watch: {},
         methods: {
-            onFilterToggled: function(filterName, filterState, parentFilterName, grandparentFilterName, parentFilterState) {
+            onFilterToggled: function(filterName, filterState, parentFilterName, grandparentFilterName, parentFilterState, filterDisplayName) {
                 let self = this;
 
                 // Turn on indicator
@@ -127,7 +125,21 @@
                 parentFilters.forEach((filt) => {
                     grandparentFilterState |= filt.active;
                 });
-                self.$emit('filter-toggled', filterName, filterState, grandparentFilterName, grandparentFilterState, cohortOnly);
+
+                // Format display name
+                if (parentFilterName === 'impact') {
+                    filterDisplayName += ' IMPACT';
+                } else if (parentFilterName === 'type') {
+                    filterDisplayName += 'S';
+                } else if (parentFilterName === 'zygosities') {
+                    if (filterName === 'hom') {
+                        filterDisplayName = 'HOMOZYGOTES';
+                    } else {
+                        filterDisplayName = 'HETEROZYGOTES';
+                    }
+                }
+
+                self.$emit('filter-toggled', filterName, filterState, grandparentFilterName, grandparentFilterState, cohortOnly, filterDisplayName);
             },
             onFilterApplied: function(filterName, filterLogic, cutoffValue, grandparentFilterName) {
                 let self = this;
@@ -138,17 +150,23 @@
                 });
 
                 let cohortOnly = false;
+                let displayName = '';
                 if (filterObj.length > 0) {
                     filterObj[0].active = true;
                     cohortOnly = filterObj[0].cohortOnly;
+                    displayName = filterObj[0].display;
+                    if (grandparentFilterName === 'frequencies') {
+                        displayName += ' Freq';
+                    }
                 }
+
                 let grandparentFilterState = false;
                 let parentFilters = self.categories[grandparentFilterName];
                 parentFilters.forEach((filt) => {
                     grandparentFilterState |= filt.active;
                 });
 
-                self.$emit('filter-applied', filterName, filterLogic, cutoffValue, grandparentFilterName, grandparentFilterState, cohortOnly);
+                self.$emit('filter-applied', filterName, filterLogic, cutoffValue, grandparentFilterName, grandparentFilterState, cohortOnly, displayName);
             },
             onFilterCleared: function(filterName, grandparentFilterName) {
                 let self = this;
@@ -159,9 +177,11 @@
                 });
 
                 let cohortOnly = false;
+                let displayName = '';
                 if (filterObj.length > 0) {
                     filterObj[0].active = false;
                     cohortOnly = filterObj[0].cohortOnly;
+                    displayName = filterObj[0].display;
                 }
                 let grandparentFilterState = false;
                 let parentFilters = self.categories[grandparentFilterName];
@@ -169,7 +189,7 @@
                     grandparentFilterState |= filt.active;
                 });
 
-                self.$emit('cutoff-filter-cleared', filterName, grandparentFilterName, grandparentFilterState, cohortOnly);
+                self.$emit('cutoff-filter-cleared', filterName, grandparentFilterName, grandparentFilterState, cohortOnly, displayName);
             },
             clearFilters: function() {
                 let self = this;

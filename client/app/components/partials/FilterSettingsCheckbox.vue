@@ -59,58 +59,6 @@
                     zygosities: [
                         {name: 'hom', displayName: 'HOMOZYGOUS', model: true},
                         {name: 'het', displayName: 'HETEROZYGOUS', model: true}
-                    ],
-
-                    // Enrichment
-                    pValue: [
-                        {name: 'pVal0_0001', displayName: '0 - 0.0001', model: true},
-                        {name: 'pVal0001_0005', displayName: '0.0001 - 0.0005', model: true},
-                        {name: 'pVal0005_001', displayName: '0.0005 - 0.001', model: true},
-                        {name: 'pVal001_005', displayName: '0.001 - 0.005', model: true},
-                        {name: 'pVal005_01', displayName: '0.005 - 0.01', model: true},
-                        {name: 'pVal01_05', displayName: '0.01 - 0.05', model: true},
-                        {name: 'pVal05_1', displayName: '0.05 - 0.1', model: true},
-                        {name: 'pVal1_25', displayName: '0.1 - 0.25', model: true},
-                        {name: 'pVal25_50', displayName: '0.25 - 0.50', model: true},
-                        {name: 'pVal50_100', displayName: '0.50 - 1.0', model: true}
-                    ],
-
-                    subsetDelta: [
-                        {name: 'delta2', displayName: '>2x increase in subset', model: true},
-                        {name: 'delta4', displayName: '>4x increase in subset', model: true},
-                        {name: 'delta10', displayName: '>10x increase in subset', model: true}
-                    ],
-
-                    // Frequencies
-                    g1000: [
-                        {name: 'g1000_025', displayName: '0 - 25%', model: true},
-                        {name: 'g1000_2550', displayName: '25 - 50%', model: true},
-                        {name: 'g1000_5075', displayName: '50 - 75%', model: true},
-                        {name: 'g1000_75100', displayName: '75 - 100%', model: true},
-                    ],
-                    exac: [
-                        {name: 'exac_025', displayName: '0 - 25%', model: true},
-                        {name: 'exac_2550', displayName: '25 - 50%', model: true},
-                        {name: 'exac_5075', displayName: '50 - 75%', model: true},
-                        {name: 'exac_75100', displayName: '75 - 100%', model: true},
-                    ],
-                    gnomad: [
-                        {name: 'gnomad_025', displayName: '0 - 25%', model: true},
-                        {name: 'gnomad_2550', displayName: '25 - 50%', model: true},
-                        {name: 'gnomad_5075', displayName: '50 - 75%', model: true},
-                        {name: 'gnomad_75100', displayName: '75 - 100%', model: true},
-                    ],
-                    probandFreq: [
-                        {name: 'proband_025', displayName: '0 - 25%', model: true},
-                        {name: 'proband_2550', displayName: '25 - 50%', model: true},
-                        {name: 'proband_5075', displayName: '50 - 75%', model: true},
-                        {name: 'proband_75100', displayName: '75 - 100%', model: true},
-                    ],
-                    subsetFreq: [
-                        {name: 'subset_025', displayName: '0 - 25%', model: true},
-                        {name: 'subset_2550', displayName: '25 - 50%', model: true},
-                        {name: 'subset_5075', displayName: '50 - 75%', model: true},
-                        {name: 'subset_75100', displayName: '75 - 100%', model: true},
                     ]
                 }
             }
@@ -129,7 +77,7 @@
                 self.checkboxLists[self.parentFilterName].forEach((filter) => {
                    anyFilterInParentActive |= !filter.model;
                 });
-                self.$emit('filter-toggled', filterName, updatedState, self.parentFilterName, self.grandparentFilterName, anyFilterInParentActive);
+                self.$emit('filter-toggled', filterName, updatedState, self.parentFilterName, self.grandparentFilterName, anyFilterInParentActive, filterObj.displayName);
             },
             clearFilters: function() {
                 let self = this;
