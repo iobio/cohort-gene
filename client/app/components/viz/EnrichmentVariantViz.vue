@@ -333,13 +333,15 @@
                         self.onVariantZoomSelected(selectedVarIds, xStart, yStart, drawBelow, graphWidth);
                     });
             },
-            update: function () {
+            update: function (svg) {
                 let self = this;
                 self.model.inProgress.drawingVariants = false;
 
                 // Reset filters
-                self.excludeFilters = [];
-                self.noPassingResults = false;
+                if (svg == null) {
+                    self.excludeFilters = [];
+                    self.noPassingResults = false;
+                }
 
                 if (self.data) {
                     // Get available vertical space to send into scaled variant d3
@@ -375,6 +377,14 @@
                 } else {
                     let selection = d3.select(self.$el).datum([self.data]);
                     self.variantChart(selection);
+                }
+
+                // Apply any filters we may have had already present on first round render
+                if (svg) {
+                    let noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
+                    if (noPassingVars) {
+                        self.noPassingResults = true;
+                    }
                 }
             },
             onVariantClick: function (variant) {
@@ -428,10 +438,10 @@
             clearVariants: function (svg) {
                 this.variantChart.clearVariants()(svg);
             },
-            refreshVariantColors: function() {
+            refreshVariantColors: function(svg) {
                 let self = this;
                 self.extraAnnotationsLoaded = true;
-                this.update();
+                this.update(svg);
             },
             resetPreAnnotateColor: function() {
                 let self = this;
@@ -445,7 +455,6 @@
                 // Turning checkbox ON
                 if (filterInfo.type === 'checkbox' && filterInfo.state === false) {
                     filterLabel = 'No ' + filterInfo.displayName;
-                    // if (filterInfo.state === false) {
                     let filterObj = {name: filterInfo.name, filterLabel: filterLabel};
                     self.filterChips.push(filterObj);
 

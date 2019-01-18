@@ -629,7 +629,7 @@ Updated: SJG Jan2019
             refreshVariantColors: function () {
                 let self = this;
                 if (self.$refs.subsetVizRef) {
-                    self.$refs.subsetVizRef.refreshVariantColors();
+                    self.$refs.subsetVizRef.refreshVariantColors(self.getVariantSVG(self.$refs.subsetVizRef.name));
                 }
                 if (self.zoomMode) {
                     self.zoomMode = true;

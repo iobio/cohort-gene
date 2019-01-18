@@ -15,7 +15,8 @@ function barChart() {
     var parentId,
         barColor = '#6c94b7',
         comingSoonFlag = false,
-        yValueMax = 575;
+        yValueMax = 575,
+        yTicks = 0;
 
     // Private variables (can be made public if necessary except for _x and _y)
     var _x, _y,
@@ -95,15 +96,10 @@ function barChart() {
             .scale(_x)
             .orient("bottom, center");
 
-        // Avoid decimals
-        // TODO: this isn't working...
-        let yTicksMax = 5;
-        let yValueTicks = yValueMax < yTicksMax ? (yValueMax + 1) : yTicksMax;
-
         var yAxis = d3.svg.axis()
             .scale(_y)
             .orient("left")
-            .ticks(yValueTicks);    // Max of 5 ticks
+            .ticks(yTicks);    // Max of 5 ticks
 
         _x.domain(dataMap.map(function (d) {
             return d.label;
@@ -188,6 +184,14 @@ function barChart() {
             return yValueMax;
         }
         yValueMax = _;
+        return chart;
+    };
+
+    chart.yTicks = function (_) {
+        if (!arguments.length) {
+            return yTicks;
+        }
+        yTicks = _;
         return chart;
     };
 

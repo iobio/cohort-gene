@@ -76,6 +76,7 @@
                 self.probandZygChart = barChart()
                     .parentId('probandZygBar')
                     .yValueMax(probandSampleCount)
+                    .yTicks(self.getTicks(probandSampleCount))
                     .on('d3rendered', function () {
                     });
                 self.probandZygChart(self.probandZygMap);
@@ -83,6 +84,7 @@
                 self.subsetZygChart = barChart()
                     .parentId('subsetZygBar')
                     .yValueMax(subsetSampleCount)
+                    .yTicks(self.getTicks(subsetSampleCount))
                     .on('d3rendered', function () {
                     });
                 self.subsetZygChart(self.subsetZygMap);
@@ -96,12 +98,20 @@
                 let self = this;
                 self.probandZygChart.fillChart()();
                 self.subsetZygChart.fillChart()();
+            },
+            getTicks(sampleCount) {
+                if (sampleCount < 4) {
+                    return sampleCount + 1;
+                } else {
+                    return sampleCount;
+                }
             }
         },
         watch: {
             selectedVariant: function () {
                 this.fillCharts();
             }
-        }
+        },
+        computed: {}
     }
 </script>
