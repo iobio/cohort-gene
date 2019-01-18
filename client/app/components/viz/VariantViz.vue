@@ -78,6 +78,12 @@
             g
                 fill: #1574C7
                 opacity: .8
+        .btn
+            height: 26px !important
+            padding: 0 !important
+            margin: 4px !important
+        .btn__content
+            padding: 0 12px !important
 </style>
 
 <template>
@@ -91,10 +97,10 @@
             <v-chip v-if="numVariants" color="cohortNavy" small outline style="font-size: 12px; pointer-events: none">
                 {{numVariants}}
             </v-chip>
-            <v-chip v-for="filterChip in filterChips" color="cohortGold" small outline style="font-size: 12px"
-                    :key="filterChip.name">
+            <v-btn v-for="filterChip in filterChips" color="cohortGold" small flat outline round style="font-size: 12px;"
+                    :key="filterChip.name" v-on:click="navigateToFilterTab(filterChip.name)">
                 {{filterChip.filterLabel}}
-            </v-chip>
+            </v-btn>
         </div>
         <div class="variant-viz" id="sourceFileLine">
             <span class="field-label-header">Analysis sources</span>
@@ -477,6 +483,10 @@
                 if (noPassingVars) {
                     self.noPassingResults = true;
                 }
+            },
+            navigateToFilterTab: function(selectedFilter) {
+                let self = this;
+                self.$emit('navFilterTab', selectedFilter);
             }
         }
     }

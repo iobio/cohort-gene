@@ -153,6 +153,7 @@ Updated: SJG Jan2019
                         :impactMode="impactMode"
                         :doneLoadingData="doneLoadingData"
                         :frequencyDisplayMode="true"
+                        @navFilterTab="navigateToFilterTab"
                         @variantClick="onVariantClick"
                         @variantZoom="onVariantZoom"
                         @variantHover="onVariantHover"
@@ -645,6 +646,10 @@ Updated: SJG Jan2019
                         parentFilterName, parentFilterState);
                 }
 
+            },
+            navigateToFilterTab: function(selectedFilter) {
+                let self = this;
+                self.$emit('navFilterTab', selectedFilter);
             }
         }
     }

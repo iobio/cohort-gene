@@ -70,7 +70,8 @@ TD & SJG updated Nov2018 -->
                                     @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
                                     @knownVariantsVizChange="onKnownVariantsVizChange"
                                     @knownVariantsFilterChange="onKnownVariantsFilterChange"
-                                    @zoomModeStart="startZoomMode">
+                                    @zoomModeStart="startZoomMode"
+                                    @navFilterTab="tabToFilters">
                             </enrichment-variant-card>
                             <variant-card
                                     v-else
@@ -100,7 +101,8 @@ TD & SJG updated Nov2018 -->
                                     @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
                                     @knownVariantsVizChange="onKnownVariantsVizChange"
                                     @knownVariantsFilterChange="onKnownVariantsFilterChange"
-                                    @zoomModeStart="startZoomMode">
+                                    @zoomModeStart="startZoomMode"
+                                    @navFilterTab="tabToFilters">
                             </variant-card>
                         </div>
                     </v-flex>
@@ -981,6 +983,11 @@ TD & SJG updated Nov2018 -->
                     // Fill in text entry
                     self.$refs.navRef.setSelectedGeneText(geneToReload);
                 }
+            },
+            tabToFilters: function(selectedFilter) {
+                let self = this;
+                // Tab to summary card
+                self.selectedTab = 'filter-tab';
             }
         }
     }

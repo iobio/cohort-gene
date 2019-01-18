@@ -116,7 +116,8 @@ TD & SJG updated Apr2018 -->
                         @variantClick="onVariantClick"
                         @variantHover="onVariantHover"
                         @variantHoverEnd="onVariantHoverEnd"
-                        @clearVariants="clearVariants">
+                        @clearVariants="clearVariants"
+                        @navFilterTab="navigateToFilterTab">
                 </variant-viz>
                 <div id="bam-track">
                     <depth-viz
@@ -591,6 +592,10 @@ TD & SJG updated Apr2018 -->
                     self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name), checkForSelectedVariant, selectedVariantId,
                         parentFilterName, parentFilterState);
                 }
+            },
+            navigateToFilterTab: function(selectedFilter) {
+                let self = this;
+                self.$emit('navFilterTab', selectedFilter);
             }
         }
     }
