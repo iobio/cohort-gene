@@ -84,11 +84,11 @@
     <div>
         <div class="variant-viz loaded-variant-viz" id="selectionDetailsLine">
             <span class="field-label-header">Selection Details</span>
-            <v-chip color="cohortNavy" small outline style="font-size: 12px" v-for="phenotype in phenotypes"
+            <v-chip color="cohortNavy" small outline style="font-size: 12px; pointer-events: none" v-for="phenotype in phenotypes"
                     :key="phenotype">
                 {{phenotype}}
             </v-chip>
-            <v-chip v-if="numVariants" color="cohortNavy" small outline style="font-size: 12px">
+            <v-chip v-if="numVariants" color="cohortNavy" small outline style="font-size: 12px; pointer-events: none">
                 {{numVariants}}
             </v-chip>
             <v-chip v-for="filterChip in filterChips" color="cohortGold" small outline style="font-size: 12px"
@@ -98,7 +98,7 @@
         </div>
         <div class="variant-viz" id="sourceFileLine">
             <span class="field-label-header">Analysis sources</span>
-            <v-chip color="cohortNavy" small outline style="font-size: 12px" v-for="file in validSourceFiles"
+            <v-chip color="cohortNavy" small outline style="font-size: 12px; pointer-events: none" v-for="file in validSourceFiles"
                     :key="file">
                 {{file}}
                 <v-icon right color="green">check_circle_outline</v-icon>
@@ -110,7 +110,7 @@
                         {{file}}
                         <v-icon right color="red">error_outline</v-icon>
                     </v-chip>
-                    <!--<span style="color: red">{{getInvalidReason(index)}}</span>-->
+                    <span style="color: red">{{getInvalidReason(index)}}</span>
                 </v-tooltip>
             </template>
         </div>
