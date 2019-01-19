@@ -96,9 +96,26 @@ function barChart() {
             .scale(_x)
             .orient("bottom, center");
 
+        // d3.svg.axis()
+        //     .tickFormat(function(e){
+        //         if(Math.floor(e) != e)
+        //         {
+        //             return;
+        //         }
+        //
+        //         return e;
+        //     });
+
         var yAxis = d3.svg.axis()
             .scale(_y)
             .orient("left")
+            .tickFormat(function(e){
+                if(Math.floor(e) !== e)
+                {
+                    return;
+                }
+                return e;
+            })
             .ticks(yTicks);    // Max of 5 ticks
 
         _x.domain(dataMap.map(function (d) {

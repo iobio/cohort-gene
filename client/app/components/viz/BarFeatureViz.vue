@@ -100,10 +100,11 @@
                 self.subsetZygChart.fillChart()();
             },
             getTicks(sampleCount) {
-                if (sampleCount < 4) {
+                let maxTicks = 5;
+                if (sampleCount < (maxTicks - 1)) {
                     return sampleCount + 1;
                 } else {
-                    return sampleCount;
+                    return maxTicks;
                 }
             }
         },
