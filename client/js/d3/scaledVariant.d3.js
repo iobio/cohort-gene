@@ -40,7 +40,6 @@ function scaledVariantD3() {
         clazz = null,
         selectedVariants = [],
         availableVertSpace = 0;
-
     //  options
     var defaults = {};
 
@@ -66,9 +65,14 @@ function scaledVariantD3() {
         // Remove any old brush
         container.select('svg').selectAll("g.y.brush").remove();
 
+        let coords = container.select('svg').node().getBoundingClientRect();
+        let yBottom = coords.bottom;
+        let yTop = coords.top;
+
         // Create new brush object
         let brush = d3.svg.brush()
             .y(y)
+            //.extent([yBottom, (yTop + variantHeight)])
             // Show resize arrows
             .on('brush', function () {
                 container.selectAll("svg").selectAll(".g.y.brush .resize line")
@@ -106,8 +110,9 @@ function scaledVariantD3() {
                 }
 
                 selectedVariants = candidateVars.filter(function (variant) {
-                    // Check to see if variant y coordinate b/w box top and bottom
-                    if (y(variant.adjustedLevel) <= yTop && y(variant.adjustedLevel) >= yBottom) {
+                    // Check to see if middle of variant symbol y coordinate b/w box top and bottom
+                    let midSymbol = y(variant.adjustedLevel) + (variantHeight/2);
+                    if (midSymbol <= yTop && midSymbol >= yBottom) {
                         selectedVarIds.push(variant.id);
                         return true;
                     }
@@ -722,6 +727,7 @@ function scaledVariantD3() {
                     .attr("height", heightPercent)
                     .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + parseInt(width + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height + margin.top + margin.bottom))
                     .attr("preserveAspectRatio", "none")
+                    .attr("class", "scaled_svg")
                     .append("g")
                     .attr("class", "group")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
@@ -1033,42 +1039,7 @@ function scaledVariantD3() {
                             .style("opacity", 0);
                     }
                 });
-                // // add a circle and label
-                // if (svg.selectAll(".circle").empty()) {
-                //     //svg.selectAll(".circle").remove();
-                //     var circle = svg.selectAll(".circle").data([0])
-                //         .enter().append('circle')
-                //         .attr("class", "circle")
-                //         .attr("cx", 0)
-                //         .attr("cy", 0)
-                //         .attr("r", variantHeight + 2)
-                //         .style("opacity", 0);
-                // }
-                //
-                //
-                // // add a arrow on the x-axis
-                // if (svg.selectAll(".arrow").empty()) {
-                //     //svg.selectAll("g.arrow").remove();
-                //     var garrow = svg.selectAll("g.arrow").data([0])
-                //         .enter().append("g")
-                //         .attr("class", "arrow")
-                //         .attr("transform", "translate(1,0)");
-                //
-                //     garrow.append('line')
-                //         .attr("class", "arrow arrow-line")
-                //         .attr("x1", variantHeight + 2)
-                //         .attr("x2", -2)
-                //         .attr("y1", variantHeight + 2)
-                //         .attr("y2", 0)
-                //         .style("opacity", 0);
-                //     garrow.append('line')
-                //         .attr("class", "arrow arrow-line")
-                //         .attr("x1", variantHeight + 2)
-                //         .attr("x2", -2)
-                //         .attr("y1", 0)
-                //         .attr("y2", variantHeight + 2)
-                //         .style("opacity", 0);
-                // }
+
                 dispatch.d3rendered();
             }
         });

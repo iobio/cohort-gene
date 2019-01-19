@@ -37,7 +37,7 @@
         box-shadow: 2px 4px rgba(0, 0, 0, .2);
         transition: all .3s ease;
         max-height: 800px;
-        overflow-y: scroll;
+        /*overflow-y: scroll;*/
     }
 
     .modal-header {
@@ -63,6 +63,7 @@
     .modal-body {
         overflow-y: scroll !important;
         max-height: 300px;
+        min-width: 1500px;
         padding: 0;
     }
 
@@ -93,7 +94,7 @@
         </div>
         <div class="modal-body">
             <slot name="body">
-                <div class="selected-variant-viz"></div>
+                <div class="selected-variant-viz" style="padding-top: 20px"></div>
                 <gene-viz id="gene-viz"
                           :data="[selectedTranscript]"
                           :margin="geneVizMargin"
@@ -169,7 +170,7 @@
             margin: {
                 type: Object,
                 default: function () {
-                    return {top: 10, bottom: 10, left: 10, right: 10}
+                    return {top: 15, bottom: 10, left: 10, right: 10}
                 }
             },
             showXAxis: {
@@ -224,7 +225,7 @@
             draw: function () {
                 let self = this;
                 this.selectionVarChart = variantD3()
-                    .width(this.modalWidth)
+                    .width(this.modalWidth - 5)
                     .clazz(function (variant) {
                         return self.classifySymbolFunc(variant, self.annotationScheme, self.model.getName());
                     })
