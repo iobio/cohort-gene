@@ -467,7 +467,6 @@ function scaledVariantD3() {
         allVariants.style("opacity", 0)
             .style("pointer-events", "none")
             .transition();
-            //.duration(800);
 
         // Reveal variants that pass filter
         filteredVars.style("opacity", 1)

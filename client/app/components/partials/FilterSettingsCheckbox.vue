@@ -71,7 +71,7 @@
                 let updatedState = filterObj.model;
                 let filterName = filterObj.name;
                 if (self.parentFilterName === 'impact') {
-                    filterName = self.parentFilterName + '_' + filterObj.name;
+                    filterName = filterObj.name;
                 }
                 let anyFilterInParentActive = false;
                 self.checkboxLists[self.parentFilterName].forEach((filter) => {
