@@ -118,7 +118,7 @@
             </div>
             <div v-bind:class="{ hide: !model.inProgress.fetchingHubData }"
                  style="display: inline-block;padding-left: 20px; padding-bottom:10px">
-                <span class="loader-label">Fetching Data from Hub</span>
+                <span class="loader-label">Fetching Data from Mosaic</span>
                 <img src="../../../assets/images/wheel.gif">
             </div>
             <div v-bind:class="{ hide: !model.inProgress.verifyingVcfUrl }"
