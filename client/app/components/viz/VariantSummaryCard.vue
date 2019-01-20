@@ -9,7 +9,7 @@
         min-height: 100px
         max-height: 600px
         padding-top: 0px
-        overflow-x: scroll
+        overflow-x: hidden
 
         .content
             font-size: 12px
