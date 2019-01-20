@@ -211,12 +211,15 @@
                 }
             },
             isAnnotationCategory: function (currentCat) {
-                if (currentCat === 'impact' || currentCat === 'g1000' ||
-                    currentCat === 'exac' || currentCat === 'gnomad') {
-                    return true;
-                } else {
-                    return false;
-                }
+
+                // TODO: making all filters wait until annotation complete for now
+                return true;
+                // if (currentCat === 'impact' || currentCat === 'g1000' ||
+                //     currentCat === 'exac' || currentCat === 'gnomad') {
+                //     return true;
+                // } else {
+                //     return false;
+                // }
             }
         },
         computed: {

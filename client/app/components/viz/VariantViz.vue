@@ -311,6 +311,8 @@
 
                 // Reset filters
                 self.excludeFilters = [];
+                self.cutoffFilters = {};
+                self.filterChips = [];
                 self.noPassingResults = false;
 
                 if (self.data) {

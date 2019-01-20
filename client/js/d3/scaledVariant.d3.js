@@ -305,6 +305,12 @@ function scaledVariantD3() {
         }
     };
 
+    /* Remove filter class from all variants. */
+    var removeFilterClass = function(svgContainer) {
+        let allVariants = svgContainer.selectAll(".variant");
+        allVariants.classed({'filtered': false});
+    }
+
     /* Takes in a list of filter classes. If a variant contains any of them, it will be hidden.
      *  Takes in a filter cutoff object that a variant must meet or be lower than - if not, it will be hidden. */
     var filterVariants = function(filterClasses, filterCutoffs, svgContainer) {
@@ -323,7 +329,7 @@ function scaledVariantD3() {
         // Remove filtered class for any variants that contain the given class criteria
         filterClasses.forEach((filterClass) => {
             allVariants.filter(filterClass).classed({'filtered': false});
-            allVariants.style("pointer-events", 'none');
+            allVariants.filter(filterClass).style("pointer-events", 'none');
         });
 
         // Include previously filtered variants into the equation
@@ -465,8 +471,7 @@ function scaledVariantD3() {
 
         // Hide all variants
         allVariants.style("opacity", 0)
-            .style("pointer-events", "none")
-            .transition();
+            .style("pointer-events", "none");
 
         // Reveal variants that pass filter
         filteredVars.style("opacity", 1)
@@ -1345,6 +1350,12 @@ function scaledVariantD3() {
     chart.checkForSelectedVar = function (_) {
         if (!arguments.length) return checkForSelectedVar;
         checkForSelectedVar = _;
+        return chart;
+    };
+
+    chart.removeFilterClass = function (_) {
+        if (!arguments.length) return removeFilterClass;
+        removeFilterClass = _;
         return chart;
     };
 

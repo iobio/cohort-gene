@@ -148,24 +148,19 @@
             }
         },
         computed: {
-            isAnnotationCategory: function() {
-                let self = this;
-                if (self.filterName === 'impact' || self.filterName === 'g1000' ||
-                    self.filterName === 'exac' || self.filterName === 'gnomad') {
-                    return true;
-                } else {
-                    return false;
-                }
-            },
             isFrequencyField: function() {
-                let self = this;
-                if (self.filterName === 'g1000' || self.filterName === 'exac' ||
-                    self.filterName === 'gnomad' || self.filterName === 'probandFreq'
-                    || self.filterName === 'subsetFreq') {
-                    return true;
-                } else {
-                    return false;
-                }
+
+                return true;
+
+                // TODO: used to control waiting on filtering - have to make all unavailable until second annotation return for now
+                // let self = this;
+                // if (self.filterName === 'g1000' || self.filterName === 'exac' ||
+                //     self.filterName === 'gnomad' || self.filterName === 'probandFreq'
+                //     || self.filterName === 'subsetFreq') {
+                //     return true;
+                // } else {
+                //     return false;
+                // }
             },
             buttonTipText: function() {
                 let self = this;

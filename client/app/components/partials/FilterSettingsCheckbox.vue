@@ -91,12 +91,15 @@
         computed: {
             isAnnotationCategory: function() {
                 let self = this;
-                if (self.parentFilterName === 'impact' || self.parentFilterName === 'g1000' ||
-                    self.parentFilterName === 'exac' || self.parentFilterName === 'gnomad') {
-                    return true;
-                } else {
-                    return false;
-                }
+                return true;
+
+                // TODO: used to control waiting on filtering - have to make all unavailable until second annotation return for now
+                // if (self.parentFilterName === 'impact' || self.parentFilterName === 'g1000' ||
+                //     self.parentFilterName === 'exac' || self.parentFilterName === 'gnomad') {
+                //     return true;
+                // } else {
+                //     return false;
+                // }
             }
         },
         created: function () {},

@@ -333,15 +333,14 @@
                         self.onVariantZoomSelected(selectedVarIds, xStart, yStart, drawBelow, graphWidth);
                     });
             },
-            update: function (svg) {
+            update: function () {
                 let self = this;
                 self.model.inProgress.drawingVariants = false;
 
-                // Reset filters
-                if (svg == null) {
-                    self.excludeFilters = [];
-                    self.noPassingResults = false;
-                }
+                self.excludeFilters = [];
+                self.cutoffFilters = {};
+                self.filterChips = [];
+                self.noPassingResults = false;
 
                 if (self.data) {
                     // Get available vertical space to send into scaled variant d3
@@ -377,14 +376,6 @@
                 } else {
                     let selection = d3.select(self.$el).datum([self.data]);
                     self.variantChart(selection);
-                }
-
-                // Apply any filters we may have had already present on first round render
-                if (svg) {
-                    let noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
-                    if (noPassingVars) {
-                        self.noPassingResults = true;
-                    }
                 }
             },
             onVariantClick: function (variant) {
@@ -441,7 +432,9 @@
             refreshVariantColors: function(svg) {
                 let self = this;
                 self.extraAnnotationsLoaded = true;
-                this.update(svg);
+                self.update();
+                self.variantChart.removeFilterClass()(svg);
+                self.noPassingResults = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
             },
             resetPreAnnotateColor: function() {
                 let self = this;
