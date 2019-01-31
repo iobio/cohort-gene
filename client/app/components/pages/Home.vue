@@ -619,6 +619,7 @@ TD & SJG updated Nov2018 -->
                             cardRef.hideVariantCircle(true);
                             cardRef.showVariantCircle(variant, true);
                         });
+                    self.$refs.variantSummaryCardRef.hideGetStartedBanner();
                     }
 
                     // Query service for single variant annotation if we don't have details yet

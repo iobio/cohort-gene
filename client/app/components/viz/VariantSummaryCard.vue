@@ -5,11 +5,38 @@
     @import ../../../assets/sass/variables
     @import ../../../assets/sass/symbols
 
+    #getStartedBlock
+        position: absolute
+        width: 100%
+        height: 100%
+        top: 50%
+        left: 50%
+        transform: translate(-50%,-50%)
+        -ms-transform: translate(-50%,-50%)
+        z-index: 5
+
+
+        .getStartedText
+            position: absolute
+            border-radius: 25px
+            width: 95%
+            top: 40%
+            font-family: Poppins
+            font-size: 24px
+            background-color: $cohort-blue
+            text-align: center
+            color: white
+            -webkit-box-shadow: 6px 11px 48px -7px rgba(0, 0, 0, 0.60)
+            box-shadow: 6px 11px 48px -7px rgba(0, 0, 0, 0.60)
+
+
     .summary-viz
         min-height: 100px
         max-height: 600px
         padding-top: 0px
         overflow-x: hidden
+        filter: blur(1px)
+        -webkit-filter: blur(1px)
 
         .content
             font-size: 12px
@@ -201,6 +228,9 @@
         </v-flex>
         <v-container fluid grid-list-md>
             <v-layout row wrap>
+                <div id="getStartedBlock">
+                    <span class="getStartedText">Click on a variant for details</span>
+                </div>
                 <feature-viz id="loaded-feature-viz" class="summary-viz"
                              ref="summaryFeatureViz"
                              :effect="effect"
@@ -601,6 +631,10 @@
             zygBarsMounted: function() {
                 let self = this;
                 self.$emit('zyg-bars-mounted');
+            },
+            hideGetStartedBanner: function() {
+                $('#getStartedBlock').hide();
+                $('.summary-viz').css({'filter': 'none', '-webkit-filter': 'none'});
             }
         }
     }
