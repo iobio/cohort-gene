@@ -453,9 +453,9 @@ Updated: SJG Jan2019
                     transition: 'modal',
                     pivotX: 0.10
                 });
-                if (self.$refs.subsetVizRef) {
-                    self.$refs.subsetVizRef.toggleZoomLoader(false);
-                }
+                // if (self.$refs.subsetVizRef) {
+                //     self.$refs.subsetVizRef.toggleZoomLoader(false);
+                // }
                 self.hideVariantCircle();
             },
             resetZoom: function () {
@@ -653,6 +653,12 @@ Updated: SJG Jan2019
             navigateToFilterTab: function(selectedFilter) {
                 let self = this;
                 self.$emit('navFilterTab', selectedFilter);
+            },
+            hideZoomSpinner: function() {
+                let self = this;
+                if (self.$refs.subsetVizRef) {
+                    self.$refs.subsetVizRef.toggleZoomLoader(false);
+                }
             }
         }
     }

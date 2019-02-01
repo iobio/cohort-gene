@@ -741,6 +741,8 @@ TD & SJG updated Nov2018 -->
                 if (self.$refs.variantSummaryCardRef) {
                     self.$refs.variantSummaryCardRef.summaryCardVariantDeselect();
                 }
+
+                self.$refs.enrichCardRef.hideZoomSpinner();
             },
             showVariantExtraAnnots: function (sourceComponent, variant, cohortKey) {
                 let self = this;
