@@ -1,5 +1,5 @@
 function scaledVariantD3() {
-    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3outsideclick", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout", "d3variantsselected");
+    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3outsideclick", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout", "d3variantsselected", "d3zoomselected");
 
     // dimensions
     var yAxisWidth = 45;
@@ -81,6 +81,10 @@ function scaledVariantD3() {
                     .style("visibility", "visible");
             })
             .on('brushend', function () {
+                if (!brush.empty()) {
+                    dispatch.d3zoomselected();
+                }
+
                 let extentRect = d3.select("g.brush rect.extent");
                 let yExtent = +extentRect.attr("y");
 

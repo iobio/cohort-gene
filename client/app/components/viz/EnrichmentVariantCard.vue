@@ -426,10 +426,6 @@ Updated: SJG Jan2019
             onVariantZoom: function (selectedVarIds, xStart, yStart, drawBelow, graphWidth) {
                 let self = this;
 
-                if (self.$refs.subsetVizRef) {
-                    self.$refs.subsetVizRef.toggleZoomLoader(true);
-                }
-
                 // Start pileup of selected variants
                 self.$emit('zoomModeStart', selectedVarIds);
 

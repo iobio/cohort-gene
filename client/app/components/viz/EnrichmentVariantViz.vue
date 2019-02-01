@@ -337,6 +337,9 @@
                     })
                     .on('d3variantsselected', function (selectedVarIds, xStart, yStart, drawBelow, graphWidth) {
                         self.onVariantZoomSelected(selectedVarIds, xStart, yStart, drawBelow, graphWidth);
+                    })
+                    .on('d3zoomselected', function() {
+                        self.toggleZoomLoader(true);
                     });
             },
             update: function () {
