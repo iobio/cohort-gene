@@ -255,6 +255,7 @@
             },
             update: function () {
                 let self = this;
+                self.loadingSelectedVars = false;
                 if (self.data) {
                     // Set the vertical layer count so that the height of the chart can be recalculated
                     if (self.data.maxLevel == null) {
@@ -278,7 +279,7 @@
                 }
             },
             onVariantClick: function (variant) {
-                // NOTE: had to do this horrible reaching to accommodate draggable vue-js-modal
+                // SJG NOTE: had to do this horrible code to accommodate draggable vue-js-modal
                 // - if modal draggability becomes native to vuetify in future can get rid of this garbage
                 if (this.$root && this.$root.$children && this.$root.$children[0] && this.$root.$children[0].$children && this.$root.$children[0].$children[0]
                         && this.$root.$children[0].$children[0].$children && this.$root.$children[0].$children[0].$children[0]

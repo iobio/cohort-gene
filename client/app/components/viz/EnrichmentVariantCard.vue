@@ -426,33 +426,40 @@ Updated: SJG Jan2019
             onVariantZoom: function (selectedVarIds, xStart, yStart, drawBelow, graphWidth) {
                 let self = this;
 
+                if (self.$refs.subsetVizRef) {
+                    self.$refs.subsetVizRef.toggleZoomLoader(true);
+                }
+
                 // Start pileup of selected variants
                 self.$emit('zoomModeStart', selectedVarIds);
 
                 self.$modal.show(ZoomModalViz, {
-                        model: self.subsetCohort,
-                        data: self.subsetCohort.selectedVariants,
-                        regionStart: self.regionStart,
-                        regionEnd: self.regionEnd,
-                        annotationScheme: self.annotationScheme,
-                        margin: self.variantVizMargin,
-                        variantHeight: self.variantSymbolHeight,
-                        variantPadding: self.variantSymbolPadding,
-                        showXAxis: true,
-                        classifySymbolFunc: self.classifyZoomSymbolFunc,
-                        doneLoadingData: self.doneLoadingData,
-                        modalWidth: graphWidth,
-                        width: self.zoomWidth,
-                        selectedTranscript: self.selectedTranscript
-                    },
-                    {
-                        draggable: '.modal-header',
-                        width: graphWidth + 'px',
-                        height: 'auto',
-                        scrollable: true,
-                        transition: 'modal',
-                        pivotX: 0.10
-                    });
+                    model: self.subsetCohort,
+                    data: self.subsetCohort.selectedVariants,
+                    regionStart: self.regionStart,
+                    regionEnd: self.regionEnd,
+                    annotationScheme: self.annotationScheme,
+                    margin: self.variantVizMargin,
+                    variantHeight: self.variantSymbolHeight,
+                    variantPadding: self.variantSymbolPadding,
+                    showXAxis: true,
+                    classifySymbolFunc: self.classifyZoomSymbolFunc,
+                    doneLoadingData: self.doneLoadingData,
+                    modalWidth: graphWidth,
+                    width: self.zoomWidth,
+                    selectedTranscript: self.selectedTranscript
+                },
+                {
+                    draggable: '.modal-header',
+                    width: graphWidth + 'px',
+                    height: 'auto',
+                    scrollable: true,
+                    transition: 'modal',
+                    pivotX: 0.10
+                });
+                if (self.$refs.subsetVizRef) {
+                    self.$refs.subsetVizRef.toggleZoomLoader(false);
+                }
                 self.hideVariantCircle();
             },
             resetZoom: function () {
@@ -507,8 +514,8 @@ Updated: SJG Jan2019
                     coord,
                     self.dataSetModel.cohortMap[cohortKey].getName(),
                     self.dataSetModel.cohortMap[cohortKey].getAffectedInfo(),
-                    "",     // SJG TODO: put mode in here later if necessary
-                    0);     // SJG TODO put max allele count in here
+                    "",     // Mode
+                    0);     // Max allele count
                 tooltip.selectAll("#unpin").on('click', function () {
                     self.unpin(null, true);
                 });

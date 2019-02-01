@@ -9,7 +9,7 @@
         position: absolute
         width: 100%
         height: 100%
-        top: 50%
+        top: 20%
         left: 50%
         transform: translate(-50%,-50%)
         -ms-transform: translate(-50%,-50%)

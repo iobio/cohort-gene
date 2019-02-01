@@ -116,11 +116,16 @@
                         {{file}}
                         <v-icon right color="red">error_outline</v-icon>
                     </v-chip>
-                    <span style="color: red">{{getInvalidReason(index)}}</span>
+                    <!--<span style="color: red">{{getInvalidReason(index)}}</span>-->
                 </v-tooltip>
             </template>
         </div>
         <div style="text-align: center;clear: both;">
+            <div v-bind:class="{ hide: !showZoomLoader }"
+                 style="display: inline-block;padding-bottom:10px">
+                <span class="loader-label">Stacking Zoom Variants</span>
+                <img src="../../../assets/images/wheel.gif">
+            </div>
             <div v-bind:class="{ hide: !model.inProgress.loadingVariants }"
                  style="display: inline-block;padding-bottom:10px">
                 <span class="loader-label">Annotating Variants</span>
@@ -284,6 +289,7 @@
                 enrichFilterActive: false,
                 freqFilterActive: false,
                 filterChips: [],        // List of filter objects {filterId: displayedFilterText} used for chip display
+                showZoomLoader: false
             }
         },
         mounted: function () {
@@ -549,6 +555,10 @@
             navigateToFilterTab: function(selectedFilter) {
                 let self = this;
                 self.$emit('navFilterTab', selectedFilter);
+            },
+            toggleZoomLoader: function(state) {
+                let self = this;
+                self.showZoomLoader = state;
             }
         },
         watch: {
