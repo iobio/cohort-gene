@@ -19,7 +19,7 @@
         .getStartedText
             position: absolute
             border-radius: 25px
-            width: 95%
+            width: 100%
             top: 40%
             font-family: Poppins
             font-size: 22px

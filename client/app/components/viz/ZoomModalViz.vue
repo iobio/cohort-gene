@@ -3,6 +3,11 @@
 <style lang="sass">
     @import ../../../assets/sass/variables
 
+    .loader-label
+        font-family: "Open Sans" !important
+        font-size: 14px !important
+        color: rgb(113, 113, 113) !important
+
     #gene-viz
         .current
             outline: none
@@ -94,7 +99,7 @@
         </div>
         <div class="model-body text-center" style="padding-top:20px">
             <div v-bind:class="{ hide: !showZoomLoader }">
-                <span style="font-size: 18px">Stacking Zoom Variants</span>
+                <span class="loader-label">Stacking Zoom Variants</span>
                 <img src="../../../assets/images/wheel.gif">
             </div>
         </div>
