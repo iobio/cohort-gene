@@ -21,7 +21,7 @@
             border-radius: 25px
             width: 100%
             height: 50px
-            padding-top: 10px
+            padding-top: 8px
             top: 40%
             font-family: Poppins
             font-size: 22px
