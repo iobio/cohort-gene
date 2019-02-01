@@ -13,13 +13,15 @@
         left: 50%
         transform: translate(-50%,-50%)
         -ms-transform: translate(-50%,-50%)
-        z-index: 5
+        z-index: 1
 
 
         .getStartedText
             position: absolute
             border-radius: 25px
             width: 100%
+            height: 50px
+            padding-top: 10px
             top: 40%
             font-family: Poppins
             font-size: 22px

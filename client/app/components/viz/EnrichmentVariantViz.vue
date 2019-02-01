@@ -107,7 +107,7 @@
             <v-chip color="cohortNavy" small outline style="font-size: 12px; pointer-events: none" v-for="file in validSourceFiles"
                     :key="file">
                 {{file}}
-                <v-icon right color="green">check_circle_outline</v-icon>
+                <v-icon right color="cohortTeal">check_circle_outline</v-icon>
             </v-chip>
             <template v-for="(file,index) in invalidSourceFiles">
                 <v-tooltip bottom>
