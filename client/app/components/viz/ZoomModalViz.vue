@@ -92,15 +92,14 @@
                 </div>
             </slot>
         </div>
+        <div class="model-body text-center" style="padding-top:20px">
+            <div v-bind:class="{ hide: !showZoomLoader }">
+                <span style="font-size: 18px">Stacking Zoom Variants</span>
+                <img src="../../../assets/images/wheel.gif">
+            </div>
+        </div>
         <div class="modal-body">
             <slot name="body">
-                <div style="text-align: center;clear: both;">
-                    <div v-bind:class="{ hide: !showZoomLoader }"
-                         style="display: inline-block;padding-bottom:10px;padding-left: 20px">
-                        <span class="loader-label">Stacking Zoom Variants</span>
-                        <img src="../../../assets/images/wheel.gif">
-                    </div>
-                </div>
                 <div class="selected-variant-viz" style="padding-top: 20px"></div>
                 <gene-viz id="gene-viz"
                           :data="[selectedTranscript]"
