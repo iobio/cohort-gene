@@ -23,7 +23,7 @@
             top: 40%
             font-family: Poppins
             font-size: 24px
-            background-color: $cohort-blue
+            background-color: $cohort-teal
             text-align: center
             color: white
             -webkit-box-shadow: 6px 11px 48px -7px rgba(0, 0, 0, 0.60)

@@ -734,15 +734,11 @@ TD & SJG updated Nov2018 -->
             startZoomMode: function (selectedVarIds) {
                 let self = this;
 
-                // Pileup selection
                 self.variantModel.getDataSet('s0').setSelectedVariants(self.selectedGene, selectedVarIds);
 
-                // Clear data out of summary card
                 if (self.$refs.variantSummaryCardRef) {
                     self.$refs.variantSummaryCardRef.summaryCardVariantDeselect();
                 }
-
-                self.$refs.enrichCardRef.hideZoomSpinner();
             },
             showVariantExtraAnnots: function (sourceComponent, variant, cohortKey) {
                 let self = this;

@@ -81,10 +81,6 @@ function scaledVariantD3() {
                     .style("visibility", "visible");
             })
             .on('brushend', function () {
-                if (!brush.empty()) {
-                    dispatch.d3zoomselected();
-                }
-
                 let extentRect = d3.select("g.brush rect.extent");
                 let yExtent = +extentRect.attr("y");
 

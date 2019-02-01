@@ -1718,6 +1718,15 @@ class DataSetModel {
         }
     }
 
+    promiseSetSelectedVariants(gene, selectedVarIds) {
+        let self = this;
+
+        return new Promise((resolve, reject) => {
+           self.setSelectedVariants(gene, selectedVarIds);
+           resolve();
+        });
+    }
+
     // Used in zoom functionality
     setSelectedVariants(gene, selectedVarIds) {
         let self = this;

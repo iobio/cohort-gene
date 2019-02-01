@@ -94,6 +94,13 @@
         </div>
         <div class="modal-body">
             <slot name="body">
+                <div style="text-align: center;clear: both;">
+                    <div v-bind:class="{ hide: !showZoomLoader }"
+                         style="display: inline-block;padding-bottom:10px;padding-left: 20px">
+                        <span class="loader-label">Stacking Zoom Variants</span>
+                        <img src="../../../assets/images/wheel.gif">
+                    </div>
+                </div>
                 <div class="selected-variant-viz" style="padding-top: 20px"></div>
                 <gene-viz id="gene-viz"
                           :data="[selectedTranscript]"
@@ -214,7 +221,8 @@
                 geneVizTrackHeight: 16,
                 geneVizCdsHeight: 12,
                 modalZoomPadding: 10,
-                yAxisLeftPadding: 3
+                yAxisLeftPadding: 3,
+                showZoomLoader: true
             }
         },
         methods: {
@@ -255,7 +263,7 @@
             },
             update: function () {
                 let self = this;
-                self.loadingSelectedVars = false;
+                self.showZoomLoader = false;
                 if (self.data) {
                     // Set the vertical layer count so that the height of the chart can be recalculated
                     if (self.data.maxLevel == null) {
@@ -304,7 +312,10 @@
         mounted: function () {
             let self = this;
             self.draw();
-            self.update();
+            setTimeout(() => {
+                self.update();
+            }, 1000);
+            //self.update();
         }
     }
 

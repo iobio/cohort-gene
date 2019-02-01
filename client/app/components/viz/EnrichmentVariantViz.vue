@@ -121,11 +121,6 @@
             </template>
         </div>
         <div style="text-align: center;clear: both;">
-            <div v-bind:class="{ hide: !showZoomLoader }"
-                 style="display: inline-block;padding-bottom:10px">
-                <span class="loader-label">Stacking Zoom Variants</span>
-                <img src="../../../assets/images/wheel.gif">
-            </div>
             <div v-bind:class="{ hide: !model.inProgress.loadingVariants }"
                  style="display: inline-block;padding-bottom:10px">
                 <span class="loader-label">Annotating Variants</span>
