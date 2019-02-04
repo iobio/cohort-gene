@@ -175,6 +175,7 @@ export default function lineD3() {
                 })
                 .attr('viewBox', "0 0 " + (parseInt(width) + margin.left + margin.right) + " " + parseInt(height));
 
+            // Removed from cohort b/c match gene.d3 modal
             // svg.enter()
             //     .append("svg")
             //     .attr("width", widthPercent)
