@@ -196,19 +196,20 @@ export default function lineD3() {
             ['hover', 'pinned'].forEach(function(clazz) {
                 var circleClazz = clazz + '_circle';
                 var labelClazz = clazz + '_circle_label';
-                // if (svg.selectAll(circleClazz).empty()) {
-                svg.selectAll(circleClazz).data([0])
+                if (svg.selectAll('.' + circleClazz).empty()) {
+                    svg.selectAll('.' + circleClazz).data([0])
                         .enter().append('circle')
                         .attr("class", circleClazz + ' circle')
                         .attr("r", 3)
                         .style("opacity", 0);
 
-                svg.selectAll(labelClazz).data([0])
+                    svg.selectAll(labelClazz).data([0])
                         .enter().append('text')
                         .attr("class", labelClazz + ' circle-label')
                         .attr("x", 0)
                         .attr("y", 0)
                         .style("opacity", 0);
+                }
             });
 
             if (kind == KIND_AREA && showGradient) {
