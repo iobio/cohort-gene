@@ -3,7 +3,6 @@ TD & SJG updated Nov2018 -->
 
 <style lang="sass">
     @import ../../../assets/sass/variables
-
     .app-card
         margin-bottom: 10px
 

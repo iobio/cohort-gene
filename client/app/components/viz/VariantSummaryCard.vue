@@ -31,6 +31,8 @@
             -webkit-box-shadow: 6px 11px 48px -7px rgba(0, 0, 0, 0.60)
             box-shadow: 6px 11px 48px -7px rgba(0, 0, 0, 0.60)
 
+    .summary-card
+        padding-top: 15px
 
     .summary-viz
         min-height: 100px
@@ -214,7 +216,7 @@
 </style>
 
 <template>
-    <v-container height="100%" style="padding-top: 15px;">
+    <v-container height="100%" class="summary-card">
         <v-flex xl9 offset-xl2 lg12>
             <div class='form-inline'>
                 <div class='form-group'>
@@ -228,8 +230,8 @@
                 </div>
             </div>
         </v-flex>
-        <v-container fluid grid-list-md>
-            <v-layout row wrap>
+        <v-container fluid grid-list-md style="overflow-y: scroll !important">
+            <v-layout row wrap >
                 <div id="getStartedBlock">
                     <span class="getStartedText">Click on a variant for details</span>
                 </div>

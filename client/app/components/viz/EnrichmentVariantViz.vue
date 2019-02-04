@@ -491,14 +491,6 @@
                     // Re-apply active filters in case of multiple filters
                     noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
 
-                    // Send deselect signal if we've hidden the selected variant
-                    if (checkForSelectedVar) {
-                        let selectedVarStillVisible = self.variantChart.checkForSelectedVar()(selectedVarId, svg);
-                        // If we have, send deselect message
-                        if (!selectedVarStillVisible) {
-                            self.$emit("variantClick", null, null);
-                        }
-                    }
                 // Removing checkbox filter
                 } else if (filterInfo.state === false && filterInfo.type === 'checkbox') {
                     // Hide variants with that class
