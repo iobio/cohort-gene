@@ -334,7 +334,7 @@ function geneD3() {
                 })
 
                 .attr("pointer-events", "all")
-                // .style("cursor", "pointer")  NOTE: took out for cohort b/c
+                // .style("cursor", "pointer")  NOTE: took out for cohort
                 .on("mouseover", function (d) {
                     // show the tooltip
                     var tooltip = container.select('.tooltip');

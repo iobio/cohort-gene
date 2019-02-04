@@ -654,7 +654,7 @@
                 self.$emit('open-file-selection');
             },
             openMosaic: function () {
-                window.open('https://hub.sfari.org');
+                window.open('https://viewer.sfari.org');
             }
         }
     }
