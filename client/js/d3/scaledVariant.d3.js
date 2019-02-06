@@ -785,7 +785,7 @@ function scaledVariantD3() {
                     .attr("dy", "-2.5em")
                     .style('font-size', '14px')
                     .style("text-anchor", "middle")
-                    .text("Adjusted p-value");
+                    .text("-log(p-val)");
 
                 // Create dividing line
                 g.selectAll(".divider").remove();

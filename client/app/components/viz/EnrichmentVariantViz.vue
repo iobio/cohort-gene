@@ -498,14 +498,6 @@
                     self.excludeFilters.push(filterClass);
                     noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
 
-                    // Check to make sure we haven't hidden the selected variant
-                    if (checkForSelectedVar) {
-                        let selectedVarStillVisible = self.variantChart.checkForSelectedVar()(selectedVarId, svg);
-                        // If we have, send deselect message
-                        if (!selectedVarStillVisible) {
-                            self.$emit("variantClick", null, null);
-                        }
-                    }
                 // Apply cutoff filter
                 } else if (filterInfo.state != null && filterInfo.type === 'cutoff') {
 
@@ -520,15 +512,6 @@
                     // Hide variants that do not meet given condition
                     noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
 
-                    // Send deselect signal if we've hidden the selected variant
-                    if (checkForSelectedVar) {
-                        let selectedVarStillVisible = self.variantChart.checkForSelectedVar()(selectedVarId, svg);
-                        // If we have, send deselect message
-                        if (!selectedVarStillVisible) {
-                            self.$emit("variantClick", null, null);
-                        }
-                    }
-
                 // Remove cutoff filter
                 } else {
                     // Remove from list
@@ -536,6 +519,15 @@
 
                     // Re-apply active filters in case of multiple filters
                     noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg)
+                }
+
+                // Send deselect signal if we've hidden the selected variant
+                if (checkForSelectedVar) {
+                    let selectedVarStillVisible = self.variantChart.checkForSelectedVar()(selectedVarId, svg);
+                    // If we have, send deselect message
+                    if (!selectedVarStillVisible) {
+                        self.$emit("variantClick", null, null);
+                    }
                 }
 
                 if (noPassingVars) {

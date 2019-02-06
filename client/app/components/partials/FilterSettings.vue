@@ -91,8 +91,8 @@
                         {name: 'type', display: 'Type', active: false, open: false, type: 'checkbox', cohortOnly: false},
                         {name: 'zygosities', display: 'Zygosities', active: false, open: false, type: 'checkbox', cohortOnly: false},],
                     'enrichment': [
-                        {name: 'pValue', display: 'p-value', active: false, open: false, type: 'cutoff', cohortOnly: true},
-                        {name: 'adjPVal', display: 'Adj p-value', active: false, open: false, type: 'cutoff', cohortOnly: true}],
+                        {name: 'pValue', display: 'p-val', active: false, open: false, type: 'cutoff', cohortOnly: true},
+                        {name: 'adjPVal', display: '-log(p-val)', active: false, open: false, type: 'cutoff', cohortOnly: true}],
                     'frequencies': [
                         {name: 'g1000', display: '1000G', active: false, open: false, type: 'cutoff', cohortOnly: false},
                         {name: 'exac', display: 'ExAC', active: false, open: false, type: 'cutoff', cohortOnly: false},
