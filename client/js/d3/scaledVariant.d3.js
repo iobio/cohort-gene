@@ -503,6 +503,7 @@ function scaledVariantD3() {
     /* Returns true if selected variant passes filter and is visible. */
     var checkForSelectedVar = function(selectedVarId, svgContainer) {
         let stillVisible = false;
+        //TODO: this is happening after being filtered, so need to check first
         svgContainer.selectAll('.filtered').each(function(d, i) {
            if (d.id === selectedVarId) {
                stillVisible = true;

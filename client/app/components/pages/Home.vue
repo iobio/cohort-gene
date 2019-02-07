@@ -736,6 +736,12 @@ TD & SJG updated Nov2018 -->
                             cardRef.hideVariantCircle(true);
                         });
                     }
+                } else if (!keepVariantCircle) {
+                    if (self.$refs.enrichCardRef) {
+                        self.$refs.enrichCardRef.forEach((cardRef) => {
+                            cardRef.hideVariantCircle(true);
+                        });
+                    }
                 }
             },
             startZoomMode: function (selectedVarIds) {
