@@ -155,11 +155,13 @@ Updated: SJG Jan2019
                         :frequencyDisplayMode="true"
                         @navFilterTab="navigateToFilterTab"
                         @variantClick="onVariantClick"
+                        @refreshVariantClick="onRefreshVariantClick"
                         @variantZoom="onVariantZoom"
                         @variantHover="onVariantHover"
                         @variantHoverEnd="onVariantHoverEnd"
                         @trackRendered="switchColorScheme"
-                        @clearVariants="clearVariants">
+                        @clearVariants="clearVariants"
+                        @refreshSummaryClick="refreshSummaryClick">
                 </enrichment-variant-viz>
                 <gene-viz id="gene-viz"
                           v-bind:class="{ hide: !showGeneViz }"
@@ -539,6 +541,17 @@ Updated: SJG Jan2019
                 if (self.$refs.zoomVizRef != null) {
                     self.$refs.zoomVizRef.showVariantCircle(variant, self.getZoomSVG(), lock);
                 }
+            },
+            onRefreshVariantClick: function(variantId) {
+                let self = this;
+                let lock = true;
+                if (self.showVariantViz && self.$refs.subsetVizRef != null) {
+                    self.$refs.subsetVizRef.showVariantCircle(null, self.getVariantSVG(self.$refs.subsetVizRef.name), lock, variantId);
+                }
+            },
+            refreshSummaryClick: function(variant) {
+                let self = this;
+                self.$emit('refreshSummaryClick', variant);
             },
             hideVariantCircle: function (lock) {
                 let self = this;

@@ -70,7 +70,8 @@ TD & SJG updated Nov2018 -->
                                     @knownVariantsVizChange="onKnownVariantsVizChange"
                                     @knownVariantsFilterChange="onKnownVariantsFilterChange"
                                     @zoomModeStart="startZoomMode"
-                                    @navFilterTab="tabToFilters">
+                                    @navFilterTab="tabToFilters"
+                                    @refreshSummaryClick="refreshSummaryClick">
                             </enrichment-variant-card>
                             <variant-card
                                     v-else
@@ -679,6 +680,13 @@ TD & SJG updated Nov2018 -->
                     self.selectedTrackId = null;
                     self.deselectVariant();
                 }
+            },
+            // Re-click variant after enrichment color change
+            refreshSummaryClick: function(variant) {
+                let self = this;
+                // We've selected a variant in cohort track already loaded
+                self.$refs.variantSummaryCardRef.setCohortFieldsApplicable();
+                self.selectedVariant = variant;
             },
             onDataSetVariantHover: function (variant, sourceComponent) {
                 let self = this;

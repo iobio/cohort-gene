@@ -284,7 +284,8 @@
                 enrichFilterActive: false,
                 freqFilterActive: false,
                 filterChips: [],        // List of filter objects {filterId: displayedFilterText} used for chip display
-                showZoomLoader: false
+                showZoomLoader: false,
+                preColorLastSelectedVar: null  // Last clicked on var id - used for color update transfer
             }
         },
         mounted: function () {
@@ -335,6 +336,9 @@
                     })
                     .on('d3zoomselected', function() {
                         self.toggleZoomLoader(true);
+                    })
+                    .on('d3refreshsummaryclick', function(variant) {
+                        self.$emit('refreshSummaryClick', variant);
                     });
             },
             update: function () {
@@ -399,17 +403,22 @@
                 let self = this;
                 self.$emit("variantHoverEnd", variant);
             },
-            showVariantCircle: function (variant, container, pinned) {
-                if (variant == null) {
+            showVariantCircle: function (variant, container, pinned, id) {
+                if (variant == null && id == null) {
                     this.hideVariantCircle(container, pinned);
-                } else {
+                }
+                else {
+                    if (variant && pinned === true) {
+                        this.preColorLastSelectedVar = variant.id;
+                    }
                     if (pinned) {
                         this.variantChart.hideCircle()(container, pinned);
                     }
                     this.variantChart.showCircle()(variant,
                         container,
                         true,
-                        pinned);
+                        pinned,
+                        id);
                 }
             },
             hideVariantCircle: function (container, pinned) {
@@ -437,6 +446,9 @@
                 let self = this;
                 self.extraAnnotationsLoaded = true;
                 self.update();
+                if (self.preColorLastSelectedVar) {
+                    self.$emit('refreshVariantClick', self.preColorLastSelectedVar);
+                }
                 self.variantChart.removeFilterClass()(svg);
                 self.noPassingResults = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
             },

@@ -1,5 +1,5 @@
 function scaledVariantD3() {
-    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3outsideclick", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout", "d3variantsselected", "d3zoomselected");
+    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3outsideclick", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout", "d3variantsselected", "d3zoomselected", "d3refreshsummaryclick");
 
     // dimensions
     var yAxisWidth = 45;
@@ -186,24 +186,40 @@ function scaledVariantD3() {
         }
     };
 
-    var showCircle = function (d, svgContainer, indicateMissingVariant, pinned) {
+    var showCircle = function (d, svgContainer, indicateMissingVariant, pinned, id) {
         // Find the matching variant
         var matchingVariant = null;
-        svgContainer.selectAll(".variant").each(function (variant, i) {
-            if (d.start === variant.start
-                && d.end === variant.end
-                && d.ref === variant.ref
-                && d.alt === variant.alt
-                && d.type.toLowerCase() === variant.type.toLowerCase()) {
 
-                if (variant.zygosity != null && variant.zygosity.toLowerCase() === 'homref') {
-                    // we want to show an "x" for homozygous reference variants
-                    // instead of a circle
-                } else {
-                    matchingVariant = variant;
+        if (id) {
+            svgContainer.selectAll(".variant").each(function (variant, i) {
+                if (id === variant.id) {
+                    if (variant.zygosity != null && variant.zygosity.toLowerCase() === 'homref') {
+                        // we want to show an "x" for homozygous reference variants
+                        // instead of a circle
+                    } else {
+                        matchingVariant = variant;
+                        // Send signal to refresh summary card populate
+                        dispatch.d3refreshsummaryclick(variant);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            svgContainer.selectAll(".variant").each(function (variant, i) {
+                if (d.start === variant.start
+                    && d.end === variant.end
+                    && d.ref === variant.ref
+                    && d.alt === variant.alt
+                    && d.type.toLowerCase() === variant.type.toLowerCase()) {
+
+                    if (variant.zygosity != null && variant.zygosity.toLowerCase() === 'homref') {
+                        // we want to show an "x" for homozygous reference variants
+                        // instead of a circle
+                    } else {
+                        matchingVariant = variant;
+                    }
+                }
+            });
+        }
 
         // Get the x for this position
         if (matchingVariant) {
