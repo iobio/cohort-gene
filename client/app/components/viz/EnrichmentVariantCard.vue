@@ -101,7 +101,7 @@ Updated: SJG Jan2019
                                 <v-card-text style="padding-top: 0">
                                     Variants displayed within the cohort track are arranged according to how enriched they are within the selected subset cohort relative to the
                                     entire proband group: specifically, the higher the variant is along the y-axis, the more enriched it is.
-                                    Enrichment is determined using a Cochran-Armitage Trend Test to calculate a p-value, and that p-value is log-transformed and negated to determine
+                                    Enrichment is determined using a Cochran-Armitage Trend Test to calculate a p-value, and that p-value is log<sub>10</sub>-transformed and negated to determine
                                     the y-coordinate akin to a Manhattan Plot. To display cohort variants in a non-overlapping fashion, use the zoom tool.
                                 </v-card-text>
                             </v-card>

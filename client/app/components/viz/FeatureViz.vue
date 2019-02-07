@@ -45,14 +45,14 @@
         </v-layout>
         <v-layout row>
             <v-flex xl3 lg4 md6 class="summary-field-label">
-                <span>Adj. p-value:</span>
+                <span>-log<sub>10</sub>(p-val):</span>
                 <v-menu open-on-hover offset-y transition="slide-y-transition" max-width="300px">
                     <v-btn flat icon small color="cohortBlue" slot="activator" class="info-button">
                         <v-icon small>info_outline</v-icon>
                     </v-btn>
                     <v-card>
                         <v-card-title style="font-family: Poppins; font-size: 16px; font-weight: 500; padding-top: 2px">
-                            Adjusted p-value
+                            -log<sub>10</sub>(p-value)
                         </v-card-title>
                         <v-divider></v-divider>
                         <v-card-text>
@@ -72,33 +72,6 @@
                 <img src="../../../assets/images/wheel.gif">
             </div>
         </v-layout>
-        <!--<v-layout row> TODO: removing this for now, too confusing-->
-        <!--<v-flex xl3 lg4 md6 class="summary-field-label">-->
-        <!--<span>Fold change:</span>-->
-        <!--<v-menu open-on-hover offset-y transition="slide-y-transition" max-width="300px">-->
-        <!--<v-btn flat icon small color="cohortBlue" slot="activator" class="info-button">-->
-        <!--<v-icon small>info_outline</v-icon>-->
-        <!--</v-btn>-->
-        <!--<v-card>-->
-        <!--<v-card-title style="font-family: Poppins; font-size: 16px; font-weight: 500; padding-top: 2px">-->
-        <!--Fold Change in Variant Frequency-->
-        <!--</v-card-title>-->
-        <!--<v-divider></v-divider>-->
-        <!--<v-card-text style="padding-top: 0">-->
-        <!--This value represents the difference between the frequency in which a variant is found in-->
-        <!--the subset and proband cohorts. This value relies on raw alternate (combined homozygous and-->
-        <!--heterozygous) counts, but may not be statistically significant.-->
-        <!--</v-card-text>-->
-        <!--</v-card>-->
-        <!--</v-menu>-->
-        <!--</v-flex>-->
-        <!--<v-flex xl7 md6 v-bind:class="{hide: loadingExtraAnnotations === true}" class="cohort-summary-field-value">-->
-        <!--<span>{{ foldEnrichmentInfo }}</span>-->
-        <!--</v-flex>-->
-        <!--<div class="loader" v-bind:class="{ hide: loadingExtraAnnotations === false }">-->
-        <!--<img src="../../../assets/images/wheel.gif">-->
-        <!--</div>-->
-        <!--</v-layout>-->
         <v-layout row style="padding-top: 10px">
             <v-flex xs12 class="field-label-header" style="text-align: left">Annotation Details</v-flex>
         </v-layout>

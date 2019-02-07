@@ -25,13 +25,10 @@ fi
 
 # upload to cloudfront
 if [[ $1 == "prod" ]]; then
-  #aws s3 cp ./deploy/  s3://static.iobio.io/cohortgene.iobio.io/ --recursive
-  #aws cloudfront create-invalidation --distribution-id EPK0TTL11YUW --paths /
-
   echo "** Uploaded to prod s3 bucket **"
   aws s3 cp ./deploy/  s3://static.iobio.io/prod/cohortgene.iobio.io/ --recursive
   echo "** Renew cloudfrount cache **"
-  aws cloudfront create-invalidation --distribution-id E331YTF25OIVP7 --paths /\*
+  #aws cloudfront create-invalidation --distribution-id E331YTF25OIVP7 --paths /\*
 
 
 else
