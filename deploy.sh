@@ -2,7 +2,6 @@
 
 rm -rf deploy
 mkdir deploy
-mkdir deploy/js
 mkdir deploy/app
 mkdir deploy/dist
 
@@ -18,8 +17,7 @@ fi
 # link to files needed for static page
 ln -s ~/Documents/Code/cohort-gene/server/views/index.html ~/Documents/Code/cohort-gene/deploy/index.html
 ln -s ~/Documents/Code/cohort-gene/client/assets ~/Documents/Code/cohort-gene/deploy/assets
-ln -s ~/Documents/Code/cohort-gene/client/js/thirdparty ~/Documents/Code/cohort-gene/deploy/js/thirdparty
-ln -s ~/Documents/Code/cohort-gene/client/app/third-party ~/Documents/Code/cohort-gene/deploy/app/third-party
+ln -s ~/Documents/Code/cohort-gene/client/js ~/Documents/Code/cohort-gene/deploy/js
 ln -s ~/Documents/Code/cohort-gene/client/dist/build.js ~/Documents/Code/cohort-gene/deploy/dist/build.js
 if [[ $1 == "prod" ]]; then
   ln -s ~/Documents/Code/cohort-gene/client/dist/build.js.map ~/Documents/Code/cohort-gene/deploy/dist/build.js.map
@@ -31,9 +29,9 @@ if [[ $1 == "prod" ]]; then
   #aws cloudfront create-invalidation --distribution-id EPK0TTL11YUW --paths /
 
   echo "** Uploaded to prod s3 bucket **"
-  aws s3 cp ./deploy/  s3://static.iobio.io/dev/cohortgene.iobio.io/ --recursive
+  aws s3 cp ./deploy/  s3://static.iobio.io/prod/cohortgene.iobio.io/ --recursive
   echo "** Renew cloudfrount cache **"
-  #aws cloudfront create-invalidation --distribution-id E331YTF25OIVP7 --paths /\*
+  aws cloudfront create-invalidation --distribution-id E331YTF25OIVP7 --paths /\*
 
 
 else
@@ -41,5 +39,5 @@ else
   #aws s3 sync ./deploy/  s3://static.iobio.io/dev/cohortgene.iobio.io/
   aws s3 cp ./deploy/  s3://static.iobio.io/dev/cohortgene.iobio.io/ --recursive
   echo "** Renew cloudfrount cache **"
-  #aws cloudfront create-invalidation --distribution-id E1RAE4AL1ULL9A --paths /\*
+  aws cloudfront create-invalidation --distribution-id E1VF20QZEG0H4X --paths /\*
 fi

@@ -1,10 +1,13 @@
 function variantD3() {
-    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout");
+    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3outsideclick", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout");
 
     // dimensions
+    var yAxisWidth = 45;
+    var yAxisPadding = 4;
     var margin = {top: 0, right: 2, bottom: 0, left: 2},
         width = 800,
         height = 250;
+
     // scales
     var x = d3.scale.linear(),
         y = d3.scale.linear();
@@ -30,6 +33,7 @@ function variantD3() {
         lowestWidth = 3,
         dividerLevel = null,
         container = null,
+        zoomVersion = false,
         clazz = null;
 
     //  options
@@ -104,49 +108,226 @@ function variantD3() {
             //showCoordinateFrame(matchingVariant.screenX);
 
         } else if (indicateMissingVariant) {
-            var mousex = d3.round(x(d.start));
+            var mousex = x(d.start - yAxisWidth);
             var mousey = height - verticalPadding;
-
-
             var arrowClazz = pinned ? 'g.pinned.arrow' : 'g.hover.arrow';
             var garrow = svgContainer.select(arrowClazz);
-            garrow.attr("transform", "translate(" + (mousex + margin.left - variantHeight/2) + "," + (mousey + margin.top - 6) + ")");
+            garrow.attr("transform", "translate(" +(mousex + margin.left - (variantHeight / 2)) + "," + (mousey + margin.top - 6) + ")");
             garrow.selectAll('.arrow').transition()
                 .duration(200)
                 .style("opacity", 1);
-
-
         }
-
 
         return matchingVariant;
     };
 
 
 
-    var hideCircle = function(svgContainer, parentContainer, pinned) {
+    var hideCircle = function (svgContainer, pinned) {
         var circleClazz = pinned ? '.pinned.circle' : '.hover.circle';
-        var arrowClazz = pinned ? 'g.pinned.arrow' : 'g.hover.arrow';
+        var pinnedArrowClazz = 'g.pinned.arrow';
+        var hoverArrowClazz  = 'g.hover.arrow';
+
         svgContainer.select(circleClazz).transition()
             .duration(500)
             .style("opacity", 0);
-        svgContainer.select(arrowClazz).selectAll(".arrow").transition()
-            .duration(500)
-            .style("opacity", 0);
-        /*
-        if (parentContainer) {
-          parentContainer.select('.tooltip').transition()
-                       .duration(500)
-                       .style("opacity", 0)
-                       .style("z-index", 0)
-                       .style("pointer-events", "none");
+        if (pinned) {
+            svgContainer.select(pinnedArrowClazz).selectAll(".arrow").transition()
+                .duration(500)
+                .style("opacity", 0);
         }
-        */
+        if (!pinned) {
+            svgContainer.select(hoverArrowClazz).selectAll(".arrow").transition()
+                .duration(500)
+                .style("opacity", 0);
+        }
     }
 
+    /* Takes in a list of filter classes. If a variant contains any of them, it will be hidden.
+     *  Takes in a filter cutoff object that a variant must meet or be lower than - if not, it will be hidden. */
+    var filterVariants = function(filterClasses, filterCutoffs, svgContainer) {
+        let allVariants = svgContainer.selectAll(".variant");
 
+        // Add filtered class to all variants
+        allVariants.classed({'filtered': true});
 
+        // If we're out of active filters, display all variants
+        if (filterClasses.length === 0 && filterCutoffs.length === 0) {
+            allVariants.style("opacity", 1);
+            allVariants.style("pointer-events", 'auto');
+            return false;
+        }
 
+        // Remove filtered class for any variants that contain the given class criteria
+        filterClasses.forEach((filterClass) => {
+            allVariants.filter(filterClass).classed({'filtered': false});
+            allVariants.style("pointer-events", 'none');
+        });
+
+        // Include previously filtered variants into the equation
+        let filteredVars = svgContainer.selectAll('.filtered');
+
+        // Remove filtered class for any variants that don't meet cutoffs
+        let cutoffs = Object.values(filterCutoffs);
+        if (cutoffs.length > 0) {
+            filteredVars.each(function (d, i) {
+                if (d === 0) {
+                    return;
+                }
+                cutoffs.forEach((cutoff) => {
+                    let filterName = cutoff[0];
+                    let filterLogic = cutoff[1];
+                    let filterCutoffVal = parseFloat(cutoff[2]);
+                    let varVal = 0;
+
+                    switch(filterLogic) {
+                        case '<':
+                            if (filterName === 'probandFreq') {
+                                let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
+                                let totalAlleleCount = d.totalProbandCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (filterName === 'subsetFreq') {
+                                let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
+                                let totalAlleleCount = d.totalSubsetCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
+                                varVal = Math.round(d[filterName] * 100);
+                            } else {
+                                varVal = d[filterName] * 100 / 100;
+                            }
+
+                            if (!(varVal < filterCutoffVal)) {
+                                let selectionId = '#' + d.id;
+                                let domD = svgContainer.selectAll(selectionId);
+                                domD.classed({'filtered': false});
+                                domD.style('pointer-events', 'none');
+                            }
+                            break;
+                        case '<=':
+                            if (filterName === 'probandFreq') {
+                                let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
+                                let totalAlleleCount = d.totalProbandCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (filterName === 'subsetFreq') {
+                                let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
+                                let totalAlleleCount = d.totalSubsetCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
+                                varVal = Math.round(d[filterName] * 100);
+                            } else {
+                                varVal = d[filterName] * 100 / 100;
+                            }
+
+                            if (!(varVal <= filterCutoffVal)) {
+                                let selectionId = '#' + d.id;
+                                let domD = svgContainer.selectAll(selectionId);
+                                domD.classed({'filtered': false});
+                                domD.style('pointer-events', 'none');
+                            }
+                            break;
+                        case '=':
+                            if (filterName === 'probandFreq') {
+                                let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
+                                let totalAlleleCount = d.totalProbandCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (filterName === 'subsetFreq') {
+                                let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
+                                let totalAlleleCount = d.totalSubsetCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
+                                varVal = Math.round(d[filterName] * 100);
+                            } else {
+                                varVal = d[filterName] * 100 / 100;
+                            }
+
+                            if (!(varVal === filterCutoffVal)) {
+                                let selectionId = '#' + d.id;
+                                let domD = svgContainer.selectAll(selectionId);
+                                domD.classed({'filtered': false});
+                                domD.style('pointer-events', 'none');
+                            }
+                            break;
+                        case '>=':
+                            if (filterName === 'probandFreq') {
+                                let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
+                                let totalAlleleCount = d.totalProbandCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (filterName === 'subsetFreq') {
+                                let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
+                                let totalAlleleCount = d.totalSubsetCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
+                                varVal = Math.round(d[filterName] * 100);
+                            } else {
+                                varVal = d[filterName] * 100 / 100;
+                            }
+
+                            if (!(varVal >= filterCutoffVal)) {
+                                let selectionId = '#' + d.id;
+                                let domD = svgContainer.selectAll(selectionId);
+                                domD.classed({'filtered': false});
+                                domD.style('pointer-events', 'none');
+                            }
+                            break;
+                        case '>':
+                            if (filterName === 'probandFreq') {
+                                let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
+                                let totalAlleleCount = d.totalProbandCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (filterName === 'subsetFreq') {
+                                let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
+                                let totalAlleleCount = d.totalSubsetCount * 2;
+                                varVal = numMutantAlleles / totalAlleleCount * 100;
+                            } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
+                                varVal = d[filterName] * 100;
+                            } else {
+                                varVal = d[filterName] * 100 / 100;
+                            }
+
+                            if (!(varVal > filterCutoffVal)) {
+                                let selectionId = '#' + d.id;
+                                let domD = svgContainer.selectAll(selectionId);
+                                domD.classed({'filtered': false});
+                                domD.style('pointer-events', 'none');
+                            }
+                            break;
+                        default:
+                        // Do nothing
+                    }
+                })
+            });
+        }
+
+        // Re-check for all filtered variants
+        filteredVars = svgContainer.selectAll('.filtered');
+
+        // Hide all variants
+        allVariants.style("opacity", 0)
+            .style("pointer-events", "none")
+            .transition()
+            .duration(1000);
+
+        // Reveal variants that pass filter
+        filteredVars.style("opacity", 1)
+            .style("pointer-events", "auto");
+
+        if (filteredVars && filteredVars[0]) {
+            return filteredVars[0].length === 0;
+        } else {
+            return false;
+        }
+    };
+
+    /* Returns true if selected variant passes filter and is visible. */
+    var checkForSelectedVar = function(selectedVarId, svgContainer) {
+        let stillVisible = false;
+        svgContainer.selectAll('.filtered').each(function(d, i) {
+            if (d.id === selectedVarId) {
+                stillVisible = true;
+            }
+        });
+        return stillVisible;
+    };
 
     function chart(selection, options) {
         // merge options and defaults
@@ -287,29 +468,50 @@ function variantD3() {
                 // Select the svg element, if it exists.
                 var svg = container.selectAll("svg").data([0]);
 
+                if (zoomVersion) {
+                    svg.enter()
+                        .append("svg")
+                        .attr("width", width)
+                        .attr("height", height + margin.top + margin.bottom)
+                        //.attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom))
+                        .attr("preserveAspectRatio", "none")
+                        .append("g")
+                        .attr("class", "group")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                } else {
+                    svg.enter()
+                        .append("svg")
+                        .attr("width", widthPercent)
+                        .attr("height", heightPercent)
+                        .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + parseInt(width + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height + margin.top + margin.bottom))
+                        .attr("preserveAspectRatio", "none")
+                        .append("g")
+                        .attr("class", "group")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+                }
 
-
-                svg.enter()
-                    .append("svg")
-                    .attr("width", widthPercent)
-                    .attr("height", heightPercent)
-                    .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom))
-                    .attr("preserveAspectRatio", "none")
-                    .append("g")
-                    .attr("class", "group")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                svg.on("click", function(d) {
+                    dispatch.d3outsideclick(null);
+                });
 
                 var g = svg.select("g.group");
 
 
                 // The chart dimensions could change after instantiation, so update viewbox dimensions
                 // every time we draw the chart.
-                d3.select(this).selectAll("svg")
-                    .filter(function() {
-                        return this.parentNode === container.node();
-                    })
-                    .attr('viewBox', "0 0 " + parseInt(width+margin.left+margin.right) + " " + parseInt(height+margin.top+margin.bottom));
-
+                if (zoomVersion) {
+                    d3.select(this).selectAll("svg")
+                        .filter(function() {
+                            return this.parentNode === container.node();
+                        })
+                        .attr('viewBox', "0 0 " + parseInt(width + margin.left + margin.right) + " " + parseInt(height + margin.top + margin.bottom));
+                } else {
+                    d3.select(this).selectAll("svg")
+                        .filter(function() {
+                            return this.parentNode === container.node();
+                        })
+                        .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + parseInt(width + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height + margin.top + margin.bottom));
+                }
 
                 // Add grouping for flagged variants
                 svg.select("g.flagged-variants").remove();
@@ -389,6 +591,9 @@ function variantD3() {
                     return d['features'].filter( function(d) { return d.type.toUpperCase() === 'SNP' || d.type.toUpperCase() === 'MNP'; }) ;
                 }).enter().append('rect')
                     .attr('class', function(d) { return chart.clazz()(d); })
+                    .attr('id', function (d) {
+                        return d.id;
+                    })
                     .attr('rx', borderRadius)
                     .attr('ry', borderRadius)
                     .attr('x', function(d) {
@@ -420,6 +625,9 @@ function variantD3() {
                             .size(symbolSize)();
                     })
                     .attr('class', function(d) { return chart.clazz()(d); })
+                    .attr('id', function (d) {
+                        return d.id;
+                    })
                     .attr("transform", function(d) {
                         var xCoord = x(d.start) + 2;
                         var yCoord = showTransition ? 0 : height - ((d.level + 1) * (variantHeight + verticalPadding)) + 3;
@@ -427,13 +635,10 @@ function variantD3() {
                         return tx;
                     });
 
-
-
-
-
                 g.selectAll('.variant')
                     .on("click", function(d) {
                         dispatch.d3click(d);
+                        d3.event.stopPropagation();
                     })
                     .on("mouseover", function(d) {
                         dispatch.d3mouseover(d);
@@ -441,9 +646,6 @@ function variantD3() {
                     .on("mouseout", function(d) {
                         dispatch.d3mouseout();
                     });
-
-
-
 
 
                 // exit
@@ -549,7 +751,6 @@ function variantD3() {
                 }
 
 
-
                 // add a circle and arrows for 'hover' event and 'pinned' event
                 ['hover', 'pinned'].forEach(function(clazz) {
                     var circleClazz = '.' + clazz + '.circle';
@@ -562,30 +763,30 @@ function variantD3() {
                             .attr("r", variantHeight + 2)
                             .style("opacity", 0);
                     }
-                //
-                //     var arrowClazz = 'g.' + clazz + '.arrow';
-                //     if (svg.selectAll(arrowClazz).empty()) {
-                //         //svg.selectAll("g.arrow").remove();
-                //         var garrow = svg.selectAll(arrowClazz).data([0])
-                //             .enter().append("g")
-                //             .attr("class", clazz + " arrow")
-                //             .attr("transform", "translate(1,0)");
-                //
-                //         garrow.append('line')
-                //             .attr("class", "arrow arrow-line")
-                //             .attr("x1", variantHeight + 2)
-                //             .attr("x2", -2)
-                //             .attr("y1", variantHeight + 2)
-                //             .attr("y2", 0)
-                //             .style("opacity", 0);
-                //         garrow.append('line')
-                //             .attr("class", "arrow arrow-line")
-                //             .attr("x1", variantHeight + 2)
-                //             .attr("x2", -2)
-                //             .attr("y1", 0)
-                //             .attr("y2", variantHeight + 2)
-                //             .style("opacity", 0);
-                //     }
+
+                    var arrowClazz = 'g.' + clazz + '.arrow';
+                    if (svg.selectAll(arrowClazz).empty()) {
+                        //svg.selectAll("g.arrow").remove();
+                        var garrow = svg.selectAll(arrowClazz).data([0])
+                            .enter().append("g")
+                            .attr("class", clazz + " arrow")
+                            .attr("transform", "translate(1,0)");
+
+                        garrow.append('line')
+                            .attr("class", "arrow arrow-line")
+                            .attr("x1", variantHeight + 2)
+                            .attr("x2", -2)
+                            .attr("y1", variantHeight + 2)
+                            .attr("y2", 0)
+                            .style("opacity", 0);
+                        garrow.append('line')
+                            .attr("class", "arrow arrow-line")
+                            .attr("x1", variantHeight + 2)
+                            .attr("x2", -2)
+                            .attr("y1", 0)
+                            .attr("y2", variantHeight + 2)
+                            .style("opacity", 0);
+                    }
                 });
 
                 dispatch.d3rendered();
@@ -733,7 +934,6 @@ function variantD3() {
         return chart;
     };
 
-
     chart.regionStart = function(_) {
         if (!arguments.length) return regionStart;
         regionStart = _;
@@ -812,7 +1012,6 @@ function variantD3() {
         return chart;
     }
 
-
     chart.showCircle = function(_) {
         if (!arguments.length) return showCircle;
         showCircle = _;
@@ -823,13 +1022,24 @@ function variantD3() {
         hideCircle = _;
         return chart;
     }
-    chart.highlightVariant = function(_) {
-        if (!arguments.length) return highlightVariant;
-        highlightVariant = _;
+
+    chart.zoomVersion = function (_) {
+        if (!arguments.length) return zoomVersion;
+        zoomVersion = _;
         return chart;
     }
 
+    chart.filterVariants = function (_) {
+        if (!arguments.length) return filterVariants;
+        filterVariants = _;
+        return chart;
+    };
 
+    chart.checkForSelectedVar = function (_) {
+        if (!arguments.length) return checkForSelectedVar;
+        checkForSelectedVar = _;
+        return chart;
+    };
 
     // This adds the "on" methods to our custom exports
     d3.rebind(chart, dispatch, "on");

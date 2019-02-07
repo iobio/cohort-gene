@@ -1,4 +1,5 @@
 import jQuery from 'jquery'
+import VModal from 'vue-js-modal'
 
 global.jQuery = jQuery
 global.$ = jQuery
@@ -14,7 +15,8 @@ import Home from './components/pages/Home.vue'
 import bootstrap from 'bootstrap/dist/css/bootstrap.css'
 import {Typeahead} from 'uiv'
 
-Vue.use(Typeahead)
+Vue.use(Typeahead);
+Vue.use(VModal, { dynamic: true, injectModalsContainer: true });
 
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.css'
@@ -25,10 +27,12 @@ Vue.use(Vuetify, {
         cohortBlue: '#95b0c6',
         cohortDarkBlue: '#6c94b7',
         cohortNavy: '#516e87',
-        cohortPeriwinkle: '#6c7cb7',
+        cohortPeriwinkle: '#516187',
+        cohortGold: '#d18e00',
+        cohortTeal: '#67a4a2',
         limeGreen: '#00d60e',
         cherryRed: '#FF000D',
-        slateGray: '#B7B7B7'
+        appGray: '#888888'
     }
 })
 
@@ -60,11 +64,11 @@ const routes = [
             next(`/${Qs.stringify(otherQueryParams, {addQueryPrefix: true, arrayFormat: 'brackets'})}`);
         }
     }
-]
+];
 
 const router = new VueRouter({
     routes: routes
-})
+});
 
 window.vm = new Vue({
     el: '#app',

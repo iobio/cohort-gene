@@ -4,94 +4,74 @@
         .input-group
             label
                 font-size: 13px
+        .filter-loader
+            padding-top: 4px
+            padding-right: 7px
+            max-width: 25px
+            margin: 0 !important
+        img
+            width: 18px !important
 </style>
 
 <template>
-    <v-layout row wrap class="filter-form mx-2 px-2" style="max-width:500px;">
+    <v-layout row wrap class="filter-form px-2" style="max-width:500px;">
         <v-flex id="name" xs12 class="mb-3">
-            <v-text-field label="Name" @input="onChangeName" v-model="name" hide-details>
-            </v-text-field>
-        </v-flex>
-
-        <v-flex id="max-af" xs4 class="mb-3">
-            <v-text-field label="Max Allele Freq" suffix="%" v-model="maxAf" hide-details>
-            </v-text-field>
-        </v-flex>
-        <v-flex xs4>
-        </v-flex>
-        <v-flex id="max-genotype-depth" xs4 class="mb-3">
-            <v-text-field label="Min Coverage" suffix="X" v-model="minGenotypeDepth" hide-details>
-            </v-text-field>
-        </v-flex>
-
-        <v-flex xs12 class="mb-3">
-            <v-select
-                    label="Clinical significance"
-                    v-bind:items="clinvarCategories"
-                    v-model="selectedClinvarCategories"
-                    multiple
-                    hide-details
-            >
-            </v-select>
-        </v-flex>
-
-        <v-flex xs6 class="mb-3">
-            <v-select
-                    label="Impact"
-                    v-bind:items="impacts"
-                    v-model="selectedImpacts"
-                    multiple
-                    hide-details
-            >
-            </v-select>
-        </v-flex>
-
-        <v-flex xs6 class="pl-2 mb-3">
-            <v-select
-                    label="Consequence"
-                    v-bind:items="consequences"
-                    v-model="selectedConsequences"
-                    multiple
-                    autocomplete
-                    hide-details
-            >
-            </v-select>
-        </v-flex>
-
-        <v-flex xs6 class="mb-3">
-            <v-select
-                    label="Inheritance"
-                    v-bind:items="inheritanceModes"
-                    v-model="selectedInheritanceModes"
-                    multiple
-                    hide-details
-            >
-            </v-select>
-        </v-flex>
-
-        <v-flex xs6 class="pl-2 mb-3">
-            <v-select
-                    label="Zygosity"
-                    v-bind:items="zygosities"
-                    v-model="selectedZygosity"
-                    single
-                    clearable
-                    hide-details
-            >
-            </v-select>
+            <v-expansion-panel expand>
+                <v-expansion-panel-content
+                        v-for="category in categories[filterName]"
+                        :ref="category.name + 'ExpansionRef'"
+                        :key="category.name"
+                        :value="category.open">
+                    <div slot="header">
+                        <v-avatar v-if="category.active" size="12px" color="cohortGold" style="margin-right: 10px"></v-avatar>
+                        <v-avatar v-else-if="!category.active && (!isAnnotationCategory(category.name) || (isAnnotationCategory(category.name) && fullAnnotationComplete))" size="10px" color="white" style="margin-right: 12px"></v-avatar>
+                        <span v-bind:hidden="!isAnnotationCategory(category.name) || fullAnnotationComplete" class="filter-loader">
+                            <img src="../../../assets/images/wheel.gif">
+                        </span>
+                        <span class="filter-title">
+                            {{ category.display }}
+                        </span>
+                    </div>
+                    <v-card>
+                        <filter-settings-checkbox
+                                v-if="category.type==='checkbox'"
+                                ref="filtCheckRef"
+                                :parentFilterName="category.name"
+                                :grandparentFilterName="filterName"
+                                :fullAnnotationComplete="fullAnnotationComplete"
+                                @filter-toggled="onFilterToggled">
+                        </filter-settings-checkbox>
+                        <filter-settings-cutoff
+                                v-else-if="category.type==='cutoff'"
+                                ref="filterCutoffRef"
+                                :filterName="category.name"
+                                :parentFilterName="filterName"
+                                :fullAnnotationComplete="fullAnnotationComplete"
+                                @filter-applied="onFilterApplied"
+                                @cutoff-filter-cleared="onFilterCleared">
+                        </filter-settings-cutoff>
+                    </v-card>
+                </v-expansion-panel-content>
+            </v-expansion-panel>
         </v-flex>
     </v-layout>
-
 </template>
 
 <script>
+    import FilterSettingsCheckbox from '../partials/FilterSettingsCheckbox.vue'
+    import FilterSettingsCutoff from '../partials/FilterSettingsCutoff.vue'
     export default {
         name: 'filter-settings',
-        components: {},
+        components: {
+            FilterSettingsCheckbox,
+            FilterSettingsCutoff
+        },
         props: {
             filter: null,
+            filterName: '',
             filterModel: null,
-            idx: null
+            idx: null,
+            fullAnnotationComplete: false
         },
         data() {
             return {
@@ -104,116 +84,136 @@
                 selectedInheritanceModes: null,
                 selectedConsequences: null,
                 minGenotypeDepth: null,
-                clinvarCategories: [
-                    {'key': 'clinvar', 'selected': true, value: 'clinvar_path', text: 'Pathogenic'},
-                    {'key': 'clinvar', 'selected': true, value: 'clinvar_lpath', text: 'Likely pathogenic'},
-                    {'key': 'clinvar', 'selected': true, value: 'clinvar_uc', text: 'Uncertain significance'},
-                    {'key': 'clinvar', 'selected': true, value: 'clinvar_cd', text: 'Conflicting data'},
-                    {'key': 'clinvar', 'selected': false, value: 'clinvar_other', text: 'Other'},
-                    {'key': 'clinvar', 'selected': false, value: 'clinvar_benign', text: 'Benign'},
-                    {'key': 'clinvar', 'selected': false, value: 'clinvar_lbenign', text: 'Likely benign'}
-                ],
-                impacts: ['HIGH', 'MODERATE', 'MODIFIER', 'LOW'],
-                inheritanceModes: [
-                    {text: 'autosomal dominant', value: 'autosomal dominant'},
-                    {text: 'recessive', value: 'recessive'},
-                    {text: 'de novo', value: 'denovo'},
-                    {text: 'compound het', value: 'compound het'},
-                    {text: 'x-linked', value: 'x-linked'}
-                ],
-                zygosities: ['HOM', 'HET'],
-                consequences: [
-                    'transcript_ablation',
-                    'splice_acceptor_variant',
-                    'splice_donor_variant',
-                    'stop_gained',
-                    'frameshift_variant',
-                    'stop_lost',
-                    'start_lost',
-                    'transcript_amplification',
-                    'inframe_insertion',
-                    'inframe_deletion',
-                    'missense_variant',
-                    'protein_altering_variant',
-                    'splice_region_variant',
-                    'incomplete_terminal_codon_variant',
-                    'stop_retained_variant',
-                    'synonymous_variant',
-                    'coding_sequence_variant',
-                    'mature_miRNA_variant',
-                    '5_prime_UTR_variant',
-                    '3_prime_UTR_variant',
-                    'non_coding_transcript_exon_variant',
-                    'intron_variant',
-                    'NMD_transcript_variant',
-                    'non_coding_transcript_variant',
-                    'upstream_gene_variant',
-                    'downstream_gene_variant',
-                    'TFBS_ablation',
-                    'TFBS_amplification',
-                    'TF_binding_site_variant',
-                    'regulatory_region_ablation',
-                    'regulatory_region_amplification',
-                    'feature_elongation',
-                    'regulatory_region_variant',
-                    'feature_truncation',
-                    'intergenic_variant'
-                ]
+                categories: {
+                    'annotation': [
+                        {name: 'impact', display: 'Impact', active: false, open: false, type: 'checkbox', cohortOnly: false},
+                        {name: 'type', display: 'Type', active: false, open: false, type: 'checkbox', cohortOnly: false},
+                        {name: 'zygosities', display: 'Zygosities', active: false, open: false, type: 'checkbox', cohortOnly: false},],
+                    'enrichment': [
+                        {name: 'pValue', display: 'p-val', active: false, open: false, type: 'cutoff', cohortOnly: true},
+                        {name: 'adjPVal', display: '-log(p-val)', active: false, open: false, type: 'cutoff', cohortOnly: true}],
+                    'frequencies': [
+                        {name: 'g1000', display: '1000G', active: false, open: false, type: 'cutoff', cohortOnly: false},
+                        {name: 'exac', display: 'ExAC', active: false, open: false, type: 'cutoff', cohortOnly: false},
+                        {name: 'gnomad', display: 'gnomAD', active: false, open: false, type: 'cutoff', cohortOnly: false},
+                        {name: 'probandFreq', display: 'Proband', active: false, open: false, type: 'cutoff', cohortOnly: true},
+                        {name: 'subsetFreq', display: 'Subset', active: false, open: false, type: 'cutoff', cohortOnly: true}],
+                    'rawCounts': [ // Currently unused - may incorporate later
+                        {name: 'rawCounts', display: 'Raw Counts', active: false, open: false, type: 'cutoff'}],
+                    'samplePresence': [{name: 'samplePresence', display: 'Sample Presence', active: false, open: false, type: 'checkbox'}]
+                }
             }
         },
         watch: {},
         methods: {
-            init: function () {
-                let flagCriteria = this.filterModel.flagCriteria[this.theFilter.name];
-                if (flagCriteria == null) {
-                    flagCriteria = {};
-                    flagCriteria.custom = true;
-                    flagCriteria.active = false;
-                    flagCriteria.name = this.theFilter.display;
-                    flagCriteria.maxAf = null;
-                    flagCriteria.clinvar = null;
-                    flagCriteria.impact = null;
-                    flagCriteria.consequence = null;
-                    flagCriteria.inheritance = null;
-                    flagCriteria.zygosity = null;
-                    flagCriteria.genotypeDepth = null;
-                    this.filterModel.flagCriteria[this.theFilter.name] = flagCriteria;
+            onFilterToggled: function(filterName, filterState, parentFilterName, grandparentFilterName, parentFilterState, filterDisplayName) {
+                let self = this;
+                // Turn on indicator
+                let filterObj = self.categories[grandparentFilterName].filter((cat) => {
+                    return cat.name === parentFilterName;
+                });
+                let cohortOnly = false;
+                if (filterObj.length > 0) {
+                    filterObj[0].active = parentFilterState;
+                    cohortOnly = filterObj[0].cohortOnly;
                 }
-                this.name = flagCriteria.name;
-                this.maxAf = flagCriteria.maxAf ? flagCriteria.maxAf * 100 : null;
-                this.selectedClinvarCategories = flagCriteria.clinvar;
-                this.selectedImpacts = flagCriteria.impact;
-                this.selectedConsequences = flagCriteria.consequence;
-                this.selectedInheritanceModes = flagCriteria.inheritance;
-                this.selectedZygosity = flagCriteria.zygosity;
-                this.minGenotypeDepth = flagCriteria.minGenotypeDepth;
-            },
-            apply: function () {
-                debugger;   // TODO: hitting this but nothing happening
-                let flagCriteria = this.filterModel.flagCriteria[this.theFilter.name];
-                flagCriteria.name = this.name;
-                if (flagCriteria.custom) {
-                    flagCriteria.title = this.name;
+                let grandparentFilterState = false;
+                let parentFilters = self.categories[grandparentFilterName];
+                parentFilters.forEach((filt) => {
+                    grandparentFilterState |= filt.active;
+                });
+                // Format display name
+                if (parentFilterName === 'impact') {
+                    filterDisplayName = filterDisplayName.toLowerCase();
+                    filterDisplayName = filterDisplayName.charAt(0).toUpperCase() + filterDisplayName.slice(1);
+                    filterDisplayName += ' Impact';
+                } else if (parentFilterName === 'type') {
+                    if (filterDisplayName !== 'SNP' && filterDisplayName !== 'MNP') {
+                        filterDisplayName = filterDisplayName.toLowerCase();
+                        filterDisplayName = filterDisplayName.charAt(0).toUpperCase() + filterDisplayName.slice(1);
+                    }
+                    filterDisplayName += 's';
+                } else if (parentFilterName === 'zygosities') {
+                    if (filterName === 'hom') {
+                        filterDisplayName = 'Homozygotes';
+                    } else {
+                        filterDisplayName = 'Heterozygotes';
+                    }
                 }
-                flagCriteria.maxAf = this.maxAf ? this.maxAf / 100 : null;
-                flagCriteria.clinvar = this.selectedClinvarCategories;
-                flagCriteria.impact = this.selectedImpacts;
-                flagCriteria.consequence = this.selectedConsequences;
-                flagCriteria.inheritance = this.selectedInheritanceModes;
-                flagCriteria.zygosity = this.selectedZygosity;
-                flagCriteria.minGenotypeDepth = this.minGenotypeDepth;
-                flagCriteria.active = true;
+                self.$emit('filter-toggled', filterName, filterState, grandparentFilterName, grandparentFilterState, cohortOnly, filterDisplayName);
             },
-            onChangeName: function () {
-                this.theFilter.display = this.name;
+            onFilterApplied: function(filterName, filterLogic, cutoffValue, grandparentFilterName) {
+                let self = this;
+                // Turn on indicator
+                let filterObj = self.categories[grandparentFilterName].filter((cat) => {
+                    return cat.name === filterName;
+                });
+                let cohortOnly = false;
+                let displayName = '';
+                if (filterObj.length > 0) {
+                    filterObj[0].active = true;
+                    cohortOnly = filterObj[0].cohortOnly;
+                    displayName = filterObj[0].display;
+                    if (grandparentFilterName === 'frequencies') {
+                        displayName += ' Freq';
+                    }
+                }
+                let grandparentFilterState = false;
+                let parentFilters = self.categories[grandparentFilterName];
+                parentFilters.forEach((filt) => {
+                    grandparentFilterState |= filt.active;
+                });
+                self.$emit('filter-applied', filterName, filterLogic, cutoffValue, grandparentFilterName, grandparentFilterState, cohortOnly, displayName);
+            },
+            onFilterCleared: function(filterName, grandparentFilterName) {
+                let self = this;
+                // Turn on indicator
+                let filterObj = self.categories[grandparentFilterName].filter((cat) => {
+                    return cat.name === filterName;
+                });
+                let cohortOnly = false;
+                let displayName = '';
+                if (filterObj.length > 0) {
+                    filterObj[0].active = false;
+                    cohortOnly = filterObj[0].cohortOnly;
+                    displayName = filterObj[0].display;
+                }
+                let grandparentFilterState = false;
+                let parentFilters = self.categories[grandparentFilterName];
+                parentFilters.forEach((filt) => {
+                    grandparentFilterState |= filt.active;
+                });
+                self.$emit('cutoff-filter-cleared', filterName, grandparentFilterName, grandparentFilterState, cohortOnly, displayName);
+            },
+            clearFilters: function() {
+                let self = this;
+                (Object.values(self.categories)).forEach((catList) => {
+                    catList.forEach((filt) => {
+                        filt.active = false;
+                    })
+                });
+                if (self.$refs.filtCheckRef) {
+                    self.$refs.filtCheckRef.forEach((checkRef) => {
+                        checkRef.clearFilters();
+                    });
+                }
+            },
+            isAnnotationCategory: function (currentCat) {
+                // TODO: making all filters wait until annotation complete for now
+                return true;
+                // if (currentCat === 'impact' || currentCat === 'g1000' ||
+                //     currentCat === 'exac' || currentCat === 'gnomad') {
+                //     return true;
+                // } else {
+                //     return false;
+                // }
             }
         },
-        computed: {},
+        computed: {
+        },
         created: function () {
         },
         mounted: function () {
-            this.theFilter = this.filter;
-            this.init();
         }
     }
 </script>

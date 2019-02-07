@@ -24,15 +24,15 @@
 <template>
     <v-flex xs12>
         <v-layout row>
-            <v-flex xs12 class="field-label-header" style="text-align:left">Zygosity Counts</v-flex>
+            <v-flex xs12 class="field-label-header" style="text-align:left">Cohort Zygosity Counts</v-flex>
         </v-layout>
         <v-layout row>
-            <v-flex xs2 md3 class="summary-field-label">Probands:</v-flex>
-            <v-flex xs10 md9 id="probandZygBar" style="padding-bottom:5px"></v-flex>
+            <v-flex xs2 class="summary-field-label">Probands:</v-flex>
+            <v-flex xs9 id="probandZygBar" style="padding-bottom:5px"></v-flex>
         </v-layout>
         <v-layout row>
-            <v-flex xs2 md3 class="summary-field-label">Subsets:</v-flex>
-            <v-flex xs10 md9 id="subsetZygBar" style="padding-bottom:5px"></v-flex>
+            <v-flex xs2 class="summary-field-label">Subsets:</v-flex>
+            <v-flex xs9 id="subsetZygBar" style="padding-bottom:5px"></v-flex>
         </v-layout>
     </v-flex>
 </template>
@@ -61,15 +61,22 @@
         created: function () {
         },
         mounted: function () {
-            //this.drawCharts();
+            let self = this;
+            self.$emit('zyg-bars-mounted');
         },
         methods: {
             drawCharts(probandSampleCount, subsetSampleCount) {
                 let self = this;
 
+                // Don't draw charts until we have counts
+                if (probandSampleCount == null || probandSampleCount === 0) {
+                    return;
+                }
+
                 self.probandZygChart = barChart()
                     .parentId('probandZygBar')
                     .yValueMax(probandSampleCount)
+                    .yTicks(self.getTicks(probandSampleCount))
                     .on('d3rendered', function () {
                     });
                 self.probandZygChart(self.probandZygMap);
@@ -77,6 +84,7 @@
                 self.subsetZygChart = barChart()
                     .parentId('subsetZygBar')
                     .yValueMax(subsetSampleCount)
+                    .yTicks(self.getTicks(subsetSampleCount))
                     .on('d3rendered', function () {
                     });
                 self.subsetZygChart(self.subsetZygMap);
@@ -90,12 +98,21 @@
                 let self = this;
                 self.probandZygChart.fillChart()();
                 self.subsetZygChart.fillChart()();
+            },
+            getTicks(sampleCount) {
+                let maxTicks = 5;
+                if (sampleCount < (maxTicks - 1)) {
+                    return sampleCount + 1;
+                } else {
+                    return maxTicks;
+                }
             }
         },
         watch: {
             selectedVariant: function () {
                 this.fillCharts();
             }
-        }
+        },
+        computed: {}
     }
 </script>

@@ -1,10 +1,10 @@
-function EndpointCmd(useSSL, IOBIOServiceNames, launchTimestamp, genomeBuildHelper, getHumanRefNamesFunc) {
+function EndpointCmd(useSSL, IOBIOServiceNames, launchTimestamp, genomeBuildHelper, getHumanRefNamesFunc, revelFile) {
     this.useSSL = useSSL;
     this.IOBIO = IOBIOServiceNames;
     this.launchTimestamp = launchTimestamp;
     this.genomeBuildHelper = genomeBuildHelper;
     this.getHumanRefNames = getHumanRefNamesFunc;
-
+    this.vepREVELFile = revelFile;
 }
 
 
@@ -105,15 +105,6 @@ EndpointCmd.prototype.annotateEnrichmentCounts = function (vcfSource, refName, r
     // Only use variants that have passed all Simons filters
     cmd = cmd.pipe(self.IOBIO.vt, ['filter', '-f', 'PASS', '-t', '\"SSC_PASS\"', '-d', '\"Variants passing all SSC filters\"', '-'], {ssl: self.useSSL});
 
-    // Filter out alleles with <25% frequency - TODO: don't use info field, calculate this on a per sample basis and use some percentage cutoff
-    //cmd = cmd.pipe(self.IOBIO.bcftools, ['filter', '-i', '\"AVG(INFO/AF)>0.25\"'], {ssl: self.useSSL});
-
-    // Filter alleles with coverage <20x
-    // TODO: do this on a per variant basis also
-
-    // Filter alleles without representation on both strands
-    // TODO: do this on a per variant basis also
-
     // Annotate enrichment info
     cmd = cmd.pipe(self.IOBIO.gtEnricher, expSampleNames, {ssl: self.useSSL});
 
@@ -198,9 +189,12 @@ EndpointCmd.prototype.annotateVariants = function (vcfSource, refName, regions, 
         // VEP
         var vepArgs = [];
         vepArgs.push(" --assembly");
-        vepArgs.push(me.genomeBuildHelper.getCurrentBuildName());   // TODO: debug - is grch38 a problem?
+        vepArgs.push(me.genomeBuildHelper.getCurrentBuildName());
         vepArgs.push(" --format vcf");
         vepArgs.push(" --allele_number");
+        if (me.vepREVELFile) {
+            vepArgs.push(" --plugin REVEL," + me.vepREVELFile);
+        }
         if (vepAF) {
             vepArgs.push("--af");
             vepArgs.push("--af_gnomad");
@@ -211,7 +205,7 @@ EndpointCmd.prototype.annotateVariants = function (vcfSource, refName, regions, 
         if (isRefSeq) {
             vepArgs.push("--refseq");
         }
-        // Get the hgvs notation and the rsid since we won't be able to easily get it one demand
+        // Get the hgvs notation and the rsid since we won't be able to easily get it on demand
         // since we won't have the original vcf records as input
         if (hgvsNotation) {
             vepArgs.push("--hgvs");
@@ -276,6 +270,18 @@ EndpointCmd.prototype.normalizeVariants = function (vcfUrl, tbiUrl, refName, reg
     return cmd;
 }
 
+EndpointCmd.prototype.getBamHeader = function(bamUrl, baiUrl) {
+    let me = this;
+    let args = ['view', '-H', '"'+bamUrl+'"'];
+    if (baiUrl) {
+        args.push('"'+baiUrl+'"');
+    }
+    return new iobio.cmd(
+        me.IOBIO.samtoolsOnDemand,
+        args,
+        {ssl: me.useSSL}
+    );
+};
 
 EndpointCmd.prototype.getBamCoverage = function (bamSource, refName, regionStart, regionEnd, regions, maxPoints, useServerCache, serverCacheKey) {
     var me = this;
@@ -286,7 +292,7 @@ EndpointCmd.prototype.getBamCoverage = function (bamSource, refName, regionStart
     regions.forEach(function (region) {
         region.name = refName;
         if (region.name && region.start && region.end) {
-            if (regionsArg.length == 0) {
+            if (regionsArg.length === 0) {
                 regionsArg += " -p ";
             } else {
                 regionsArg += ",";
@@ -321,14 +327,11 @@ EndpointCmd.prototype.getBamCoverage = function (bamSource, refName, regionStart
             });
         cmd = cmd.pipe(samtools, ["mpileup", "-"], {ssl: me.useSSL});
     } else {
-
-
         cmd = new iobio.cmd(samtools, ['mpileup', bamSource.writeStream],
             {
                 'urlparams': {'encoding': 'utf8'},
                 ssl: me.useSSL
             });
-
     }
 
     //
@@ -347,12 +350,9 @@ EndpointCmd.prototype.getBamCoverage = function (bamSource, refName, regionStart
         // After running samtools mpileup, run coverage service to summarize point data.
         // NOTE:  Had to change to protocol http(); otherwise signed URLs don't work (with websockets)
         cmd = cmd.pipe(me.IOBIO.coverage, [maxPointsArg, spanningRegionArg, regionsArg], {ssl: me.useSSL});
-
     }
-
     return cmd;
-
-}
+};
 
 EndpointCmd.prototype.freebayesJointCall = function (bamSources, refName, regionStart, regionEnd, isRefSeq, fbArgs, vepAF) {
     var me = this;

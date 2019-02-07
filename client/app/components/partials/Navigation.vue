@@ -24,10 +24,6 @@
 <template>
     <div>
         <v-toolbar fixed app :clipped-left="clipped" dark prominent>
-
-             <v-toolbar-side-icon @click.stop="leftDrawer = !leftDrawer">
-            </v-toolbar-side-icon>
-
             <v-toolbar-title style="margin-right: 0px" v-text="title"></v-toolbar-title>
             <v-toolbar-title style="color: #95b0c6 !important; margin-left: 0px !important"
                              v-text="titleSuffix"></v-toolbar-title>
@@ -60,55 +56,35 @@
             </v-toolbar-items>
 
             <v-spacer></v-spacer>
+            <files-menu
+                    ref="fileMenuRef"
+                    :variantModel="variantModel"
+                    :launchedFromHub="launchedFromHub"
+                    @on-files-loaded="onFilesLoaded"
+                    @load-demo-data="onLoadDemoData">
+            </files-menu>
             <v-menu
                     offset-y
                     :close-on-content-click="false"
                     :nudge-width="400"
-                    v-model="showLegendMenu"
-            >
+                    v-model="showLegendMenu">
                 <v-btn flat slot="activator">
                     <v-icon>description</v-icon>
                     Legend
                 </v-btn>
-
-                <legend-panel>
-                </legend-panel>
+                <legend-panel></legend-panel>
             </v-menu>
 
 
             <v-menu offset-y>
                 <v-btn flat slot="activator">Help</v-btn>
                 <v-list>
-                    <!--<v-list-tile  @click="onLoadDemoData">-->
-                    <!--<v-list-tile-title>Load Demo Data</v-list-tile-title>-->
-                    <!--</v-list-tile>-->
-                    <!--<v-list-tile  @click="onClearCache">-->
-                    <!--<v-list-tile-title>Clear session data</v-list-tile-title>-->
-                    <!--</v-list-tile>-->
                     <v-list-tile @click="openWorkflow">
                         <v-list-tile-title>View example workflow</v-list-tile-title>
                     </v-list-tile>
                 </v-list>
             </v-menu>
         </v-toolbar>
-        <v-navigation-drawer
-                fixed
-                :clipped="clipped"
-                v-model="leftDrawer"
-                app
-                width=350
-        >
-            <div>
-               <flagged-variants-card
-                 v-if="leftDrawerContents == 'flagged-variants'"
-                 :cohortModel="cohortModel"
-                 :flaggedVariants="flaggedVariants"
-                 @flagged-variants-imported="onFlaggedVariantsImported"
-                 @flagged-variant-selected="onFlaggedVariantSelected"
-                >
-               </flagged-variants-card>
-            </div>
-        </v-navigation-drawer>
     </div>
 </template>
 
@@ -128,14 +104,15 @@
             Typeahead,
             GenesMenu,
             FilesMenu,
-            //FlaggedVariantsCard,
             LegendPanel
         },
         props: {
             knownGenes: null,
             selectedGeneName: "",
             selectedChr: "",
-            selectedBuild: ''
+            selectedBuild: '',
+            variantModel: null,
+            launchedFromHub: false
         },
         computed: {
             selectedGeneDisplay: function () {
@@ -153,10 +130,10 @@
 
                 selectedGene: {},
                 clipped: false,
-                leftDrawer: false,
+                //leftDrawer: false,
                 rightDrawer: false,
 
-                leftDrawerContents: "",
+                //leftDrawerContents: "",
                 showLegendMenu: false,
                 focusToggle: false
             }
@@ -182,26 +159,36 @@
             onApplyGenes: function (genesToApply) {
                 this.$emit("apply-genes", genesToApply);
             },
-            onVariants: function () {
-                this.leftDrawerContents = "flagged-variants";
-                this.leftDrawer = true;
-            },
-            onLegend: function () {
-                this.leftDrawerContents = "legend";
-                this.leftDrawer = true;
-            },
-            onShowFlaggedVariants: function () {
-                this.leftDrawerContents = "flagged-variants";
-                this.leftDrawer = true;
-            },
             onFlaggedVariantSelected: function (variant) {
                 this.$emit("flagged-variant-selected", variant)
             },
             onFlaggedVariantsImported: function () {
                 this.$emit("flagged-variants-imported")
             },
-            onFilesLoaded: function () {
-                this.$emit("on-files-loaded");
+            onFilesLoaded: function (probandN, subsetN, cohortVcfDataChanged) {
+                this.$emit("on-files-loaded", probandN, subsetN, cohortVcfDataChanged);
+            },
+            openFileSelection: function() {
+                let self = this;
+                if (self.$refs.fileMenuRef) {
+                    self.$refs.fileMenuRef.openFileSelection();
+                }
+            },
+            onAutoLoad: function() {
+                let self = this;
+                if (self.$refs.fileMenuRef) {
+                    self.$refs.fileMenuRef.promiseLoadDemoFromWelcome();
+                }
+            },
+            closeFileMenu: function() {
+                let self = this;
+                if (self.$refs.fileMenuRef) {
+                    self.$refs.fileMenuRef.closeFileMenu();
+                }
+            },
+            // Used for history list reload
+            setSelectedGeneText: function(selectedGeneName) {
+                $('#search-gene-name').val(selectedGeneName);
             }
         },
         created: function () {

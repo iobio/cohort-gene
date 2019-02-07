@@ -1,11 +1,3 @@
-// TODO ADD PROJECT INFO
-// consumes data in following format
-// var data = [ {name: 'somename',
-//              features : [{start:someInt, end:someInt, feature_type:utr, strand:'+'},
-//                          {start:someInt, end:someInt, feature_type:cds}, ...]
-//            }, ... ]
-//
-
 function geneD3() {
     // defaults
 
@@ -24,9 +16,10 @@ function geneD3() {
     // dimensions
     var margin = {top: 30, right: 0, bottom: 20, left: 110};
     var geneD3_width = 800,
-        geneD3_height = 400,
-        yAxisWidth = 39;      // Must match yAxisWidth - yAxisPadding in scaledVariant.d3
+        geneD3_height = 400;
+    var zoomPadding = 0;
 
+    var yAxisWidth = 0; // 39 Must match yAxisWidth - yAxisPadding in scaledVariant.d3
 
     // scales
     var x = d3.scale.linear(),
@@ -113,7 +106,7 @@ function geneD3() {
                 transcript.features.forEach(function (feature) {
                     feature.transcript_type = transcript.transcript_type;
                 })
-            })
+            });
 
 
             // Select the svg element, if it exists.
@@ -122,12 +115,12 @@ function geneD3() {
             svg.enter()
                 .append("svg")
                 .style('padding-left', yAxisWidth + 'px')
-                .attr("width", geneD3_widthPercent ? geneD3_widthPercent : geneD3_width)
-                .attr("height", geneD3_heightPercent ? geneD3_heightPercent : geneD3_height + margin.top + margin.bottom)
+                .attr("width", (geneD3_widthPercent && zoomPadding === 0) ? geneD3_widthPercent : geneD3_width)
+                .attr("height", (geneD3_heightPercent && zoomPadding === 0) ? geneD3_heightPercent : geneD3_height + margin.top + margin.bottom + zoomPadding);
 
             // The chart dimensions could change after instantiation, so update viewbox dimensions
             // every time we draw the chart.
-            if (geneD3_widthPercent && geneD3_heightPercent) {
+            if (geneD3_widthPercent && geneD3_heightPercent && zoomPadding === 0) {
                 d3.select(this).selectAll("svg")
                     .filter(function () {
                         return this.parentNode === container.node();
@@ -137,9 +130,8 @@ function geneD3() {
             }
 
             container.selectAll("svg")
-                .attr("width", geneD3_widthPercent ? geneD3_widthPercent : geneD3_width)
-                .attr("height", geneD3_heightPercent ? geneD3_heightPercent : geneD3_height + margin.top + margin.bottom);
-
+                .attr("width", (geneD3_widthPercent && zoomPadding === 0) ? geneD3_widthPercent : geneD3_width)
+                .attr("height", (geneD3_heightPercent && zoomPadding === 0) ? geneD3_heightPercent : geneD3_height + margin.top + margin.bottom + zoomPadding);
 
             // Otherwise, create the skeletal chart.
             var gEnter = svg.selectAll("g").data([0]).enter().append('g');
@@ -155,20 +147,16 @@ function geneD3() {
                 .on("brushend", function () {
                     var extentRect = d3.select("g.x.brush rect.extent");
                     var xExtent = +extentRect.attr("x");
-
                     extentRect.attr("x", xExtent - 1);
-
                     dispatch.d3brush(brush);
-
-
                 });
 
 
             var axisEnter = svg.selectAll("g.x.axis").data([0]).enter().append('g');
             if (geneD3_showXAxis) {
                 axisEnter.attr("class", "x axis")
-                    .attr("transform", "translate(" + margin.left + "," + "0" + ")");
-                svg.selectAll("g.x.axis").attr("transform", "translate(" + (-2) + "," + parseInt(geneD3_height + margin.top + margin.bottom + featureGlyphHeight) + ")");
+                    .attr("transform", "translate(" + margin.left + ",0)");
+                svg.selectAll("g.x.axis").attr("transform", "translate(0" + "," + parseInt(geneD3_height + margin.top + margin.bottom + featureGlyphHeight) + ")");
             }
 
 
@@ -236,7 +224,7 @@ function geneD3() {
                     svg.selectAll('.transcript.current').classed("current", false);
                     d3.select(this.parentNode).classed("current", true);
                     dispatch.d3selected(selectedTranscript);
-                })
+                });
 
             transcript.selectAll(".reference").remove();
             transcript.selectAll('.reference')
@@ -346,7 +334,7 @@ function geneD3() {
                 })
 
                 .attr("pointer-events", "all")
-                .style("cursor", "pointer")
+                // .style("cursor", "pointer")  NOTE: took out for cohort
                 .on("mouseover", function (d) {
                     // show the tooltip
                     var tooltip = container.select('.tooltip');
@@ -592,11 +580,11 @@ function geneD3() {
         return chart;
     };
 
-    chart.height = function (_) {
-        if (!arguments.length) return geneD3_height;
-        geneD3_height = _;
-        return chart;
-    };
+    // chart.height = function (_) {
+    //     if (!arguments.length) return geneD3_height;
+    //     geneD3_height = _;
+    //     return chart;
+    // };
 
     chart.widthPercent = function (_) {
         if (!arguments.length) return geneD3_widthPercent;
@@ -689,6 +677,18 @@ function geneD3() {
     chart.showLabel = function (_) {
         if (!arguments.length) return geneD3_showLabel;
         geneD3_showLabel = _;
+        return chart;
+    }
+
+    chart.yAxisWidth = function (_) {
+        if (!arguments.length) return yAxisWidth;
+        yAxisWidth = _;
+        return chart;
+    }
+
+    chart.zoomPadding = function (_) {
+        if (!arguments.length) return zoomPadding;
+        zoomPadding = _;
         return chart;
     }
 

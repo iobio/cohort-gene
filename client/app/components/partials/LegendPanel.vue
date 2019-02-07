@@ -98,22 +98,6 @@
     <div style="margin-top:20px;display:flex;flex-wrap:wrap;justify-content:flex-start">
 
       <div style="text-align:left;width:80px;margin-right:10px;margin-bottom:10px">
-        <div class="legend-label" style="width:130px">Inheritance</div>
-         <svg id="denovo" class="legend-element" width="100" height="16" transform="translate(0,0)">
-          <g class="denovo" transform="translate(0,0)" style="opacity: 1;">
-            <use xmlns:xlink="http://www.w4.org/1999/xlink" xlink:href="#denovo-symbol" width="16" height="16"></use>
-          </g>
-          <text class="name" style="fill-opacity: 1;" x="20" y="11">Denovo</text></svg>
-        </svg>
-        <svg id="recessive" class="legend-element" width="100" height="16" transform="translate(0,0)">
-          <g class=" recessive" style="opacity: 1;" transform="translate(0,0)">
-            <use xmlns:xlink="http://www.w4.org/1999/xlink" xlink:href="#recessive-symbol" width="16" height="16"></use>
-          </g>
-          <text class="name" style="fill-opacity: 1;" x="20" y="11">Recessive</text></svg>
-        </svg>
-      </div>
-
-      <div style="text-align:left;width:80px;margin-right:10px;margin-bottom:10px">
         <div class="legend-label">Impact</div>
         <svg id="HIGH" class="legend-element" width="80" height="14" transform="translate(0,0)">
           <text class="name" x="15" y="10" style="fill-opacity: 1;font-size: 12px;">High</text>
@@ -158,16 +142,6 @@
               <path d="M0,-6.771323825530848L5.79617697938849,0 0,6.771323825530848 -5.79617697938849,0Z" class="legend-symbol complex" style="opacity: 1;fill: none;stroke-width: 1.5px !important;"></path>
             </g>
           </svg>
-      </div>
-
-      <div style="width:110px;margin-right:10px;margin-bottom:10px">
-        <div class="legend-label">Allele Frequency</div>
-        <svg id="afexac_unique" class="legend-element" width="70" height="14" transform="translate(0,0)">
-          <text class="name" x="20" y="11" style="fill-opacity: 1;">&lt; 5%</text>
-          <g class=" afexac_unique">
-            <use xmlns:xlink="http://www.w4.org/1999/xlink" xlink:href="#af-symbol" width="12" height="12" style="fill: rgb(199, 0, 1);"></use>
-          </g>
-        </svg>
       </div>
 
       <div style="width:140px;margin-right:10px;margin-bottom:10px">

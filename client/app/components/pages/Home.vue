@@ -1,11 +1,10 @@
 <!-- Main application page holding all cards.
-TD & SJG updated Jun2018 -->
+TD & SJG updated Nov2018 -->
 
 <style lang="sass">
     @import ../../../assets/sass/variables
     .app-card
         margin-bottom: 10px
-
     #data-sources-loader
         margin-top: 20px
         margin-left: auto
@@ -22,8 +21,9 @@ TD & SJG updated Jun2018 -->
                 :selectedGeneName="selectedGene.gene_name"
                 :selectedChr="selectedGene.chr"
                 :selectedBuild="genomeBuildHelper.getCurrentSpeciesName() + ' ' + genomeBuildHelper.getCurrentBuildName()"
+                :variantModel="variantModel"
+                :launchedFromHub="launchedFromHub"
                 @input="onGeneSelected"
-                @load-demo-data="onLoadDemoData"
                 @clear-cache="clearCache"
                 @apply-genes="onApplyGenes"
                 @on-files-loaded="onFilesLoaded"
@@ -32,82 +32,137 @@ TD & SJG updated Jun2018 -->
             <div id="warning-authorize" class="warning-authorize"></div>
             <v-container fluid style="padding-top: 3px">
                 <v-layout>
-                    <v-flex xs9>
-                        <updated-variant-card
-                                v-if="variantModel"
-                                ref="variantCardRef"
-                                :dataSetModel="variantModel.dataSet"
-                                :filterModel="filterModel"
-                                :annotationScheme="variantModel.annotationScheme"
-                                :classifyVariantSymbolFunc="variantModel.classifyByEnrichment"
-                                :classifyZoomSymbolFunc="variantModel.classifyByImpact"
-                                :variantTooltip="variantTooltip"
-                                :selectedGene="selectedGene"
-                                :selectedTranscript="selectedTranscript"
-                                :selectedVariant="selectedVariant"
-                                :regionStart="geneRegionStart"
-                                :regionEnd="geneRegionEnd"
-                                :width="cardWidth"
-                                :showGeneViz="true"
-                                :showVariantViz="true"
-                                :geneVizShowXAxis="true"
-                                :doneLoadingData="doneLoadingData"
-                                :doneLoadingExtras="doneLoadingExtras"
-                                :doubleMode="true"
-                                @dataSetVariantClick="onDataSetVariantClick"
-                                @dataSetVariantClickEnd="onDataSetVariantClickEnd"
-                                @dataSetVariantHover="onDataSetVariantHover"
-                                @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
-                                @knownVariantsVizChange="onKnownVariantsVizChange"
-                                @knownVariantsFilterChange="onKnownVariantsFilterChange"
-                                @zoomModeStart="startZoomMode">
-                        </updated-variant-card>
+                    <v-flex xs12 v-if="showWelcome">
+                        <welcome
+                                @load-demo-data="onLoadDemoData"
+                                @open-file-selection="openFileSelection">
+                        </welcome>
                     </v-flex>
-                    <v-flex xs3>
-                        <v-card class="ml-1">
-                            <v-tabs icons centered>
-                                <v-tabs-bar>
-                                    <v-tabs-slider color="cohortDarkBlue"></v-tabs-slider>
-                                    <v-tabs-item href="#summary-tab">
-                                        <v-icon style="margin-bottom: 0px;">bar_chart</v-icon>
-                                        Summary
-                                    </v-tabs-item>
-                                    <v-tabs-item href="#filter-tab">
-                                        <v-icon style="margin-bottom: 0px">bubble_chart</v-icon>
-                                        Filters
-                                    </v-tabs-item>
-                                </v-tabs-bar>
-                                <v-tabs-items>
-                                    <v-tabs-content
-                                            :key="'summaryTab'"
-                                            :id="'summary-tab'">
-                                        <v-container>
-                                            <variant-summary-card
-                                                    :selectedGene="selectedGene.gene_name"
-                                                    :variant="selectedVariant"
-                                                    :variantInfo="selectedVariantInfo"
-                                                    :loadingExtraAnnotations="loadingExtraAnnotations"
-                                                    :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations"
-                                                    @summaryCardVariantDeselect="deselectVariant"
-                                                    ref="variantSummaryCardRef">
-                                            </variant-summary-card>
-                                        </v-container>
-                                    </v-tabs-content>
-                                    <v-tabs-content
-                                            :key="'filterTab'"
-                                            :id="'filter-tab'">
-                                        <v-container>
-                                            <filter-settings-menu
-                                                    v-if="filterModel"
-                                                    ref="filterSettingsMenuRef"
-                                                    :filterModel="filterModel"
-                                                    :showCoverageCutoffs="showCoverageCutoffs"
-                                                    @filter-settings-applied="onFilterSettingsApplied"
-                                                    @filter-settings-closed="$emit('filter-settings-closed')">
-                                            </filter-settings-menu>
-                                        </v-container>
-                                    </v-tabs-content>
-                                </v-tabs-items>
+                    <v-flex xs9 v-if="!showWelcome">
+                        <div v-for="dataSet in allDataSets" v-if="showVariantCards">
+                            <enrichment-variant-card
+                                    v-if="!dataSet.isSingleSample"
+                                    ref="enrichCardRef"
+                                    :key="dataSet.id"
+                                    :dataSetModel="dataSet"
+                                    :filterModel="filterModel"
+                                    :annotationScheme="variantModel.annotationScheme"
+                                    :classifyVariantSymbolFunc="variantModel.classifyByImpact"
+                                    :classifyZoomSymbolFunc="variantModel.classifyByImpact"
+                                    :variantTooltip="variantTooltip"
+                                    :selectedGene="selectedGene"
+                                    :selectedTranscript="selectedTranscript"
+                                    :selectedVariant="selectedVariant"
+                                    :regionStart="geneRegionStart"
+                                    :regionEnd="geneRegionEnd"
+                                    :width="cardWidth"
+                                    :showGeneViz="true"
+                                    :showVariantViz="true"
+                                    :geneVizShowXAxis="true"
+                                    :doneLoadingData="doneLoadingData"
+                                    :doneLoadingExtras="doneLoadingExtras"
+                                    :doubleMode="true"
+                                    @dataSetVariantClick="onDataSetVariantClick"
+                                    @dataSetVariantHover="onDataSetVariantHover"
+                                    @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
+                                    @knownVariantsVizChange="onKnownVariantsVizChange"
+                                    @knownVariantsFilterChange="onKnownVariantsFilterChange"
+                                    @zoomModeStart="startZoomMode"
+                                    @navFilterTab="tabToFilters"
+                                    @refreshSummaryClick="refreshSummaryClick">
+                            </enrichment-variant-card>
+                            <variant-card
+                                    v-else
+                                    ref="variantCardRef"
+                                    :key="dataSet.id"
+                                    :dataSetModel="dataSet"
+                                    :filterModel="filterModel"
+                                    :annotationScheme="variantModel.annotationScheme"
+                                    :classifyVariantSymbolFunc="variantModel.classifyByImpact"
+                                    :classifyZoomSymbolFunc="variantModel.classifyByImpact"
+                                    :variantTooltip="variantTooltip"
+                                    :selectedGene="selectedGene"
+                                    :selectedTranscript="selectedTranscript"
+                                    :selectedVariant="selectedVariant"
+                                    :regionStart="geneRegionStart"
+                                    :regionEnd="geneRegionEnd"
+                                    :width="cardWidth"
+                                    :showGeneViz="true"
+                                    :showDepthViz="true"
+                                    :showVariantViz="true"
+                                    :geneVizShowXAxis="true"
+                                    :doneLoadingData="doneLoadingData"
+                                    :doneLoadingExtras="doneLoadingExtras"
+                                    :doubleMode="true"
+                                    @dataSetVariantClick="onDataSetVariantClick"
+                                    @dataSetVariantHover="onDataSetVariantHover"
+                                    @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
+                                    @knownVariantsVizChange="onKnownVariantsVizChange"
+                                    @knownVariantsFilterChange="onKnownVariantsFilterChange"
+                                    @zoomModeStart="startZoomMode"
+                                    @navFilterTab="tabToFilters">
+                            </variant-card>
+                        </div>
+                    </v-flex>
+                    <v-flex xs3 v-if="!showWelcome">
+                        <v-card>
+                            <v-tabs v-model="selectedTab">
+                                <v-tabs-slider style="max-width: 120px" color="cohortDarkBlue"></v-tabs-slider>
+                                <v-tab href="#summary-tab">
+                                    Summary
+                                    <v-icon style="margin-bottom: 0; padding-left: 5px">bar_chart</v-icon>
+                                </v-tab>
+                                <v-tab href="#filter-tab">
+                                    Filters
+                                    <v-icon style="margin-bottom: 0; padding-left: 5px">bubble_chart</v-icon>
+                                </v-tab>
+                                <v-tab href="#history-tab">
+                                    History
+                                    <v-icon style="margin-bottom: 0; padding-left: 5px">history</v-icon>
+                                </v-tab>
+                                <v-tab-item
+                                        :key="'summaryTab'"
+                                        :id="'summary-tab'">
+                                    <v-container>
+                                        <variant-summary-card
+                                                :selectedGene="selectedGene.gene_name"
+                                                :variant="selectedVariant"
+                                                :variantInfo="selectedVariantInfo"
+                                                :loadingExtraAnnotations="loadingExtraAnnotations"
+                                                :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations"
+                                                @summaryCardVariantDeselect="deselectVariant"
+                                                @zyg-bars-mounted="drawZygCharts"
+                                                ref="variantSummaryCardRef">
+                                        </variant-summary-card>
+                                    </v-container>
+                                </v-tab-item>
+                                <v-tab-item
+                                        :key="'filterTab'"
+                                        :id="'filter-tab'">
+                                    <v-container>
+                                        <filter-settings-menu
+                                                v-if="filterModel"
+                                                ref="filterSettingsMenuRef"
+                                                :filterModel="filterModel"
+                                                :showCoverageCutoffs="showCoverageCutoffs"
+                                                :fullAnnotationComplete="doneLoadingExtras"
+                                                @filter-box-toggled="filterBoxToggled"
+                                                @filter-cutoff-applied="filterCutoffApplied"
+                                                @filter-cutoff-cleared="filterCutoffCleared">
+                                        </filter-settings-menu>
+                                    </v-container>
+                                </v-tab-item>
+                                <v-tab-item
+                                        :key="'historyTab'"
+                                        :id="'history-tab'">
+                                    <v-container>
+                                        <history-tab
+                                                ref="historyTabRef"
+                                                :geneHistoryList="geneHistoryList"
+                                                @reload-gene-history="reloadGene">
+                                        </history-tab>
+                                    </v-container>
+                                </v-tab-item>
                             </v-tabs>
                         </v-card>
                     </v-flex>
@@ -122,10 +177,12 @@ TD & SJG updated Jun2018 -->
     import Navigation from '../partials/Navigation.vue'
     import GeneCard from '../viz/GeneCard.vue'
     import VariantCard from '../viz/VariantCard.vue'
-    import UpdatedVariantCard from '../viz/UpdatedVariantCard.vue'
+    import EnrichmentVariantCard from '../viz/EnrichmentVariantCard.vue'
     import VariantSummaryCard from '../viz/VariantSummaryCard.vue'
     import VariantZoomCard from '../viz/ZoomModalViz.vue'
     import FilterSettingsMenu from '../partials/FilterSettingsMenu.vue'
+    import HistoryTab from '../partials/HistoryTab.vue'
+    import Welcome from '../viz/Welcome.vue'
     // Models
     import GeneModel from '../../models/GeneModel.js'
     import FilterModel from '../../models/FilterModel.js'
@@ -133,7 +190,6 @@ TD & SJG updated Jun2018 -->
     // Static data
     import allGenesData from '../../../data/genes.json'
     import simonsIdMap from '../../../data/new_id_map.json'
-
     export default {
         name: 'home',
         components: {
@@ -142,8 +198,10 @@ TD & SJG updated Jun2018 -->
             VariantSummaryCard,
             VariantZoomCard,
             VariantCard,
-            UpdatedVariantCard,
-            FilterSettingsMenu
+            EnrichmentVariantCard,
+            FilterSettingsMenu,
+            Welcome,
+            HistoryTab
         },
         props: {
             paramProjectId: {
@@ -173,6 +231,8 @@ TD & SJG updated Jun2018 -->
                 selectedGene: {},
                 selectedTranscript: {},
                 selectedVariant: null,
+                selectedTrackId: null,  // Which track has been clicked on
+                showVariantCards: false,
                 doneLoadingData: false,
                 doneLoadingExtras: false,
                 loadingExtraAnnotations: false,
@@ -185,17 +245,25 @@ TD & SJG updated Jun2018 -->
                 genesInProgress: {},
                 allGenes: allGenesData,
                 simonsIdMap: simonsIdMap,
+                launchedFromHub: false,
+                firstLaunch: true,
+                firstGeneSelection: true,
                 variantModel: null,
                 geneModel: null,
                 bookmarkModel: null,
                 filterModel: null,
                 cacheHelper: null,
                 genomeBuildHelper: null,
+                geneHistoryList: [],
                 variantTooltip: null,
                 cardWidth: 0,
                 showClinvarVariants: false,
                 activeBookmarksDrawer: null,
                 showCoverageCutoffs: false,
+                showWelcome: true,
+                selectedTab: 'summary-tab',
+                probandN: 0,
+                subsetN: 0,
                 DEMO_GENE: 'BRCA2'
             }
         },
@@ -206,12 +274,32 @@ TD & SJG updated Jun2018 -->
                 } else {
                     return null;
                 }
+            },
+            allDataSets: function() {
+                let self = this;
+                if (self.variantModel) {
+                    return self.variantModel.getAllDataSets();
+                } else {
+                    return [];
+                }
+            }
+        },
+        created: function() {
+            // Quick check so no flashes before splash screen
+            // TODO: need to test this w/ hub launch
+            if (this.paramProjectId !== '0' || this.paramOldProjectId !== '0') {
+                this.showWelcome = false;
             }
         },
         mounted: function () {
             // Initialize models & get data loading
             let self = this;
+            // Quick check for initial hub launch to accomodate zyg bars
+            if (self.paramProjectId !== '0' || self.paramOldProjectId !== '0') {
+                self.launchedFromHub = true;
+            }
             self.cardWidth = self.$el.offsetWidth;
+            // Initialize with ref from frameshift if provided
             let currRef = 'GRCh38';
             if (self.paramRef != null && self.paramRef !== "") {
                 currRef = self.paramRef;
@@ -220,10 +308,6 @@ TD & SJG updated Jun2018 -->
             self.genomeBuildHelper.promiseInit({DEFAULT_BUILD: currRef})
                 .then(function () {
                     return self.promiseInitCache();
-                })
-                .then(function () {
-                    // SJG NOTE: not doing anything currently? Not marking stale sessions currently
-                    return self.cacheHelper.promiseClearStaleCache();
                 })
                 .then(function () {
                     let glyph = new Glyph();
@@ -239,7 +323,8 @@ TD & SJG updated Jun2018 -->
                         IOBIO,
                         self.cacheHelper.launchTimestamp,
                         self.genomeBuildHelper,
-                        utility.getHumanRefNames);
+                        utility.getHumanRefNames,
+                        vepREVELFile);
                     self.variantModel = new VariantModel(endpoint,
                         genericAnnotation,
                         translator,
@@ -256,20 +341,18 @@ TD & SJG updated Jun2018 -->
                         self.genomeBuildHelper);
                 })
                 .then(function () {
-                        self.promiseDetermineSourceAndInit()
-                            .then(() => {
-                                self.initializeFiltering();
-                            })
+                        self.promiseDetermineSourceAndInit();
                     },
                     function (error) {
                         console.log(error);
-                        alert("There was a problem contacting our iobio services. Please refresh the application, or contact iobioproject@gmail.com if the problem persists.");
+                        alertify.set('notifier', 'position', 'top-left');
+                        alertify.warning("There was a problem contacting our iobio services. Please check your internet connection, or contact iobioproject@gmail.com if the problem persists.");
                     })
         },
         methods: {
             initializeFiltering: function () {
                 let self = this;
-                let affectedInfo = self.variantModel.dataSet.affectedInfo;
+                let affectedInfo = self.variantModel.mainDataSet.affectedInfo;
                 let isBasicMode = true; // Aka not educational mode
                 self.filterModel = new FilterModel(affectedInfo, isBasicMode);
                 self.variantModel.filterModel = self.filterModel;
@@ -278,10 +361,10 @@ TD & SJG updated Jun2018 -->
                 let self = this;
                 return new Promise(function (resolve, reject) {
                     self.cacheHelper = new CacheHelper();
-                    // self.cacheHelper.on("geneAnalyzed", function(geneName) {
-                    //   self.$refs.genesCardRef.determineFlaggedGenes();
-                    //   self.$refs.navRef.onShowFlaggedVariants();
-                    // })
+                    self.cacheHelper.on("geneAnalyzed", function(geneName) {
+                        //self.$refs.genesCardRef.determineFlaggedGenes();
+                        self.$refs.navRef.onShowFlaggedVariants();
+                    });
                     globalCacheHelper = self.cacheHelper;
                     self.cacheHelper.promiseInit()
                         .then(function () {
@@ -301,61 +384,88 @@ TD & SJG updated Jun2018 -->
             },
             onLoadDemoData: function () {
                 let self = this;
-                self.geneModel.copyPasteGenes(self.variantModel.demoGenes.join(", "));
-                self.onGeneSelected(self.DEMO_GENE);
-                self.variantModel.promiseInitDemo()
+                self.promiseClearCache()
                     .then(function () {
-                        if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
-                            self.promiseLoadData();
+                        if (self.$refs.navRef) {
+                            self.$refs.navRef.closeFileMenu();
                         }
-                    })
+                        self.geneModel.addGeneName(self.variantModel.demoGene);
+                        self.geneModel.promiseGetGeneObject(self.variantModel.demoGene)
+                            .then(function (theGeneObject) {
+                                self.selectedGene = theGeneObject;
+                                if (self.$refs.navRef) {
+                                    self.$refs.navRef.onAutoLoad();
+                                }
+                            });
+                    });
             },
             promiseLoadData: function () {
                 let self = this;
+                self.showVariantCards = true;   // Show for local launch
                 return new Promise((resolve, reject) => {
-                    if (self.variantModel.dataSet) {
-                        let options = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': true};
+                    if (self.variantModel) {
                         // Load positional information for quick display
-                        self.variantModel.promiseLoadData(self.selectedGene,
-                            self.selectedTranscript,
-                            options)
-                            .then(function () {
+                        self.variantModel.promiseLoadData(self.selectedGene, self.selectedTranscript)
+                            .then((loadedCohortData) => {
                                 self.doneLoadingData = true;  // Display variants
-                                self.variantModel.promiseFurtherAnnotateVariants(self.selectedGene,
-                                    self.selectedTranscript,
-                                    false,  // isBackground
-                                    options)
-                                    .then((resultMap) => {
-                                        let unwrappedResultMap = resultMap[0];
-                                        self.variantModel.combineVariantInfo(unwrappedResultMap);
-                                        self.updateClasses();
-                                        self.doneLoadingExtras = true;
-                                    })
+                                if (loadedCohortData) {
+                                    let nextOptions = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': false};
+                                    self.variantModel.promiseFullyAnnotateVariants(self.selectedGene,
+                                        self.selectedTranscript,
+                                        false,  // isBackground
+                                        nextOptions)
+                                        .then((resultMaps) => {
+                                            resultMaps.forEach((map) => {
+                                                let unwrappedMap = map[0];
+                                                self.variantModel.combineVariantInfo(unwrappedMap);
+                                            });
+                                            self.updateClasses();
+                                            self.doneLoadingExtras = true;
+                                            if (self.$refs.enrichCardRef) {
+                                                self.$refs.enrichCardRef.forEach((cardRef) => {
+                                                    cardRef.refreshVariantColors();
+                                                })
+                                            }
+                                        })
+                                } else {
+                                    resolve();
+                                }
                             })
                             .catch(function (error) {
                                 reject(error);
                             })
                     } else {
-                        Promise.resolve();
+                        resolve();
                     }
                 })
             },
             updateClasses: function () {
                 let self = this;
+                // TODO: NOTE THIS IS A BANDAID
+                // TODO: variants need to be classified by what data set they belong to (add dataset id class?)
+                // TODO: and iterate through each dataset - pull variants by 'variant' and 'sN' classes
                 $('.variant').each(function (i, v) {
-                    let impactClass = self.variantModel.getVepImpactClass(v, 'vep');
+                    let mainDataSetId = 's0';
+                    let impactClass = self.variantModel.getDataSet(mainDataSetId).getVepImpactClass(v, 'vep');
                     $(v).addClass(impactClass);
                 })
             },
             promiseLoadAnnotationDetails: function () {
-                let self = this;
-                return new Promise(function (resolve, reject) {
-                })
             },
-            onFilesLoaded: function () {
+            onFilesLoaded: function (probandN, subsetN, cohortVcfDataChanged) {
                 let self = this;
+                // Store raw values until summary card mounted so we can fetch them
+                self.probandN = probandN;
+                self.subsetN = subsetN;
+                // Draw zygosity charts if we've changed the cohort vcf data (local launch only)
+                if (self.$refs.variantSummaryCardRef != null && (self.firstLaunch || cohortVcfDataChanged)) {
+                    self.$refs.variantSummaryCardRef.assignBarChartValues(probandN, subsetN);
+                }
                 self.promiseClearCache()
-                    .then(function () {
+                    .then(function() {
+                        if (self.variantModel.filterModel == null && self.selectedGene != null) {
+                            self.initializeFiltering();
+                        }
                         if (self.selectedGene && self.selectedGene.gene_name) {
                             self.promiseLoadGene(self.selectedGene.gene_name);
                         } else if (self.geneModel.sortedGeneNames && self.geneModel.sortedGeneNames.length > 0) {
@@ -364,35 +474,42 @@ TD & SJG updated Jun2018 -->
                             alertify.set('notifier', 'position', 'top-left');
                             alertify.warning("Please enter a gene name");
                         }
-                    })
+                    });
+                self.firstLaunch = false;
             },
             onGeneSelected: function (geneName) {
                 let self = this;
                 self.deselectVariant();
-                self.wipeModels();
+                // Only want to wipe if not first selection (otherwise conflicts with badge display)
+                if (!self.firstGeneSelection) {
+                    self.wipeModels();
+                }
                 self.promiseLoadGene(geneName);
                 self.doneLoadingData = false;
                 self.doneLoadingExtras = false;
-                self.$refs.variantCardRef.clearZoom();
+                if (self.$refs.enrichCardRef) {
+                    self.$refs.enrichCardRef.forEach((card) => {
+                        card.resetZoom();
+                    });
+                }
+                if (self.$refs.filterSettingsMenuRef) {
+                    self.$refs.filterSettingsMenuRef.clearFilters();
+                }
             },
             wipeModels: function () {
                 let self = this;
-                if (self.variantModel == null || self.variantModel.dataSet == null) {
-                    return;
+                if (self.variantModel != null) {
+                    self.variantModel.getAllDataSets().forEach((dataSet) => {
+                        dataSet.wipeGeneData();
+                    })
                 }
-                let cohortModels = self.variantModel.dataSet.getCohorts();
-                cohortModels.forEach((model) => {
-                    model.wipeGeneData();
-                });
             },
             promiseLoadGene: function (geneName) {
                 let self = this;
                 return new Promise(function (resolve, reject) {
+                    self.showWelcome = false;
                     if (self.variantModel) {
-                        self.variantModel.clearLoadedData();
-                    }
-                    if (self.featureMatrixModel) {
-                        self.featureMatrixModel.clearRankedVariants();
+                        self.variantModel.clearLoadedData(geneName);
                     }
                     self.geneModel.addGeneName(geneName);
                     self.geneModel.promiseGetGeneObject(geneName)
@@ -409,7 +526,12 @@ TD & SJG updated Jun2018 -->
                         })
                         .catch(function (error) {
                             reject(error);
-                        })
+                        });
+                    // Add to gene history list
+                    if (!self.geneHistoryList.includes(geneName)) {
+                        self.geneHistoryList.push(geneName);
+                    }
+                    self.firstGeneSelection = false;
                 })
             },
             onTranscriptSelected: function (transcript) {
@@ -443,26 +565,37 @@ TD & SJG updated Jun2018 -->
                 this.filterModel.regionEnd = null;
                 this.variantModel.setLoadedVariants(this.selectedGene);
             },
-            onDataSetVariantClick: function (variant, sourceComponent, cohortKey) {
+            onDataSetVariantClick: function (variant, dataSetKey) {
                 let self = this;
                 if (variant) {
+                    // Keep track of which track we've clicked on
+                    self.selectedTrackId = dataSetKey;
                     // Circle selected variant
-                    if (sourceComponent == null || self.$refs.variantCardRef != sourceComponent) {
-                        self.$refs.variantCardRef.showVariantCircle(variant);
+                    if (self.$refs.variantCardRef) {
+                        self.$refs.variantCardRef.forEach((cardRef) => {
+                            cardRef.hideVariantCircle(true);
+                            cardRef.showVariantCircle(variant, true);
+                            cardRef.showCoverageCircle(variant, true);
+                        });
+                    }
+                    if (self.$refs.enrichCardRef) {
+                        self.$refs.enrichCardRef.forEach((cardRef) => {
+                            cardRef.hideVariantCircle(true);
+                            cardRef.showVariantCircle(variant, true);
+                        });
+                        self.$refs.variantSummaryCardRef.hideGetStartedBanner();
                     }
                     // Query service for single variant annotation if we don't have details yet
-                    if (!self.variantModel.extraAnnotationsLoaded) {
+                    if (!self.variantModel.extraAnnotationsLoaded && (dataSetKey === 's0' || dataSetKey === 'Hub')) {
                         // Turn on flag for summary card loading icons
+                        self.$refs.variantSummaryCardRef.setCohortFieldsApplicable();
                         self.deselectVariant(true);
                         self.loadingExtraAnnotations = true;
                         self.loadingExtraClinvarAnnotations = true;
                         // Send variant in for annotating
-                        let cohortModel = self.variantModel.dataSet.getSubsetCohort();
-                        let t0 = performance.now();
-                        cohortModel.promiseGetVariantExtraAnnotations(self.selectedGene, self.selectedTranscript, variant, 'vcf')
+                        let dataSet = self.variantModel.getDataSet(dataSetKey);
+                        dataSet.promiseGetVariantExtraAnnotations(self.selectedGene, self.selectedTranscript, variant, 'vcf')
                             .then(function (updatedVariantObject) {
-                                let t1 = performance.now();
-                                console.log('Getting extra annotation for single variant took ' + (t1 - t0) + ' ms');
                                 let updatedVariant = updatedVariantObject[0][0];
                                 // Display variant info once we have it
                                 self.loadingExtraAnnotations = false;
@@ -475,10 +608,8 @@ TD & SJG updated Jun2018 -->
                                 variantObj['Subset'] = detailsObj;
                                 let cohortObj = {};
                                 cohortObj[0] = variantObj;
-                                self.variantModel.promiseAnnotateWithClinvar(cohortObj, self.selectedGene, self.selectedTranscript, false)
+                                dataSet.promiseAnnotateWithClinvar(cohortObj, self.selectedGene, self.selectedTranscript, false)
                                     .then(function (variantObj) {
-                                        let t1 = performance.now();
-                                        console.log('Getting extra annotation for single variant WITH CLINVAR took ' + (t1 - t0) + ' ms');
                                         // Unwrap clinvarVariant structure
                                         let clinvarVariant = variantObj[0]['Subset']['features'][0];
                                         self.loadingExtraClinvarAnnotations = false;
@@ -486,42 +617,93 @@ TD & SJG updated Jun2018 -->
                                     })
                             })
                     }
-                    else {
+                    else if (dataSetKey === 's0' || dataSetKey === 'Hub'){
+                        // We've selected a variant in cohort track already loaded
+                        self.$refs.variantSummaryCardRef.setCohortFieldsApplicable();
                         self.selectedVariant = variant;
+                    } else {
+                        // We've selected a variant in sample model track - if it exists in cohort, display those details
+                        let mainDataSet = self.launchedFromHub ? self.variantModel.getDataSet('Hub') : self.variantModel.getDataSet('s0');
+                        let matchingVar = mainDataSet.getVariant(variant);
+                        if (matchingVar != null) {
+                            self.$refs.variantSummaryCardRef.setCohortFieldsApplicable();
+                            self.selectedVariant = matchingVar;
+                        } else {
+                            self.$refs.variantSummaryCardRef.setCohortFieldsNotApplicable();
+                            self.selectedVariant = variant;
+                        }
                     }
+                    // Tab to summary card
+                    self.selectedTab = 'summary-tab';
                 }
                 else {
+                    self.selectedTrackId = null;
                     self.deselectVariant();
                 }
             },
-            onDataSetVariantClickEnd: function (sourceComponent) {
+            // Re-click variant after enrichment color change
+            refreshSummaryClick: function(variant) {
                 let self = this;
-                self.$refs.variantCardRef.hideVariantCircle();
+                // We've selected a variant in cohort track already loaded
+                self.$refs.variantSummaryCardRef.setCohortFieldsApplicable();
+                self.selectedVariant = variant;
             },
             onDataSetVariantHover: function (variant, sourceComponent) {
                 let self = this;
-                if (self.$refs.variantCardRef != sourceComponent) {
-                    self.$refs.variantCardRef.showVariantCircle(variant);
-                }
-            },
-            onDataSetVariantHoverEnd: function (sourceVariantCard) {
-                let self = this;
+                // May only have enrichment card
                 if (self.$refs.variantCardRef) {
-                    self.$refs.variantCardRef.hideVariantCircle();
+                    self.$refs.variantCardRef.forEach(function (variantCard) {
+                        if (variantCard != sourceComponent) {
+                            variantCard.hideVariantCircle(false);
+                            variantCard.showVariantCircle(variant, false);
+                            variantCard.showCoverageCircle(variant, false);
+                        }
+                    });
                 }
+                self.$refs.enrichCardRef.forEach(function (enrichCard) {
+                    if (enrichCard != sourceComponent) {
+                        enrichCard.hideVariantCircle(false);
+                        enrichCard.showVariantCircle(variant, false);
+                    }
+                });
+            },
+            onDataSetVariantHoverEnd: function () {
+                let self = this;
+                // May only have enrichment card
+                if (self.$refs.variantCardRef) {
+                    self.$refs.variantCardRef.forEach(function (variantCard) {
+                        variantCard.hideVariantCircle(false);
+                        variantCard.hideCoverageCircle(false);
+                    });
+                }
+                self.$refs.enrichCardRef.forEach(function (enrichCard) {
+                    enrichCard.hideVariantCircle(false);
+                });
             },
             deselectVariant: function (keepVariantCircle = false) {
                 let self = this;
                 self.selectedVariant = null;
                 if (!keepVariantCircle && self.$refs.variantCardRef) {
-                    self.$refs.variantCardRef.hideVariantCircle();
+                    self.$refs.variantCardRef.forEach((cardRef) => {
+                        cardRef.hideVariantCircle(true);
+                        cardRef.hideCoverageCircle(true);
+                    });
+                    if (self.$refs.enrichCardRef) {
+                        self.$refs.enrichCardRef.forEach((cardRef) => {
+                            cardRef.hideVariantCircle(true);
+                        });
+                    }
+                } else if (!keepVariantCircle) {
+                    if (self.$refs.enrichCardRef) {
+                        self.$refs.enrichCardRef.forEach((cardRef) => {
+                            cardRef.hideVariantCircle(true);
+                        });
+                    }
                 }
             },
             startZoomMode: function (selectedVarIds) {
                 let self = this;
-                // Pileup selection
-                self.variantModel.setSelectedVariants(self.selectedGene, selectedVarIds);
-                // Clear data out of summary card
+                self.variantModel.getDataSet('s0').setSelectedVariants(self.selectedGene, selectedVarIds);
                 if (self.$refs.variantSummaryCardRef) {
                     self.$refs.variantSummaryCardRef.summaryCardVariantDeselect();
                 }
@@ -604,39 +786,41 @@ TD & SJG updated Jun2018 -->
             },
             promiseDetermineSourceAndInit: function () {
                 let self = this;
-
                 return new Promise((resolve, reject) => {
-                    var source = self.paramSource;
-                    var projectId = self.paramProjectId;
-                    var selectedGene = self.paramGene;
-                    var usingNewApi = true;
-                    var phenoFilters = self.getHubPhenoFilters();
-
+                    let source = self.paramSource;
+                    let projectId = self.paramProjectId;
+                    let selectedGene = self.paramGene;
+                    let phenoFilters = self.getHubPhenoFilters();
+                    let usingNewApi = true;
                     // If we still don't have a project id, we might be using the old API
                     if (projectId === '0') {
                         projectId = self.paramOldProjectId;
                         usingNewApi = false;
                     }
-
                     // If we can't map project id with Vue Router, may be coming from Hub OAuth
                     if (projectId === '0') {
                         let queryParams = Qs.parse(window.location.search.substring(1)); // if query params before the fragment
                         Object.assign(queryParams, self.$route.query);
                         source = queryParams.source;
-                        projectId = queryParams.project_id;
+                        projectId = queryParams.project_id !== 0 ? queryParams.project_id : queryParams.project_uuid;
+                        if (projectId == null) {
+                            projectId = '0';
+                        }
                         selectedGene = queryParams.gene;
                         phenoFilters = queryParams.filter;
                         usingNewApi = true;
                     }
-
                     // If we have a project ID here, coming from Hub launch
                     if (projectId !== '0') {
+                        self.firstLaunch = false;       // Mark first launch as complete
+                        self.showVariantCards = true;   // Show for hub launch
+                        self.launchedFromHub = true;
                         let hubEndpoint = new HubEndpoint(source, usingNewApi);
                         let initialLaunch = !(self.paramProjectId === '0');
                         self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch, usingNewApi)
                             .then(function (idNumList) {
-                                let probandN = idNumList[0];
-                                let subsetN = idNumList[1];
+                                let probandN = idNumList[0].length;
+                                let subsetN = idNumList[1].length;
                                 if (self.$refs.variantSummaryCardRef != null) {
                                     self.$refs.variantSummaryCardRef.assignBarChartValues(probandN, subsetN);
                                 }
@@ -647,27 +831,15 @@ TD & SJG updated Jun2018 -->
                                 }
                                 self.geneModel.addGeneName(selectedGene);
                                 self.onGeneSelected(selectedGene);
+                                self.initializeFiltering();
                                 resolve();
                             })
-                    }
-                    // Otherwise launching stand alone
-                    else {
-                        alert('This application is currently configured to launch from Mosaic.iobio - stand alone functionality will be implemented by December 2018.');
-                        reject('Do not have stand alone functionality implemented yet');
-                        // TODO: initialize file/url loader
-                        // NOTE: loading demo for now
-                        // self.geneModel.addGeneName(self.DEMO_GENE);
-                        // self.onGeneSelected(self.DEMO_GENE);
-                        // self.variantModel.promiseInitDemo();
-                        // TODO: below can be moved to then after this function in mounted section
-                        // .then(function () {
-                        //     if (self.selectedGene && Object.keys(self.selectedGene).length > 0) {
-                        //         self.promiseLoadData();
-                        //     }
-                        //     else {
-                        //         console.log("Failed to load data because no gene selected");
-                        //     }
-                        // })
+                    } else {
+                        // Otherwise, wait for user to launch files menu
+                        self.showWelcome = true;
+                        self.launchedFromHub = false;
+                        self.firstLaunch = true;
+                        resolve();
                     }
                 });
             },
@@ -678,8 +850,97 @@ TD & SJG updated Jun2018 -->
                 let {filter} = params;
                 return filter;
             },
-            onFilterSettingsApplied: function () {
-                // TODO: implement this - pass info to filter model
+            onZoomClick: function(variant) {
+                // Work around for vue-js-modal implementation
+                let self = this;
+                let cohortKey = 's0';   // Hard-coding for now since only cohort track can be zoomed
+                self.onDataSetVariantClick(variant, cohortKey);
+            },
+            drawZygCharts: function() {
+                let self = this;
+                let firstHubLaunch = self.firstLaunch && self.launchedFromHub;
+                if (self.$refs.variantSummaryCardRef != null && !firstHubLaunch) {
+                    self.$refs.variantSummaryCardRef.assignBarChartValues(self.probandN, self.subsetN);
+                }
+            },
+            filterBoxToggled: function(filterName, filterState, cohortOnlyFilter, parentFilterName, parentFilterState, filterDisplayName) {
+                let self = this;
+                let filterInfo = {
+                    name: filterName,
+                    displayName: filterDisplayName,
+                    cohortOnly: cohortOnlyFilter,
+                    type: 'checkbox',
+                    state: filterState,
+                    cutoffValue: null,
+                    parentFilterName: parentFilterName,
+                    parentFilterState: parentFilterState
+                };
+                self.onFilterSettingsApplied(filterInfo);
+            },
+            filterCutoffApplied: function(filterName, filterLogic, cutoffValue, cohortOnlyFilter, parentFilterName, parentFilterState, filterDisplayName) {
+                let self = this;
+                let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
+                let filterInfo = {
+                    name: translatedFilterName,
+                    displayName: filterDisplayName,
+                    cohortOnly: cohortOnlyFilter,
+                    type: 'cutoff',
+                    state: filterLogic,
+                    cutoffValue: cutoffValue,
+                    turnOff: false,
+                    parentFilterName: parentFilterName,
+                    parentFilterState: parentFilterState
+                };
+                self.onFilterSettingsApplied(filterInfo);
+            },
+            filterCutoffCleared: function(filterName, cohortOnlyFilter, parentFilterName, parentFilterState, filterDisplayName) {
+                let self = this;
+                let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
+                let filterInfo = {
+                    name: translatedFilterName,
+                    displayName: filterDisplayName,
+                    cohortOnly: cohortOnlyFilter,
+                    type: 'cutoff',
+                    state: null,
+                    cutoffValue: null,
+                    turnOff: true,
+                    parentFilterName: parentFilterName,
+                    parentFilterState: parentFilterState
+                };
+                self.onFilterSettingsApplied(filterInfo);
+            },
+            onFilterSettingsApplied: function (filterInfo) {
+                let self = this;
+                let selectedVarId = null;
+                if (self.selectedVariant) {
+                    selectedVarId = self.selectedVariant.id;
+                }
+                self.$refs.enrichCardRef[0].filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
+                if (self.$refs.variantCardRef && !filterInfo.cohortOnly) {
+                    self.$refs.variantCardRef.forEach((cardRef) => {
+                        cardRef.filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
+                    });
+                }
+            },
+            openFileSelection: function() {
+                let self = this;
+                if (self.$refs.navRef) {
+                    self.$refs.navRef.openFileSelection();
+                }
+            },
+            reloadGene: function(geneToReload) {
+                let self = this;
+                if (geneToReload !== self.selectedGene.gene_name) {
+                    // Load gene
+                    self.onGeneSelected(geneToReload);
+                    // Fill in text entry
+                    self.$refs.navRef.setSelectedGeneText(geneToReload);
+                }
+            },
+            tabToFilters: function(selectedFilter) {
+                let self = this;
+                // Tab to summary card
+                self.selectedTab = 'filter-tab';
             }
         }
     }

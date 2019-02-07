@@ -4,8 +4,10 @@
     @import ../../../assets/sass/variables
     .filter-settings-form
         .filter-title
+            font-size: 14px
+            font-family: 'Open Sans', 'Quattrocento Sans', 'sans serif'
             vertical-align: top
-            margin-left: 3px
+            margin-left: 6px
             color: $text-color
         svg
             width: 22px
@@ -22,56 +24,30 @@
 
 <template>
     <v-flex xs12 style="padding-top: 10px">
-        <v-expansion-panel>
-            <v-expansion-panel-content
-                    v-for="filter in filters"
-                    :ref="filter.name + 'ExpansionRef'"
-                    :key="filter.name"
-                    :value="filter.active">
-                <div slot="header">
-                    <filter-icon :icon="filter.name">
-                    </filter-icon>
-                    <span class="filter-title">
-                        {{ filter.display }}
-                    </span>
-                    <v-btn small flat
-                           class="remove-custom-filter"
-                           v-if="filter.custom"
-                           @click="onRemoveCustomFilter(filter)">
-                        Remove
-                    </v-btn>
-                </div>
-                <v-card>
-                    <filter-settings
-                            v-if="filter.name !== 'coverage'"
-                            v-bind:ref="filter.name + 'SettingsRef'"
-                            :filterModel="filterModel"
-                            :filter="filter">
-                    </filter-settings>
-                    <filter-settings-coverage
-                            v-if="filter.name === 'coverage'"
-                            v-bind:ref="filter.name + 'SettingsRef'"
-                            :filterModel="filterModel">
-                    </filter-settings-coverage>
-                </v-card>
-            </v-expansion-panel-content>
-        </v-expansion-panel>
-
-
-        <v-flex xs12>
-            <v-btn style="float:right"
-                   @click="onNewFilter">
-                New
-            </v-btn>
-            <v-btn style="float:right"
-                    @click="onApply">
-                Apply
-            </v-btn>
-            <v-btn style="float:right"
-                   @click="onCancel">
-                Cancel
-            </v-btn>
-        </v-flex>
+        <v-card
+                v-for="filter in filters"
+                :ref="filter.name + 'ExpansionRef'"
+                :key="filter.name"
+                :value="filter.custom">
+            <v-card-title class="filter-settings-form">
+                <v-icon small style="padding-left: 5px; padding-right: 5px">
+                    {{filter.icon}}
+                </v-icon>
+                {{ filter.display }}
+            </v-card-title>
+            <v-card-text><i>{{filter.description}}</i></v-card-text>
+            <filter-settings
+                    v-if="filter.name !== 'coverage'"
+                    ref="filterSettingsRef"
+                    :filterName="filter.name"
+                    :filterModel="filterModel"
+                    :filter="filter"
+                    :fullAnnotationComplete="fullAnnotationComplete"
+                    @filter-toggled="filterBoxToggled"
+                    @filter-applied="filterCutoffApplied"
+                    @cutoff-filter-cleared="filterCutoffCleared">
+            </filter-settings>
+        </v-card>
     </v-flex>
 </template>
 
@@ -90,74 +66,81 @@
         },
         props: {
             filterModel: null,
-            showCoverageCutoffs: null
+            showCoverageCutoffs: null,
+            fullAnnotationComplete: false
         },
         data() {
             return {
                 showMenu: true,
                 filters: [
-                    {name: 'pathogenic', display: 'Known pathogenic', active: false, custom: false},
-                    {name: 'autosomalDominant', display: 'Autosomal dominant', active: false, custom: false},
-                    {name: 'denovo', display: 'De novo', active: false, custom: false},
-                    {name: 'recessive', display: 'Recessive', active: false, custom: false},
-                    {name: 'xlinked', display: 'X-linked', active: false, custom: false},
-                    {name: 'compoundHet', display: 'Compound het', active: false, custom: false},
-                    {name: 'highOrModerate', display: 'High or moderate impact', active: false, custom: false}
-                    // {name: 'coverage', display: 'Insufficient coverage', active: false, custom: false}
+                    {
+                        name: 'annotation',
+                        display: 'ANNOTATION FILTERS',
+                        active: false,
+                        custom: false,
+                        description: 'Filter by variant effect, impact, or type',
+                        icon: 'category'
+                    },
+                    {
+                        name: 'enrichment',
+                        display: 'ENRICHMENT FILTERS',
+                        active: false,
+                        custom: false,
+                        description: 'Filter by cohort variants by enrichment statistics',
+                        icon: 'poll'
+                    },
+                    {
+                        name: 'frequencies',
+                        display: 'FREQUENCY FILTERS',
+                        active: false,
+                        custom: false,
+                        description: 'Filter by variant frequency within population databases or within the cohort',
+                        icon: 'people_outline'
+                    },
                 ]
             }
         },
-        watch: {
-            showCoverageCutoffs: function () {
-                if (this.showCoverageCutoffs) {
-                    this.showMenu = true;
-                    this.filters.forEach(function (f) {
-                        f.active = f.name === 'coverage';
-                    })
-                }
-            }
-        },
+        watch: {},
         methods: {
-            onNewFilter: function () {
+            filterBoxToggled: function (filterName, filterState, parentFilterName, parentFilterState, cohortOnlyFilter, filterDisplayName) {
                 let self = this;
-                this.filters.forEach(function (filter) {
+                let filterObj = self.filters.filter((filt) => {
+                    return filt.name === parentFilterName;
+                });
+                if (filterObj.length > 0) {
+                    filterObj[0].active = parentFilterState;
+                }
+                self.$emit('filter-box-toggled', filterName, filterState, cohortOnlyFilter, parentFilterName, parentFilterState, filterDisplayName);
+            },
+            filterCutoffApplied: function (filterName, filterLogic, cutoffValue, currParentFiltName, currParFilterState, cohortOnlyFilter, filterDisplayName) {
+                let self = this;
+                let filterObj = self.filters.filter((filt) => {
+                    return filt.name === currParentFiltName;
+                });
+                if (filterObj.length > 0) {
+                    filterObj[0].active = currParentFiltName;
+                }
+                self.$emit('filter-cutoff-applied', filterName, filterLogic, cutoffValue, cohortOnlyFilter, currParentFiltName, currParFilterState, filterDisplayName);
+            },
+            filterCutoffCleared: function (filterName, currParentFiltName, currParFilterState, cohortOnlyFilter, filterDisplayName) {
+                let self = this;
+                let filterObj = self.filters.filter((filt) => {
+                    return filt.name === currParentFiltName;
+                });
+                if (filterObj.length > 0) {
+                    filterObj[0].active = currParFilterState;
+                }
+                self.$emit('filter-cutoff-cleared', filterName, cohortOnlyFilter, currParentFiltName, currParFilterState, filterDisplayName);
+            },
+            clearFilters: function () {
+                let self = this;
+                self.filters.forEach((filter) => {
                     filter.active = false;
-                    let refName = filter.name + 'ExpansionRef';
-                    self.$refs[refName].forEach(function (component) {
-                        component.isActive = false;
-                    })
                 });
-                this.filters.push({
-                    name: 'custom' + (this.filters.length - 7),
-                    display: 'custom',
-                    active: true,
-                    custom: true
-                });
-            },
-            onApply: function () {
-                let self = this;
-                this.filters.forEach(function (filter) {
-                    let refName = filter.name + 'SettingsRef';
-                    self.$refs[refName].forEach(function (component) {
-                        component.apply();
-                    })
-                });
-                self.$emit('filter-settings-applied');
-                this.$emit('filter-settings-closed');
-                this.showMenu = false;
-            },
-            onCancel: function () {
-                this.showMenu = false;
-                this.$emit('filter-settings-closed');
-            },
-            close: function () {
-                this.showMenu = false;
-                this.$emit('filter-settings-closed');
-            },
-            onRemoveCustomFilter: function (filter) {
-                let idx = this.filters.indexOf(filter);
-                if (idx >= 0) {
-                    this.filters.splice(idx, 1);
+                if (self.$refs.filterSettingsRef) {
+                    self.$refs.filterSettingsRef.forEach((filtRef) => {
+                        filtRef.clearFilters();
+                    });
                 }
             }
         },

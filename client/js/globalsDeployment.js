@@ -36,6 +36,7 @@ var global_maxGeneCount         = 100;
 
 // Should vep retrieve allele frequencies (for gnomad, 1000G, ESP)
 var global_vepAF                = true ;
+var vepREVELFile         = './vep-cache/revel_all_chromosomes_for_vep.tsv.gz';
 
 // What browser cache implementation is used: 'localStorage' or 'indexedDB'
 var BROWSER_CACHE_LOCAL_STORAGE = 'localStorage';

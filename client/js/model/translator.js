@@ -83,7 +83,7 @@ class Translator {
                           present_none:   {value: 104, badge: false, clazz: 'affected',  symbolFunction: this.glyph.showAffectedPresentSymbol},
                           none:           {value: 104, badge: false, clazz: 'affected',  symbolFunction: ''}
                    };
-      this.harmfulVariantMap = {
+  this.harmfulVariantMap = {
                           1:    {value: 1,   badge: true,  clazz: 'harmful1-variant',  symbolFunction: this.glyph.showHarmfulVariantSymbol},
                           2:    {value: 2,   badge: true,  clazz: 'harmful2-variant',  symbolFunction: this.glyph.showHarmfulVariantSymbol},
                           3:    {value: 3,   badge: true,  clazz: 'harmful3-variant',  symbolFunction: this.glyph.showHarmfulVariantSymbol},
@@ -98,8 +98,17 @@ class Translator {
                          {min: -1.1,   max: +.05,      value: +6,  badge: true, clazz: 'afhighest_rare',    symbolFunction: this.glyph.showAfRareSymbol},
                          {min: +.05,   max: +1,        value: +7,  badge: false,clazz: '',    symbolFunction: ''},
                         ];
-
+    this.filterNameMap = {
+                        'pValue': 'pVal',
+                        'adjPVal': 'adjustedLevel',
+                        'g1000': 'af1000G',
+                        'exac': 'afExAC',
+                        'gnomad': 'afgnomAD',
+                        'probandFreq': 'probandFreq',
+                        'subsetFreq': 'subsetFreq'
+    }
   }
+
 
   getInheritanceLabel(inheritance) {
     var map = this.inheritanceMap[inheritance];
@@ -114,5 +123,10 @@ class Translator {
     }
   }
 
+  getTranslatedFilterName(filterName) {
+      let map = this.filterNameMap;
+      let translatedName = map[filterName];
+      return translatedName;
+  }
 
 }

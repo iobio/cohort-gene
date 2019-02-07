@@ -81,11 +81,11 @@ HubEndpoint.prototype.getSamplesForProject = function (projectId, sampleFilters)
     });
 };
 
-HubEndpoint.prototype.getSignedUrlForFile = function (file) {
+HubEndpoint.prototype.getSignedUrlForFile = function (projectId, fileId) {
     let self = this;
     if (self.usingNewApi) {
         return $.ajax({
-            url: self.api + '/projects/' + file.project_id + '/files/' + file.id + '/url',
+            url: self.api + '/projects/' + projectId + '/files/' + fileId + '/url',
             type: 'GET',
             contentType: 'application/json',
             headers: {
@@ -94,7 +94,7 @@ HubEndpoint.prototype.getSignedUrlForFile = function (file) {
         });
     } else {
         return $.ajax({
-            url: self.api + '/files/' + file.uuid + '/url',
+            url: self.api + '/files/' + fileId + '/url',
             type: 'GET',
             contentType: 'application/json',
             headers: {

@@ -1,12 +1,13 @@
 function scaledVariantD3() {
-    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout", "d3variantsselected");
+    var dispatch = d3.dispatch("d3brush", "d3rendered", "d3outsideclick", "d3click", "d3mouseover", "d3mouseout", "d3glyphmouseover", "d3glyphmouseout", "d3variantsselected", "d3zoomselected", "d3refreshsummaryclick");
 
     // dimensions
     var yAxisWidth = 45;
     var yAxisPadding = 4;
-    var margin = {top: 30, right: 0, bottom: 20, left: 110},
-        width = 800 - yAxisWidth - yAxisPadding,  // Width of variant display area
-        height = 100;
+    var margin = {top: 0, right: 2, bottom: 0, left: 2},
+        width = 800,
+        height = 250;
+
     // scales
     var x = d3.scale.linear(),
         y = d3.scale.linear();
@@ -38,9 +39,7 @@ function scaledVariantD3() {
         container = null,
         clazz = null,
         selectedVariants = [],
-        impactMode = false,
         availableVertSpace = 0;
-
     //  options
     var defaults = {};
 
@@ -66,9 +65,14 @@ function scaledVariantD3() {
         // Remove any old brush
         container.select('svg').selectAll("g.y.brush").remove();
 
+        let coords = container.select('svg').node().getBoundingClientRect();
+        let yBottom = coords.bottom;
+        let yTop = coords.top;
+
         // Create new brush object
         let brush = d3.svg.brush()
             .y(y)
+            //.extent([yBottom, (yTop + variantHeight)])
             // Show resize arrows
             .on('brush', function () {
                 container.selectAll("svg").selectAll(".g.y.brush .resize line")
@@ -80,7 +84,7 @@ function scaledVariantD3() {
                 let extentRect = d3.select("g.brush rect.extent");
                 let yExtent = +extentRect.attr("y");
 
-                extentRect.attr("y", yExtent - 1);
+                extentRect.attr("y", yExtent);
 
                 // Hide resize arrows if not a real area
                 if (brush.empty()) {
@@ -92,16 +96,23 @@ function scaledVariantD3() {
 
                 // Switch back any variants selected from last time
                 if (selectedVariants.length > 0) {
-                    switchSelectedColorScheme(false, impactMode);
+                    switchSelectedColorScheme(false);
                 }
 
                 // Get variants encompassed by brush box
                 let yBottom = yExtent;
                 let yTop = +(yExtent + (+extentRect.attr("height")));
                 let selectedVarIds = [];
-                selectedVariants = container.select('svg').selectAll(".variant").filter(function (variant) {
-                    // Check to see if variant y coordinate b/w box top and bottom
-                    if (y(variant.adjustedLevel) <= yTop && y(variant.adjustedLevel) >= yBottom) {
+
+                let candidateVars = container.select('svg').selectAll('.variant.filtered');
+                if (candidateVars.length > 0 && candidateVars[0].length === 0) {
+                    candidateVars = container.select('svg').selectAll('.variant');
+                }
+
+                selectedVariants = candidateVars.filter(function (variant) {
+                    // Check to see if middle of variant symbol y coordinate b/w box top and bottom
+                    let midSymbol = y(variant.adjustedLevel) + (variantHeight/2);
+                    if (midSymbol <= yTop && midSymbol >= yBottom) {
                         selectedVarIds.push(variant.id);
                         return true;
                     }
@@ -113,7 +124,7 @@ function scaledVariantD3() {
                 // Only show modal if we've captured variants in our selection box
                 if (selectedVarIds.length > 0) {
                     // Change coloring on selected variants
-                    switchSelectedColorScheme(true, impactMode);
+                    switchSelectedColorScheme(true);
 
                     // Get position info to send into modal
                     let graphDimensions = container.select('svg').select('g.group').node().getBoundingClientRect();
@@ -166,46 +177,62 @@ function scaledVariantD3() {
                 brush.remove();
             }
 
-            // Change coloring back
-            switchSelectedColorScheme(false, impactMode);
+            if (selectedVariants.length > 0) {
+                switchSelectedColorScheme(false);
+            }
 
             // Reset variants
             selectedVariants = [];
         }
     };
 
-    var showCircle = function (d, svgContainer, indicateMissingVariant, emphasize) {
+    var showCircle = function (d, svgContainer, indicateMissingVariant, pinned, id) {
         // Find the matching variant
         var matchingVariant = null;
-        svgContainer.selectAll(".variant").each(function (variant, i) {
-            if (d.start === variant.start
-                && d.end === variant.end
-                && d.ref === variant.ref
-                && d.alt === variant.alt
-                && d.type.toLowerCase() === variant.type.toLowerCase()) {
 
-                if (variant.zygosity != null && variant.zygosity.toLowerCase() === 'homref') {
-                    // we want to show an "x" for homozygous reference variants
-                    // instead of a circle
-                } else {
-                    matchingVariant = variant;
+        if (id) {
+            svgContainer.selectAll(".variant").each(function (variant, i) {
+                if (id === variant.id) {
+                    if (variant.zygosity != null && variant.zygosity.toLowerCase() === 'homref') {
+                        // we want to show an "x" for homozygous reference variants
+                        // instead of a circle
+                    } else {
+                        matchingVariant = variant;
+                        // Send signal to refresh summary card populate
+                        dispatch.d3refreshsummaryclick(variant);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            svgContainer.selectAll(".variant").each(function (variant, i) {
+                if (d.start === variant.start
+                    && d.end === variant.end
+                    && d.ref === variant.ref
+                    && d.alt === variant.alt
+                    && d.type.toLowerCase() === variant.type.toLowerCase()) {
+
+                    if (variant.zygosity != null && variant.zygosity.toLowerCase() === 'homref') {
+                        // we want to show an "x" for homozygous reference variants
+                        // instead of a circle
+                    } else {
+                        matchingVariant = variant;
+                    }
+                }
+            });
+        }
 
         // Get the x for this position
         if (matchingVariant) {
             var mousex = x(matchingVariant.start);    // Have to offset this by y-axis
-            var mousey = y(d.adjustedLevel);
+            var mousey = y(matchingVariant.adjustedLevel);
 
-            var circle = svgContainer.select(".circle");
+            var circleClazz = pinned ? '.pinned.circle' : '.hover.circle';
+            var circle = svgContainer.select(circleClazz);
             circle.transition()
                 .duration(200)
                 .style("opacity", 1);
             circle.attr("cx", mousex + margin.left + 2)
                 .attr("cy", mousey + margin.top + 4);
-
-            circle.classed("emphasize", emphasize);
 
 
             var matrix = circle.node()
@@ -225,37 +252,39 @@ function scaledVariantD3() {
             //showCoordinateFrame(matchingVariant.screenX);
 
         } else if (indicateMissingVariant) {
-            var mousex = d3.round(x(d.start));
-            var mousey = height - ((d.adjustedLevel) * (variantHeight + verticalPadding));
-
-
-            var garrow = svgContainer.select("g.arrow");
-            garrow.attr("transform", "translate(" + (mousex + margin.left + yAxisWidth - variantHeight / 2) + "," + (mousey + margin.top - 6) + ")");
+            var mousex = x(d.start - yAxisWidth);
+            var mousey = height - verticalPadding;
+            var arrowClazz = pinned ? 'g.pinned.arrow' : 'g.hover.arrow';
+            var garrow = svgContainer.select(arrowClazz);
+            garrow.attr("transform", "translate(" + (mousex + margin.left - variantHeight / 2) + "," + (mousey + margin.top - 6) + ")");
             garrow.selectAll('.arrow').transition()
                 .duration(200)
                 .style("opacity", 1);
 
-
-            svgContainer.select(".circle").classed("emphasize", false);
+            // svgContainer.select(".circle").classed("emphasize", false);
         }
 
 
         return matchingVariant;
     };
 
-    var hideCircle = function (svgContainer, parentContainer) {
-        svgContainer.select(".circle").transition()
-            .duration(100)
+    var hideCircle = function (svgContainer, pinned) {
+        var circleClazz = pinned ? '.pinned.circle' : '.hover.circle';
+        var pinnedArrowClazz = 'g.pinned.arrow';
+        var hoverArrowClazz  = 'g.hover.arrow';
+
+        svgContainer.select(circleClazz).transition()
+            .duration(500)
             .style("opacity", 0);
-        svgContainer.select("g.arrow").selectAll('.arrow').transition()
-            .duration(100)
-            .style("opacity", 0);
-        if (parentContainer) {
-            parentContainer.select('.tooltip').transition()
+        if (pinned) {
+            svgContainer.select(pinnedArrowClazz).selectAll(".arrow").transition()
                 .duration(500)
-                .style("opacity", 0)
-                .style("z-index", 0)
-                .style("pointer-events", "none");
+                .style("opacity", 0);
+        }
+        if (!pinned) {
+            svgContainer.select(hoverArrowClazz).selectAll(".arrow").transition()
+                .duration(500)
+                .style("opacity", 0);
         }
     }
 
@@ -263,60 +292,227 @@ function scaledVariantD3() {
         svgContainer.remove();
     }
 
-    let switchSelectedColorScheme = function (zoomMode, impactMode) {
+    var switchSelectedColorScheme = function (zoomMode) {
         if (zoomMode) {
             // Remove impact or enrichment coloring
-            if (impactMode) {
-                selectedVariants.classed('impact_HIGH', false);
-                selectedVariants.classed('impact_MODERATE', false);
-                selectedVariants.classed('impact_MODIFIER', false);
-                selectedVariants.classed('impact_LOW', false);
-                selectedVariants.classed('impact_none', false);
-            }
-            else {
-                selectedVariants.classed('enrichment_subset_UP', false);
-                selectedVariants.classed('enrichment_subset_DOWN', false);
-                selectedVariants.classed('enrichment_LOW', false);
-                selectedVariants.classed('enrichment_NA', false);
-            }
+            selectedVariants.classed('impact_HIGH', false);
+            selectedVariants.classed('impact_MODERATE', false);
+            selectedVariants.classed('impact_MODIFIER', false);
+            selectedVariants.classed('impact_LOW', false);
+            selectedVariants.classed('impact_none', false);
+
             // Turn on selected coloring
             selectedVariants.classed('zoom_selected', true);
-        }
-
-        else if (impactMode) {
+        } else {
             // Turn off selected coloring
             selectedVariants.classed('zoom_selected', false);
 
             // Turn impact coloring back on
-            let highVars = selectedVariants.filter(".iHIGH");
+            let highVars = selectedVariants.filter(".HIGH");
             highVars.classed('impact_HIGH', true);
-            let moderateVars = selectedVariants.filter(".iMODERATE");
+            let moderateVars = selectedVariants.filter(".MODERATE");
             moderateVars.classed('impact_MODERATE', true);
-            let modifierVars = selectedVariants.filter(".iMODIFIER");
+            let modifierVars = selectedVariants.filter(".MODIFIER");
             modifierVars.classed('impact_MODIFIER', true);
-            let lowVars = selectedVariants.filter(".iLOW");
+            let lowVars = selectedVariants.filter(".LOW");
             lowVars.classed('impact_LOW', true);
-            let noVars = selectedVariants.filter(".iNONE");
+            let noVars = selectedVariants.filter(".NONE");
             noVars.classed('impact_none', true);
-        }
-        else {
-            // Turn off selected coloring
-            selectedVariants.classed('zoom_selected', false);
-
-            // Turn enrichment coloring back on
-            let enrichUp = selectedVariants.filter(".eUP");
-            enrichUp.classed('enrichment_subset_UP', true);
-            let enrichDown = selectedVariants.filter(".eDOWN");
-            enrichDown.classed('enrichment_subset_DOWN', true);
-            let enrichLow = selectedVariants.filter(".eLOW");
-            enrichLow.classed('enrichment_LOW', true);
-            let enrichNotApplic = selectedVariants.filter(".eNA");
-            enrichNotApplic.classed('enrichment_NA', true);
         }
     };
 
-    let switchColorScheme = function (enrichmentMode, svgContainer) {
-        impactMode = !enrichmentMode;
+    /* Remove filter class from all variants. */
+    var removeFilterClass = function(svgContainer) {
+        let allVariants = svgContainer.selectAll(".variant");
+        allVariants.classed({'filtered': false});
+    }
+
+    /* Takes in a list of filter classes. If a variant contains any of them, it will be hidden.
+     *  Takes in a filter cutoff object that a variant must meet or be lower than - if not, it will be hidden. */
+    var filterVariants = function(filterClasses, filterCutoffs, svgContainer) {
+        let allVariants = svgContainer.selectAll(".variant");
+
+        // Add filtered class to all variants
+        allVariants.classed({'filtered': true});
+
+        // If we're out of active filters, display all variants
+        if (filterClasses.length === 0 && filterCutoffs.length === 0) {
+            allVariants.style("opacity", 1);
+            allVariants.style("pointer-events", 'auto');
+            return false;
+        }
+
+        // Remove filtered class for any variants that contain the given class criteria
+        filterClasses.forEach((filterClass) => {
+            allVariants.filter(filterClass).classed({'filtered': false});
+            allVariants.filter(filterClass).style("pointer-events", 'none');
+        });
+
+        // Include previously filtered variants into the equation
+        let filteredVars = svgContainer.selectAll('.filtered');
+
+        // Remove filtered class for any variants that don't meet cutoffs
+        let cutoffs = Object.values(filterCutoffs);
+        if (cutoffs.length > 0) {
+            filteredVars.each(function (d, i) {
+                if (d === 0) {
+                    return;
+                }
+                cutoffs.forEach((cutoff) => {
+                    let filterName = cutoff[0];
+                    let filterLogic = cutoff[1];
+                    let filterCutoffVal = parseFloat(cutoff[2]);
+                    let varVal = 0;
+
+                    switch(filterLogic) {
+                        case '<':
+                            if (filterName === 'probandFreq') {
+                                let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
+                                let totalAlleleCount = d.totalProbandCount * 2;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
+                            } else if (filterName === 'subsetFreq') {
+                                let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
+                                let totalAlleleCount = d.totalSubsetCount * 2;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
+                            } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
+                                varVal = Math.round(d[filterName] * 100);
+                            } else {
+                                varVal = Math.round(+d[filterName] * 100) / 100;
+                            }
+
+                            if (!(varVal < filterCutoffVal)) {
+                                let selectionId = '#' + d.id;
+                                let domD = svgContainer.selectAll(selectionId);
+                                domD.classed({'filtered': false});
+                                domD.style('pointer-events', 'none');
+                            }
+                            break;
+                        case '<=':
+                            if (filterName === 'probandFreq') {
+                                let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
+                                let totalAlleleCount = d.totalProbandCount * 2;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
+                            } else if (filterName === 'subsetFreq') {
+                                let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
+                                let totalAlleleCount = d.totalSubsetCount * 2;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
+                            } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
+                                varVal = Math.round(d[filterName] * 100);
+                            } else {
+                                varVal = Math.round(+d[filterName] * 100) / 100;
+                            }
+
+                            if (!(varVal <= filterCutoffVal)) {
+                                let selectionId = '#' + d.id;
+                                let domD = svgContainer.selectAll(selectionId);
+                                domD.classed({'filtered': false});
+                                domD.style('pointer-events', 'none');
+                            }
+                            break;
+                        case '=':
+                            if (filterName === 'probandFreq') {
+                                let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
+                                let totalAlleleCount = d.totalProbandCount * 2;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
+                            } else if (filterName === 'subsetFreq') {
+                                let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
+                                let totalAlleleCount = d.totalSubsetCount * 2;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
+                            } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
+                                varVal = Math.round(d[filterName] * 100);
+                            } else {
+                                varVal = Math.round(+d[filterName] * 100) / 100;
+                            }
+
+                            if (!(varVal === filterCutoffVal)) {
+                                let selectionId = '#' + d.id;
+                                let domD = svgContainer.selectAll(selectionId);
+                                domD.classed({'filtered': false});
+                                domD.style('pointer-events', 'none');
+                            }
+                            break;
+                        case '>=':
+                            if (filterName === 'probandFreq') {
+                                let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
+                                let totalAlleleCount = d.totalProbandCount * 2;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
+                            } else if (filterName === 'subsetFreq') {
+                                let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
+                                let totalAlleleCount = d.totalSubsetCount * 2;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
+                            } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
+                                varVal = Math.round(d[filterName] * 100);
+                            } else {
+                                varVal = Math.round(+d[filterName] * 100) / 100;
+                            }
+
+                            if (!(varVal >= filterCutoffVal)) {
+                                let selectionId = '#' + d.id;
+                                let domD = svgContainer.selectAll(selectionId);
+                                domD.classed({'filtered': false});
+                                domD.style('pointer-events', 'none');
+                            }
+                            break;
+                        case '>':
+                            if (filterName === 'probandFreq') {
+                                let numMutantAlleles = d.probandZygCounts[1] + (2 * d.probandZygCounts[2]);
+                                let totalAlleleCount = d.totalProbandCount * 2;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
+                            } else if (filterName === 'subsetFreq') {
+                                let numMutantAlleles = d.subsetZygCounts[1] + (2 * d.subsetZygCounts[2]);
+                                let totalAlleleCount = d.totalSubsetCount * 2;
+                                varVal = Math.round(numMutantAlleles / totalAlleleCount * 100);
+                            } else if (!(filterName === 'pVal' || filterName === 'adjustedLevel')){
+                                varVal = Math.round(d[filterName] * 100);
+                            } else {
+                                varVal = Math.round(+d[filterName] * 100) / 100;
+                            }
+
+                            if (!(varVal > filterCutoffVal)) {
+                                let selectionId = '#' + d.id;
+                                let domD = svgContainer.selectAll(selectionId);
+                                domD.classed({'filtered': false});
+                                domD.style('pointer-events', 'none');
+                            }
+                            break;
+                        default:
+                            // Do nothing
+                    }
+                })
+            });
+        }
+
+        // Re-check for all filtered variants
+        filteredVars = svgContainer.selectAll('.filtered');
+
+        // Hide all variants
+        allVariants.style("opacity", 0)
+            .style("pointer-events", "none");
+
+        // Reveal variants that pass filter
+        filteredVars.style("opacity", 1)
+            .style("pointer-events", "auto");
+
+        if (filteredVars && filteredVars[0]) {
+            return filteredVars[0].length === 0;
+        } else {
+            return false;
+        }
+    };
+
+    /* Returns true if selected variant passes filter and is visible. */
+    var checkForSelectedVar = function(selectedVarId, svgContainer) {
+        let stillVisible = false;
+        //TODO: this is happening after being filtered, so need to check first
+        svgContainer.selectAll('.filtered').each(function(d, i) {
+           if (d.id === selectedVarId) {
+               stillVisible = true;
+           }
+        });
+        return stillVisible;
+    };
+
+    var switchColorScheme = function (enrichmentMode, svgContainer) {
         let variants = svgContainer.selectAll(".variant");
         let varsToSwitch = variants;
         if (selectedVariants.length > 0) {
@@ -335,75 +531,91 @@ function scaledVariantD3() {
         let lowVars = varsToSwitch.filter(".iLOW");
         let noVars = varsToSwitch.filter(".iNONE");
 
-        let enrichUp = varsToSwitch.filter(".eUP");
-        let enrichDown = varsToSwitch.filter(".eDOWN");
-        let enrichLow = varsToSwitch.filter(".eLOW");
-        let enrichNotApplic = varsToSwitch.filter(".eNA");
+        highVars.classed({
+            'impact_HIGH': true
+        });
+        moderateVars.classed({
+            'impact_MODERATE': true
+        });
+        modifierVars.classed({
+            'impact_MODIFIER': true
+        });
+        lowVars.classed({
+            'impact_LOW': true
+        });
+        noVars.classed({
+            'impact_none': true
+        });
 
-        if (enrichmentMode) {
-            // Remove impact color scheme
-            highVars.classed({
-                'impact_HIGH': false
-            });
-            moderateVars.classed({
-                'impact_MODERATE': false
-            });
-            modifierVars.classed({
-                'impact_MODIFIER': false
-            });
-            lowVars.classed({
-                'impact_LOW': false
-            });
-            noVars.classed({
-                'impact_none': false
-            });
+        // let enrichUp = varsToSwitch.filter(".eUP");
+        // let enrichDown = varsToSwitch.filter(".eDOWN");
+        // let enrichLow = varsToSwitch.filter(".eLOW");
+        // let enrichNotApplic = varsToSwitch.filter(".eNA");
 
-            // Turn on enrichment color scheme
-            enrichUp.classed({
-                'enrichment_subset_UP': true
-            });
-            enrichDown.classed({
-                'enrichment_subset_DOWN': true
-            });
-            enrichLow.classed({
-                'enrichment_LOW': true
-            });
-            enrichNotApplic.classed({
-                'enrichment_NA': true
-            });
-        }
+        // if (enrichmentMode) {
+        //     // Remove impact color scheme
+        //     highVars.classed({
+        //         'impact_HIGH': false
+        //     });
+        //     moderateVars.classed({
+        //         'impact_MODERATE': false
+        //     });
+        //     modifierVars.classed({
+        //         'impact_MODIFIER': false
+        //     });
+        //     lowVars.classed({
+        //         'impact_LOW': false
+        //     });
+        //     noVars.classed({
+        //         'impact_none': false
+        //     });
+        //
+        //     // Turn on enrichment color scheme
+        //     enrichUp.classed({
+        //         'enrichment_subset_UP': true
+        //     });
+        //     enrichDown.classed({
+        //         'enrichment_subset_DOWN': true
+        //     });
+        //     enrichLow.classed({
+        //         'enrichment_LOW': true
+        //     });
+        //     enrichNotApplic.classed({
+        //         'enrichment_NA': true
+        //     });
+        // }
 
-        else {
-            // Turn off enrichment color scheme
-            enrichUp.classed({
-                'enrichment_subset_UP': false
-            });
-            enrichDown.classed({
-                'enrichment_subset_DOWN': false
-            });
-            enrichLow.classed({
-                'enrichment_LOW': false
-            });
-            enrichNotApplic.classed({
-                'enrichment_NA': false
-            });
+        //else {
+            // // Turn off enrichment color scheme
+            // enrichUp.classed({
+            //     'enrichment_subset_UP': false
+            // });
+            // enrichDown.classed({
+            //     'enrichment_subset_DOWN': false
+            // });
+            // enrichLow.classed({
+            //     'enrichment_LOW': false
+            // });
+            // enrichNotApplic.classed({
+            //     'enrichment_NA': false
+            // });
             // Turn on impact color scheme
-            highVars.classed({
-                'impact_HIGH': true
-            });
-            moderateVars.classed({
-                'impact_MODERATE': true
-            });
-            modifierVars.classed({
-                'impact_MODIFIER': true
-            });
-            lowVars.classed({
-                'impact_LOW': true
-            });
-            noVars.classed({
-                'impact_none': true
-            });
-        }
+            // highVars.classed({
+            //     'impact_HIGH': true
+            // });
+            // moderateVars.classed({
+            //     'impact_MODERATE': true
+            // });
+            // modifierVars.classed({
+            //     'impact_MODIFIER': true
+            // });
+            // lowVars.classed({
+            //     'impact_LOW': true
+            // });
+            // noVars.classed({
+            //     'impact_none': true
+            // });
+        //}
     };
 
     function chart(selection, options) {
@@ -416,8 +628,8 @@ function scaledVariantD3() {
         } else {
             height = totalLayers * 5 * (variantHeight + verticalPadding);    // Scale this to main layers size
             height += (variantHeight + verticalPadding);
-            if (height < 800) height = 800;   // Set a minimum
-            if (height > 950) height = 950;   // Set a maximum
+            //if (height < 500) height = 500;   // Set a minimum
+            if (height > 750) height = 750;   // Set a maximum
         }
 
         // Account for the margin when we are showing the xAxis
@@ -530,16 +742,20 @@ function scaledVariantD3() {
 
                 // Select the svg element, if it exists.
                 var svg = container.selectAll("svg").data([0]);
-
                 svg.enter()
                     .append("svg")
                     .attr("width", widthPercent)
                     .attr("height", heightPercent)
                     .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + parseInt(width + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height + margin.top + margin.bottom))
                     .attr("preserveAspectRatio", "none")
+                    .attr("class", "scaled_svg")
                     .append("g")
                     .attr("class", "group")
                     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                svg.on("click", function(d) {
+                    dispatch.d3outsideclick(null);
+                });
 
                 var g = svg.select("g.group");
 
@@ -550,6 +766,7 @@ function scaledVariantD3() {
                         return this.parentNode === container.node();
                     })
                     .attr('viewBox', (-yAxisWidth - yAxisPadding) + " 0 " + parseInt(width + margin.left + margin.right + yAxisWidth + yAxisPadding) + " " + parseInt(height + margin.top + margin.bottom));
+
 
 
                 // Add grouping for flagged variants
@@ -581,11 +798,11 @@ function scaledVariantD3() {
                     .call(yAxis)
                     .append("text")
                     .attr("transform", "rotate(-90)")
-                    .attr("dx", "-30em")
+                    .attr("dx", "-6em")
                     .attr("dy", "-2.5em")
                     .style('font-size', '14px')
                     .style("text-anchor", "middle")
-                    .text("-log10(pVal)");
+                    .text("-log(p-val)");
 
                 // Create dividing line
                 g.selectAll(".divider").remove();
@@ -603,9 +820,7 @@ function scaledVariantD3() {
                     divider.append("text").attr("x", width / 2)
                         .attr("y", -10)
                         .text("Homozygous");
-
                 }
-
 
                 // add tooltip div
                 var tooltip = container.selectAll(".tooltip").data([0])
@@ -690,6 +905,7 @@ function scaledVariantD3() {
                 g.selectAll('.variant')
                     .on("click", function (d) {
                         dispatch.d3click(d);
+                        d3.event.stopPropagation();
                     })
                     .on("mouseover", function (d) {
                         dispatch.d3mouseover(d);
@@ -807,42 +1023,44 @@ function scaledVariantD3() {
                         .call(xAxis);
                 }
 
-                // add a circle and label
-                if (svg.selectAll(".circle").empty()) {
-                    //svg.selectAll(".circle").remove();
-                    var circle = svg.selectAll(".circle").data([0])
-                        .enter().append('circle')
-                        .attr("class", "circle")
-                        .attr("cx", 0)
-                        .attr("cy", 0)
-                        .attr("r", variantHeight + 2)
-                        .style("opacity", 0);
-                }
+                // add a circle and arrows for 'hover' event and 'pinned' event
+                ['hover', 'pinned'].forEach(function(clazz) {
+                    var circleClazz = '.' + clazz + '.circle';
+                    if (svg.selectAll(circleClazz).empty()) {
+                        svg.selectAll(circleClazz).data([0])
+                            .enter().append('circle')
+                            .attr("class", clazz + " circle")
+                            .attr("cx", 0)
+                            .attr("cy", 0)
+                            .attr("r", variantHeight + 2)
+                            .style("opacity", 0);
+                    }
 
+                    var arrowClazz = 'g.' + clazz + '.arrow';
+                    if (svg.selectAll(arrowClazz).empty()) {
+                        //svg.selectAll("g.arrow").remove();
+                        var garrow = svg.selectAll(arrowClazz).data([0])
+                            .enter().append("g")
+                            .attr("class", clazz + " arrow")
+                            .attr("transform", "translate(1,0)");
 
-                // add a arrow on the x-axis
-                if (svg.selectAll(".arrow").empty()) {
-                    //svg.selectAll("g.arrow").remove();
-                    var garrow = svg.selectAll("g.arrow").data([0])
-                        .enter().append("g")
-                        .attr("class", "arrow")
-                        .attr("transform", "translate(1,0)");
+                        garrow.append('line')
+                            .attr("class", "arrow arrow-line")
+                            .attr("x1", variantHeight + 2)
+                            .attr("x2", -2)
+                            .attr("y1", variantHeight + 2)
+                            .attr("y2", 0)
+                            .style("opacity", 0);
+                        garrow.append('line')
+                            .attr("class", "arrow arrow-line")
+                            .attr("x1", variantHeight + 2)
+                            .attr("x2", -2)
+                            .attr("y1", 0)
+                            .attr("y2", variantHeight + 2)
+                            .style("opacity", 0);
+                    }
+                });
 
-                    garrow.append('line')
-                        .attr("class", "arrow arrow-line")
-                        .attr("x1", variantHeight + 2)
-                        .attr("x2", -2)
-                        .attr("y1", variantHeight + 2)
-                        .attr("y2", 0)
-                        .style("opacity", 0);
-                    garrow.append('line')
-                        .attr("class", "arrow arrow-line")
-                        .attr("x1", variantHeight + 2)
-                        .attr("x2", -2)
-                        .attr("y1", 0)
-                        .attr("y2", variantHeight + 2)
-                        .style("opacity", 0);
-                }
                 dispatch.d3rendered();
             }
         });
@@ -861,11 +1079,11 @@ function scaledVariantD3() {
         // Find the matching variant
         var matchingVariant = null;
         svg.selectAll(".variant").each(function (d, i) {
-            if (d.start == variant.start
-                && d.end == variant.end
-                && d.ref == variant.ref
-                && d.alt == variant.alt
-                && d.type.toLowerCase() == variant.type.toLowerCase()) {
+            if (d.start === variant.start
+                && d.end === variant.end
+                && d.ref === variant.ref
+                && d.alt === variant.alt
+                && d.type.toLowerCase() === variant.type.toLowerCase()) {
                 matchingVariant = d;
             }
         });
@@ -1104,6 +1322,24 @@ function scaledVariantD3() {
         return chart;
     };
 
+    chart.filterVariants = function (_) {
+        if (!arguments.length) return filterVariants;
+        filterVariants = _;
+        return chart;
+    };
+
+    chart.unfilterVariants = function (_) {
+        if (!arguments.length) return unfilterVariants;
+        unfilterVariants = _;
+        return chart;
+    };
+
+    chart.unfilterVariantsByCutoff = function (_) {
+        if (!arguments.length) return unfilterVariantsByCutoff;
+        unfilterVariantsByCutoff = _;
+        return chart;
+    };
+
     chart.clearVariants = function (_) {
         if (!arguments.length) return clearVariants;
         clearVariants = _;
@@ -1122,15 +1358,21 @@ function scaledVariantD3() {
         return chart;
     };
 
-    chart.impactMode = function (_) {
-        if (!arguments.length) return impactMode;
-        impactMode = _;
-        return chart;
-    };
-
     chart.availableVertSpace = function (_) {
         if (!arguments.length) return availableVertSpace;
         availableVertSpace = _;
+        return chart;
+    };
+
+    chart.checkForSelectedVar = function (_) {
+        if (!arguments.length) return checkForSelectedVar;
+        checkForSelectedVar = _;
+        return chart;
+    };
+
+    chart.removeFilterClass = function (_) {
+        if (!arguments.length) return removeFilterClass;
+        removeFilterClass = _;
         return chart;
     };
 
