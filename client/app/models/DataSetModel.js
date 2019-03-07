@@ -1045,6 +1045,8 @@ class DataSetModel {
                 let openErrorFiles = [];
                 let sampleNames = [];       // Array of sample name arrays, in same order as vcfs
                 let noBuildInfo = false;
+                let mismatchBuild = false;
+                let fileBuild = '';
 
                 let openPromises = [];
                 for (let i = 0; i < vcfUrls.length; i++) {
@@ -1060,48 +1062,32 @@ class DataSetModel {
                             if (success) {
                                 me.vcfUrlsEntered = true;
                                 me.vcfFilesOpened = false;
-                                if (hdrBuildResult !== '' && hdrBuildResult !== me.getGenomeBuildHelper().currentBuild.name) {
-                                    let hdrObj = {};
-                                    hdrObj['mismatchBuild'] = true;
-                                    hdrObj['fileBuild'] = hdrBuildResult;
-                                    reject(hdrObj);
-                                } else if (hdrBuildResult === '') {
-                                    // If we couldn't obtain build info from header, try to look at chromosome annotation
-                                    currVcfEndpt.getChromosomesFromVcf(currVcf, currTbi, function(success, errorMsg, hdrBuildResult) {
+                                // If build doesn't match drop-down or if we couldn't find build
+                                if ((hdrBuildResult !== '' && hdrBuildResult !== me.getGenomeBuildHelper().currentBuild.name)
+                                    || hdrBuildResult === '') {
+                                    // Check to see if chromosome format corroborates above result
+                                    currVcfEndpt.getChromosomesFromVcf(currVcf, currTbi, function (success, errorMsg, hdrBuildResult) {
                                         if (success) {
                                             if (hdrBuildResult !== '' && hdrBuildResult !== me.getGenomeBuildHelper().currentBuild.name) {
-                                                let hdrObj = {};
-                                                hdrObj['mismatchBuild'] = true;
-                                                hdrObj['fileBuild'] = hdrBuildResult;
-                                                reject(hdrObj);
+                                                mismatchBuild = true;
+                                                fileBuild = hdrBuildResult;
                                             } else if (hdrBuildResult === '') {
                                                 noBuildInfo = true;
                                             }
 
-                                            // If we've gotten this far, add to list and get sample names
-                                            // me.vcfs.push(currVcf);
-                                            // if (currTbi) {
-                                            //     me.tbis.push(currTbi);
-                                            // }
-                                            // // Get the sample names from the vcf header
-                                            // currVcfEndpt.getSampleNames(function (names) {
-                                            //     me.isMultiSample = !!(names && names.length > 1);
-                                            //     sampleNames.push(names);
-                                            //     resolve();
-                                            // });
+                                            me.vcfs.push(currVcf);
+                                            if (currTbi) {
+                                                me.tbis.push(currTbi);
+                                            }
+                                            // Get the sample names from the vcf header
+                                            currVcfEndpt.getSampleNames(function (names) {
+                                                me.isMultiSample = !!(names && names.length > 1);
+                                                sampleNames.push(names);
+                                                resolve();
+                                            });
                                         }
                                     })
                                 }
-                                me.vcfs.push(currVcf);
-                                if (currTbi) {
-                                    me.tbis.push(currTbi);
-                                }
-                                // Get the sample names from the vcf header
-                                currVcfEndpt.getSampleNames(function (names) {
-                                    me.isMultiSample = !!(names && names.length > 1);
-                                    sampleNames.push(names);
-                                    resolve();
-                                });
                             } else {
                                 me.vcfUrlsEntered = false;
                                 let errObj = {};
@@ -1120,6 +1106,8 @@ class DataSetModel {
                         let errorMsg = '';
                         let updatedListObj = {};
                         updatedListObj['noBuildInfo'] = noBuildInfo;
+                        updatedListObj['mismatchBuild'] = mismatchBuild;
+                        updatedListObj['fileBuild'] = fileBuild;
 
                         // Initialize return object w/ all files
                         updatedListObj['names'] = urlNames;

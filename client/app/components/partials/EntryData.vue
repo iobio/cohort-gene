@@ -355,10 +355,24 @@
                     if (self.modelInfo && self.modelInfo.dataSet) {
                         self.modelInfo.dataSet.onVcfUrlEntered([self.modelInfo.id], [vcfUrl], [tbiUrl], [self.modelInfo.displayName])
                             .then((listObj) => {
-                                if (listObj.noBuildInfo === true) {
+                                if (listObj.isBadFile) {
+                                    alertify.set('notifier', 'position', 'top-right');
+                                    alertify.warning("The entered file " + errObj.badFile + ' or its index could not be opened.');
+
+                                    self.vcfError = true;
+                                    self.retrievingIds = false;
+                                    self.$emit("sample-data-changed");
+                                    reject(errObj);
+                                }
+                                else if (listObj.noBuildInfo === true) {
                                     alertify.set('notifier', 'position', 'top-right');
                                     alertify.warning("WARNING: The provided file does not contain reference information. Please ensure the reference is synonymous" +
                                         "with that in the Genome Build drop-down.");
+                                }
+                                else if (listObj.mismatchBuild === true) {
+                                    alertify.set('notifier', 'position', 'top-right');
+                                    alertify.warning("WARNING: The provided file has a different reference build than the current reference selection. Please change the drop-down selection " +
+                                        "or proceed with caution.");
                                 }
 
                                 self.retrievingIds = false;
@@ -379,24 +393,6 @@
                                 }
                                 self.$emit("sample-data-changed");
                                 resolve();
-                            })
-                            .catch((errObj) => {
-                                if (errObj.mismatchBuild === true) {
-                                    alertify.set('notifier', 'position', 'top-right');
-                                    alertify.warning("WARNING: The provided file has a different reference build than the current reference selection. Please change the drop-down selection " +
-                                        "or provide a file aligned to the same reference.");
-                                    resolve();
-                                }
-
-                                self.vcfError = true;
-                                self.retrievingIds = false;
-                                self.$emit("sample-data-changed");
-                                if (errObj.isBadFile) {
-                                    alertify.set('notifier', 'position', 'top-right');
-                                    alertify.warning("The entered file " + errObj.badFile + ' or its index could not be opened.');
-                                }
-                                console.log('There was a problem checking vcf urls');
-                                reject(errObj);
                             })
                     }
                 });
