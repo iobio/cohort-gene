@@ -599,7 +599,7 @@ TD & SJG updated Nov2018 -->
                                 let updatedVariant = updatedVariantObject[0][0];
                                 // Display variant info once we have it
                                 self.loadingExtraAnnotations = false;
-                                self.selectedVariant = self.variantModel.combineVariantInfo([updatedVariant]);
+                                self.selectedVariant = self.variantModel.combineVariantInfo([updatedVariant], true);
                                 // Wrap variant with appropriate structure to send into existing clinvar method
                                 let detailsObj = {};
                                 detailsObj['loadState'] = {};
@@ -613,7 +613,7 @@ TD & SJG updated Nov2018 -->
                                         // Unwrap clinvarVariant structure
                                         let clinvarVariant = variantObj[0]['Subset']['features'][0];
                                         self.loadingExtraClinvarAnnotations = false;
-                                        self.selectedVariant = self.variantModel.combineVariantInfo([clinvarVariant]);
+                                        self.selectedVariant = self.variantModel.combineVariantInfo([clinvarVariant], true);
                                     })
                             })
                     }

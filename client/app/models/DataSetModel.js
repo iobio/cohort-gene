@@ -1037,7 +1037,8 @@ class DataSetModel {
             // For each vcf url, open and get sample names
             if (vcfUrls == null || vcfUrls.length === 0 || vcfUrls[0] === '') {
                 me.vcfUrlsEntered = false;
-                reject('No vcf to check');
+                console.log('No vcf to check');
+                resolve();
             } else {
                 me.getVcfRefName = null;
                 me.isMultiSample = true;
@@ -1074,7 +1075,6 @@ class DataSetModel {
                                             } else if (hdrBuildResult === '') {
                                                 noBuildInfo = true;
                                             }
-
                                             me.vcfs.push(currVcf);
                                             if (currTbi) {
                                                 me.tbis.push(currTbi);
@@ -1085,8 +1085,29 @@ class DataSetModel {
                                                 sampleNames.push(names);
                                                 resolve();
                                             });
+                                        // If we cannot get chromosome info from vcf
+                                        } else {
+                                            me.vcfUrlsEntered = false;
+                                            let errObj = {};
+                                            openErrorFiles.push(currFileName);
+                                            console.log('Could retrieve build type from chromosome style for: ' + vcfUrls[i] + ' - ' + errorMsg);
+                                            errObj.badFile = vcfUrls[i];
+                                            errObj.isBadFile = true;
+                                            reject(errObj);
                                         }
                                     })
+                                // Otherwise our build matches and we can safely add files
+                                } else {
+                                    me.vcfs.push(currVcf);
+                                    if (currTbi) {
+                                        me.tbis.push(currTbi);
+                                    }
+                                    // Get the sample names from the vcf header
+                                    currVcfEndpt.getSampleNames(function (names) {
+                                        me.isMultiSample = !!(names && names.length > 1);
+                                        sampleNames.push(names);
+                                        resolve();
+                                    });
                                 }
                             } else {
                                 me.vcfUrlsEntered = false;

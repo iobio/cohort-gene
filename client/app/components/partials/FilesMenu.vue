@@ -594,7 +594,6 @@
                                         resolve();
                                 });
                                 console.log('Mismatch build detected');
-                                //
                             } else {
                                 // Otherwise pass on the error
                                 console.log(error);
@@ -715,7 +714,10 @@
                     if (self.$refs.entryDataRef) {
                         self.$refs.entryDataRef.forEach((entryRef) => {
                             if (!(self.launchedFromHub && entryRef.dragId === 's0')) {
-                                entryRef.retryEnteredUrls();
+                                entryRef.retryEnteredUrls()
+                                    .catch((errObj) => {
+                                        console.log('There aws a problem with retryEnteredUrls: ' + errObj);
+                                    })
                             }
                         })
                     }

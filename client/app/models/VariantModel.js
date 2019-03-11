@@ -921,28 +921,42 @@ class VariantModel {
 
     //<editor-fold desc="TO BE DEPRECIATED">
     // TODO: back end will eliminate need to combine variant infos
-    /* Takes in a list of fully annotated variants, and appends existing, relative positional information from subset variants to them.
-          Reassigns loadedVariants in subset CohortModel.
-          Sets extraAnnotationsLoaded to true. */
-    combineVariantInfo(variantInfo) {
+    /* Takes in fully annotated variants, and appends existing, relative positional information from subset variants to them. Returns the first combined variant.
+
+        Can be called by second annotation round for multiple variants coming from a single file, or multiple files. In either instance, fileList
+        is a object map of file names to vcf backend models that feature lists can be extracted from.
+
+        Can also be called by a single click on a variant prior to full annotation returning. In this case fileList is a misleading parameter name,
+        as it in this case represents a single variant object. Click mode = true indicates if this is the case.
+
+        Reassigns loadedVariants in subset CohortModel.
+        Sets extraAnnotationsLoaded to true.
+    */
+    combineVariantInfo(fileList, clickMode) {
         let self = this;
 
-        let fileNames = Object.keys(variantInfo);
-        let firstInfo = Object.values(variantInfo)[0];
+        let fileNames = Object.keys(fileList);
+        let firstInfo = Object.values(fileList)[0];
         let updatedVarLookup = {};
         let existingVariants = [];
 
-        // If we have multiple feature lists to combine
-        if (fileNames.length > 1 || (firstInfo.features && firstInfo.features.length > 1)) {
+        // If we have a single variant sent in for annotating from a pre-annotation click
+        if (clickMode) {
+            let varInfo = fileList[0];   // If we're combining single variant, fileList is actually a single variant info obj
+            updatedVarLookup[varInfo.id] = varInfo;
+            existingVariants = self.mainDataSet.loadedVariants.features.filter(feature => feature.id === varInfo.id);
+        }
+        // If we have multiple feature lists to combine for full variant list update
+        else if (fileNames.length > 1 || (firstInfo.features && firstInfo.features.length > 1)) {
             for (let i = 0; i < fileNames.length; i++) {
-                let currVars = variantInfo[fileNames[i]].features;
+                let currVars = fileList[fileNames[i]].features;
                 currVars.forEach((variant) => {
                     updatedVarLookup[variant.id] = variant;
                 })
             }
             existingVariants = self.mainDataSet.loadedVariants.features;
         }
-        // If we have one feature list to combine
+        // If we have one feature list to combine for full variant list update
         else if (fileNames.length > 0) {
             // Pull out reference to single variant
             let singleVar = firstInfo.features[0];
@@ -980,7 +994,7 @@ class VariantModel {
             }
         });
 
-        if (Object.keys(updatedVarLookup).length >= 1) {
+        if (!clickMode) {
             self.extraAnnotationsLoaded = true;
         }
         else {
