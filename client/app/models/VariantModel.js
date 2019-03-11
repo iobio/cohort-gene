@@ -932,7 +932,7 @@ class VariantModel {
         let updatedVarLookup = {};
         let existingVariants = [];
 
-        // If we have multiple variants to combine
+        // If we have multiple feature lists to combine
         if (fileNames.length > 1 || (firstInfo.features && firstInfo.features.length > 1)) {
             for (let i = 0; i < fileNames.length; i++) {
                 let currVars = variantInfo[fileNames[i]].features;
@@ -942,10 +942,10 @@ class VariantModel {
             }
             existingVariants = self.mainDataSet.loadedVariants.features;
         }
-        // If we have one variant to combine
-        else if (Object.keys(variantInfo).length > 0) {
+        // If we have one feature list to combine
+        else if (fileNames.length > 0) {
             // Pull out reference to single variant
-            let singleVar = variantInfo[0];
+            let singleVar = firstInfo.features[0];
             updatedVarLookup[singleVar.id] = singleVar;
             existingVariants = self.mainDataSet.loadedVariants.features.filter(feature => feature.id === singleVar.id);
         }
@@ -980,7 +980,7 @@ class VariantModel {
             }
         });
 
-        if (Object.keys(updatedVarLookup).length > 1) {
+        if (Object.keys(updatedVarLookup).length >= 1) {
             self.extraAnnotationsLoaded = true;
         }
         else {
