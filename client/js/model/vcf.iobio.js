@@ -246,8 +246,11 @@ vcfiobio = function module() {
                         me._parseHeaderForInfoFields(rec);
                     }
                 });
-                let buildResult = me.getGenomeBuildHelper().getBuildFromSscVcfHeader(buffer);
-                callback(success, '', buildResult);
+                let hdrBuildResult = me.getGenomeBuildHelper().getBuildFromSscVcfHeader(buffer);
+
+                // let firstLineBuildResult = me.GenomeBuildHelper().getBuildFromSscVcfChromosomes()
+
+                callback(success, '', hdrBuildResult);
             }
         });
 
