@@ -383,7 +383,7 @@ class DataSetModel {
         let self = this;
         if ((Object.keys(self.vcfEndptHash)).length > 0) {
             return new Promise(function (resolve, reject) {
-                self.onVcfUrlEntered(entryNames, vcfs, tbis)
+                self.onVcfUrlEntered(entryNames, vcfs, tbis, [], true)
                     .then((updatedListObj) => {
                         if (updatedListObj != null) {
                             // Assign updated, stably-sorted lists to data set model
@@ -582,7 +582,7 @@ class DataSetModel {
                             }
                         })
                         .catch((error) => {
-                            console.log('Problem in cohort model ' + error);
+                            console.log('Problem in data set model ' + error);
                         });
                 })
         });
@@ -1028,7 +1028,7 @@ class DataSetModel {
     * Notifies the user of any vcfs that 1) may not be opened, 2) have indeterminate reference builds, or 3) do not
     * have the majority reference build.
     */
-    onVcfUrlEntered(urlNames, vcfUrls, tbiUrls, displayNames = []) {
+    onVcfUrlEntered(urlNames, vcfUrls, tbiUrls, displayNames = [], hubLaunch = false) {
         let me = this;
         me.vcfData = null;
         me.sampleName = null;
@@ -1098,16 +1098,20 @@ class DataSetModel {
                                     })
                                 // Otherwise our build matches and we can safely add files
                                 } else {
-                                    me.vcfs.push(currVcf);
-                                    if (currTbi) {
-                                        me.tbis.push(currTbi);
-                                    }
-                                    // Get the sample names from the vcf header
-                                    currVcfEndpt.getSampleNames(function (names) {
-                                        me.isMultiSample = !!(names && names.length > 1);
-                                        sampleNames.push(names);
+                                    if (!hubLaunch) {
+                                        me.vcfs.push(currVcf);
+                                        if (currTbi) {
+                                            me.tbis.push(currTbi);
+                                        }
+                                        // Get the sample names from the vcf header
+                                        currVcfEndpt.getSampleNames(function (names) {
+                                            me.isMultiSample = !!(names && names.length > 1);
+                                            sampleNames.push(names);
+                                            resolve();
+                                        });
+                                    } else {
                                         resolve();
-                                    });
+                                    }
                                 }
                             } else {
                                 me.vcfUrlsEntered = false;
