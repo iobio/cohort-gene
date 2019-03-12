@@ -263,7 +263,7 @@ class VariantModel {
                                 let nonNullSampleIds = probandCohort.sampleIds.filter((id) => {
                                     return id != null;
                                 });
-                                if (nonNullSampleIds.length < probandCohort.sampleIds) {
+                                if (nonNullSampleIds.length < probandCohort.sampleIds.length) {
                                     alert('The selected samples will not all be included in the analysis due to database updates.');
                                     probandCohort.sampleIds = nonNullSampleIds;
                                 }
@@ -298,8 +298,7 @@ class VariantModel {
                                 let nonNullSampleIds = subsetCohort.sampleIds.filter((id) => {
                                     return id != null;
                                 });
-                                if (nonNullSampleIds.length < subsetCohort.sampleIds) {
-                                    alert('The selected samples will not all be included in the analysis due to database updates.');
+                                if (nonNullSampleIds.length < subsetCohort.sampleIds.length) {
                                     subsetCohort.sampleIds = nonNullSampleIds;
                                 }
                             }
