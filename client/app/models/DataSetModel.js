@@ -166,7 +166,7 @@ class DataSetModel {
 
     getProbandIds() {
         let self = this;
-        if (self.getProbandCohort() && self.getProbandCohort.sampleIds && self.ProbandCohort.sampleIds.length > 0) {
+        if (self.getProbandCohort() && self.getProbandCohort().sampleIds && self.getProbandCohort().sampleIds.length > 0) {
             return self.getProbandCohort().sampleIds;
         } else {
             return [];

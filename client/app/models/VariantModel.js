@@ -260,6 +260,13 @@ class VariantModel {
                                 probandCohort.sampleIds = self.convertSimonsIds(sampleObjs, 'proband');
                             } else {
                                 probandCohort.sampleIds = self.getRawIds(sampleObjs, usingNewApi);
+                                let nonNullSampleIds = probandCohort.sampleIds.filter((id) => {
+                                    return id != null;
+                                });
+                                if (nonNullSampleIds.length < probandCohort.sampleIds) {
+                                    alert('The selected samples will not all be included in the analysis due to database updates.');
+                                    probandCohort.sampleIds = nonNullSampleIds;
+                                }
                             }
                             probandCohort.phenotypes.push('n = ' + sampleObjs.length);
                         });
@@ -288,6 +295,13 @@ class VariantModel {
                                 subsetCohort.sampleIds = self.convertSimonsIds(sampleObjs, 'subset', usingNewApi);
                             } else {
                                 subsetCohort.sampleIds = self.getRawIds(sampleObjs, usingNewApi);
+                                let nonNullSampleIds = subsetCohort.sampleIds.filter((id) => {
+                                    return id != null;
+                                });
+                                if (nonNullSampleIds.length < subsetCohort.sampleIds) {
+                                    alert('The selected samples will not all be included in the analysis due to database updates.');
+                                    subsetCohort.sampleIds = nonNullSampleIds;
+                                }
                             }
                         });
                     promises.push(subsetP);
