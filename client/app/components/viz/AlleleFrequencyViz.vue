@@ -236,8 +236,6 @@
                 self.subsetBar.moveProgressBar()(0);
             },
             getProbandDisplay() {
-                if (this.selectedVariant.id === 'id_37497151_chr21_+_CG_C' || this.selectedVariant.id === 'id_37494945_chr21_+_TA_T')
-                    debugger;
                 if (this.selectedVariant == null) return "-";
                 else if (this.totalProbandCount === 0) return "0%";
                 else {
