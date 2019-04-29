@@ -2016,6 +2016,7 @@ vcfiobio = function module() {
 
                             if (enrichMode) {
                                 variant.zygosity = enrichResult.gx;
+                                // NOTE: these are SAMPLE counts, not ALLELE counts
                                 variant.totalProbandCount = (+enrichResult.counts[0] + +enrichResult.counts[1] + +enrichResult.counts[2] + +enrichResult.counts[3]);    // NOTE: includes no calls
                                 variant.totalSubsetCount = (+enrichResult.counts[4] + +enrichResult.counts[5] + +enrichResult.counts[6] + +enrichResult.counts[7]);
                                 variant.affectedProbandCount = (+enrichResult.counts[1] + +enrichResult.counts[2]);

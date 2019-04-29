@@ -1454,6 +1454,8 @@ class CohortModel {
             let currSubCounts = feature.subsetZygCounts;
 
             // Calculate subset delta
+            if (feature.id === 'id_37497151_chr21_+_CG_C' || feature.id === 'id_37494945_chr21_+_TA_T')
+                debugger;
             let totalProbandCount = +currProCounts[0] + +currProCounts[1] + +currProCounts[2];  // NOTE: not including no calls in counts
             let totalSubsetCount = +currSubCounts[0] + +currSubCounts[1] + +currSubCounts[2];
             let affectedSubsetCount = +currSubCounts[1] + +currSubCounts[2];

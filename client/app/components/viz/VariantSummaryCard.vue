@@ -223,14 +223,10 @@
                                       :oneKGenomes="oneKGenomes"
                                       :gnomad="gnomad"
                                       :exAc="exAc"
-                                      :affectedProbandCount="affectedProbandCount"
-                                      :affectedSubsetCount="affectedSubsetCount"
-                                      :totalProbandCount="totalProbandCount"
-                                      :totalSubsetCount="totalSubsetCount"
-                                      :hetProbandCount="hetProbandCount"
-                                      :homAltProbandCount="homAltProbandCount"
-                                      :hetSubsetCount="hetSubsetCount"
-                                      :homAltSubsetCount="homAltSubsetCount"
+                                      :totalProbandAlleleCount="totalProbandAlleleCount"
+                                      :totalSubsetAlleleCount="totalSubsetAlleleCount"
+                                      :affectedProbandAlleleCount="affectedProbandAlleleCount"
+                                      :affectedSubsetAlleleCount="affectedSubsetAlleleCount"
                                       :loadingExtraAnnotations="loadingExtraAnnotations">
                 </allele-frequency-viz>
                 <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz" style="padding-top: 10px"
@@ -274,7 +270,7 @@
             }
         },
         computed: {
-            // NOTE: total and affected counts are number of SAMPLES not ALLELES
+            // NOTE: the following counts are number of SAMPLES not ALLELES
             totalProbandCount: function () {
                 if (!this.cohortFieldsValid) {
                     return -1;
@@ -299,26 +295,46 @@
                     return this.variant.affectedSubsetCount;
                 return 0;
             },
-            hetProbandCount: function() {
+            totalProbandAlleleCount: function() {
                 if (this.variant != null)
-                    return this.variant.probandZygCounts[1];
+                    return (this.variant.probandZygCounts[0] * 2 + this.variant.probandZygCounts[1] + this.variant.probandZygCounts[2] * 2);
                 return 0;
             },
-            homAltProbandCount: function() {
+            affectedProbandAlleleCount: function() {
                 if (this.variant != null)
-                    return this.variant.probandZygCounts[2];
+                    return (this.variant.probandZygCounts[1] + this.variant.probandZygCounts[2] * 2);
                 return 0;
             },
-            hetSubsetCount: function() {
+            totalSubsetAlleleCount: function() {
                 if (this.variant != null)
-                    return this.variant.subsetZygCounts[1];
+                    return (this.variant.subsetZygCounts[0] * 2 + this.variant.subsetZygCounts[1] + this.variant.subsetZygCounts[2] * 2);
                 return 0;
             },
-            homAltSubsetCount: function() {
+            affectedSubsetAlleleCount: function() {
                 if (this.variant != null)
-                    return this.variant.subsetZygCounts[2];
+                    return (this.variant.subsetZygCounts[1] + this.variant.subsetZygCounts[2] * 2);
                 return 0;
             },
+            // hetProbandCount: function() {
+            //     if (this.variant != null)
+            //         return this.variant.probandZygCounts[1];
+            //     return 0;
+            // },
+            // homAltProbandCount: function() {
+            //     if (this.variant != null)
+            //         return this.variant.probandZygCounts[2];
+            //     return 0;
+            // },
+            // hetSubsetCount: function() {
+            //     if (this.variant != null)
+            //         return this.variant.subsetZygCounts[1];
+            //     return 0;
+            // },
+            // homAltSubsetCount: function() {
+            //     if (this.variant != null)
+            //         return this.variant.subsetZygCounts[2];
+            //     return 0;
+            // },
             subsetDelta: function () {
                 if (this.variant != null) {
                     let delta = this.variant.subsetDelta;
@@ -380,25 +396,6 @@
                     else if (this.variant.subsetDelta <= 0.5) return '.enrichment_subset_DOWN';
                 }
                 return "";
-            },
-            // Currently not using these but could be useful in the future...
-            totalCountSelectedTrack: function () {
-                if (this.variant != null) {
-                    if (this.variant.name === "HubProbands")
-                        return this.totalProbandCount;
-                    else if (this.variant.name === "HubSubsetProbands")
-                        return this.totalSubsetCount;
-                }
-                return 0;
-            },
-            affectedCountSelectedTrack: function () {
-                if (this.variant != null) {
-                    if (this.variant.name === "HubProbands")
-                        return this.affectedProbandCount;
-                    else if (this.variant.name === "HubSubsetProbands")
-                        return this.affectedSubsetCount;
-                }
-                return 0;
             },
             effect: function () {
                 if (this.variantInfo != null)

@@ -205,7 +205,8 @@
         </v-flex>
         <sample-select-dialog
                 ref="sampleDialogRef"
-                :idType="dialogType"
+                :sampleId="sampleId"
+                :showDialog="dialogType"
                 @save-sample-selection="saveSampleSelection">
         </sample-select-dialog>
         <confirmation-dialog

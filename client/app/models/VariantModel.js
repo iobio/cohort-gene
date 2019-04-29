@@ -263,6 +263,19 @@ class VariantModel {
                                 let nonNullSampleIds = probandCohort.sampleIds.filter((id) => {
                                     return id != null;
                                 });
+
+                                // Debugging
+                                // let nullSampleIds = [];
+                                // sampleObjs.forEach((obj) => {
+                                //     let currVcf = obj.files.filter((file) => {
+                                //         return file.type === 'vcf';
+                                //     });
+                                //     if (currVcf[0].vcf_sample_name == null) {
+                                //         nullSampleIds.push(currVcf[0].sample_id);
+                                //     }
+                                // });
+                                // console.log('null sample ids: ' + nullSampleIds.join('\t'));
+
                                 if (nonNullSampleIds.length < probandCohort.sampleIds.length) {
                                     alert('The selected samples will not all be included in the analysis due to database updates.');
                                     probandCohort.sampleIds = nonNullSampleIds;
