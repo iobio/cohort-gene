@@ -190,6 +190,7 @@ TD & SJG updated Nov2018 -->
     // Static data
     import allGenesData from '../../../data/genes.json'
     import simonsIdMap from '../../../data/new_id_map.json'
+    import acmgBlacklist from '../../../data/ACMG_blacklist.json'
     export default {
         name: 'home',
         components: {
@@ -245,6 +246,7 @@ TD & SJG updated Nov2018 -->
                 genesInProgress: {},
                 allGenes: allGenesData,
                 simonsIdMap: simonsIdMap,
+                acmgBlacklist: acmgBlacklist,
                 launchedFromHub: false,
                 firstLaunch: true,
                 firstGeneSelection: true,
@@ -479,6 +481,14 @@ TD & SJG updated Nov2018 -->
             },
             onGeneSelected: function (geneName) {
                 let self = this;
+
+                // Check to make sure selected gene is not blacklisted if we've launched from Hub
+                if (self.launchedFromHub && self.acmgBlacklist[geneName.toUpperCase()] != null) {
+                    alertify.set('notifier', 'position', 'top-left');
+                    alertify.warning("The SFARI program does not authorize this gene to be viewed or analyzed. Please select another gene.");
+                    return;
+                }
+
                 self.deselectVariant();
                 // Only want to wipe if not first selection (otherwise conflicts with badge display)
                 if (!self.firstGeneSelection) {
