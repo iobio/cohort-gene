@@ -39,6 +39,7 @@ class VariantModel {
         this.projectId = '';                    // Hub project ID if we're sourcing data from there
         this.phenoFilters = {};                 // Hub filters applied to samples
         this.simonsIdMap = {};                  // Lookup table to convert Hub VCF IDs to Simons IDs
+        this.isSimonsProject = false;           // If true, ACMG blacklisted genes not loaded
         // </editor-fold>
 
         // <editor-fold desc="DEMO DATA">
@@ -243,6 +244,14 @@ class VariantModel {
                     hubDataSet.vcfNames = urlObj.names;
                     hubDataSet.vcfs = urlObj.vcfs;
                     hubDataSet.tbis = urlObj.tbis;
+
+                    // Check to see if we're pulling a Simons project so that we can check blacklist genes
+                    self.promiseGetProjectFromHub(self.projectId)
+                        .then(function (projectObj) {
+                            if (projectObj && (projectObj.name === 'SSC GRCh37 WGS' || projectObj.name === 'SSC GRCh38 WGS')) {
+                                self.isSimonsProject = true;
+                            }
+                        });
 
                     // Format filter to send to Hub to get all proband IDs (via 'affected status' metric)
                     let probandFilter = self.getProbandPhenoFilter();
@@ -494,6 +503,22 @@ class VariantModel {
         return new Promise(function (resolve, reject) {
             let t0 = performance.now();
             self.hubEndpoint.getSamplesForProject(projectId, phenoFilters)
+                .done(data => {
+                    let t1 = performance.now();
+                    console.log('Took ' + (t1 - t0) + ' ms to get IDs from Hub');
+                    resolve(data);
+                })
+        })
+    }
+
+    /* Wrapper to get project details from Hub.
+       Used to determine if Simons project for blacklisting purposes. */
+    promiseGetProjectFromHub(projectId) {
+        let self = this;
+
+        return new Promise(function (resolve, reject) {
+            let t0 = performance.now();
+            self.hubEndpoint.getProject(projectId)
                 .done(data => {
                     let t1 = performance.now();
                     console.log('Took ' + (t1 - t0) + ' ms to get IDs from Hub');

@@ -21,7 +21,7 @@ HubEndpoint.prototype.getFilesForProject = function (projectId, initialLaunch) {
     }).fail(function (xhr, status, error) {
         let curr_uri = window.location.href;
         let redirect_uri = '';
-        // Strip of # to comply with Vue/Oauth mixture if initial token expiration
+        // Strip off # to comply with Vue/Oauth mixture if initial token expiration
         if (initialLaunch) {
             let hash_index = curr_uri.indexOf('#');
             let stripped_href = curr_uri.substring(0, (hash_index - 1));

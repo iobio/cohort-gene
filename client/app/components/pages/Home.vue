@@ -483,7 +483,7 @@ TD & SJG updated Nov2018 -->
                 let self = this;
 
                 // Check to make sure selected gene is not blacklisted if we've launched from Hub
-                if (self.launchedFromHub && self.acmgBlacklist[geneName.toUpperCase()] != null) {
+                if (self.variantModel.isSimonsProject && self.acmgBlacklist[geneName.toUpperCase()] != null) {
                     alertify.set('notifier', 'position', 'top-left');
                     alertify.warning("The SFARI program does not authorize this gene to be viewed or analyzed. Please select another gene.");
                     return;
