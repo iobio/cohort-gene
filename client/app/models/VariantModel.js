@@ -39,7 +39,8 @@ class VariantModel {
         this.projectId = '';                    // Hub project ID if we're sourcing data from there
         this.phenoFilters = {};                 // Hub filters applied to samples
         this.simonsIdMap = {};                  // Lookup table to convert Hub VCF IDs to Simons IDs
-        this.isSimonsProject = false;           // If true, ACMG blacklisted genes not loaded
+        this.isSimonsProject = false;           // True if cohort is Simons project launched from Mosaic
+        this.blacklistedGeneSelected = false;   // True if ACMG blacklisted gene selected (ACMG_blacklist.json)
         // </editor-fold>
 
         // <editor-fold desc="DEMO DATA">
@@ -712,20 +713,25 @@ class VariantModel {
                 return Promise.resolve(loadedCohortVars);
             } else {
                 self.mainDataSet.lastGeneLoaded = theGene.gene_name;
-                //self.mainDataSet.wipeGeneData();
-                return new Promise((resolve, reject) => {
-                    self.mainDataSet.promiseLoadData(theGene, theTranscript)
-                        .then(() => {
-                            resolve(loadedCohortVars);
-                        });
-                });
+
+                // Don't load Simons cohort track if gene blacklisted
+                if (self.blacklistedGeneSelected && self.isSimonsProject) {
+                    return Promise.resolve();
+                } else {
+                    return new Promise((resolve, reject) => {
+                        self.mainDataSet.promiseLoadData(theGene, theTranscript)
+                            .then(() => {
+                                resolve(loadedCohortVars);
+                            });
+                    });
+                }
             }
         } else {
             return new Promise((resolve, reject) => {
                 let loadPromises = [];
-                if (self.mainDataSet.lastGeneLoaded !== theGene.gene_name || self.mainDataSet.loadedVariants == null || self.mainDataSet.entryDataChanged) {
+                if (self.mainDataSet.lastGeneLoaded !== theGene.gene_name || self.mainDataSet.loadedVariants == null || self.mainDataSet.entryDataChanged
+                    && !(self.blacklistedGeneSelected && self.isSimonsProject)) {
                     self.mainDataSet.lastGeneLoaded = theGene.gene_name;
-                    //self.mainDataSet.wipeGeneData();
                     loadPromises.push(self.mainDataSet.promiseLoadData(theGene, theTranscript));
                 } else {
                     loadedCohortVars = false;
@@ -733,7 +739,6 @@ class VariantModel {
                 self.otherDataSets.forEach((dataSet) => {
                     if (dataSet.lastGeneLoaded !== theGene.gene_name || dataSet.loadedVariants == null || dataSet.entryDataChanged) {
                         dataSet.lastGeneLoaded = theGene.gene_name;
-                        //dataSet.wipeGeneData();
                         loadPromises.push(dataSet.promiseLoadData(theGene, theTranscript));
                     }
                 });

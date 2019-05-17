@@ -128,8 +128,22 @@ Updated: SJG Jan2019
                 </v-layout>
             </v-flex>
             <div style="width:100%">
+                <div v-if="displayBlacklistWarning"
+                     style="text-align: center; padding-bottom: 20px; padding-top: 20px">
+                    <v-chip id="sfari-chip" class="red red--text" small outline style="font-size: 12px">
+                        Unauthorized SFARI Gene
+                        <v-menu id="sfari-menu" open-on-hover transition="slide-x-transition" max-width="400px">
+                            <v-btn flat icon small slot="activator">
+                                <v-icon small color="red">info_outline</v-icon>
+                            </v-btn>
+                            <div class="text-xs-center" style="padding: 5px">
+                                The SFARI program does not authorize this gene to be viewed or analyzed. Please select another gene.
+                            </div>
+                        </v-menu>
+                    </v-chip>
+                </div>
                 <enrichment-variant-viz
-                        v-if="dataSetModel && dataSetModel.getSubsetCohort()"
+                        v-else-if="dataSetModel && dataSetModel.getSubsetCohort()"
                         ref="subsetVizRef"
                         :id="dataSetModel.getName()"
                         :model="dataSetModel"
@@ -216,7 +230,8 @@ Updated: SJG Jan2019
             geneVizShowXAxis: null,
             doneLoadingData: false,
             doneLoadingExtras: false,
-            showCoverageCutoffs: false
+            showCoverageCutoffs: false,
+            displayBlacklistWarning: false
         },
         data() {
             let self = this;

@@ -62,6 +62,7 @@ TD & SJG updated Nov2018 -->
                                     :doneLoadingData="doneLoadingData"
                                     :doneLoadingExtras="doneLoadingExtras"
                                     :doubleMode="true"
+                                    :displayBlacklistWarning="blacklistedGeneSelected"
                                     @dataSetVariantClick="onDataSetVariantClick"
                                     @dataSetVariantHover="onDataSetVariantHover"
                                     @dataSetVariantHoverEnd="onDataSetVariantHoverEnd"
@@ -247,6 +248,7 @@ TD & SJG updated Nov2018 -->
                 allGenes: allGenesData,
                 simonsIdMap: simonsIdMap,
                 acmgBlacklist: acmgBlacklist,
+                blacklistedGeneSelected: false,
                 launchedFromHub: false,
                 firstLaunch: true,
                 firstGeneSelection: true,
@@ -482,13 +484,6 @@ TD & SJG updated Nov2018 -->
             onGeneSelected: function (geneName) {
                 let self = this;
 
-                // Check to make sure selected gene is not blacklisted if we've launched from Hub
-                if (self.variantModel.isSimonsProject && self.acmgBlacklist[geneName.toUpperCase()] != null) {
-                    alertify.set('notifier', 'position', 'top-left');
-                    alertify.warning("The SFARI program does not authorize this gene to be viewed or analyzed. Please select another gene.");
-                    return;
-                }
-
                 self.deselectVariant();
                 // Only want to wipe if not first selection (otherwise conflicts with badge display)
                 if (!self.firstGeneSelection) {
@@ -518,6 +513,16 @@ TD & SJG updated Nov2018 -->
                 let self = this;
                 return new Promise(function (resolve, reject) {
                     self.showWelcome = false;
+
+                    // Check to make sure selected gene is not blacklisted if we've launched from Hub
+                    if (self.variantModel.isSimonsProject && self.acmgBlacklist[geneName.toUpperCase()] != null) {
+                        alertify.set('notifier', 'position', 'top-left');
+                        alertify.warning("The SFARI program does not authorize this gene to be viewed or analyzed. Please select another gene.");
+                        self.setBlacklistStatus(true);
+                    } else {
+                        self.setBlacklistStatus(false);
+                    }
+
                     if (self.variantModel) {
                         self.variantModel.clearLoadedData(geneName);
                     }
@@ -951,6 +956,11 @@ TD & SJG updated Nov2018 -->
                 let self = this;
                 // Tab to summary card
                 self.selectedTab = 'filter-tab';
+            },
+            setBlacklistStatus: function(status) {
+                let self = this;
+                self.blacklistedGeneSelected = status;
+                self.variantModel.blacklistedGeneSelected = status;
             }
         }
     }
