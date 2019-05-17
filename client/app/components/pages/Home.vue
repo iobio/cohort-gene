@@ -131,6 +131,7 @@ TD & SJG updated Nov2018 -->
                                                 :variantInfo="selectedVariantInfo"
                                                 :loadingExtraAnnotations="loadingExtraAnnotations"
                                                 :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations"
+                                                :blacklistStatus="blacklistedGeneSelected"
                                                 @summaryCardVariantDeselect="deselectVariant"
                                                 @zyg-bars-mounted="drawZygCharts"
                                                 ref="variantSummaryCardRef">

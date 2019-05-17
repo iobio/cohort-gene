@@ -227,7 +227,8 @@
                                       :totalSubsetAlleleCount="totalSubsetAlleleCount"
                                       :affectedProbandAlleleCount="affectedProbandAlleleCount"
                                       :affectedSubsetAlleleCount="affectedSubsetAlleleCount"
-                                      :loadingExtraAnnotations="loadingExtraAnnotations">
+                                      :loadingExtraAnnotations="loadingExtraAnnotations"
+                                      :blacklistStatus="blacklistStatus">
                 </allele-frequency-viz>
                 <bar-feature-viz id="loaded-bar-feature-viz" class="summary-viz" style="padding-top: 10px"
                                  ref="summaryBarFeatureViz"
@@ -238,6 +239,7 @@
                                  :affectedSubsetCount="affectedSubsetCount"
                                  :totalProbandCount="totalProbandCount"
                                  :totalSubsetCount="totalSubsetCount"
+                                 :blacklistStatus="blacklistStatus"
                                  @zyg-bars-mounted="zygBarsMounted">
                 </bar-feature-viz>
             </v-layout>
@@ -262,7 +264,8 @@
             variantInfo: null,
             selectedGene: '',
             loadingExtraAnnotations: false,
-            loadingExtraClinvarAnnotations: false
+            loadingExtraClinvarAnnotations: false,
+            blacklistStatus: false
         },
         data() {
             return {
@@ -366,7 +369,7 @@
                 return "-";
             },
             pValueInfo: function () {
-                if (this.variant != null) {
+                if (this.variant != null && !this.blacklistStatus) {
                     if (!this.cohortFieldsValid) {
                         return "N/A";
                     } else {
@@ -381,7 +384,7 @@
                 return "-";
             },
             log10pValueInfo: function () {
-                if (this.variant != null) {
+                if (this.variant != null && !this.blacklistStatus) {
                     if (!this.cohortFieldsValid) {
                         return "N/A";
                     } else {

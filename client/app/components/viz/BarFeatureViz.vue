@@ -56,7 +56,8 @@
             affectedProbandCount: {},
             affectedSubsetCount: {},
             totalProbandCount: {},
-            totalSubsetCount: {}
+            totalSubsetCount: {},
+            blacklistStatus: false
         },
         created: function () {
         },
@@ -110,7 +111,9 @@
         },
         watch: {
             selectedVariant: function () {
-                this.fillCharts();
+                if (!this.blacklistStatus) {
+                    this.fillCharts();
+                }
             }
         },
         computed: {}
