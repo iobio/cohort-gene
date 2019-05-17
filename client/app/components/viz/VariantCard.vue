@@ -275,7 +275,7 @@ TD & SJG updated Apr2018 -->
             selectedGene: function () {
                 let self = this;
                 self.impactMode = true;
-                self.doneLoadingData = false;
+                //self.doneLoadingData = false;
             }
         },
         created: function () {
