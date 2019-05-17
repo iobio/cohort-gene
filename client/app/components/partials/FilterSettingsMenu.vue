@@ -43,6 +43,7 @@
                     :filterModel="filterModel"
                     :filter="filter"
                     :fullAnnotationComplete="fullAnnotationComplete"
+                    :blacklistStatus="blacklistStatus"
                     @filter-toggled="filterBoxToggled"
                     @filter-applied="filterCutoffApplied"
                     @cutoff-filter-cleared="filterCutoffCleared">
@@ -67,7 +68,8 @@
         props: {
             filterModel: null,
             showCoverageCutoffs: null,
-            fullAnnotationComplete: false
+            fullAnnotationComplete: false,
+            blacklistStatus: false
         },
         data() {
             return {

@@ -288,19 +288,19 @@ TD & SJG updated Apr2018 -->
                 let formattedFileNames = [];
                 files.forEach((fileName) => {
                     if (fileName === '2018-03-18_all.vcf.gz') {
-                        formattedFileNames.push('Phase 1');
+                        formattedFileNames.push('SSC Phase 1');
                     }
                     else if (fileName === 'phase2.all.vcf.gz') {
-                        formattedFileNames.push('Phase 2');
+                        formattedFileNames.push('SSC Phase 2');
                     }
                     else if (fileName === 'phase3_1.all.vcf.gz') {
-                        formattedFileNames.push('Phase 3-1');
+                        formattedFileNames.push('SSC Phase 3-1');
                     }
                     else if (fileName === 'phase3_2.all.vcf.gz') {
-                        formattedFileNames.push('Phase 3-2');
+                        formattedFileNames.push('SSC Phase 3-2');
                     }
                     else if (fileName === 'phase4.all.vcf.gz') {
-                        formattedFileNames.push('Phase 4');
+                        formattedFileNames.push('SSC Phase 4');
                     }
                     else {
                         formattedFileNames.push(fileName);

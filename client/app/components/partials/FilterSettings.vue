@@ -47,6 +47,7 @@
                                 :filterName="category.name"
                                 :parentFilterName="filterName"
                                 :fullAnnotationComplete="fullAnnotationComplete"
+                                :blacklistStatus="(category.cohortOnly && blacklistStatus)"
                                 @filter-applied="onFilterApplied"
                                 @cutoff-filter-cleared="onFilterCleared">
                         </filter-settings-cutoff>
@@ -71,7 +72,8 @@
             filterName: '',
             filterModel: null,
             idx: null,
-            fullAnnotationComplete: false
+            fullAnnotationComplete: false,
+            blacklistStatus: false
         },
         data() {
             return {

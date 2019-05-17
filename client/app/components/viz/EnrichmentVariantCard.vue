@@ -122,7 +122,7 @@ Updated: SJG Jan2019
                                   hide-details
                                   color="cohortNavy"
                                   v-model="zoomMode"
-                                  v-bind:disabled="!doneLoadingExtras">
+                                  v-bind:disabled="!doneLoadingExtras || displayBlacklistWarning">
                         </v-switch>
                     </v-flex>
                 </v-layout>
@@ -360,7 +360,7 @@ Updated: SJG Jan2019
             doneLoadingExtras: function() {
                 // NOTE: had to use jquery here, couldn't get flex styling to position loader
                 // where I wanted it
-                if (this.doneLoadingExtras === true) {
+                if (this.doneLoadingExtras === true || this.displayBlacklistWarning === true) {
                     $('#zoomLoaderDiv').hide();
                 }
                 else {

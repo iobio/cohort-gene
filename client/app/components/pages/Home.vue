@@ -148,6 +148,7 @@ TD & SJG updated Nov2018 -->
                                                 :filterModel="filterModel"
                                                 :showCoverageCutoffs="showCoverageCutoffs"
                                                 :fullAnnotationComplete="doneLoadingExtras"
+                                                :blacklistStatus="blacklistedGeneSelected"
                                                 @filter-box-toggled="filterBoxToggled"
                                                 @filter-cutoff-applied="filterCutoffApplied"
                                                 @filter-cutoff-cleared="filterCutoffCleared">

@@ -21,6 +21,7 @@
                     <v-flex d-flex xs8 xl10>
                         <v-select
                                 :items="dropDownOptions"
+                                :disabled="blacklistStatus"
                                 label="Select"
                                 v-model="filterLogic"
                                 single-line
@@ -34,19 +35,10 @@
                             label="Value"
                             suffix="%"
                             color="cohortNavy"
+                            :disabled="blacklistStatus"
                             :rules="[(v) => (v > 0 && v < 100) || 'Integer between 1-99']"
                             :style="'padding-left: 5px'"
                             @change="checkApplyButtonState">
-                        </v-text-field>
-                        <v-text-field
-                                v-else-if="isRawPVal"
-                                v-model="cutoffValue"
-                                single-line
-                                label="Value"
-                                color="cohortNavy"
-                                :rules="[(v) => (v > 0 && v < 1) || 'Value between 0-1']"
-                                :style="'padding-left: 5px'"
-                                @change="checkApplyButtonState">
                         </v-text-field>
                         <v-text-field
                                 v-else
@@ -54,6 +46,8 @@
                                 single-line
                                 label="Value"
                                 color="cohortNavy"
+                                :disabled="blacklistStatus"
+                                :rules="[(v) => (v > 0 && v < 1) || 'Value between 0-1']"
                                 :style="'padding-left: 5px'"
                                 @change="checkApplyButtonState">
                         </v-text-field>
@@ -66,7 +60,7 @@
                                    v-bind:style="{maxWidth: '30px', color: filterButtonColor}"
                                    slot="activator"
                                    @click="onApplyFilter"
-                                   :disabled="!readyToApply || (!fullAnnotationComplete && isFrequencyField)">
+                                   :disabled="!readyToApply || !fullAnnotationComplete || blacklistStatus">
                                 <v-icon>check</v-icon>
                             </v-btn>
                             <span>{{buttonTipText}}</span>
@@ -98,7 +92,8 @@
         props: {
             filterName: null,
             parentFilterName: null,
-            fullAnnotationComplete: false
+            fullAnnotationComplete: false,
+            blacklistStatus: false
         },
         data() {
             return {
@@ -112,7 +107,6 @@
                 filterLogic: null,
                 cutoffValue: null,
                 readyToApply: false,
-                isRawPVal: false,
                 filterButtonColor: '#d18e00'
             }
         },
@@ -136,11 +130,12 @@
                 let inputValid = false;
                 if (self.isFrequencyField) {
                     inputValid = self.cutoffValue > 0 && self.cutoffValue < 100;
-                } else if (self.isRawPVal) {
-                    inputValid = self.cutoffValue > 0 && self.cutoffValue < 1;
                 } else {
-                    inputValid = self.cutoffValue != null;
+                    inputValid = self.cutoffValue > 0 && self.cutoffValue < 1;
                 }
+                // } else {
+                //     inputValid = self.cutoffValue != null;
+                // }
                 self.readyToApply = self.filterLogic && inputValid;
                 if (self.readyToApply) {
                     self.filterButtonColor = '#8BC34A';
@@ -149,18 +144,14 @@
         },
         computed: {
             isFrequencyField: function() {
-
-                return true;
-
-                // TODO: used to control waiting on filtering - have to make all unavailable until second annotation return for now
-                // let self = this;
-                // if (self.filterName === 'g1000' || self.filterName === 'exac' ||
-                //     self.filterName === 'gnomad' || self.filterName === 'probandFreq'
-                //     || self.filterName === 'subsetFreq') {
-                //     return true;
-                // } else {
-                //     return false;
-                // }
+                let self = this;
+                if (self.filterName === 'g1000' || self.filterName === 'exac' ||
+                    self.filterName === 'gnomad' || self.filterName === 'probandFreq'
+                    || self.filterName === 'subsetFreq') {
+                    return true;
+                } else {
+                    return false;
+                }
             },
             buttonTipText: function() {
                 let self = this;
