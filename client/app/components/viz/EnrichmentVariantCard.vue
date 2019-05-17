@@ -470,7 +470,9 @@ Updated: SJG Jan2019
             },
             resetZoom: function () {
                 this.hideVariantBrush();
-                this.$refs.subsetVizRef.resetPreAnnotateColor();
+                if (this.$refs.subsetVizRef) {
+                    this.$refs.subsetVizRef.resetPreAnnotateColor();
+                }
                 this.zoomMode = false;
             },
             onVariantHover: function (variant, showTooltip = true) {

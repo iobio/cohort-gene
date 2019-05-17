@@ -1010,7 +1010,11 @@ class VariantModel {
                     updatedVarLookup[variant.id] = variant;
                 })
             }
-            existingVariants = self.mainDataSet.loadedVariants.features;
+            if (self.mainDataSet && self.mainDataSet.loadedVariants) {
+                existingVariants = self.mainDataSet.loadedVariants.features;
+            } else {
+                existingVariants = [];
+            }
         }
         // If we have one feature list to combine for full variant list update
         else if (fileNames.length > 0) {
