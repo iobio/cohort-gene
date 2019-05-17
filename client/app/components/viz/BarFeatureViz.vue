@@ -111,7 +111,7 @@
         },
         watch: {
             selectedVariant: function () {
-                if (!this.blacklistStatus || selectedVariant == null) {
+                if (!this.blacklistStatus || this.selectedVariant == null) {
                     this.fillCharts();
                 }
             }
