@@ -328,7 +328,7 @@ Updated: SJG Jan2019
             selectedGene: function () {
                 let self = this;
                 self.impactMode = false;
-                self.doneLoadingData = false;
+                //self.doneLoadingData = false;
             },
             validSourceFiles: function () {
                 let self = this;
