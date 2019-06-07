@@ -298,6 +298,7 @@
                     return this.variant.affectedSubsetCount;
                 return 0;
             },
+            //NOTE: the following counts are number of ALLELES not SAMPLES
             totalProbandAlleleCount: function() {
                 if (this.variant != null)
                     return (this.variant.probandZygCounts[0] * 2 + this.variant.probandZygCounts[1] + this.variant.probandZygCounts[2] * 2);
