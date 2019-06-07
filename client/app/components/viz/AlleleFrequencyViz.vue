@@ -125,9 +125,9 @@
         },
         computed: {
             affectedProbandPercentage: function () {
-                if (this.totalProbandCount < 0 || this.blacklistStatus) {
+                if (this.totalProbandAlleleCount < 0 || this.blacklistStatus) {
                     return "N/A";
-                } else if (this.totalProbandCount === 0) {
+                } else if (this.totalProbandAlleleCount === 0) {
                     return "0";
                 }
                 let numMutantAlleles = this.affectedProbandAlleleCount;
@@ -140,9 +140,9 @@
                 return (Math.round((numMutantAlleles / totalAlleleCount) * 100)) + "";
             },
             affectedSubsetPercentage: function () {
-                if (this.totalSubsetCount < 0 || this.blacklistStatus) {
+                if (this.totalSubsetAlleleCount < 0 || this.blacklistStatus) {
                     return "N/A";
-                } else if (this.totalSubsetCount === 0) {
+                } else if (this.totalSubsetAlleleCount === 0) {
                     return "0";
                 }
 
@@ -209,7 +209,7 @@
             },
             getProbandDisplay() {
                 if (this.selectedVariant == null || this.blacklistStatus) return "-";
-                else if (this.totalProbandCount === 0) return "0%";
+                else if (this.totalProbandAlleleCount === 0) return "0%";
                 else {
                     let numMutantAlleles = this.affectedProbandAlleleCount;
                     let totalAlleleCount = this.totalProbandAlleleCount;
@@ -223,7 +223,7 @@
             },
             getSubsetDisplay() {
                 if (this.selectedVariant == null || this.blacklistStatus) return "-";
-                else if (this.totalSubsetCount === 0) return "0%";
+                else if (this.totalSubsetAlleleCount === 0) return "0%";
                 else {
                     let numMutantAlleles = this.affectedSubsetAlleleCount;
                     let totalAlleleCount = this.totalSubsetAlleleCount;
