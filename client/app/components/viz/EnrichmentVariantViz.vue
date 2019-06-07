@@ -441,7 +441,7 @@
                     filterLabel = 'No ' + filterInfo.displayName;
                     let filterObj = {name: filterInfo.name, filterLabel: filterLabel};
                     self.filterChips.push(filterObj);
-                    // Turning cutoff ON
+                // Turning cutoff ON
                 } else if (filterInfo.type === 'cutoff' && filterInfo.turnOff === false) {
                     filterLabel = filterInfo.displayName + ' ' + filterInfo.state + ' ' + filterInfo.cutoffValue;
                     // Replace label if this filter already active at different value
@@ -455,7 +455,7 @@
                         let filterObj = {name: filterInfo.name, filterLabel: filterLabel};
                         self.filterChips.push(filterObj);
                     }
-                    // Turning either type OFF
+                // Turning either type OFF
                 } else {
                     self.filterChips = self.filterChips.filter((obj) => {
                         return obj.name !== filterInfo.name;

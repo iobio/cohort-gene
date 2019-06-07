@@ -133,9 +133,6 @@
                 } else {
                     inputValid = self.cutoffValue > 0 && self.cutoffValue < 1;
                 }
-                // } else {
-                //     inputValid = self.cutoffValue != null;
-                // }
                 self.readyToApply = self.filterLogic && inputValid;
                 if (self.readyToApply) {
                     self.filterButtonColor = '#8BC34A';

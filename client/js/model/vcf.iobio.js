@@ -2020,6 +2020,7 @@ vcfiobio = function module() {
 
                             if (enrichMode) {
                                 variant.zygosity = enrichResult.gx;
+
                                 // NOTE: these are SAMPLE counts, not ALLELE counts
                                 variant.totalProbandCount = (+enrichResult.counts[0] + +enrichResult.counts[1] + +enrichResult.counts[2] + +enrichResult.counts[3]);
                                 variant.totalSubsetCount = (+enrichResult.counts[4] + +enrichResult.counts[5] + +enrichResult.counts[6] + +enrichResult.counts[7]);
@@ -2027,6 +2028,7 @@ vcfiobio = function module() {
                                 variant.affectedSubsetCount = (+enrichResult.counts[5] + +enrichResult.counts[6]);
                                 variant.probandZygCounts = [+enrichResult.counts[0], +enrichResult.counts[1], +enrichResult.counts[2], +enrichResult.counts[3]];
                                 variant.subsetZygCounts = [+enrichResult.counts[4], +enrichResult.counts[5], +enrichResult.counts[6], +enrichResult.counts[7]];
+
                                 variant.pVal = +enrichResult.pVal;
                             } else if (singleMode) {
                                 // Take first genotype from list
