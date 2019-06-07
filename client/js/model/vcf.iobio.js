@@ -1935,6 +1935,7 @@ vcfiobio = function module() {
 
                     let enrichResult = null;
                     let gtResult = null;
+
                     if (enrichMode) {
                         enrichResult = me.parseEnrichmentInfo(rec.enrichment, rec.pValue, (i + 1), alts.length);
                     } else if (singleMode) {
@@ -1950,6 +1951,9 @@ vcfiobio = function module() {
                     for (let i = 0; i < allVariants.length; i++) {
                         //let genotype = gtResult.genotypes[i];
 
+                        // Use this as apart of a CSS/d3 selector - if we have deletion here need to format it
+                        let cssFormattedAlt = rec.alt === '*' ? '\*' : rec.alt;
+
                         // Keep the variant if we are just parsing a single sample (parseMultiSample=false)
                         // or we are parsing multiple samples and this sample's genotype is het or hom
                         if (!parseMultiSample) {
@@ -1963,7 +1967,7 @@ vcfiobio = function module() {
                                 'strand': geneObject.strand,
                                 'chrom': refName,
                                 'type': annot.typeAnnotated && annot.typeAnnotated !== '' ? annot.typeAnnotated : type,
-                                'id': ('id_' + rec.pos + '_' + refName + '_' + geneObject.strand + '_' + rec.ref + '_' + rec.alt),  // key = start.chromosome.strand.ref.alt
+                                'id': ('id_' + rec.pos + '_' + refName + '_' + geneObject.strand + '_' + rec.ref + '_' + cssFormattedAlt),  // key = start.chromosome.strand.ref.alt
                                 'ref': rec.ref,
                                 'alt': alt,
                                 'qual': rec.qual,
@@ -2017,7 +2021,7 @@ vcfiobio = function module() {
                             if (enrichMode) {
                                 variant.zygosity = enrichResult.gx;
                                 // NOTE: these are SAMPLE counts, not ALLELE counts
-                                variant.totalProbandCount = (+enrichResult.counts[0] + +enrichResult.counts[1] + +enrichResult.counts[2] + +enrichResult.counts[3]);    // NOTE: includes no calls
+                                variant.totalProbandCount = (+enrichResult.counts[0] + +enrichResult.counts[1] + +enrichResult.counts[2] + +enrichResult.counts[3]);
                                 variant.totalSubsetCount = (+enrichResult.counts[4] + +enrichResult.counts[5] + +enrichResult.counts[6] + +enrichResult.counts[7]);
                                 variant.affectedProbandCount = (+enrichResult.counts[1] + +enrichResult.counts[2]);
                                 variant.affectedSubsetCount = (+enrichResult.counts[5] + +enrichResult.counts[6]);
@@ -2096,6 +2100,10 @@ vcfiobio = function module() {
 
     /* Parses out enrichment info for alternate variant at the provided index. */
     exports.parseEnrichmentInfo = function (stringArr, pValArr, altIndex, numAlts) {
+
+        // If true, puts the no call counts into the hom-ref field
+        let combineNoCalls = true;
+
         let enrichObj = {};
         let offset = (2 * numAlts) + 2;
         let enrichArr = stringArr.split(',');

@@ -95,7 +95,7 @@ EndpointCmd.prototype.annotateEnrichmentCounts = function (vcfSource, refName, r
         return null;
     }
 
-    // // Filter vcf for probands only
+    // Filter vcf for probands only
     if (controlSampleNames && controlSampleNames.length > 0) {
         let formattedControls = controlSampleNames.join("\n");
         let sampleNameFile = new Blob([formattedControls]);
@@ -119,8 +119,6 @@ EndpointCmd.prototype.combineCalcEnrichment = function(gtEnricherCmds){
     let vtCombinerArgs = [];
     for (let i = 0; i < gtEnricherCmds.length; i++) {
         let gtEnricherCmd = gtEnricherCmds[i];
-        // TODO: I don't think I need filenames here...
-        //vtCombinerArgs.push('-f');
         vtCombinerArgs.push(gtEnricherCmd);
     }
 

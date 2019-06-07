@@ -318,26 +318,6 @@
                     return (this.variant.subsetZygCounts[1] + this.variant.subsetZygCounts[2] * 2);
                 return 0;
             },
-            // hetProbandCount: function() {
-            //     if (this.variant != null)
-            //         return this.variant.probandZygCounts[1];
-            //     return 0;
-            // },
-            // homAltProbandCount: function() {
-            //     if (this.variant != null)
-            //         return this.variant.probandZygCounts[2];
-            //     return 0;
-            // },
-            // hetSubsetCount: function() {
-            //     if (this.variant != null)
-            //         return this.variant.subsetZygCounts[1];
-            //     return 0;
-            // },
-            // homAltSubsetCount: function() {
-            //     if (this.variant != null)
-            //         return this.variant.subsetZygCounts[2];
-            //     return 0;
-            // },
             subsetDelta: function () {
                 if (this.variant != null) {
                     let delta = this.variant.subsetDelta;
