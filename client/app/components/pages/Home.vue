@@ -10,6 +10,9 @@ TD & SJG updated Nov2018 -->
         margin-left: auto
         margin-right: auto
         text-align: center
+
+    a
+        text-decoration: none !important
 </style>
 
 <template>

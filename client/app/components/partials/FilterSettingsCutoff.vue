@@ -19,7 +19,7 @@
             <v-container fluid>
                 <v-layout>
                     <v-flex d-flex xs8 xl10>
-                        <v-select
+                        <v-select v-bind:class="'filter-list'"
                                 :items="dropDownOptions"
                                 :disabled="blacklistStatus"
                                 label="Select"
