@@ -6,6 +6,10 @@ class VariantModel {
     constructor(endpoint, genericAnnotation, translator, geneModel,
                 cacheHelper, genomeBuildHelper) {
 
+        // <editor-fold desc="DEBUG STATE">
+        this.debugMode = true;
+        // </editor-fold>
+
         // <editor-fold desc="DATA PROPERTIES">
         this.mainDataSet = null;            // The main data set
         this.otherDataSets = [];            // Any other data sets being compared to main data set
@@ -266,6 +270,8 @@ class VariantModel {
                             if (sampleObjs.length === 0) {
                                 reject('No samples found for proband filtering from Hub');
                             }
+
+                            // Use correct method for extracting id list
                             if (!usingNewApi && !((sampleObjs[0].id).startsWith('SS')) && hubDataSet.vcfNames[0] !== 'all.ssc_hg19.ssc_wes_3.vcf.gz') {
                                 probandCohort.sampleIds = self.convertSimonsIds(sampleObjs, 'proband');
                             } else {
@@ -274,17 +280,19 @@ class VariantModel {
                                     return id != null;
                                 });
 
-                                // Debugging
-                                // let nullSampleIds = [];
-                                // sampleObjs.forEach((obj) => {
-                                //     let currVcf = obj.files.filter((file) => {
-                                //         return file.type === 'vcf';
-                                //     });
-                                //     if (currVcf[0].vcf_sample_name == null) {
-                                //         nullSampleIds.push(currVcf[0].sample_id);
-                                //     }
-                                // });
-                                // console.log('null sample ids: ' + nullSampleIds.join('\t'));
+                                // Debugging db updates (keep for quick use)
+                                if (self.debugMode) {
+                                    let nullSampleIds = [];
+                                    sampleObjs.forEach((obj) => {
+                                        let currVcf = obj.files.filter((file) => {
+                                            return file.type === 'vcf';
+                                        });
+                                        if (currVcf[0].vcf_sample_name == null) {
+                                            nullSampleIds.push(currVcf[0].sample_id);
+                                        }
+                                    });
+                                    console.log('null sample ids: ' + nullSampleIds.join('\t'));
+                                }
 
                                 if (nonNullSampleIds.length < probandCohort.sampleIds.length) {
                                     alert('The selected samples will not all be included in the analysis due to database updates.');
