@@ -1952,7 +1952,7 @@ vcfiobio = function module() {
                         //let genotype = gtResult.genotypes[i];
 
                         // Use this as apart of a CSS/d3 selector - if we have deletion here need to format it
-                        let cssFormattedAlt = rec.alt === '*' ? '\*' : rec.alt;
+                        let cssFormattedAlt = rec.alt === '*' ? 'D' : rec.alt;
 
                         // Keep the variant if we are just parsing a single sample (parseMultiSample=false)
                         // or we are parsing multiple samples and this sample's genotype is het or hom

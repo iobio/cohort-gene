@@ -280,7 +280,7 @@ class VariantModel {
                                     return id != null;
                                 });
 
-                                // Debugging db updates (keep for quick use)
+                                // Debugging missing samples due to db updates
                                 if (self.debugMode) {
                                     let nullSampleIds = [];
                                     sampleObjs.forEach((obj) => {
