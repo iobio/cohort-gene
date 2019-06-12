@@ -1,5 +1,5 @@
 <!--SJG Jan2019; Adapted from gene.iobio and TDS Aug2018-->
-<style lang="sass">
+<style scoped lang="sass">
     @import ../../../assets/sass/variables
     .filter-form
         .input-group
