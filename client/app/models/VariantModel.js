@@ -388,12 +388,20 @@ class VariantModel {
                 vcfFiles.forEach((file) => {
                     let phaseFile = false;
                     let name = file.name;
-                    let namePieces = name.split('.');
-                    namePieces.forEach((piece) => {
-                        if (piece === 'all' || piece.includes('all')) {
-                            phaseFile = true;
-                        }
-                    });
+
+                    // Have to do a diff check for SSC WES 37
+                    if (name === "ssc_wes.vcf.gz") {
+                        phaseFile = true;
+                    // Otherwise look for 'all' keyword to pull out combined
+                    } else {
+                        let namePieces = name.split('.');
+                        namePieces.forEach((piece) => {
+                            if (piece === 'all' || piece.includes('all')) {
+                                phaseFile = true;
+                            }
+                        });
+                    }
+
                     if (phaseFile) {
                         sortedVcfFiles.push(file);
                     }
@@ -402,12 +410,20 @@ class VariantModel {
                 tbiCsiFiles.forEach((file) => {
                     let phaseFile = false;
                     let name = file.name;
-                    let namePieces = name.split('.');
-                    namePieces.forEach((piece) => {
-                        if (piece === 'all' || piece.includes('all')) {
-                            phaseFile = true;
-                        }
-                    });
+
+                    // Have to do a diff check for SSC WES 37
+                    if (name === "ssc_wes.vcf.gz") {
+                        phaseFile = true;
+                        // Otherwise look for 'all' keyword to pull out combined
+                    } else {
+                        let namePieces = name.split('.');
+                        namePieces.forEach((piece) => {
+                            if (piece === 'all' || piece.includes('all')) {
+                                phaseFile = true;
+                            }
+                        });
+                    }
+
                     if (phaseFile) {
                         sortedTbiCsiFiles.push(file);
                     }
