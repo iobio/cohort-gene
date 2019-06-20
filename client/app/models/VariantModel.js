@@ -159,6 +159,7 @@ class VariantModel {
 
     getRawIds(ids, usingNewApi) {
         let rawIds = [];
+        let sampleObjsMissingVcfs = [];
         if (usingNewApi) {
             ids.forEach((idObj) => {
                 let vcf = idObj.files.filter((file) => {
@@ -166,6 +167,8 @@ class VariantModel {
                 });
                 if (vcf != null && vcf[0] != null) {
                     rawIds.push(vcf[0].vcf_sample_name);
+                } else {
+                    sampleObjsMissingVcfs.push(idObj.id);
                 }
             });
         } else {
@@ -173,6 +176,10 @@ class VariantModel {
                 rawIds.push(idObj.id);
             });
         }
+        if (sampleObjsMissingVcfs.length > 0) {
+            console.log('The following sample objects do not have vcf files associated with them: ' + sampleObjsMissingVcfs.join());
+        }
+
         return rawIds;
     }
 
@@ -279,6 +286,10 @@ class VariantModel {
                                 let nonNullSampleIds = probandCohort.sampleIds.filter((id) => {
                                     return id != null;
                                 });
+
+                                if (sampleObjs.length > probandCohort.sampleIds) {
+                                    alert('The selected samples will not all be included in the analysis due to database updates.');
+                                }
 
                                 // Debugging missing samples due to db updates
                                 if (self.debugMode) {
