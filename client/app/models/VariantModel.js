@@ -298,9 +298,7 @@ class VariantModel {
                                         let currVcf = obj.files.filter((file) => {
                                             return file.type === 'vcf';
                                         });
-                                        if (currVcf.length === 0) {
-                                            console.log('Missing vcf file for sample id ' + obj.id + ' with sample name ' + obj.name);
-                                        } else if (currVcf[0].vcf_sample_name == null) {
+                                        if (currVcf.length > 0 && currVcf[0].vcf_sample_name == null) {
                                             nullSampleIds.push(currVcf[0].sample_id);
                                         }
                                     });
