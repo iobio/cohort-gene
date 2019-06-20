@@ -253,7 +253,7 @@ class VariantModel {
                     // Check to see if we're pulling a Simons project so that we can check blacklist genes
                     self.promiseGetProjectFromHub(self.projectId)
                         .then(function (projectObj) {
-                            if (projectObj && (projectObj.name === 'SSC GRCh37 WGS' || projectObj.name === 'SSC GRCh38 WGS')) {
+                            if (projectObj && (projectObj.name === 'SSC GRCh37 WGS' || projectObj.name === 'SSC GRCh38 WGS' || projectObj.name === 'ssc_wes.vcf.gz')) {
                                 self.isSimonsProject = true;
                             }
                         });
@@ -287,7 +287,9 @@ class VariantModel {
                                         let currVcf = obj.files.filter((file) => {
                                             return file.type === 'vcf';
                                         });
-                                        if (currVcf[0].vcf_sample_name == null) {
+                                        if (currVcf.length === 0) {
+                                            console.log('Missing vcf file for sample id ' + obj.id + ' with sample name ' + obj.name);
+                                        } else if (currVcf[0].vcf_sample_name == null) {
                                             nullSampleIds.push(currVcf[0].sample_id);
                                         }
                                     });
