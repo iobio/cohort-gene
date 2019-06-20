@@ -412,7 +412,7 @@ class VariantModel {
                     let name = file.name;
 
                     // Have to do a diff check for SSC WES 37
-                    if (name === "ssc_wes.vcf.gz") {
+                    if (name === "ssc_wes.vcf.gz.tbi") {
                         phaseFile = true;
                         // Otherwise look for 'all' keyword to pull out combined
                     } else {
