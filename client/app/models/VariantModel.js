@@ -287,12 +287,13 @@ class VariantModel {
                                     return id != null;
                                 });
 
-                                if (sampleObjs.length > probandCohort.sampleIds) {
-                                    alert('The selected samples will not all be included in the analysis due to database updates.');
-                                }
 
                                 // Debugging missing samples due to db updates
                                 if (self.debugMode) {
+                                    if (sampleObjs.length > probandCohort.sampleIds) {
+                                        alert('The selected samples will not all be included in the analysis due to database updates.');
+                                    }
+
                                     let nullSampleIds = [];
                                     sampleObjs.forEach((obj) => {
                                         let currVcf = obj.files.filter((file) => {
