@@ -79,7 +79,10 @@
                 {{phenotype}}
             </v-chip>
             <v-chip v-if="numVariants" color="cohortNavy" small outline style="font-size: 12px; pointer-events: none">
-                {{numVariants}}
+                {{numVariants + ' total variants'}}
+            </v-chip>
+            <v-chip v-if="numFilteredVariants" color="cohortGold" small outline style="font-size: 12px; pointer-events: none">
+                {{numFilteredVariants}}
             </v-chip>
             <v-btn v-for="filterChip in filterChips" color="cohortGold" small flat outline round style="font-size: 12px;"
                    :key="filterChip.name" v-on:click="navigateToFilterTab(filterChip.name)">
@@ -211,7 +214,7 @@
                 default: () => []
             },
             numVariants: {
-                type: String,
+                type: Number,
                 default: null
             },
             validSourceFiles: {
@@ -267,7 +270,8 @@
                 freqFilterActive: false,
                 filterChips: [],        // List of filter objects {filterId: displayedFilterText} used for chip display
                 showZoomLoader: false,
-                preColorLastSelectedVar: null  // Last clicked on var id - used for color update transfer
+                preColorLastSelectedVar: null,  // Last clicked on var id - used for color update transfer
+                numFilteredVariants: null       // Number of variants passing any applied filters
             }
         },
         mounted: function () {
@@ -426,7 +430,12 @@
                     self.$emit('refreshVariantClick', self.preColorLastSelectedVar);
                 }
                 self.variantChart.removeFilterClass()(svg);
-                self.noPassingResults = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
+                let numPassingVariants = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
+
+                // TODO: do I need to remove filter chip here
+                if (numPassingVariants === 0) {
+                    self.noPassingResults = true;
+                }
             },
             resetPreAnnotateColor: function() {
                 let self = this;
@@ -462,20 +471,20 @@
                     })
                 }
                 // Reset no vars
-                let noPassingVars = false;
+                let numPassingVariants = 0;
                 self.noPassingResults = false;
                 // Apply checkbox filter
                 if (filterInfo.state === true && filterInfo.type === 'checkbox') {
                     // Remove from active filter state
                     self.excludeFilters.splice(self.excludeFilters.indexOf('.' + filterInfo.name), 1);
                     // Re-apply active filters in case of multiple filters
-                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
+                    numPassingVariants = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
                     // Removing checkbox filter
                 } else if (filterInfo.state === false && filterInfo.type === 'checkbox') {
                     // Hide variants with that class
                     let filterClass = '.' + filterInfo.name;
                     self.excludeFilters.push(filterClass);
-                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
+                    numPassingVariants = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
                     // Apply cutoff filter
                 } else if (filterInfo.state != null && filterInfo.type === 'cutoff') {
                     // Remove any previous logic for this filter
@@ -485,13 +494,13 @@
                     // Add new logic
                     self.cutoffFilters[filterInfo.name] = [filterInfo.name, filterInfo.state, filterInfo.cutoffValue];
                     // Hide variants that do not meet given condition
-                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
+                    numPassingVariants = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
                     // Remove cutoff filter
                 } else {
                     // Remove from list
                     delete self.cutoffFilters[filterInfo.name];
                     // Re-apply active filters in case of multiple filters
-                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg)
+                    numPassingVariants = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg)
                 }
                 // Send deselect signal if we've hidden the selected variant
                 if (checkForSelectedVar) {
@@ -501,8 +510,14 @@
                         self.$emit("variantClick", null, null);
                     }
                 }
-                if (noPassingVars) {
+
+                // Set flags & chips accordingly
+                if (numPassingVariants === 0) {
                     self.noPassingResults = true;
+                } else if (numPassingVariants === self.numVariants) {
+                    self.numFilteredVariants = null;
+                } else {
+                    self.numFilteredVariants = numPassingVariants + ' filtered variants';
                 }
             },
             navigateToFilterTab: function(selectedFilter) {

@@ -382,6 +382,8 @@
             filterVariants: function(filterInfo, svg, checkForSelectedVar, selectedVarId) {
                 let self = this;
 
+                // TODO: somehow get number of variants that are filtered
+
                 // Set chip indicators
                 let filterLabel = '';
                 // Turning checkbox ON
@@ -391,7 +393,7 @@
                     let filterObj = {name: filterInfo.name, filterLabel: filterLabel};
                     self.filterChips.push(filterObj);
 
-                    // Turning cutoff ON
+                // Turning cutoff ON
                 } else if (filterInfo.type === 'cutoff' && filterInfo.turnOff === false) {
                     filterLabel = filterInfo.displayName + ' ' + filterInfo.state + ' ' + filterInfo.cutoffValue;
 
@@ -407,7 +409,7 @@
                         let filterObj = {name: filterInfo.name, filterLabel: filterLabel};
                         self.filterChips.push(filterObj);
                     }
-                    // Turning either type OFF
+                // Turning either type OFF
                 } else {
                     self.filterChips = self.filterChips.filter((obj) => {
                         return obj.name !== filterInfo.name;
@@ -427,7 +429,7 @@
                     // Re-apply active filters in case of multiple filters
                     noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
 
-                    // Removing checkbox filter
+                // Removing checkbox filter
                 } else if (filterInfo.state === false && filterInfo.type === 'checkbox') {
                     // Hide variants with that class
                     let filterClass = '.' + filterInfo.name;
@@ -442,7 +444,7 @@
                             self.$emit("variantClick", null, null);
                         }
                     }
-                    // Apply cutoff filter
+                // Apply cutoff filter
                 } else if (filterInfo.state != null && filterInfo.type === 'cutoff') {
 
                     // Remove any previous logic for this filter
@@ -456,7 +458,7 @@
                     // Hide variants that do not meet given condition
                     noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
 
-                    // Remove cutoff filter
+                // Remove cutoff filter
                 } else {
                     // Remove from list
                     delete self.cutoffFilters[filterInfo.name];

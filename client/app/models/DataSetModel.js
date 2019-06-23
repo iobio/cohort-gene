@@ -540,7 +540,7 @@ class DataSetModel {
                                 combinedResults.features = destCohort.filterVarsOnPVal(combinedResults.features);
                             }
                             // Add variant number to chips
-                            me.getSubsetCohort().numVariants = combinedResults.features.length + ' variants';
+                            me.getSubsetCohort().numVariants = combinedResults.features.length;
 
                             // Assign data parameter
                             if (combinedResults) {

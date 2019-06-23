@@ -14,14 +14,15 @@ class CohortModel {
         // </editor-fold>
 
         // <editor-fold desc="DATA PROPS">
-        this.vcfData = null;            // Annotated VCF data
-        this.filteredVcfData = null;    // Base vcf data with filters applied
+        this.vcfData = null;                // Annotated VCF data
+        this.filteredVcfData = null;        // Base vcf data with filters applied
         this.fbData = null;
         this.bamData = null;
         this.coverage = [[]];
-        this.sampleIds = [];            // Sample IDs that compose this cohort
-        this.phenotypes = [];           // Phrases describing phenotypic filtering data; displayed in track chips
-        this.numVariants = null;          // Current number of variants within the loadedVariants from this cohort
+        this.sampleIds = [];                // Sample IDs that compose this cohort
+        this.phenotypes = [];               // Phrases describing phenotypic filtering data; displayed in track chips
+        this.numVariants = null;            // Current number of variants within the loadedVariants from this cohort
+        this.numFilteredVariants = null;    // Current number of filtered variants within the loadedVariants from this cohort
         // </editor-fold>
 
         // TODO: TB DEPRECIATED
@@ -737,11 +738,6 @@ class CohortModel {
             console.log("Empty data/features");
             return;
         }
-
-        // Filter clinvar track - TODO: not displaying clinVar track for now, can get rid of
-        // if (me.relationship === 'known-variants') {
-        //     return me.filterKnownVariants(data, start, end, bypassRangeFilter);
-        // }
 
         let impactField = me.getAnnotationScheme().toLowerCase() === 'snpeff' ? 'impact' : IMPACT_FIELD_TO_FILTER;
         let effectField = me.getAnnotationScheme().toLowerCase() === 'snpeff' ? 'effect' : 'vepConsequence';
@@ -1520,6 +1516,7 @@ class CohortModel {
     updateChips() {
         let self = this;
         self.numVariants = null;
+        self.numFilteredVariants = null;
     }
 
     clearChips() {
