@@ -95,7 +95,10 @@
                 {{phenotype}}
             </v-chip>
             <v-chip v-if="numVariants" color="cohortNavy" small outline style="font-size: 12px; pointer-events: none">
-                {{numVariants}}
+                {{numVariants + ' total variants'}}
+            </v-chip>
+            <v-chip v-if="numFilteredVariants" color="cohortGold" small outline style="font-size: 12px; pointer-events: none">
+                {{numFilteredVariants + ' filtered variants'}}
             </v-chip>
             <v-btn v-for="filterChip in filterChips" color="cohortGold" small flat outline round style="font-size: 12px;"
                     :key="filterChip.name" v-on:click="navigateToFilterTab(filterChip.name)">
@@ -219,7 +222,7 @@
                 default: () => []
             },
             numVariants: {
-                type: String,
+                type: Number,
                 default: null
             },
             validSourceFiles: {
@@ -242,7 +245,8 @@
                 excludeFilters: [],     // List of filter classes; if variant contains any one of these, it will be hidden
                 cutoffFilters: {},       // Hash of arrays {filterName: [filterName, logic, cutoffVal]}; if variant does not pass any of these, it will be hidden
                 noPassingResults: false,
-                filterChips: []
+                filterChips: [],
+                numFilteredVariants: null       // Number of variants passing any applied filters
             }
         },
         computed: {
@@ -382,8 +386,6 @@
             filterVariants: function(filterInfo, svg, checkForSelectedVar, selectedVarId) {
                 let self = this;
 
-                // TODO: somehow get number of variants that are filtered
-
                 // Set chip indicators
                 let filterLabel = '';
                 // Turning checkbox ON
@@ -417,7 +419,7 @@
                 }
 
                 // Reset no vars
-                let noPassingVars = false;
+                let numPassingVariants = 0;
                 self.noPassingResults = false;
 
                 // Apply checkbox filter
@@ -427,14 +429,14 @@
                     self.excludeFilters.splice(self.excludeFilters.indexOf('.' + filterInfo.name), 1);
 
                     // Re-apply active filters in case of multiple filters
-                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
+                    numPassingVariants = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
 
                 // Removing checkbox filter
                 } else if (filterInfo.state === false && filterInfo.type === 'checkbox') {
                     // Hide variants with that class
                     let filterClass = '.' + filterInfo.name;
                     self.excludeFilters.push(filterClass);
-                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
+                    numPassingVariants = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
 
                     // Check to make sure we haven't hidden the selected variant
                     if (checkForSelectedVar) {
@@ -456,7 +458,7 @@
                     self.cutoffFilters[filterInfo.name] = [filterInfo.name, filterInfo.state, filterInfo.cutoffValue];
 
                     // Hide variants that do not meet given condition
-                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
+                    numPassingVariants = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
 
                 // Remove cutoff filter
                 } else {
@@ -464,7 +466,7 @@
                     delete self.cutoffFilters[filterInfo.name];
 
                     // Re-apply active filters in case of multiple filters
-                    noPassingVars = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg)
+                    numPassingVariants = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg)
                 }
 
                 if (checkForSelectedVar) {
@@ -475,8 +477,13 @@
                     }
                 }
 
-                if (noPassingVars) {
+                // Set flags & chips accordingly
+                if (numPassingVariants === 0) {
                     self.noPassingResults = true;
+                } else if (numPassingVariants === self.numVariants) {
+                    self.numFilteredVariants = null;
+                } else {
+                    self.numFilteredVariants = numPassingVariants;
                 }
             },
             navigateToFilterTab: function(selectedFilter) {

@@ -82,7 +82,7 @@
                 {{numVariants + ' total variants'}}
             </v-chip>
             <v-chip v-if="numFilteredVariants" color="cohortGold" small outline style="font-size: 12px; pointer-events: none">
-                {{numFilteredVariants}}
+                {{numFilteredVariants + ' filtered variants'}}
             </v-chip>
             <v-btn v-for="filterChip in filterChips" color="cohortGold" small flat outline round style="font-size: 12px;"
                    :key="filterChip.name" v-on:click="navigateToFilterTab(filterChip.name)">
@@ -517,7 +517,7 @@
                 } else if (numPassingVariants === self.numVariants) {
                     self.numFilteredVariants = null;
                 } else {
-                    self.numFilteredVariants = numPassingVariants + ' filtered variants';
+                    self.numFilteredVariants = numPassingVariants;
                 }
             },
             navigateToFilterTab: function(selectedFilter) {

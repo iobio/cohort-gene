@@ -660,7 +660,7 @@ class DataSetModel {
                                         // Assign cohort model data
                                         let destCohort = self.getSubsetCohort();
                                         // Add variant number to chips
-                                        destCohort.numVariants = results.features.length + ' variants';
+                                        destCohort.numVariants = results.features.length;
                                         results.gene = theGene;
                                         destCohort.vcfData = results;
                                     }
