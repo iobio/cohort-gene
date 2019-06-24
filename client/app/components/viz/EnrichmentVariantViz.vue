@@ -84,10 +84,14 @@
             <v-chip v-if="numFilteredVariants" color="cohortGold" small outline style="font-size: 12px; pointer-events: none">
                 {{numFilteredVariants + ' filtered variants'}}
             </v-chip>
-            <v-btn v-for="filterChip in filterChips" color="cohortGold" small flat outline round style="font-size: 12px;"
-                   :key="filterChip.name" v-on:click="navigateToFilterTab(filterChip.name)">
+            <v-chip v-for="filterChip in filterChips" :key="filterChip.name" @input="removeFilter(filterChip)"
+                    color="cohortGold" small outline close style="font-size: 12px;">
                 {{filterChip.filterLabel}}
-            </v-btn>
+            </v-chip>
+            <!--<v-btn v-for="filterChip in filterChips" color="cohortGold" small flat outline round style="font-size: 12px;"-->
+                   <!--:key="filterChip.name" v-on:click="navigateToFilterTab(filterChip.name)">-->
+                <!--{{filterChip.filterLabel}}-->
+            <!--</v-btn>-->
         </div>
         <div class="variant-viz" id="sourceFileLine">
             <span class="field-label-header">Analysis sources</span>
@@ -432,7 +436,6 @@
                 self.variantChart.removeFilterClass()(svg);
                 let numPassingVariants = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
 
-                // TODO: do I need to remove filter chip here
                 if (numPassingVariants === 0) {
                     self.noPassingResults = true;
                 }
@@ -448,7 +451,7 @@
                 // Turning checkbox ON
                 if (filterInfo.type === 'checkbox' && filterInfo.state === false) {
                     filterLabel = 'No ' + filterInfo.displayName;
-                    let filterObj = {name: filterInfo.name, filterLabel: filterLabel};
+                    let filterObj = {name: filterInfo.name, filterLabel: filterLabel, type: filterInfo.type, parentName: filterInfo.parentName, grandparentName: filterInfo.grandparentName};
                     self.filterChips.push(filterObj);
                 // Turning cutoff ON
                 } else if (filterInfo.type === 'cutoff' && filterInfo.turnOff === false) {
@@ -527,6 +530,11 @@
             toggleZoomLoader: function(state) {
                 let self = this;
                 self.showZoomLoader = state;
+            },
+            /* Removes filter from THIS track only */
+            removeFilter: function(filterObj) {
+                let self = this;
+                self.$emit("filterRemovedFromTrack", filterObj, 'enrichment');
             }
         },
         watch: {

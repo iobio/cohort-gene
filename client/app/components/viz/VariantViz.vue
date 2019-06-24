@@ -94,16 +94,20 @@
                     :key="phenotype">
                 {{phenotype}}
             </v-chip>
-            <v-chip v-if="numVariants" color="cohortNavy" small outline style="font-size: 12px; pointer-events: none">
-                {{numVariants + ' total variants'}}
+            <v-chip v-if="numVariantsText" color="cohortNavy" small outline style="font-size: 12px; pointer-events: none">
+                {{numVariantsText}}
             </v-chip>
-            <v-chip v-if="numFilteredVariants" color="cohortGold" small outline style="font-size: 12px; pointer-events: none">
+            <v-chip v-show="numFilteredVariants" color="cohortGold" small outline style="font-size: 12px; pointer-events: none">
                 {{numFilteredVariants + ' filtered variants'}}
             </v-chip>
-            <v-btn v-for="filterChip in filterChips" color="cohortGold" small flat outline round style="font-size: 12px;"
-                    :key="filterChip.name" v-on:click="navigateToFilterTab(filterChip.name)">
+            <v-chip v-for="filterChip in filterChips" :key="filterChip.name" @input="removeFilter(filterChip)"
+                    color="cohortGold" small outline close style="font-size: 12px;">
                 {{filterChip.filterLabel}}
-            </v-btn>
+            </v-chip>
+            <!--<v-btn v-for="filterChip in filterChips" color="cohortGold" small flat outline round style="font-size: 12px;"-->
+                    <!--:key="filterChip.name" v-on:click="navigateToFilterTab(filterChip.name)">-->
+                <!--{{filterChip.filterLabel}}-->
+            <!--</v-btn>-->
         </div>
         <div class="variant-viz" id="sourceFileLine">
             <span class="field-label-header">Analysis sources</span>
@@ -221,10 +225,6 @@
                 type: Array,
                 default: () => []
             },
-            numVariants: {
-                type: Number,
-                default: null
-            },
             validSourceFiles: {
                 type: Array,
                 default: () => []
@@ -246,7 +246,8 @@
                 cutoffFilters: {},       // Hash of arrays {filterName: [filterName, logic, cutoffVal]}; if variant does not pass any of these, it will be hidden
                 noPassingResults: false,
                 filterChips: [],
-                numFilteredVariants: null       // Number of variants passing any applied filters
+                numFilteredVariants: null,       // Number of variants passing any applied filters
+                numVariantsText: null
             }
         },
         computed: {
@@ -264,6 +265,7 @@
         watch: {
             data: function () {
                 let self = this;
+                self.numVariantsText = self.data.features.length + " total variants";
                 self.update();
                 console.log("Drawing variants...");
             }
@@ -391,8 +393,7 @@
                 // Turning checkbox ON
                 if (filterInfo.type === 'checkbox' && filterInfo.state === false) {
                     filterLabel = 'No ' + filterInfo.displayName;
-                    // if (filterInfo.state === false) {
-                    let filterObj = {name: filterInfo.name, filterLabel: filterLabel};
+                    let filterObj = {name: filterInfo.name, filterLabel: filterLabel, type: filterInfo.type, parentName: filterInfo.parentName, grandparentName: filterInfo.grandparentName};
                     self.filterChips.push(filterObj);
 
                 // Turning cutoff ON
@@ -406,7 +407,7 @@
                     if (matchingFilters && matchingFilters[0]) {
                         matchingFilters[0].filterLabel = filterLabel;
 
-                        // Otherwise add fresh
+                    // Otherwise add fresh
                     } else {
                         let filterObj = {name: filterInfo.name, filterLabel: filterLabel};
                         self.filterChips.push(filterObj);
@@ -480,7 +481,7 @@
                 // Set flags & chips accordingly
                 if (numPassingVariants === 0) {
                     self.noPassingResults = true;
-                } else if (numPassingVariants === self.numVariants) {
+                } else if (numPassingVariants === self.data.features.length) {
                     self.numFilteredVariants = null;
                 } else {
                     self.numFilteredVariants = numPassingVariants;
@@ -489,6 +490,11 @@
             navigateToFilterTab: function(selectedFilter) {
                 let self = this;
                 self.$emit('navFilterTab', selectedFilter);
+            },
+            /* Removes filter from THIS track only */
+            removeFilter: function(filterObj) {
+                let self = this;
+                self.$emit("filterRemovedFromTrack", filterObj, self.model.entryId);
             }
         }
     }

@@ -539,8 +539,6 @@ class DataSetModel {
                             if (combinedResults.features.length > destCohort.TOTAL_VAR_CUTOFF) {
                                 combinedResults.features = destCohort.filterVarsOnPVal(combinedResults.features);
                             }
-                            // Add variant number to chips
-                            me.getSubsetCohort().numVariants = combinedResults.features.length;
 
                             // Assign data parameter
                             if (combinedResults) {
@@ -659,8 +657,6 @@ class DataSetModel {
                                         }
                                         // Assign cohort model data
                                         let destCohort = self.getSubsetCohort();
-                                        // Add variant number to chips
-                                        destCohort.numVariants = results.features.length;
                                         results.gene = theGene;
                                         destCohort.vcfData = results;
                                     }

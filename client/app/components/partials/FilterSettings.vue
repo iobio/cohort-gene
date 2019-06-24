@@ -73,7 +73,8 @@
             filterModel: null,
             idx: null,
             fullAnnotationComplete: false,
-            blacklistStatus: false
+            blacklistStatus: false,
+            totalNumTracks: 0   // Total number of variant tracks, one enrichment + user determined single samples
         },
         data() {
             return {
@@ -108,7 +109,8 @@
         },
         watch: {},
         methods: {
-            onFilterToggled: function(filterName, filterState, parentFilterName, grandparentFilterName, parentFilterState, filterDisplayName) {
+            // Turns a checkbox filter on or off according to filterState
+            onFilterToggled: function(filterName, filterState, parentFilterName, grandparentFilterName, parentFilterState, filterDisplayName, trackId) {
                 let self = this;
                 // Turn on indicator
                 let filterObj = self.categories[grandparentFilterName].filter((cat) => {
@@ -142,8 +144,9 @@
                         filterDisplayName = 'Heterozygotes';
                     }
                 }
-                self.$emit('filter-toggled', filterName, filterState, grandparentFilterName, grandparentFilterState, cohortOnly, filterDisplayName);
+                self.$emit('filter-toggled', filterName, filterState, parentFilterName, grandparentFilterName, grandparentFilterState, cohortOnly, filterDisplayName, trackId);
             },
+            // Applies a single cutoff filter for ALL tracks
             onFilterApplied: function(filterName, filterLogic, cutoffValue, grandparentFilterName) {
                 let self = this;
                 // Turn on indicator
@@ -167,6 +170,7 @@
                 });
                 self.$emit('filter-applied', filterName, filterLogic, cutoffValue, grandparentFilterName, grandparentFilterState, cohortOnly, displayName);
             },
+            // Clears a single cutoff filter for ALL tracks
             onFilterCleared: function(filterName, grandparentFilterName) {
                 let self = this;
                 // Turn on indicator
@@ -187,6 +191,7 @@
                 });
                 self.$emit('cutoff-filter-cleared', filterName, grandparentFilterName, grandparentFilterState, cohortOnly, displayName);
             },
+            // Clears all filters from all tracks
             clearFilters: function() {
                 let self = this;
                 (Object.values(self.categories)).forEach((catList) => {
@@ -198,6 +203,24 @@
                     self.$refs.filtCheckRef.forEach((checkRef) => {
                         checkRef.clearFilters();
                     });
+                }
+            },
+            removeFilterViaChip: function(filterName, parentName, filterType, trackId) {
+                let self = this;
+
+                if (filterType === 'checkbox') {
+                    self.$refs.filtCheckRef.forEach((checkRef) => {
+                        if (checkRef.parentFilterName === parentName) {
+                            checkRef.removeSingleTrack(filterName, parentName, trackId);
+                        }
+                    })
+                } else {
+                    self.$refs.filterCutoffRef.forEach((cutoffRef) => {
+                        if (cutoffRef.parentFilterName === parentName) {
+                            // TODO: this might need to be diff for keeping counts?
+                            cutoffRef.removeSingleTrack(filterName, parentName, trackId);
+                        }
+                    })
                 }
             },
             isAnnotationCategory: function (currentCat) {

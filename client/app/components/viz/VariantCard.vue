@@ -98,7 +98,6 @@ TD & SJG updated Apr2018 -->
                         :data="dataSetModel.loadedVariants"
                         :title="dataSetModel.getName()"
                         :phenotypes="dataSetModel.getSubsetCohort().phenotypes"
-                        :numVariants="dataSetModel.getSubsetCohort().numVariants"
                         :validSourceFiles="formattedValidFiles"
                         :regionStart="regionStart"
                         :regionEnd="regionEnd"
@@ -117,7 +116,8 @@ TD & SJG updated Apr2018 -->
                         @variantHover="onVariantHover"
                         @variantHoverEnd="onVariantHoverEnd"
                         @clearVariants="clearVariants"
-                        @navFilterTab="navigateToFilterTab">
+                        @navFilterTab="navigateToFilterTab"
+                        @filterRemovedFromTrack="removeFilter">
                 </variant-viz>
                 <div id="bam-track">
                     <depth-viz
@@ -584,7 +584,7 @@ TD & SJG updated Apr2018 -->
                         .data([exon]);
                 }
             },
-            filterVariants: function(filterInfo, selectedTrackId, selectedVariantId, parentFilterName, parentFilterState) {
+            filterVariants: function(filterInfo, selectedTrackId, selectedVariantId) {
                 let self = this;
 
                 let checkForSelectedVariant = false;
@@ -592,13 +592,16 @@ TD & SJG updated Apr2018 -->
                     checkForSelectedVariant = true;
                 }
                 if (self.$refs.subsetVizRef) {
-                    self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name), checkForSelectedVariant, selectedVariantId,
-                        parentFilterName, parentFilterState);
+                    self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name), checkForSelectedVariant, selectedVariantId);
                 }
             },
             navigateToFilterTab: function(selectedFilter) {
                 let self = this;
                 self.$emit('navFilterTab', selectedFilter);
+            },
+            removeFilter: function(filterObj, trackId) {
+                let self = this;
+                self.$emit("filterRemovedFromTrack", filterObj, trackId);
             }
         }
     }

@@ -21,8 +21,6 @@ class CohortModel {
         this.coverage = [[]];
         this.sampleIds = [];                // Sample IDs that compose this cohort
         this.phenotypes = [];               // Phrases describing phenotypic filtering data; displayed in track chips
-        this.numVariants = null;            // Current number of variants within the loadedVariants from this cohort
-        this.numFilteredVariants = null;    // Current number of filtered variants within the loadedVariants from this cohort
         // </editor-fold>
 
         // TODO: TB DEPRECIATED

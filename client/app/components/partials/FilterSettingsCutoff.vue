@@ -117,7 +117,7 @@
                 self.filterLogic = null;
                 self.cutoffValue = null;
                 self.readyToApply = false;
-                self.$emit('cutoff-filter-cleared', self.filterName, self.parentFilterName);
+                self.$emit('cutoff-filter-cleared', self.filterName, self.parentFilterName, true);
             },
             onApplyFilter: function() {
                 let self = this;

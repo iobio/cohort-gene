@@ -662,15 +662,14 @@ Updated: SJG Jan2019
                     self.zoomMode = true;
                 }
             },
-            filterVariants: function (filterInfo, selectedTrackId, selectedVariantId, parentFilterName, parentFilterState) {
+            filterVariants: function (filterInfo, selectedTrackId, selectedVariantId) {
                 let self = this;
                 let checkForSelectedVariant = false;
                 if (self.dataSetModel.getName() === selectedTrackId && selectedVariantId) {
                     checkForSelectedVariant = true;
                 }
                 if (self.$refs.subsetVizRef) {
-                    self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name), checkForSelectedVariant, selectedVariantId,
-                        parentFilterName, parentFilterState);
+                    self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name), checkForSelectedVariant, selectedVariantId);
                 }
             },
             navigateToFilterTab: function(selectedFilter) {
@@ -682,6 +681,10 @@ Updated: SJG Jan2019
                 if (self.$refs.subsetVizRef) {
                     self.$refs.subsetVizRef.toggleZoomLoader(false);
                 }
+            },
+            removeFilter: function(filterObj, trackId) {
+                let self = this;
+                self.$emit("filterRemovedFromTrack", filterObj, trackId);
             }
         }
     }

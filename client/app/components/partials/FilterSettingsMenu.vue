@@ -44,6 +44,7 @@
                     :filter="filter"
                     :fullAnnotationComplete="fullAnnotationComplete"
                     :blacklistStatus="blacklistStatus"
+                    :totalNumTracks="totalNumTracks"
                     @filter-toggled="filterBoxToggled"
                     @filter-applied="filterCutoffApplied"
                     @cutoff-filter-cleared="filterCutoffCleared">
@@ -69,7 +70,8 @@
             filterModel: null,
             showCoverageCutoffs: null,
             fullAnnotationComplete: false,
-            blacklistStatus: false
+            blacklistStatus: false,
+            totalNumTracks: 0
         },
         data() {
             return {
@@ -104,35 +106,35 @@
         },
         watch: {},
         methods: {
-            filterBoxToggled: function (filterName, filterState, parentFilterName, parentFilterState, cohortOnlyFilter, filterDisplayName) {
+            filterBoxToggled: function (filterName, filterState, parentFilterName, grandparentFilterName, grandparentFilterState, cohortOnlyFilter, filterDisplayName, trackId) {
+                let self = this;
+                let filterObj = self.filters.filter((filt) => {
+                    return filt.name === grandparentFilterName;
+                });
+                if (filterObj.length > 0) {
+                    filterObj[0].active = grandparentFilterState;
+                }
+                self.$emit('filter-box-toggled', filterName, filterState, cohortOnlyFilter, parentFilterName, grandparentFilterName, filterDisplayName, trackId);
+            },
+            filterCutoffApplied: function (filterName, filterLogic, cutoffValue, parentFilterName, parentFilterState, grandparentFilterName, cohortOnlyFilter, filterDisplayName) {
                 let self = this;
                 let filterObj = self.filters.filter((filt) => {
                     return filt.name === parentFilterName;
                 });
                 if (filterObj.length > 0) {
+                    filterObj[0].active = parentFilterName;
+                }
+                self.$emit('filter-cutoff-applied', filterName, filterLogic, cutoffValue, cohortOnlyFilter, parentFilterName, grandparentFilterName, filterDisplayName);
+            },
+            filterCutoffCleared: function (filterName, parentFilterName, parentFilterState, grandparentFilterName, cohortOnlyFilter, filterDisplayName) {
+                let self = this;
+                let filterObj = self.filters.filter((filt) => {
+                    return filt.name === parentFilterState;
+                });
+                if (filterObj.length > 0) {
                     filterObj[0].active = parentFilterState;
                 }
-                self.$emit('filter-box-toggled', filterName, filterState, cohortOnlyFilter, parentFilterName, parentFilterState, filterDisplayName);
-            },
-            filterCutoffApplied: function (filterName, filterLogic, cutoffValue, currParentFiltName, currParFilterState, cohortOnlyFilter, filterDisplayName) {
-                let self = this;
-                let filterObj = self.filters.filter((filt) => {
-                    return filt.name === currParentFiltName;
-                });
-                if (filterObj.length > 0) {
-                    filterObj[0].active = currParentFiltName;
-                }
-                self.$emit('filter-cutoff-applied', filterName, filterLogic, cutoffValue, cohortOnlyFilter, currParentFiltName, currParFilterState, filterDisplayName);
-            },
-            filterCutoffCleared: function (filterName, currParentFiltName, currParFilterState, cohortOnlyFilter, filterDisplayName) {
-                let self = this;
-                let filterObj = self.filters.filter((filt) => {
-                    return filt.name === currParentFiltName;
-                });
-                if (filterObj.length > 0) {
-                    filterObj[0].active = currParFilterState;
-                }
-                self.$emit('filter-cutoff-cleared', filterName, cohortOnlyFilter, currParentFiltName, currParFilterState, filterDisplayName);
+                self.$emit('filter-cutoff-cleared', filterName, cohortOnlyFilter, parentFilterName, grandparentFilterName, filterDisplayName);
             },
             clearFilters: function () {
                 let self = this;
@@ -142,6 +144,16 @@
                 if (self.$refs.filterSettingsRef) {
                     self.$refs.filterSettingsRef.forEach((filtRef) => {
                         filtRef.clearFilters();
+                    });
+                }
+            },
+            removeFilterViaChip: function(filterName, parentFilterName, grandparentFilterName, filterType, trackId) {
+                let self = this;
+                if (self.$refs.filterSettingsRef) {
+                    self.$refs.filterSettingsRef.forEach((filtRef) => {
+                        if (filtRef.name === grandparentFilterName) {
+                            filtRef.removeFilterViaChip(filterName, parentFilterName, filterType, trackId);
+                        }
                     });
                 }
             }

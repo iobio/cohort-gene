@@ -1,5 +1,5 @@
 <!-- Main application page holding all cards.
-TD & SJG updated Nov2018 -->
+TD & SJG updated Jun2019 -->
 
 <style lang="sass">
     @import ../../../assets/sass/variables
@@ -73,7 +73,8 @@ TD & SJG updated Nov2018 -->
                                     @knownVariantsFilterChange="onKnownVariantsFilterChange"
                                     @zoomModeStart="startZoomMode"
                                     @navFilterTab="tabToFilters"
-                                    @refreshSummaryClick="refreshSummaryClick">
+                                    @refreshSummaryClick="refreshSummaryClick"
+                                    @filterRemovedFromTrack="filterRemovedFromTrack">
                             </enrichment-variant-card>
                             <variant-card
                                     v-else
@@ -104,7 +105,8 @@ TD & SJG updated Nov2018 -->
                                     @knownVariantsVizChange="onKnownVariantsVizChange"
                                     @knownVariantsFilterChange="onKnownVariantsFilterChange"
                                     @zoomModeStart="startZoomMode"
-                                    @navFilterTab="tabToFilters">
+                                    @navFilterTab="tabToFilters"
+                                    @filterRemovedFromTrack="filterRemovedFromTrack">
                             </variant-card>
                         </div>
                     </v-flex>
@@ -129,6 +131,7 @@ TD & SJG updated Nov2018 -->
                                         :id="'summary-tab'">
                                     <v-container>
                                         <variant-summary-card
+                                                ref="variantSummaryCardRef"
                                                 :selectedGene="selectedGene.gene_name"
                                                 :variant="selectedVariant"
                                                 :variantInfo="selectedVariantInfo"
@@ -136,8 +139,7 @@ TD & SJG updated Nov2018 -->
                                                 :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations"
                                                 :blacklistStatus="blacklistedGeneSelected"
                                                 @summaryCardVariantDeselect="deselectVariant"
-                                                @zyg-bars-mounted="drawZygCharts"
-                                                ref="variantSummaryCardRef">
+                                                @zyg-bars-mounted="drawZygCharts">
                                         </variant-summary-card>
                                     </v-container>
                                 </v-tab-item>
@@ -152,6 +154,7 @@ TD & SJG updated Nov2018 -->
                                                 :showCoverageCutoffs="showCoverageCutoffs"
                                                 :fullAnnotationComplete="doneLoadingExtras"
                                                 :blacklistStatus="blacklistedGeneSelected"
+                                                :totalNumTracks="totalNumTracks"
                                                 @filter-box-toggled="filterBoxToggled"
                                                 @filter-cutoff-applied="filterCutoffApplied"
                                                 @filter-cutoff-cleared="filterCutoffCleared">
@@ -291,11 +294,18 @@ TD & SJG updated Nov2018 -->
                 } else {
                     return [];
                 }
+            },
+            totalNumTracks: function() {
+                let self = this;
+                if (self.variantModel) {
+                    return self.variantModel.getAllDataSets().length;
+                } else {
+                    return 0;
+                }
             }
         },
         created: function() {
             // Quick check so no flashes before splash screen
-            // TODO: need to test this w/ hub launch
             if (this.paramProjectId !== '0' || this.paramOldProjectId !== '0') {
                 this.showWelcome = false;
             }
@@ -883,58 +893,78 @@ TD & SJG updated Nov2018 -->
                     self.$refs.variantSummaryCardRef.assignBarChartValues(self.probandN, self.subsetN);
                 }
             },
-            filterBoxToggled: function(filterName, filterState, cohortOnlyFilter, parentFilterName, parentFilterState, filterDisplayName) {
+            filterRemovedFromTrack: function(filterObj, trackId) {
+                let self = this;
+
+                if (self.$refs.filterSettingsMenuRef) {
+                    self.$refs.filterSettingsMenuRef.removeFilterViaChip(filterObj.name, filterObj.parentName, filterObj.grandparentName, filterObj.type, trackId);
+                }
+            },
+            filterBoxToggled: function(filterName, filterState, cohortOnlyFilter, parentName, grandparentName, filterDisplayName, trackId) {
                 let self = this;
                 let filterInfo = {
                     name: filterName,
-                    displayName: filterDisplayName,
+                    parentName: parentName,
+                    grandparentName: grandparentName,
                     cohortOnly: cohortOnlyFilter,
                     type: 'checkbox',
                     state: filterState,
                     cutoffValue: null,
-                    parentFilterName: parentFilterName,
-                    parentFilterState: parentFilterState
+                    displayName: filterDisplayName
                 };
-                self.onFilterSettingsApplied(filterInfo);
+                self.onFilterSettingsApplied(filterInfo, trackId);
             },
-            filterCutoffApplied: function(filterName, filterLogic, cutoffValue, cohortOnlyFilter, parentFilterName, parentFilterState, filterDisplayName) {
+            filterCutoffApplied: function(filterName, filterLogic, cutoffValue, cohortOnlyFilter, parentName, grandparentName, filterDisplayName) {
                 let self = this;
                 let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
                 let filterInfo = {
                     name: translatedFilterName,
-                    displayName: filterDisplayName,
+                    parentName: parentName,
+                    grandparentName: grandparentName,
                     cohortOnly: cohortOnlyFilter,
                     type: 'cutoff',
                     state: filterLogic,
                     cutoffValue: cutoffValue,
                     turnOff: false,
-                    parentFilterName: parentFilterName,
-                    parentFilterState: parentFilterState
+                    displayName: filterDisplayName
                 };
                 self.onFilterSettingsApplied(filterInfo);
             },
-            filterCutoffCleared: function(filterName, cohortOnlyFilter, parentFilterName, parentFilterState, filterDisplayName) {
+            filterCutoffCleared: function(filterName, cohortOnlyFilter, parentName, grandparentName, filterDisplayName) {
                 let self = this;
                 let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
                 let filterInfo = {
                     name: translatedFilterName,
-                    displayName: filterDisplayName,
+                    parentName: parentName,
+                    grandparentName: grandparentName,
                     cohortOnly: cohortOnlyFilter,
                     type: 'cutoff',
                     state: null,
                     cutoffValue: null,
                     turnOff: true,
-                    parentFilterName: parentFilterName,
-                    parentFilterState: parentFilterState
+                    displayName: filterDisplayName
                 };
                 self.onFilterSettingsApplied(filterInfo);
             },
-            onFilterSettingsApplied: function (filterInfo) {
+            onFilterSettingsApplied: function (filterInfo, trackId) {
                 let self = this;
                 let selectedVarId = null;
                 if (self.selectedVariant) {
                     selectedVarId = self.selectedVariant.id;
                 }
+
+                // If we pass a track ID, only filter that track
+                if (trackId === 'enrichment') {
+                    self.$refs.enrichCardRef[0].filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
+                } else if (trackId) {
+                    self.$refs.variantCardRef.forEach((cardRef) => {
+                        if (cardRef.key === trackId) {
+                            cardRef.filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
+                        }
+                    })
+                }
+
+                // Else filter all tracks
                 self.$refs.enrichCardRef[0].filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
                 if (self.$refs.variantCardRef && !filterInfo.cohortOnly) {
                     self.$refs.variantCardRef.forEach((cardRef) => {
