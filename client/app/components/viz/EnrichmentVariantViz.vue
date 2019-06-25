@@ -78,8 +78,8 @@
                     :key="phenotype">
                 {{phenotype}}
             </v-chip>
-            <v-chip v-if="numVariants" color="cohortNavy" small outline style="font-size: 12px; pointer-events: none">
-                {{numVariants + ' total variants'}}
+            <v-chip v-if="numVariantsText" color="cohortNavy" small outline style="font-size: 12px; pointer-events: none">
+                {{numVariantsText}}
             </v-chip>
             <v-chip v-if="numFilteredVariants" color="cohortGold" small outline style="font-size: 12px; pointer-events: none">
                 {{numFilteredVariants + ' filtered variants'}}
@@ -275,7 +275,8 @@
                 filterChips: [],        // List of filter objects {filterId: displayedFilterText} used for chip display
                 showZoomLoader: false,
                 preColorLastSelectedVar: null,  // Last clicked on var id - used for color update transfer
-                numFilteredVariants: null       // Number of variants passing any applied filters
+                numFilteredVariants: null,       // Number of variants passing any applied filters
+                numVariantsText: null
             }
         },
         mounted: function () {
@@ -517,7 +518,7 @@
                 // Set flags & chips accordingly
                 if (numPassingVariants === 0) {
                     self.noPassingResults = true;
-                } else if (numPassingVariants === self.numVariants) {
+                } else if (numPassingVariants === self.data.features.length) {
                     self.numFilteredVariants = null;
                 } else {
                     self.numFilteredVariants = numPassingVariants;
@@ -540,6 +541,7 @@
         watch: {
             data: function () {
                 let self = this;
+                self.numVariantsText = self.data.features.length + " total variants";
                 self.$emit('clearVariants');
                 self.update();
                 console.log("Drawing variants...");

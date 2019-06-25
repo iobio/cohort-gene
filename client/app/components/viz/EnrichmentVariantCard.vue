@@ -175,7 +175,8 @@ Updated: SJG Jan2019
                         @variantHoverEnd="onVariantHoverEnd"
                         @trackRendered="switchColorScheme"
                         @clearVariants="clearVariants"
-                        @refreshSummaryClick="refreshSummaryClick">
+                        @refreshSummaryClick="refreshSummaryClick"
+                        @filterRemovedFromTrack="removeFilter">
                 </enrichment-variant-viz>
                 <gene-viz id="gene-viz"
                           v-bind:class="{ hide: !showGeneViz }"
