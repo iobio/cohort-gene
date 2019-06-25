@@ -538,6 +538,7 @@
             data: function () {
                 let self = this;
                 self.numVariantsText = self.data.features.length + " total variants";
+                self.numFilteredVariants = null;
                 self.$emit('clearVariants');
                 self.update();
                 console.log("Drawing variants...");

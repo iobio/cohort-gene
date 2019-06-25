@@ -219,6 +219,11 @@
                         checkRef.clearFilters();
                     });
                 }
+                if (self.$refs.filterCutoffRef) {
+                    self.$refs.filterCutoffRef.forEach((cutoffRef) => {
+                        cutoffRef.clearFilters();
+                    });
+                }
             },
             removeFilterViaChip: function(filterName, parentName, filterType, trackId) {
                 let self = this;
