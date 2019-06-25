@@ -24,7 +24,7 @@
                             v-model="item.model"
                             color="cohortGold"
                             style="padding-left: 15px; margin-top: 0; margin-bottom: 0; max-height: 30px"
-                            @click="boxToggled(item)">
+                            @click="updateFilterState(item)">
                 </v-checkbox>
             </v-container>
         </v-flex>
@@ -39,7 +39,7 @@
             parentFilterName: null,
             grandparentFilterName: null,
             fullAnnotationComplete: true,
-            totalNumTracks: 1   // Total number of variant tracks on screen
+            totalNumTracks: 0   // Total number of variant tracks on screen
         },
         data() {
             return {
@@ -66,23 +66,26 @@
         },
         watch: {},
         methods: {
-            boxToggled: function(filterObj, trackId) {
+            updateFilterState: function(filterObj, trackId) {
                 let self = this;
-                filterObj.model = !filterObj.model;
-                let updatedState = filterObj.model;
-                if (updatedState === true) {
-                    filterObj.numTracksActive = self.totalNumTracks;
-                } else {
-                    filterObj.numTracksActive = 0;
+                let filterName = filterObj.name;
+                let updatedState = !filterObj.model;
+
+                if (trackId == null) {
+                    filterObj.model = updatedState;
+                    if (!updatedState) {
+                        filterObj.numTracksActive = self.totalNumTracks;
+                    } else {
+                        filterObj.numTracksActive = 0;
+                    }
+                } else if (filterObj.numTracksActive === 0) {
+                    filterObj.model = true;
+                    updatedState = filterObj.model;
                 }
 
-                let filterName = filterObj.name;
-                if (self.parentFilterName === 'impact') {
-                    filterName = filterObj.name;
-                }
                 let anyFilterInParentActive = false;
                 self.checkboxLists[self.parentFilterName].forEach((filter) => {
-                   anyFilterInParentActive |= !filter.model;
+                    anyFilterInParentActive |= !filter.model;
                 });
                 self.$emit('filter-toggled', filterName, updatedState, self.parentFilterName, self.grandparentFilterName, anyFilterInParentActive, filterObj.displayName, trackId);
             },
@@ -106,10 +109,7 @@
                 if (filterObj.length > 0) {
                     filterObj[0].numTracksActive -= 1;
 
-                    // Check to see if we've removed all active tracks and need to update UI
-                    if (filterObj[0].numTracksActive === 0) {
-                        self.boxToggled(filterObj, trackId);
-                    }
+                    self.updateFilterState(filterObj[0], trackId);
                 }
             }
         },

@@ -39,6 +39,7 @@
                                 :parentFilterName="category.name"
                                 :grandparentFilterName="filterName"
                                 :fullAnnotationComplete="fullAnnotationComplete"
+                                :totalNumTracks="totalNumTracks"
                                 @filter-toggled="onFilterToggled">
                         </filter-settings-checkbox>
                         <filter-settings-cutoff

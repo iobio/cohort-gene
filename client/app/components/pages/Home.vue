@@ -958,18 +958,17 @@ TD & SJG updated Jun2019 -->
                     self.$refs.enrichCardRef[0].filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
                 } else if (trackId) {
                     self.$refs.variantCardRef.forEach((cardRef) => {
-                        if (cardRef.key === trackId) {
+                        if (cardRef.dataSetModel.entryId === trackId) {
                             cardRef.filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
                         }
                     })
-                }
-
-                // Else filter all tracks
-                self.$refs.enrichCardRef[0].filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
-                if (self.$refs.variantCardRef && !filterInfo.cohortOnly) {
-                    self.$refs.variantCardRef.forEach((cardRef) => {
-                        cardRef.filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
-                    });
+                } else {
+                    self.$refs.enrichCardRef[0].filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
+                    if (self.$refs.variantCardRef && !filterInfo.cohortOnly) {
+                        self.$refs.variantCardRef.forEach((cardRef) => {
+                            cardRef.filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
+                        });
+                    }
                 }
             },
             openFileSelection: function() {

@@ -151,7 +151,7 @@
                 let self = this;
                 if (self.$refs.filterSettingsRef) {
                     self.$refs.filterSettingsRef.forEach((filtRef) => {
-                        if (filtRef.name === grandparentFilterName) {
+                        if (filtRef.filterName === grandparentFilterName) {
                             filtRef.removeFilterViaChip(filterName, parentFilterName, filterType, trackId);
                         }
                     });
