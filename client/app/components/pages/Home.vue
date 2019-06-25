@@ -897,7 +897,8 @@ TD & SJG updated Jun2019 -->
                 let self = this;
 
                 if (self.$refs.filterSettingsMenuRef) {
-                    self.$refs.filterSettingsMenuRef.removeFilterViaChip(filterObj.name, filterObj.parentName, filterObj.grandparentName, filterObj.type, trackId);
+                    let originalFiltName = filterObj.type === 'cutoff' ? filterObj.originalName : filterObj.name;
+                    self.$refs.filterSettingsMenuRef.removeFilterViaChip(originalFiltName, filterObj.parentName, filterObj.grandparentName, filterObj.type, trackId);
                 }
             },
             filterBoxToggled: function(filterName, filterState, cohortOnlyFilter, parentName, grandparentName, filterDisplayName, trackId) {
@@ -919,6 +920,7 @@ TD & SJG updated Jun2019 -->
                 let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
                 let filterInfo = {
                     name: translatedFilterName,
+                    originalName: filterName,   // Cutoff filter names need translating for DOM
                     parentName: parentName,
                     grandparentName: grandparentName,
                     cohortOnly: cohortOnlyFilter,
@@ -930,11 +932,12 @@ TD & SJG updated Jun2019 -->
                 };
                 self.onFilterSettingsApplied(filterInfo);
             },
-            filterCutoffCleared: function(filterName, cohortOnlyFilter, parentName, grandparentName, filterDisplayName) {
+            filterCutoffCleared: function(filterName, cohortOnlyFilter, parentName, grandparentName, filterDisplayName, trackId) {
                 let self = this;
                 let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
                 let filterInfo = {
                     name: translatedFilterName,
+                    originalName: filterName, // Cutoff filter names need translating for DOM
                     parentName: parentName,
                     grandparentName: grandparentName,
                     cohortOnly: cohortOnlyFilter,
@@ -944,7 +947,7 @@ TD & SJG updated Jun2019 -->
                     turnOff: true,
                     displayName: filterDisplayName
                 };
-                self.onFilterSettingsApplied(filterInfo);
+                self.onFilterSettingsApplied(filterInfo, trackId);
             },
             onFilterSettingsApplied: function (filterInfo, trackId) {
                 let self = this;

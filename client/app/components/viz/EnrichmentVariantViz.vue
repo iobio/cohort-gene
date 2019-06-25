@@ -88,10 +88,6 @@
                     color="cohortGold" small outline close style="font-size: 12px;">
                 {{filterChip.filterLabel}}
             </v-chip>
-            <!--<v-btn v-for="filterChip in filterChips" color="cohortGold" small flat outline round style="font-size: 12px;"-->
-                   <!--:key="filterChip.name" v-on:click="navigateToFilterTab(filterChip.name)">-->
-                <!--{{filterChip.filterLabel}}-->
-            <!--</v-btn>-->
         </div>
         <div class="variant-viz" id="sourceFileLine">
             <span class="field-label-header">Analysis sources</span>
@@ -452,7 +448,7 @@
                 // Turning checkbox ON
                 if (filterInfo.type === 'checkbox' && filterInfo.state === false) {
                     filterLabel = 'No ' + filterInfo.displayName;
-                    let filterObj = {name: filterInfo.name, filterLabel: filterLabel, type: filterInfo.type, parentName: filterInfo.parentName, grandparentName: filterInfo.grandparentName};
+                    let filterObj = {name: filterInfo.name, originalName: filterInfo.originalName, filterLabel: filterLabel, type: filterInfo.type, parentName: filterInfo.parentName, grandparentName: filterInfo.grandparentName};
                     self.filterChips.push(filterObj);
                 // Turning cutoff ON
                 } else if (filterInfo.type === 'cutoff' && filterInfo.turnOff === false) {
@@ -465,7 +461,7 @@
                         matchingFilters[0].filterLabel = filterLabel;
                         // Otherwise add fresh
                     } else {
-                        let filterObj = {name: filterInfo.name, filterLabel: filterLabel};
+                        let filterObj = {name: filterInfo.name, originalName: filterInfo.originalName, filterLabel: filterLabel, type: filterInfo.type, parentName: filterInfo.parentName, grandparentName: filterInfo.grandparentName};
                         self.filterChips.push(filterObj);
                     }
                 // Turning either type OFF

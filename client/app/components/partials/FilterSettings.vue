@@ -94,14 +94,14 @@
                         {name: 'type', display: 'Type', active: false, open: false, type: 'checkbox', cohortOnly: false},
                         {name: 'zygosities', display: 'Zygosities', active: false, open: false, type: 'checkbox', cohortOnly: false},],
                     'enrichment': [
-                        {name: 'pValue', display: 'p-val', active: false, open: false, type: 'cutoff', cohortOnly: true},
-                        {name: 'adjPVal', display: '-log(p-val)', active: false, open: false, type: 'cutoff', cohortOnly: true}],
+                        {name: 'pValue', display: 'p-val', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: true},
+                        {name: 'adjPVal', display: '-log(p-val)', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: true}],
                     'frequencies': [
-                        {name: 'g1000', display: '1000G', active: false, open: false, type: 'cutoff', cohortOnly: false},
-                        {name: 'exac', display: 'ExAC', active: false, open: false, type: 'cutoff', cohortOnly: false},
-                        {name: 'gnomad', display: 'gnomAD', active: false, open: false, type: 'cutoff', cohortOnly: false},
-                        {name: 'probandFreq', display: 'Proband', active: false, open: false, type: 'cutoff', cohortOnly: true},
-                        {name: 'subsetFreq', display: 'Subset', active: false, open: false, type: 'cutoff', cohortOnly: true}],
+                        {name: 'g1000', display: '1000G', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: false},
+                        {name: 'exac', display: 'ExAC', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: false},
+                        {name: 'gnomad', display: 'gnomAD', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: false},
+                        {name: 'probandFreq', display: 'Proband', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: true},
+                        {name: 'subsetFreq', display: 'Subset', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: true}],
                     'rawCounts': [ // Currently unused - may incorporate later
                         {name: 'rawCounts', display: 'Raw Counts', active: false, open: false, type: 'cutoff'}],
                     'samplePresence': [{name: 'samplePresence', display: 'Sample Presence', active: false, open: false, type: 'checkbox'}]
@@ -163,34 +163,45 @@
                     if (grandparentFilterName === 'frequencies') {
                         displayName += ' Freq';
                     }
+                    filterObj[0].numTracksActive = cohortOnly === true ? 1 : self.totalNumTracks;
                 }
                 let grandparentFilterState = false;
                 let parentFilters = self.categories[grandparentFilterName];
                 parentFilters.forEach((filt) => {
                     grandparentFilterState |= filt.active;
                 });
-                self.$emit('filter-applied', filterName, filterLogic, cutoffValue, grandparentFilterName, grandparentFilterState, cohortOnly, displayName);
+                let greatGrandPlaceholder = ''; // No extra parental layer for cutoff filters
+                self.$emit('filter-applied', filterName, filterLogic, cutoffValue, grandparentFilterName, grandparentFilterState, greatGrandPlaceholder, cohortOnly, displayName);
             },
-            // Clears a single cutoff filter for ALL tracks
-            onFilterCleared: function(filterName, grandparentFilterName) {
+            // Clears a cutoff filter for a single track if trackId is provided, otherwise clears filter from all tracks
+            onFilterCleared: function(filterName, grandparentFilterName, trackId) {
                 let self = this;
-                // Turn on indicator
+
                 let filterObj = self.categories[grandparentFilterName].filter((cat) => {
                     return cat.name === filterName;
                 });
                 let cohortOnly = false;
                 let displayName = '';
                 if (filterObj.length > 0) {
-                    filterObj[0].active = false;
                     cohortOnly = filterObj[0].cohortOnly;
                     displayName = filterObj[0].display;
+                    // Decrement active value if we're removing filter for single track
+                    if (trackId != null) {
+                        if (filterObj[0].numTracksActive === 0){
+                            filterObj[0].active = false;
+                        }
+                    // Otherwise we're turning off filter for all tracks
+                    } else {
+                        filterObj[0].active = false;
+                    }
                 }
                 let grandparentFilterState = false;
                 let parentFilters = self.categories[grandparentFilterName];
                 parentFilters.forEach((filt) => {
                     grandparentFilterState |= filt.active;
                 });
-                self.$emit('cutoff-filter-cleared', filterName, grandparentFilterName, grandparentFilterState, cohortOnly, displayName);
+                let greatGrandName = '';    // Don't have this level of hierarchy for cutoff filters but preserve param order
+                self.$emit('cutoff-filter-cleared', filterName, grandparentFilterName, grandparentFilterState, greatGrandName, cohortOnly, displayName, trackId);
             },
             // Clears all filters from all tracks
             clearFilters: function() {
@@ -198,6 +209,9 @@
                 (Object.values(self.categories)).forEach((catList) => {
                     catList.forEach((filt) => {
                         filt.active = false;
+                        if (filt.numTracksActive >= 0) {
+                            filt.numTracksActive = 0;
+                        }
                     })
                 });
                 if (self.$refs.filtCheckRef) {
@@ -216,10 +230,23 @@
                         }
                     })
                 } else {
+                    // We need to filter bhy name here instead of parent name, b/c one level more advanced than checkbox
                     self.$refs.filterCutoffRef.forEach((cutoffRef) => {
-                        if (cutoffRef.parentFilterName === parentName) {
-                            // TODO: this might need to be diff for keeping counts?
-                            cutoffRef.removeSingleTrack(filterName, parentName, trackId);
+                        if (cutoffRef.filterName === filterName) {
+
+                            let filterObj = (self.categories[parentName]).filter((cat) => {
+                                return cat.name === filterName;
+                            });
+
+                            if (filterObj.length > 0) {
+                                filterObj[0].numTracksActive -= 1;
+
+                                if (filterObj[0].numTracksActive === 0) {
+                                    cutoffRef.clearFilters();
+                                } else {
+                                    self.onFilterCleared(filterName, parentName, trackId);
+                                }
+                            }
                         }
                     })
                 }

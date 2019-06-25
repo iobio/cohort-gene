@@ -126,7 +126,7 @@
                 }
                 self.$emit('filter-cutoff-applied', filterName, filterLogic, cutoffValue, cohortOnlyFilter, parentFilterName, grandparentFilterName, filterDisplayName);
             },
-            filterCutoffCleared: function (filterName, parentFilterName, parentFilterState, grandparentFilterName, cohortOnlyFilter, filterDisplayName) {
+            filterCutoffCleared: function (filterName, parentFilterName, parentFilterState, grandparentFilterName, cohortOnlyFilter, filterDisplayName, trackId) {
                 let self = this;
                 let filterObj = self.filters.filter((filt) => {
                     return filt.name === parentFilterState;
@@ -134,7 +134,7 @@
                 if (filterObj.length > 0) {
                     filterObj[0].active = parentFilterState;
                 }
-                self.$emit('filter-cutoff-cleared', filterName, cohortOnlyFilter, parentFilterName, grandparentFilterName, filterDisplayName);
+                self.$emit('filter-cutoff-cleared', filterName, cohortOnlyFilter, parentFilterName, grandparentFilterName, filterDisplayName, trackId);
             },
             clearFilters: function () {
                 let self = this;
@@ -151,7 +151,9 @@
                 let self = this;
                 if (self.$refs.filterSettingsRef) {
                     self.$refs.filterSettingsRef.forEach((filtRef) => {
-                        if (filtRef.filterName === grandparentFilterName) {
+                        if (filterType === 'checkbox' && filtRef.filterName === grandparentFilterName) {
+                            filtRef.removeFilterViaChip(filterName, parentFilterName, filterType, trackId);
+                        } else if (filterType === 'cutoff' && filtRef.filterName === parentFilterName) {
                             filtRef.removeFilterViaChip(filterName, parentFilterName, filterType, trackId);
                         }
                     });

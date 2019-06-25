@@ -94,6 +94,7 @@
                 (Object.values(self.checkboxLists)).forEach((checkList) => {
                     checkList.forEach((filt) => {
                         filt.model = true;
+                        filt.numTracksActive = 0;
                     });
                 })
             },

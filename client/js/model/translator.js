@@ -126,7 +126,7 @@ class Translator {
   getTranslatedFilterName(filterName) {
       let map = this.filterNameMap;
       let translatedName = map[filterName];
-      return translatedName;
+      return translatedName == null ? filterName : translatedName;
   }
 
 }
