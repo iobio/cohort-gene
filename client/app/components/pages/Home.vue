@@ -157,7 +157,8 @@ TD & SJG updated Jun2019 -->
                                                 :totalNumTracks="totalNumTracks"
                                                 @filter-box-toggled="filterBoxToggled"
                                                 @filter-cutoff-applied="filterCutoffApplied"
-                                                @filter-cutoff-cleared="filterCutoffCleared">
+                                                @filter-cutoff-cleared="filterCutoffCleared"
+                                                @remove-all-filters="clearAllFiltersAllTracks">
                                         </filter-settings-menu>
                                     </v-container>
                                 </v-tab-item>
@@ -972,6 +973,19 @@ TD & SJG updated Jun2019 -->
                             cardRef.filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
                         });
                     }
+                }
+            },
+            clearAllFiltersAllTracks: function() {
+              let self = this;
+                if (self.$refs.enrichCardRef) {
+                    self.$refs.enrichCardRef.forEach((cardRef) => {
+                        cardRef.removeAllFilters();
+                    })
+                }
+                if (self.$refs.variantCardRef) {
+                    self.$refs.variantCardRef.forEach((cardRef) => {
+                        cardRef.removeAllFilters();
+                    });
                 }
             },
             openFileSelection: function() {

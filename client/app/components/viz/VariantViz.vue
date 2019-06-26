@@ -490,8 +490,24 @@
             /* Removes filter from THIS track only */
             removeFilter: function(filterObj) {
                 let self = this;
+                let filterName = filterObj.originalName ? filterObj.originalName : filterObj.name;
+                self.navigateToFilterTab(filterName);
                 self.$emit("filterRemovedFromTrack", filterObj, self.model.entryId);
-            }
+            },
+            removeAllFilters: function(svg) {
+                let self = this;
+
+                // Reset chips
+                self.excludeFilters = [];
+                self.cutoffFilters = {};
+                self.filterChips = [];
+                self.numFilteredVariants = null;
+
+                // Reset no passing warning
+                self.noPassingResults = false;
+
+                // Do actual filter removal
+                self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);            }
         }
     }
 </script>

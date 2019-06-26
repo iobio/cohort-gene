@@ -34,8 +34,25 @@
                     {{filter.icon}}
                 </v-icon>
                 {{ filter.display }}
+                    <v-fab-transition>
+                        <v-btn v-if="filter.name === topFilter"
+                               v-show="anyFiltersActive"
+                               v-bind:style="{height: 38 + 'px', marginTop: 10 + 'px'}"
+                               color="cohortGold"
+                               small
+                               top
+                               dark
+                               fab
+                               right
+                               absolute
+                               @click="removeAllFilters">
+                            <v-icon color="white">close</v-icon>
+                        </v-btn>
+                    </v-fab-transition>
             </v-card-title>
-            <v-card-text><i>{{filter.description}}</i></v-card-text>
+            <v-card-text>
+                <i>{{filter.description}}</i>
+            </v-card-text>
             <filter-settings
                     v-if="filter.name !== 'coverage'"
                     ref="filterSettingsRef"
@@ -76,6 +93,8 @@
         data() {
             return {
                 showMenu: true,
+                anyFiltersActive: false,
+                topFilter: 'annotation',
                 filters: [
                     {
                         name: 'annotation',
@@ -114,6 +133,7 @@
                 if (filterObj.length > 0) {
                     filterObj[0].active = grandparentFilterState;
                 }
+                self.checkForAnyActiveFilters();
                 self.$emit('filter-box-toggled', filterName, filterState, cohortOnlyFilter, parentFilterName, grandparentFilterName, filterDisplayName, trackId);
             },
             filterCutoffApplied: function (filterName, filterLogic, cutoffValue, parentFilterName, parentFilterState, grandparentFilterName, cohortOnlyFilter, filterDisplayName) {
@@ -123,6 +143,7 @@
                 });
                 if (filterObj.length > 0) {
                     filterObj[0].active = parentFilterName;
+                    self.anyFiltersActive = true;
                 }
                 self.$emit('filter-cutoff-applied', filterName, filterLogic, cutoffValue, cohortOnlyFilter, parentFilterName, grandparentFilterName, filterDisplayName);
             },
@@ -134,10 +155,12 @@
                 if (filterObj.length > 0) {
                     filterObj[0].active = parentFilterState;
                 }
+                self.checkForAnyActiveFilters();
                 self.$emit('filter-cutoff-cleared', filterName, cohortOnlyFilter, parentFilterName, grandparentFilterName, filterDisplayName, trackId);
             },
             clearFilters: function () {
                 let self = this;
+                self.anyFiltersActive = false;
                 self.filters.forEach((filter) => {
                     filter.active = false;
                 });
@@ -158,6 +181,20 @@
                         }
                     });
                 }
+                self.checkForAnyActiveFilters();
+            },
+            checkForAnyActiveFilters: function() {
+                let self = this;
+                let anyActive = false;
+                self.filters.filter((filt) => {
+                    anyActive |= filt.active;
+                });
+                self.anyFiltersActive = anyActive === 1;
+            },
+            removeAllFilters: function() {
+                let self = this;
+                self.clearFilters();
+                self.$emit('remove-all-filters');
             }
         },
         computed: {},

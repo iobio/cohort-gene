@@ -532,6 +532,21 @@
             removeFilter: function(filterObj) {
                 let self = this;
                 self.$emit("filterRemovedFromTrack", filterObj, 'enrichment');
+            },
+            removeAllFilters: function(svg) {
+                let self = this;
+
+                // Reset chips
+                self.excludeFilters = [];
+                self.cutoffFilters = {};
+                self.filterChips = [];
+                self.numFilteredVariants = null;
+
+                // Reset no passing warning
+                self.noPassingResults = false;
+
+                // Do actual filter removal
+                self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
             }
         },
         watch: {

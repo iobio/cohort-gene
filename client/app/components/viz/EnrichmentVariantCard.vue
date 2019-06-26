@@ -673,6 +673,12 @@ Updated: SJG Jan2019
                     self.$refs.subsetVizRef.filterVariants(filterInfo, self.getVariantSVG(self.$refs.subsetVizRef.name), checkForSelectedVariant, selectedVariantId);
                 }
             },
+            removeAllFilters: function() {
+                let self = this;
+                if (self.$refs.subsetVizRef) {
+                    self.$refs.subsetVizRef.removeAllFilters(self.getVariantSVG(self.$refs.subsetVizRef.name));
+                }
+            },
             navigateToFilterTab: function(selectedFilter) {
                 let self = this;
                 self.$emit('navFilterTab', selectedFilter);
