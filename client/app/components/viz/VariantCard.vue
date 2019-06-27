@@ -608,6 +608,19 @@ TD & SJG updated Apr2018 -->
             removeFilter: function(filterObj, trackId) {
                 let self = this;
                 self.$emit("filterRemovedFromTrack", filterObj, trackId);
+            },
+            updateClasses: function() {
+                const self = this;
+                let svgContainer = self.getVariantSVG(self.$refs.subsetVizRef.name);
+                let allVariants = svgContainer.selectAll(".variant");
+                allVariants.each(function (d, i) {
+                    let selectionId = '#' + d.id;
+                    let domD = svgContainer.selectAll(selectionId);
+
+                    if (d.uniqueClass != null && d.uniqueClass !== '') {
+                        domD.classed({'singleUnq': true});
+                    }
+                });
             }
         }
     }

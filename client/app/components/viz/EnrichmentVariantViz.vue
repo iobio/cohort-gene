@@ -552,7 +552,9 @@
         watch: {
             data: function () {
                 let self = this;
-                self.numVariantsText = self.data.features.length + " total variants";
+                if (self.data && self.data.features) {
+                    self.numVariantsText = self.data.features.length + " total variants";
+                }
                 self.numFilteredVariants = null;
                 self.$emit('clearVariants');
                 self.update();

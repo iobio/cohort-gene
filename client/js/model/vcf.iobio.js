@@ -2016,7 +2016,10 @@ vcfiobio = function module() {
                                 'affectedProbandCount': +0,
                                 'affectedSubsetCount': +0,
                                 'probandZygCounts': [],
-                                'subsetZygCounts': []
+                                'subsetZygCounts': [],
+
+                                // track unique fields
+                                'uniqueClass': ''
                             };
 
                             if (enrichMode) {

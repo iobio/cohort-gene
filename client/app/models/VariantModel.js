@@ -814,6 +814,48 @@ class VariantModel {
         });
     }
 
+    /* Promises to identify unique variants within a single cohort or variant track. */
+    promiseAnnotateUniqueVariants() {
+        const self = this;
+
+        return new Promise((resolve, reject) => {
+            // Make sure we have multiple tracks
+            if (self.otherDataSets.length === 0) {
+                resolve();
+            }
+
+            // Determine unique variants within single sample tracks
+            const mainSetIds = self.mainDataSet.loadedVarIdHash;
+            self.otherDataSets.forEach((singleDataset) => {
+                if (singleDataset.loadedVariants) {
+                    singleDataset.loadedVariants.features.forEach((feat) => {
+                        if (mainSetIds[feat.id] == null) {
+                            feat.uniqueClass = 'singleUnq';
+                        }
+                    });
+                } else {
+                    reject('Could not find any variants to assign uniqueness to');
+                }
+            });
+
+            // Determine unique variants within cohort sample tracks
+            const allSampleSetIds = self.otherDataSets[0].loadedVarIdHash;
+            for (let i = 1; i < self.otherDataSets.length; i++) {
+                Object.assign(allSampleSetIds, self.otherDataSets[i].loadedVarIdHash);
+            }
+            if (self.mainDataSet.loadedVariants) {
+                self.mainDataSet.loadedVariants.features.forEach((feat) => {
+                    if (allSampleSetIds[feat.id] == null) {
+                        feat.uniqueClass = 'cohUnq';
+                    }
+                });
+            } else {
+                reject('Could not find any variants to assign uniqueness to');
+            }
+            resolve();
+        });
+    }
+
     /* Clears any data in existing datasets. */
     clearLoadedData(geneName) {
         let self = this;

@@ -692,6 +692,20 @@ Updated: SJG Jan2019
             removeFilter: function(filterObj, trackId) {
                 let self = this;
                 self.$emit("filterRemovedFromTrack", filterObj, trackId);
+            },
+            updateClasses: function() {
+                const self = this;
+                let svgContainer = self.getVariantSVG(self.$refs.subsetVizRef.name);
+
+                // TODO: left off with cohort filtering not working
+                let allVariants = svgContainer.selectAll(".variant");
+                allVariants.each(function (d, i) {
+                    let selectionId = '#' + d.id;
+                    let domD = svgContainer.selectAll(selectionId);
+                    if (d.uniqueClass != null && d.uniqueClass !== '') {
+                        domD.classed({'cohUnq': true});
+                    }
+                });
             }
         }
     }

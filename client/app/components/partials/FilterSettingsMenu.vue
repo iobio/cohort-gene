@@ -24,8 +24,8 @@
 
 <template>
     <v-flex xs12 style="padding-top: 10px">
-        <v-card
-                v-for="filter in filters"
+        <v-card v-for="filter in filters"
+                v-if="!(filter.name === 'track' && onlyOneTrack)"
                 :ref="filter.name + 'ExpansionRef'"
                 :key="filter.name"
                 :value="filter.custom">
@@ -54,7 +54,6 @@
                 <i>{{filter.description}}</i>
             </v-card-text>
             <filter-settings
-                    v-if="filter.name !== 'coverage'"
                     ref="filterSettingsRef"
                     :filterName="filter.name"
                     :filterModel="filterModel"
@@ -95,6 +94,7 @@
                 showMenu: true,
                 anyFiltersActive: false,
                 topFilter: 'annotation',
+                onlyOneTrack: true,
                 filters: [
                     {
                         name: 'annotation',
@@ -109,7 +109,7 @@
                         display: 'ENRICHMENT FILTERS',
                         active: false,
                         custom: false,
-                        description: 'Filter by cohort variants by enrichment statistics',
+                        description: 'Filter cohort variants by enrichment statistics',
                         icon: 'poll'
                     },
                     {
@@ -120,12 +120,25 @@
                         description: 'Filter by variant frequency within population databases or within the cohort',
                         icon: 'people_outline'
                     },
+                    {
+                        name: 'track',
+                        display: 'TRACK FILTERS',
+                        active: false,
+                        custom: false,
+                        description: 'Filter by presence in multiple tracks: when applied, variants unique to the cohort or sample will be hidden',
+                        icon: 'person_outline'
+                    }
                 ]
             }
         },
-        watch: {},
+        watch: {
+            totalNumTracks: function() {
+                let self = this;
+                self.onlyOneTrack = self.totalNumTracks < 2;
+            }
+        },
         methods: {
-            filterBoxToggled: function (filterName, filterState, parentFilterName, grandparentFilterName, grandparentFilterState, cohortOnlyFilter, filterDisplayName, trackId) {
+            filterBoxToggled: function (filterName, filterState, parentFilterName, grandparentFilterName, grandparentFilterState, cohortOnlyFilter, sampleOnlyFilter, filterDisplayName, trackId) {
                 let self = this;
                 let filterObj = self.filters.filter((filt) => {
                     return filt.name === grandparentFilterName;
@@ -134,9 +147,9 @@
                     filterObj[0].active = grandparentFilterState;
                 }
                 self.checkForAnyActiveFilters();
-                self.$emit('filter-box-toggled', filterName, filterState, cohortOnlyFilter, parentFilterName, grandparentFilterName, filterDisplayName, trackId);
+                self.$emit('filter-box-toggled', filterName, filterState, cohortOnlyFilter, sampleOnlyFilter, parentFilterName, grandparentFilterName, filterDisplayName, trackId);
             },
-            filterCutoffApplied: function (filterName, filterLogic, cutoffValue, parentFilterName, parentFilterState, grandparentFilterName, cohortOnlyFilter, filterDisplayName) {
+            filterCutoffApplied: function (filterName, filterLogic, cutoffValue, parentFilterName, parentFilterState, grandparentFilterName, cohortOnlyFilter, sampleOnlyFilter, filterDisplayName) {
                 let self = this;
                 let filterObj = self.filters.filter((filt) => {
                     return filt.name === parentFilterName;
@@ -145,9 +158,9 @@
                     filterObj[0].active = parentFilterName;
                     self.anyFiltersActive = true;
                 }
-                self.$emit('filter-cutoff-applied', filterName, filterLogic, cutoffValue, cohortOnlyFilter, parentFilterName, grandparentFilterName, filterDisplayName);
+                self.$emit('filter-cutoff-applied', filterName, filterLogic, cutoffValue, cohortOnlyFilter, sampleOnlyFilter, parentFilterName, grandparentFilterName, filterDisplayName);
             },
-            filterCutoffCleared: function (filterName, parentFilterName, parentFilterState, grandparentFilterName, cohortOnlyFilter, filterDisplayName, trackId) {
+            filterCutoffCleared: function (filterName, parentFilterName, parentFilterState, grandparentFilterName, cohortOnlyFilter, sampleOnlyFilter, filterDisplayName, trackId) {
                 let self = this;
                 let filterObj = self.filters.filter((filt) => {
                     return filt.name === parentFilterState;
@@ -156,7 +169,7 @@
                     filterObj[0].active = parentFilterState;
                 }
                 self.checkForAnyActiveFilters();
-                self.$emit('filter-cutoff-cleared', filterName, cohortOnlyFilter, parentFilterName, grandparentFilterName, filterDisplayName, trackId);
+                self.$emit('filter-cutoff-cleared', filterName, cohortOnlyFilter, sampleOnlyFilter, parentFilterName, grandparentFilterName, filterDisplayName, trackId);
             },
             clearFilters: function () {
                 let self = this;
@@ -201,6 +214,8 @@
         created: function () {
         },
         mounted: function () {
+            let self = this;
+            self.onlyOneTrack = self.totalNumTracks < 2;
         }
     }
 </script>

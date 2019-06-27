@@ -430,7 +430,10 @@ TD & SJG updated Jun2019 -->
                                 self.doneLoadingData = true;  // Display variants
                                 if (loadedCohortData) {
                                     let nextOptions = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': false};
-                                    self.variantModel.promiseFullyAnnotateVariants(self.selectedGene,
+                                    let promises = [];
+
+                                    // Fully annotate the enrichment track
+                                    let fullAnnoP = self.variantModel.promiseFullyAnnotateVariants(self.selectedGene,
                                         self.selectedTranscript,
                                         false,  // isBackground
                                         nextOptions)
@@ -439,14 +442,30 @@ TD & SJG updated Jun2019 -->
                                                 let unwrappedMap = map[0];
                                                 self.variantModel.combineVariantInfo(unwrappedMap);
                                             });
-                                            self.updateClasses();
-                                            self.doneLoadingExtras = true;
                                             if (self.$refs.enrichCardRef) {
                                                 self.$refs.enrichCardRef.forEach((cardRef) => {
                                                     cardRef.refreshVariantColors();
                                                 })
                                             }
+                                        });
+                                    promises.push(fullAnnoP);
+
+                                    // Assign track uniqueness classes
+                                    let uniqueP = self.variantModel.promiseAnnotateUniqueVariants()
+                                        .then(() => {
+                                            self.updateClasses();
+                                        });
+                                    promises.push(uniqueP);
+
+                                    Promise.all(promises)
+                                        .then(() => {
+                                            self.doneLoadingExtras = true;
+                                            resolve();
                                         })
+                                        .catch((e) => {
+                                            reject('Something went wrong w/ second annotation and uniqueness round ' + e);
+                                        })
+
                                 } else {
                                     resolve();
                                 }
@@ -459,16 +478,19 @@ TD & SJG updated Jun2019 -->
                     }
                 })
             },
+            /* Updates impact and uniqueness classes (required after all tracks are annotated). */
             updateClasses: function () {
                 let self = this;
-                // TODO: NOTE THIS IS A BANDAID
-                // TODO: variants need to be classified by what data set they belong to (add dataset id class?)
-                // TODO: and iterate through each dataset - pull variants by 'variant' and 'sN' classes
-                $('.variant').each(function (i, v) {
-                    let mainDataSetId = 's0';
-                    let impactClass = self.variantModel.getDataSet(mainDataSetId).getVepImpactClass(v, 'vep');
-                    $(v).addClass(impactClass);
-                })
+                if (self.$refs.enrichCardRef) {
+                    self.$refs.enrichCardRef.forEach((cardRef) => {
+                        cardRef.updateClasses();
+                    });
+                }
+                if (self.$refs.variantCardRef) {
+                    self.$refs.variantCardRef.forEach((cardRef) => {
+                        cardRef.updateClasses();
+                    });
+                }
             },
             promiseLoadAnnotationDetails: function () {
             },
@@ -902,13 +924,14 @@ TD & SJG updated Jun2019 -->
                     self.$refs.filterSettingsMenuRef.removeFilterViaChip(originalFiltName, filterObj.parentName, filterObj.grandparentName, filterObj.type, trackId);
                 }
             },
-            filterBoxToggled: function(filterName, filterState, cohortOnlyFilter, parentName, grandparentName, filterDisplayName, trackId) {
+            filterBoxToggled: function(filterName, filterState, cohortOnlyFilter, sampleOnlyFilter, parentName, grandparentName, filterDisplayName, trackId) {
                 let self = this;
                 let filterInfo = {
                     name: filterName,
                     parentName: parentName,
                     grandparentName: grandparentName,
                     cohortOnly: cohortOnlyFilter,
+                    sampleOnly: sampleOnlyFilter,
                     type: 'checkbox',
                     state: filterState,
                     cutoffValue: null,
@@ -916,7 +939,7 @@ TD & SJG updated Jun2019 -->
                 };
                 self.onFilterSettingsApplied(filterInfo, trackId);
             },
-            filterCutoffApplied: function(filterName, filterLogic, cutoffValue, cohortOnlyFilter, parentName, grandparentName, filterDisplayName) {
+            filterCutoffApplied: function(filterName, filterLogic, cutoffValue, cohortOnlyFilter, sampleOnlyFilter, parentName, grandparentName, filterDisplayName) {
                 let self = this;
                 let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
                 let filterInfo = {
@@ -925,6 +948,7 @@ TD & SJG updated Jun2019 -->
                     parentName: parentName,
                     grandparentName: grandparentName,
                     cohortOnly: cohortOnlyFilter,
+                    sampleOnly: sampleOnlyFilter,
                     type: 'cutoff',
                     state: filterLogic,
                     cutoffValue: cutoffValue,
@@ -933,7 +957,7 @@ TD & SJG updated Jun2019 -->
                 };
                 self.onFilterSettingsApplied(filterInfo);
             },
-            filterCutoffCleared: function(filterName, cohortOnlyFilter, parentName, grandparentName, filterDisplayName, trackId) {
+            filterCutoffCleared: function(filterName, cohortOnlyFilter, sampleOnlyFilter, parentName, grandparentName, filterDisplayName, trackId) {
                 let self = this;
                 let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
                 let filterInfo = {
@@ -942,6 +966,7 @@ TD & SJG updated Jun2019 -->
                     parentName: parentName,
                     grandparentName: grandparentName,
                     cohortOnly: cohortOnlyFilter,
+                    sampleOnly: sampleOnlyFilter,
                     type: 'cutoff',
                     state: null,
                     cutoffValue: null,
@@ -967,7 +992,9 @@ TD & SJG updated Jun2019 -->
                         }
                     })
                 } else {
-                    self.$refs.enrichCardRef[0].filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
+                    if (!filterInfo.sampleOnly) {
+                        self.$refs.enrichCardRef[0].filterVariants(filterInfo, self.selectedTrackId, selectedVarId);
+                    }
                     if (self.$refs.variantCardRef && !filterInfo.cohortOnly) {
                         self.$refs.variantCardRef.forEach((cardRef) => {
                             cardRef.filterVariants(filterInfo, self.selectedTrackId, selectedVarId);

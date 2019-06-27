@@ -26,6 +26,7 @@ class DataSetModel {
         this.affectedInfo = null;
         this.calledVariants = null;
         this.loadedVariants = null;     // Variants displayed in track
+        this.loadedVarIdHash = null;    // A hash of all loaded variant IDs within this track - used for unique track filtering
         this.filteredVariants = null;   // Filtered variant display
         this.selectedVariants = null;   // Selected in zoom panel
         this.trackName = '';            // Displays in italics before chips
@@ -1690,6 +1691,7 @@ class DataSetModel {
                 let start = (filterModel && filterModel.regionStart) ? filterModel.regionStart : gene.start;
                 let end = (filterModel && filterModel.regionEnd) ? filterModel.regionEnd : gene.end;
                 self.loadedVariants = filterAndPileupVariants(cohort, start, end, 'loaded');
+                self.loadedVarIdHash = self.populateVariantIdHash(self.loadedVariants.features);
             }
         }
     }
@@ -1701,9 +1703,7 @@ class DataSetModel {
         let self = this;
 
         self.extraAnnotationsLoaded = false;
-        if (self.lastGeneLoaded === geneName) {
-            return;
-        } else {
+        if (self.lastGeneLoaded !== geneName) {
             self.getCohorts().forEach(function (cohort) {
                 cohort.loadedVariants = {
                     loadState: {},
@@ -1823,10 +1823,9 @@ class DataSetModel {
 
     // <editor-fold desc="HELPERS">
 
-    getVepImpactClass(domVar) {
+    getVepImpactClass(varId) {
         // Pull variant out of lookup
         let self = this;
-        let varId = domVar.id;
         let variant = self.subsetEnrichedVars[varId];
         if (variant == null) variant = self.probandEnrichedVars[varId];
         if (variant == null) variant = self.nonEnrichedVars[varId];
@@ -1915,6 +1914,15 @@ class DataSetModel {
         fileNames.forEach((fileName) => {
             self.vcfEndptHash = _.omit(self.vcfEndptHash, fileName);
         })
+    }
+
+    /* Given a list of features, returns a hash of the feature IDs. */
+    populateVariantIdHash(features) {
+        let idHash = {};
+        features.forEach((feature) => {
+            idHash[feature.id] = true;
+        });
+        return idHash;
     }
 
     /* Returns the vcf model corresponding to the vcf file which the provided variant exists in. If multiple vcf files

@@ -60,6 +60,12 @@
                     zygosities: [
                         {name: 'hom', displayName: 'HOMOZYGOUS', model: true, numTracksActive: 0},
                         {name: 'het', displayName: 'HETEROZYGOUS', model: true, numTracksActive: 0}
+                    ],
+                    cohortTrack: [
+                        {name: 'cohUnq', displayName: 'Show unique variants', model: true, numTracksActive: 0}
+                    ],
+                    singleSampleTrack: [
+                        {name: 'singleUnq', displayName: 'Show unique variants', model: true, numTracksActive: 0}
                     ]
                 }
             }
@@ -74,7 +80,14 @@
                 if (trackId == null) {
                     filterObj.model = updatedState;
                     if (!updatedState) {
-                        filterObj.numTracksActive = self.totalNumTracks;
+                        // Special cases for track filters
+                        if (filterName === 'cohortBySingle') {
+                            filterObj.numTracksActive = 1;
+                        } else if (filterName === 'singleByCohort') {
+                            filterObj.numTracksActive = self.totalNumTracks - 1;
+                        } else {
+                            filterObj.numTracksActive = self.totalNumTracks;
+                        }
                     } else {
                         filterObj.numTracksActive = 0;
                     }
@@ -119,7 +132,7 @@
                 let self = this;
                 return true;
 
-                // TODO: used to control waiting on filtering - have to make all unavailable until second annotation return for now
+                // TODO: used to control waiting on filtering - have to make all unavailable until second annotation return for now b/c coloring weird
                 // if (self.parentFilterName === 'impact' || self.parentFilterName === 'g1000' ||
                 //     self.parentFilterName === 'exac' || self.parentFilterName === 'gnomad') {
                 //     return true;

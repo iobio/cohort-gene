@@ -90,26 +90,30 @@
                 minGenotypeDepth: null,
                 categories: {
                     'annotation': [
-                        {name: 'impact', display: 'Impact', active: false, open: false, type: 'checkbox', cohortOnly: false},
-                        {name: 'type', display: 'Type', active: false, open: false, type: 'checkbox', cohortOnly: false},
-                        {name: 'zygosities', display: 'Zygosities', active: false, open: false, type: 'checkbox', cohortOnly: false},],
+                        {name: 'impact', display: 'Impact', active: false, open: false, type: 'checkbox', cohortOnly: false, sampleOnly: false},
+                        {name: 'type', display: 'Type', active: false, open: false, type: 'checkbox', cohortOnly: false, sampleOnly: false},
+                        {name: 'zygosities', display: 'Zygosities', active: false, open: false, type: 'checkbox', cohortOnly: false, sampleOnly: false},],
                     'enrichment': [
-                        {name: 'pValue', display: 'p-val', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: true},
-                        {name: 'adjPVal', display: '-log(p-val)', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: true}],
+                        {name: 'pValue', display: 'p-val', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: true, sampleOnly: false},
+                        {name: 'adjPVal', display: '-log(p-val)', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: true, sampleOnly: false}],
                     'frequencies': [
-                        {name: 'g1000', display: '1000G', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: false},
-                        {name: 'exac', display: 'ExAC', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: false},
-                        {name: 'gnomad', display: 'gnomAD', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: false},
-                        {name: 'probandFreq', display: 'Proband', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: true},
-                        {name: 'subsetFreq', display: 'Subset', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: true}],
+                        {name: 'g1000', display: '1000G', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: false, sampleOnly: false},
+                        {name: 'exac', display: 'ExAC', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: false, sampleOnly: false},
+                        {name: 'gnomad', display: 'gnomAD', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: false, sampleOnly: false},
+                        {name: 'probandFreq', display: 'Proband', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: true, sampleOnly: false},
+                        {name: 'subsetFreq', display: 'Subset', active: false, open: false, numTracksActive: 0, type: 'cutoff', cohortOnly: true, sampleOnly: false}],
                     'rawCounts': [ // Currently unused - may incorporate later
                         {name: 'rawCounts', display: 'Raw Counts', active: false, open: false, type: 'cutoff'}],
-                    'samplePresence': [{name: 'samplePresence', display: 'Sample Presence', active: false, open: false, type: 'checkbox'}]
+                    'track': [
+                        {name: 'cohortTrack', display: 'Cohort Track', active: false, open: false, type: 'checkbox', cohortOnly: true, sampleOnly: false},
+                        {name: 'singleSampleTrack', display: 'Single Sample Tracks', active: false, open: false, type: 'checkbox', cohortOnly: false, sampleOnly: true}]
                 }
             }
         },
         watch: {},
         methods: {
+            // TODO: convert all filter params to a single object!
+
             // Turns a checkbox filter on or off according to filterState
             onFilterToggled: function(filterName, filterState, parentFilterName, grandparentFilterName, parentFilterState, filterDisplayName, trackId) {
                 let self = this;
@@ -118,9 +122,11 @@
                     return cat.name === parentFilterName;
                 });
                 let cohortOnly = false;
+                let sampleOnly = false;
                 if (filterObj.length > 0) {
                     filterObj[0].active = parentFilterState;
                     cohortOnly = filterObj[0].cohortOnly;
+                    sampleOnly = filterObj[0].sampleOnly;
                 }
                 let grandparentFilterState = false;
                 let parentFilters = self.categories[grandparentFilterName];
@@ -144,8 +150,10 @@
                     } else {
                         filterDisplayName = 'Heterozygotes';
                     }
+                } else if (parentFilterName === 'cohortTrack' || parentFilterName === 'singleSampleTrack') {
+                    filterDisplayName = 'unique variants';
                 }
-                self.$emit('filter-toggled', filterName, filterState, parentFilterName, grandparentFilterName, grandparentFilterState, cohortOnly, filterDisplayName, trackId);
+                self.$emit('filter-toggled', filterName, filterState, parentFilterName, grandparentFilterName, grandparentFilterState, cohortOnly, sampleOnly, filterDisplayName, trackId);
             },
             // Applies a single cutoff filter for ALL tracks
             onFilterApplied: function(filterName, filterLogic, cutoffValue, grandparentFilterName) {
@@ -155,10 +163,12 @@
                     return cat.name === filterName;
                 });
                 let cohortOnly = false;
+                let sampleOnly = false;
                 let displayName = '';
                 if (filterObj.length > 0) {
                     filterObj[0].active = true;
                     cohortOnly = filterObj[0].cohortOnly;
+                    sampleOnly = filterObj[0].sampleOnly;
                     displayName = filterObj[0].display;
                     if (grandparentFilterName === 'frequencies') {
                         displayName += ' Freq';
@@ -171,7 +181,7 @@
                     grandparentFilterState |= filt.active;
                 });
                 let greatGrandPlaceholder = ''; // No extra parental layer for cutoff filters
-                self.$emit('filter-applied', filterName, filterLogic, cutoffValue, grandparentFilterName, grandparentFilterState, greatGrandPlaceholder, cohortOnly, displayName);
+                self.$emit('filter-applied', filterName, filterLogic, cutoffValue, grandparentFilterName, grandparentFilterState, greatGrandPlaceholder, cohortOnly, sampleOnly, displayName);
             },
             // Clears a cutoff filter for a single track if trackId is provided, otherwise clears filter from all tracks
             onFilterCleared: function(filterName, grandparentFilterName, trackId) {
@@ -181,9 +191,11 @@
                     return cat.name === filterName;
                 });
                 let cohortOnly = false;
+                let sampleOnly = false;
                 let displayName = '';
                 if (filterObj.length > 0) {
                     cohortOnly = filterObj[0].cohortOnly;
+                    sampleOnly = filterObj[0].sampleOnly;
                     displayName = filterObj[0].display;
                     // Decrement active value if we're removing filter for single track
                     if (trackId != null) {
@@ -201,7 +213,7 @@
                     grandparentFilterState |= filt.active;
                 });
                 let greatGrandName = '';    // Don't have this level of hierarchy for cutoff filters but preserve param order
-                self.$emit('cutoff-filter-cleared', filterName, grandparentFilterName, grandparentFilterState, greatGrandName, cohortOnly, displayName, trackId);
+                self.$emit('cutoff-filter-cleared', filterName, grandparentFilterName, grandparentFilterState, greatGrandName, cohortOnly, sampleOnly, displayName, trackId);
             },
             // Clears all filters from all tracks
             clearFilters: function() {
