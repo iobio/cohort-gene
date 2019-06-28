@@ -113,7 +113,6 @@
         watch: {},
         methods: {
             // TODO: convert all filter params to a single object!
-
             // Turns a checkbox filter on or off according to filterState
             onFilterToggled: function(filterName, filterState, parentFilterName, grandparentFilterName, parentFilterState, filterDisplayName, trackId) {
                 let self = this;
