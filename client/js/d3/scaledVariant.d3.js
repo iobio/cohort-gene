@@ -340,7 +340,7 @@ function scaledVariantD3() {
         if (filterClasses.length === 0 && filterCutoffs.length === 0) {
             allVariants.style("opacity", 1);
             allVariants.style("pointer-events", 'auto');
-            return false;
+            return 0;
         }
 
         // Remove filtered class for any variants that contain the given class criteria

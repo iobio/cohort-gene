@@ -696,14 +696,20 @@ Updated: SJG Jan2019
             updateClasses: function() {
                 const self = this;
                 let svgContainer = self.getVariantSVG(self.$refs.subsetVizRef.name);
-
-                // TODO: left off with cohort filtering not working
                 let allVariants = svgContainer.selectAll(".variant");
                 allVariants.each(function (d, i) {
                     let selectionId = '#' + d.id;
                     let domD = svgContainer.selectAll(selectionId);
+
                     if (d.uniqueClass != null && d.uniqueClass !== '') {
                         domD.classed({'cohUnq': true});
+                    }
+
+                    let currImpact = self.dataSetModel.getVepImpactClass(d.id);
+                    if (currImpact === 'HIGH') {
+                        domD.classed({ 'iHIGH': true });
+                    } else if (currImpact === 'MODERATE') {
+                        domD.classed({ 'iMODERATE': true });
                     }
                 });
             }

@@ -433,7 +433,7 @@ TD & SJG updated Jun2019 -->
                                     let promises = [];
 
                                     // Fully annotate the enrichment track
-                                    let fullAnnoP = self.variantModel.promiseFullyAnnotateVariants(self.selectedGene,
+                                    self.variantModel.promiseFullyAnnotateVariants(self.selectedGene,
                                         self.selectedTranscript,
                                         false,  // isBackground
                                         nextOptions)
@@ -442,30 +442,20 @@ TD & SJG updated Jun2019 -->
                                                 let unwrappedMap = map[0];
                                                 self.variantModel.combineVariantInfo(unwrappedMap);
                                             });
+                                            // Redraw the variants w/ impact coloring
                                             if (self.$refs.enrichCardRef) {
                                                 self.$refs.enrichCardRef.forEach((cardRef) => {
                                                     cardRef.refreshVariantColors();
                                                 })
                                             }
+                                            // Update unique classes on redrawn vars
+                                            self.variantModel.promiseAnnotateUniqueVariants()
+                                                .then(() => {
+                                                    self.updateClasses();
+                                                    self.doneLoadingExtras = true;
+                                                    resolve();
+                                                });
                                         });
-                                    promises.push(fullAnnoP);
-
-                                    // Assign track uniqueness classes
-                                    let uniqueP = self.variantModel.promiseAnnotateUniqueVariants()
-                                        .then(() => {
-                                            self.updateClasses();
-                                        });
-                                    promises.push(uniqueP);
-
-                                    Promise.all(promises)
-                                        .then(() => {
-                                            self.doneLoadingExtras = true;
-                                            resolve();
-                                        })
-                                        .catch((e) => {
-                                            reject('Something went wrong w/ second annotation and uniqueness round ' + e);
-                                        })
-
                                 } else {
                                     resolve();
                                 }

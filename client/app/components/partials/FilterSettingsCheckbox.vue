@@ -81,9 +81,9 @@
                     filterObj.model = updatedState;
                     if (!updatedState) {
                         // Special cases for track filters
-                        if (filterName === 'cohortBySingle') {
+                        if (filterName === 'cohUnq') {
                             filterObj.numTracksActive = 1;
-                        } else if (filterName === 'singleByCohort') {
+                        } else if (filterName === 'singleUnq') {
                             filterObj.numTracksActive = self.totalNumTracks - 1;
                         } else {
                             filterObj.numTracksActive = self.totalNumTracks;
