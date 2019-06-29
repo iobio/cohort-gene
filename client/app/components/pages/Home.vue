@@ -457,7 +457,13 @@ TD & SJG updated Jun2019 -->
                                                 });
                                         });
                                 } else {
-                                    resolve();
+                                    // Update unique classes on redrawn vars
+                                    self.variantModel.promiseAnnotateUniqueVariants()
+                                        .then(() => {
+                                            self.updateClasses();
+                                            self.doneLoadingExtras = true;
+                                            resolve();
+                                        });
                                 }
                             })
                             .catch(function (error) {
@@ -565,7 +571,7 @@ TD & SJG updated Jun2019 -->
                             self.promiseLoadData()
                                 .then(function () {
                                     resolve();
-                                })
+                                });
                         })
                         .catch(function (error) {
                             reject(error);
