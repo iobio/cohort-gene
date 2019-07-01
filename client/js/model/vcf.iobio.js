@@ -1954,7 +1954,7 @@ vcfiobio = function module() {
                         // Use this as apart of a CSS/d3 selector - if we have deletion here need to format it
                         let cssFormattedAlt = rec.alt === '*' ? 'D' : rec.alt;
                         let cssFormattedStrand = geneObject.strand === '+' ? 'plus' : 'minus';
-                        let trimmedChromName = parseInt(refName); // We have to synonymize chromosome name between versions - no chr13 vs 13 b/c messes up track filtering
+                        let trimmedChromName = refName.indexOf("chr") === 0 ? refName.slice(3) : refName; // We have to synonymize chromosome name between versions - no chr13 vs 13 b/c messes up track filtering
 
                         // Keep the variant if we are just parsing a single sample (parseMultiSample=false)
                         // or we are parsing multiple samples and this sample's genotype is het or hom
