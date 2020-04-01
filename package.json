@@ -16,7 +16,7 @@
     "iobio-api-client": "^0.6.0",
     "jquery": "^3.4.1",
     "latest-version": "^5.1.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.13",
     "npm": "^6.9.0",
     "sass": "^1.0.0-beta.5.2",
     "serve-favicon": "^2.4.3",
