@@ -197,6 +197,7 @@ TD & SJG updated Jun2019 -->
     import GeneModel from '../../models/GeneModel.js'
     import FilterModel from '../../models/FilterModel.js'
     import VariantModel from '../../models/VariantModel.js'
+    import EndpointCmd from '../../../js/model/endpointCmd.js'
     // Static data
     import allGenesData from '../../../data/genes.json'
     import simonsIdMap from '../../../data/new_id_map.json'
@@ -212,7 +213,8 @@ TD & SJG updated Jun2019 -->
             EnrichmentVariantCard,
             FilterSettingsMenu,
             Welcome,
-            HistoryTab
+            HistoryTab,
+            EndpointCmd
         },
         props: {
             paramProjectId: {
@@ -339,12 +341,12 @@ TD & SJG updated Jun2019 -->
                     self.geneModel.setAllKnownGenes(self.allGenes);
                     self.allGenes = []; // Free up some space
                     self.geneModel.translator = translator;
-                    let endpoint = new EndpointCmd(useSSL,
-                        IOBIO,
+                    let endpoint = new EndpointCmd(CURRENT_IOBIO,
+                        vepREVELFile,
+                        useSSL,
                         self.cacheHelper.launchTimestamp,
                         self.genomeBuildHelper,
-                        utility.getHumanRefNames,
-                        vepREVELFile);
+                        utility.getHumanRefNames);
                     self.variantModel = new VariantModel(endpoint,
                         genericAnnotation,
                         translator,

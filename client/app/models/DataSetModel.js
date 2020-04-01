@@ -559,6 +559,7 @@ class DataSetModel {
                                     resultMap[entryName] = theVcfData;
 
                                     // Assign each variant to enrichment groups
+                                    // TODO: there might be some scenario here where we have combinedResults but don't have any features which breaks call below
                                     me.promiseAssignCohortsToEnrichmentGroups(theVcfData.features);
 
                                     // Flip status flags
