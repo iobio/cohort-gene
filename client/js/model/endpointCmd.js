@@ -10,7 +10,8 @@ export default class EndpointCmd {
         this.launchedFromUtah = iobioServices.indexOf('mosaic.chpc.utah.edu') === 0;
 
         // talk to gru
-        this.api = new Client('dev.backend.iobio.io:9002', {secure: false});
+        this.api = new Client('backend.iobio.io', {secure: true});
+
         this.gruBackend = true;
 
         // iobio services

@@ -1,5 +1,5 @@
 function HubEndpoint(source, usingNewApi) {
-    this.api = decodeURIComponent(source) + '/apiv1';
+    this.api = decodeURIComponent(source) + '/api/v1';
     this.oauth_api = decodeURIComponent(source);
     this.client_id = 'HkWNVjYK';
     this.usingNewApi = usingNewApi;

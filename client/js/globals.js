@@ -13,16 +13,12 @@ var HUB_SUBSET_NAME = "HubSubsetProbands";
 //
 // URLS
 //
-var DEV_IOBIO                 = "nv-dev-new.iobio.io/";
-var STAGE_IOBIO               = "nv-green.iobio.io/";
-var PROD_IOBIO                = "nv-prod.iobio.io/";
+var DEV_PORT                  = 9002;
+var DEV_IOBIO                 = "dev.backend.iobio.io:" + DEV_PORT + "/";
+var PROD_IOBIO                = "backend.iobio.io/";
 var CURRENT_IOBIO             = PROD_IOBIO;
 var iobio_services            = isOffline              ? serverInstance : CURRENT_IOBIO;
 var iobio_http_services       = (useSSL ? "https://" : "http://") + (isOffline ? serverInstance : CURRENT_IOBIO);
-
-// Hub services
-var HUB_ENV                   = "production";
-var hub_api                   = { development: "http://localhost:3000/apiv1", production: "https://hub.sfari.org/apiv1" };
 
 // http services
 var geneInfoServer            = iobio_http_services + "geneinfo/";
