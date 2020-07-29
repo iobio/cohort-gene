@@ -378,7 +378,7 @@ class VariantModel {
     /* Retrieves all urls from Hub corresponding to the given project ID. Returns an object where keys are chromosome
      * and values are arrays of stably sorted vcf and tbi urls. */
     promiseGetUrlsFromHub(projectId, initialLaunch) {
-        let self = this;
+        const self = this;
 
         return new Promise(function (resolve, reject) {
             // Stable sorted url lists
@@ -395,62 +395,16 @@ class VariantModel {
                 vcfFiles = data.data.filter(f => f.type === 'vcf');
                 tbiCsiFiles = data.data.filter(f => f.type === 'tbi' || f.type === 'csi');
 
-                // Pull out combined vcfs from individual chromosome ones
-                let sortedVcfFiles = [];
-                vcfFiles.forEach((file) => {
-                    let phaseFile = false;
-                    let name = file.name;
-
-                    // Have to do a diff check for SSC WES 37
-                    if (name === "ssc_wes.vcf.gz") {
-                        phaseFile = true;
-                    // Otherwise look for 'all' keyword to pull out combined
-                    } else {
-                        let namePieces = name.split('.');
-                        namePieces.forEach((piece) => {
-                            if (piece === 'all' || piece.includes('all')) {
-                                phaseFile = true;
-                            }
-                        });
-                    }
-
-                    if (phaseFile) {
-                        sortedVcfFiles.push(file);
-                    }
-                });
-                let sortedTbiCsiFiles = [];
-                tbiCsiFiles.forEach((file) => {
-                    let phaseFile = false;
-                    let name = file.name;
-
-                    // Have to do a diff check for SSC WES 37
-                    if (name === "ssc_wes.vcf.gz.tbi") {
-                        phaseFile = true;
-                        // Otherwise look for 'all' keyword to pull out combined
-                    } else {
-                        let namePieces = name.split('.');
-                        namePieces.forEach((piece) => {
-                            if (piece === 'all' || piece.includes('all')) {
-                                phaseFile = true;
-                            }
-                        });
-                    }
-
-                    if (phaseFile) {
-                        sortedTbiCsiFiles.push(file);
-                    }
-                });
-
                 // Check that we have matching data for all files
-                if (sortedVcfFiles.length !== (sortedTbiCsiFiles.length)) {
-                    console.log('Did not obtain matching vcf and tbi/csi files from Hub. Data may not be complete.');
+                if (vcfFiles.length !== (tbiCsiFiles.length)) {
+                    reject('Did not obtain matching vcf and tbi/csi files from Hub. Data may not be complete.');
                 }
 
                 // Get urls for both vcf and tbi
                 let urlPromises = [];
-                for (let i = 0; i < sortedVcfFiles.length; i++) {
-                    let currVcf = sortedVcfFiles[i];
-                    let currTbi = sortedTbiCsiFiles[i];
+                for (let i = 0; i < vcfFiles.length; i++) {
+                    let currVcf = vcfFiles[i];
+                    let currTbi = tbiCsiFiles[i];
                     let urlP = self.promiseGetSignedUrls(currVcf, currTbi, projectId)
                         .then((urlObj) => {
                             nameList.push(urlObj.name);
