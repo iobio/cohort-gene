@@ -329,7 +329,10 @@ class VariantModel {
                         }
                     }
                     // Add proband filter to subset filter set
-                    self.appendSubsetPhenoFilters(subsetCohort);
+                    // TODO: may want to put a better solution here for Utah Mosaic
+                    if (!self.launchedFromMosaic()) {
+                        self.appendSubsetPhenoFilters(subsetCohort);
+                    }
 
                     // Retrieve subset sample IDs from Hub
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
@@ -352,8 +355,11 @@ class VariantModel {
                     Promise.all(promises)
                         .then(function () {
                             // Assign chip display numbers (on left side)
-                            subsetCohort.phenotypes.splice(0, 0, ('Proband n = ' + probandCohort.sampleIds.length));
-                            subsetCohort.phenotypes.splice(1, 0, ('Subset n = ' + subsetCohort.sampleIds.length));
+                            const descriptor = self.launchedFromMosaic() ? 'Cohort' : 'Proband';
+                            subsetCohort.phenotypes.splice(0, 0, (descriptor + ' n = ' + probandCohort.sampleIds.length));
+                            if (!self.launchedFromMosaic()) {
+                                subsetCohort.phenotypes.splice(1, 0, ('Subset n = ' + subsetCohort.sampleIds.length));
+                            }
                             hubDataSet.inProgress.fetchingHubData = false;
                             self.simonsIdMap = null;
 
