@@ -215,7 +215,8 @@
                              :log10pValueInfo="log10pValueInfo"
                              :variantSelected="variantSelected"
                              :loadingExtraAnnotations="loadingExtraAnnotations"
-                             :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations">
+                             :loadingExtraClinvarAnnotations="loadingExtraClinvarAnnotations"
+                             :launchedFromMosaic="launchedFromMosaic">
                 </feature-viz>
                 <allele-frequency-viz id="loaded-freq-viz" class="summary-viz" style="padding-top: 10px"
                                       ref="summaryFrequencyViz"
@@ -240,6 +241,7 @@
                                  :totalProbandCount="totalProbandCount"
                                  :totalSubsetCount="totalSubsetCount"
                                  :blacklistStatus="blacklistStatus"
+                                 :launchedFromMosaic="launchedFromMosaic"
                                  @zyg-bars-mounted="zygBarsMounted">
                 </bar-feature-viz>
             </v-layout>
@@ -265,7 +267,8 @@
             selectedGene: '',
             loadingExtraAnnotations: false,
             loadingExtraClinvarAnnotations: false,
-            blacklistStatus: false
+            blacklistStatus: false,
+            launchedFromMosaic: false
         },
         data() {
             return {

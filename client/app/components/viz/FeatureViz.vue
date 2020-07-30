@@ -12,11 +12,11 @@
 
 <template>
     <v-flex xs12>
-        <v-layout row>
+        <v-layout row v-if="!launchedFromMosaic">
             <v-flex xs12 class="field-label-header" style="text-align: left; margin-top: 5px">Cohort Details
             </v-flex>
         </v-layout>
-        <v-layout row>
+        <v-layout row v-if="!launchedFromMosaic">
             <v-flex xl3 lg4 md6 class="summary-field-label">
                 <span>Raw p-value:</span>
                 <v-menu open-on-hover offset-y transition="slide-y-transition" max-width="300px">
@@ -43,7 +43,7 @@
                 <img src="../../../assets/images/wheel.gif">
             </div>
         </v-layout>
-        <v-layout row>
+        <v-layout row v-if="!launchedFromMosaic">
             <v-flex xl3 lg4 md6 class="summary-field-label">
                 <span>-log<sub>10</sub>(p-val):</span>
                 <v-menu open-on-hover offset-y transition="slide-y-transition" max-width="300px">
@@ -72,6 +72,7 @@
                 <img src="../../../assets/images/wheel.gif">
             </div>
         </v-layout>
+
         <v-layout row style="padding-top: 10px">
             <v-flex xs12 class="field-label-header" style="text-align: left">Annotation Details</v-flex>
         </v-layout>
@@ -311,6 +312,10 @@
                 type: Boolean
             },
             loadingExtraClinvarAnnotations: {
+                default: false,
+                type: Boolean
+            },
+            launchedFromMosaic: {
                 default: false,
                 type: Boolean
             }
