@@ -210,7 +210,7 @@ TD & SJG updated Apr2018 -->
                     bottom: 5,
                     left: 4
                 },
-                variantSymbolHeight: 10,
+                variantSymbolHeight: 14,
                 variantSymbolPadding: 2,
                 variantChartWidth: 0,
                 variantChartX: 0,

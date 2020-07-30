@@ -17,8 +17,8 @@ Updated: SJG Jan2019
         .zoom-loader
             padding-top: 4px
             padding-right: 7px
-            max-width: 30px
             float: right
+            color: rgb(120, 120, 120)
             img
                 width: 22px !important
         #gene-viz, #gene-viz-zoom
@@ -113,6 +113,7 @@ Updated: SJG Jan2019
             <v-flex xs6>
                 <div v-show="!doneLoadingExtras" class="zoom-loader" id="zoomLoaderDiv">
                     <img src="../../../assets/images/wheel.gif">
+                    Annotating Cohort...
                 </div>
 <!--                    <v-flex xl3 md4>-->
 <!--                        <v-switch label="Zoom Mode"-->
@@ -245,7 +246,7 @@ Updated: SJG Jan2019
                     bottom: 5,
                     left: 4
                 },
-                variantSymbolHeight: 10,
+                variantSymbolHeight: 14,
                 variantSymbolPadding: 2,
                 variantChartWidth: 0,
                 variantChartX: 0,

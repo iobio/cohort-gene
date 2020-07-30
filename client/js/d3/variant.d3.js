@@ -18,7 +18,7 @@ function variantD3() {
         .tickFormat(tickFormatter);
     // variables
     var borderRadius = 1,
-        variantHeight = 10,
+        variantHeight = 20,
         regionStart = undefined,
         regionEnd = undefined,
         showXAxis = false,
@@ -437,7 +437,7 @@ function variantD3() {
                 // distance between all variants.
                 // TODO:  Need to use this as a factor for increasing
                 // width of multi-base variants.
-                var minWidth = 6;
+                var minWidth = 10;
                 // For each level
                 for (var l = 0; l < verticalLayers; l++) {
                     // For each row in array (per variant set; only one variant set)
