@@ -568,11 +568,11 @@ TD & SJG updated Jun2019 -->
                 self.promiseLoadGene(geneName);
                 self.doneLoadingData = false;
                 self.doneLoadingExtras = false;
-                if (self.$refs.enrichCardRef) {
-                    self.$refs.enrichCardRef.forEach((card) => {
-                        card.resetZoom();
-                    });
-                }
+                // if (self.$refs.enrichCardRef) {
+                //     self.$refs.enrichCardRef.forEach((card) => {
+                //         card.resetZoom();
+                //     });
+                // }
                 if (self.$refs.filterSettingsMenuRef) {
                     self.$refs.filterSettingsMenuRef.clearFilters();
                 }
@@ -890,7 +890,6 @@ TD & SJG updated Jun2019 -->
                         self.geneModel.addGeneName(selectedGene);
                         self.onGeneSelected(selectedGene);
                         self.initializeFiltering();
-                        resolve();
                     })
             },
             promiseDetermineSource: function () {
