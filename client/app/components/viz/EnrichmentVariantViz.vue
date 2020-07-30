@@ -287,7 +287,7 @@
         methods: {
             draw: function () {
                 let self = this;
-                this.variantChart = scaledVariantD3()
+                this.variantChart = variantD3()
                     .width(this.width)
                     .clazz(function (variant) {
                         return self.classifySymbolFunc(variant, self.annotationScheme, true, self.extraAnnotationsLoaded);

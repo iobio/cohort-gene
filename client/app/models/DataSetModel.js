@@ -1671,12 +1671,13 @@ class DataSetModel {
                 return isTarget && !isHomRef && inRegion && passesModelFilter;
             });
 
-            let pileupObject = null;
-            if (self.isSingleSample) {
-                pileupObject = model._pileupVariants(filteredVariants.features, start, end);
-            } else {
-                pileupObject = model._enrichmentPileupVariants(filteredVariants.features, start, end);
-            }
+            // Note: As of July 2020, just using normal pileup for Utah Mosaic port
+            let pileupObject = model._pileupVariants(filteredVariants.features, start, end);
+            // if (self.isSingleSample) {
+            //     pileupObject = model._pileupVariants(filteredVariants.features, start, end);
+            // } else {
+            //     pileupObject = model._enrichmentPileupVariants(filteredVariants.features, start, end);
+            // }
             filteredVariants.maxPosLevel = pileupObject.maxPosLevel;
             filteredVariants.maxNegLevel = pileupObject.maxNegLevel ? pileupObject.maxNegLevel : 0;
             filteredVariants.maxSubLevel = pileupObject.maxSubLevel ? pileupObject.maxSubLevel : 1;

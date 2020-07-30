@@ -215,8 +215,7 @@ class VariantModel {
         let self = this;
         if (self.projectId && self.projectId !== '') {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -266,12 +265,13 @@ class VariantModel {
                         });
 
                     // Format filter to send to Hub to get all proband IDs (via 'affected status' metric)
-                    let probandFilter = self.getProbandPhenoFilter();
-                    let filterObj = {'affected_status': probandFilter};
+                    // NOTE: removed this for Utah Mosaic functionality July2020
+                    // let probandFilter = self.getProbandPhenoFilter();
+                    // let filterObj = {'affected_status': probandFilter};
 
                     // Retrieve proband sample IDs from Hub
                     let promises = [];
-                    let probandP = self.promiseGetSampleIdsFromHub(self.projectId, filterObj)
+                    let probandP = self.promiseGetSampleIdsFromHub(self.projectId)
                         .then(function (sampleObjs) {
                             // Stop process if we don't have any probands
                             if (sampleObjs.length === 0) {
@@ -329,7 +329,7 @@ class VariantModel {
                         }
                     }
                     // Add proband filter to subset filter set
-                    self.appendSubsetPhenoFilters(subsetCohort, probandFilter);
+                    self.appendSubsetPhenoFilters(subsetCohort);
 
                     // Retrieve subset sample IDs from Hub
                     let subsetP = self.promiseGetSampleIdsFromHub(self.projectId, self.phenoFilters)
@@ -441,8 +441,7 @@ class VariantModel {
                 .then((url) => {
                     if (url == null || url.length === 0) {
                         reject('Empty vcf url returned from hub for ' + vcf.name);
-                    }
-                    else {
+                    } else {
                         vcfUrl = url;
                     }
                 });
@@ -453,8 +452,7 @@ class VariantModel {
                 .then((url) => {
                     if (url == null || url.length === 0) {
                         reject('Empty tbi url returned from hub for ' + tbi.name);
-                    }
-                    else {
+                    } else {
                         tbiUrl = url;
                     }
                 });
@@ -479,8 +477,7 @@ class VariantModel {
                 let url = urlData.url;
                 if (url == null || url.length === 0) {
                     reject("Empty url returned from hub for " + file.name);
-                }
-                else {
+                } else {
                     resolve(url);
                 }
             })
@@ -519,7 +516,7 @@ class VariantModel {
     }
 
     /* Adds properly formatted phenotype filters to the supplied cohort model. */
-    appendSubsetPhenoFilters(subsetCohort, probandFilter) {
+    appendSubsetPhenoFilters(subsetCohort) {
         let self = this;
 
         // Define if parameter mapping overwrote
@@ -534,11 +531,12 @@ class VariantModel {
             })
         }
 
+        // NOTE: removed this for Utah Mosaic functionality July2020
         // If we aren't filtering on affected status already, add a proband filter
         // Add this after setting up cohortPhenotype array to preserve 'Probands' chip displaying first
-        if (self.phenoFilters['affected_status'] == null) {
-            self.phenoFilters['affected_status'] = probandFilter;
-        }
+        // if (self.phenoFilters['affected_status'] == null) {
+        //     self.phenoFilters['affected_status'] = probandFilter;
+        // }
     }
 
     /* Only handles affected pie chart filter, and histogram filters */
@@ -549,8 +547,7 @@ class VariantModel {
         if (filter === 'affected_status') {
             if (boundsArr[0] === 'Affected') {
                 return 'Affected';
-            }
-            else if (boundsArr[0] === 'Unaffected') {
+            } else if (boundsArr[0] === 'Unaffected') {
                 return 'Unaffected';
             }
         }
@@ -625,13 +622,13 @@ class VariantModel {
                 let fileText = fileObj.target.result;
                 try {
                     infoObj = JSON.parse(fileText);
-                } catch(error) {
+                } catch (error) {
                     console.log(error);
                     resolve(null);
                 }
                 let entries = infoObj['entries'];
                 let refBuild = infoObj['refBuild'];
-                entries.forEach((entry) =>  {
+                entries.forEach((entry) => {
                     let currInfo = {};
                     currInfo.id = entry.id;
                     currInfo.displayName = entry.displayName;
@@ -652,7 +649,6 @@ class VariantModel {
             reader.readAsText(customFile);
         })
     }
-
 
 
     /* Removes data set model and cohort models associated with the given ID from the optional other data set list. */
@@ -845,8 +841,7 @@ class VariantModel {
         let existingVariants = [];
         if (annotatedVars.length > 1) {
             existingVariants = subsetModel.loadedVariants.features;
-        }
-        else {
+        } else {
             let singleVar = annotatedVars[0];
             existingVariants = subsetModel.loadedVariants.features.filter(feature => feature.id === singleVar.id);
         }
@@ -1088,8 +1083,7 @@ class VariantModel {
 
         if (!clickMode) {
             self.extraAnnotationsLoaded = true;
-        }
-        else {
+        } else {
             return existingVariants[0];
         }
     }
@@ -1097,4 +1091,5 @@ class VariantModel {
     //</editor-fold>
 
 }
+
 export default VariantModel;

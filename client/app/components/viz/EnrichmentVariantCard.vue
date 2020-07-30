@@ -18,6 +18,7 @@ Updated: SJG Jan2019
             padding-top: 4px
             padding-right: 7px
             max-width: 30px
+            float: right
             img
                 width: 22px !important
         #gene-viz, #gene-viz-zoom
@@ -110,40 +111,35 @@ Updated: SJG Jan2019
                 </v-layout>
             </v-flex>
             <v-flex xs6>
-                <v-layout>
-                    <v-flex xl9 md7>
-                        <!--spacing-->
-                    </v-flex>
-                    <div class="zoom-loader" id="zoomLoaderDiv">
-                        <img src="../../../assets/images/wheel.gif">
-                    </div>
-                    <v-flex xl3 md4>
-                        <v-switch label="Zoom Mode"
-                                  hide-details
-                                  color="cohortNavy"
-                                  v-model="zoomMode"
-                                  v-bind:disabled="!doneLoadingExtras || displayBlacklistWarning">
-                        </v-switch>
-                    </v-flex>
-                </v-layout>
+                <div v-show="!doneLoadingExtras" class="zoom-loader" id="zoomLoaderDiv">
+                    <img src="../../../assets/images/wheel.gif">
+                </div>
+<!--                    <v-flex xl3 md4>-->
+<!--                        <v-switch label="Zoom Mode"-->
+<!--                                  hide-details-->
+<!--                                  color="cohortNavy"-->
+<!--                                  v-model="zoomMode"-->
+<!--                                  v-bind:disabled="!doneLoadingExtras || displayBlacklistWarning">-->
+<!--                        </v-switch>-->
+<!--                    </v-flex>-->
             </v-flex>
             <div style="width:100%">
-                <div v-if="displayBlacklistWarning"
-                     style="text-align: center; padding-bottom: 20px; padding-top: 20px">
-                    <v-chip id="sfari-chip" class="red red--text" small outline style="font-size: 12px">
-                        Unauthorized SFARI Gene
-                        <v-menu id="sfari-menu" open-on-hover transition="slide-x-transition" max-width="400px">
-                            <v-btn flat icon small slot="activator">
-                                <v-icon small color="red">info_outline</v-icon>
-                            </v-btn>
-                            <div class="text-xs-center" style="padding: 5px">
-                                The SFARI program does not authorize this gene to be viewed or analyzed. Please select another gene.
-                            </div>
-                        </v-menu>
-                    </v-chip>
-                </div>
-                <enrichment-variant-viz
-                        v-else-if="dataSetModel && dataSetModel.getSubsetCohort()"
+<!--                <div v-if="displayBlacklistWarning"-->
+<!--                     style="text-align: center; padding-bottom: 20px; padding-top: 20px">-->
+<!--                    <v-chip id="sfari-chip" class="red red&#45;&#45;text" small outline style="font-size: 12px">-->
+<!--                        Unauthorized SFARI Gene-->
+<!--                        <v-menu id="sfari-menu" open-on-hover transition="slide-x-transition" max-width="400px">-->
+<!--                            <v-btn flat icon small slot="activator">-->
+<!--                                <v-icon small color="red">info_outline</v-icon>-->
+<!--                            </v-btn>-->
+<!--                            <div class="text-xs-center" style="padding: 5px">-->
+<!--                                The SFARI program does not authorize this gene to be viewed or analyzed. Please select another gene.-->
+<!--                            </div>-->
+<!--                        </v-menu>-->
+<!--                    </v-chip>-->
+<!--                </div>-->
+                <variant-viz
+                        v-if="dataSetModel && dataSetModel.getSubsetCohort()"
                         ref="subsetVizRef"
                         :id="dataSetModel.getName()"
                         :model="dataSetModel"
@@ -177,7 +173,7 @@ Updated: SJG Jan2019
                         @clearVariants="clearVariants"
                         @refreshSummaryClick="refreshSummaryClick"
                         @filterRemovedFromTrack="removeFilter">
-                </enrichment-variant-viz>
+                </variant-viz>
                 <gene-viz id="gene-viz"
                           v-bind:class="{ hide: !showGeneViz }"
                           :data="[selectedTranscript]"
@@ -356,16 +352,6 @@ Updated: SJG Jan2019
                 }
                 else {
                     this.hideVariantBrush();
-                }
-            },
-            doneLoadingExtras: function() {
-                // NOTE: had to use jquery here, couldn't get flex styling to position loader
-                // where I wanted it
-                if (this.doneLoadingExtras === true || this.displayBlacklistWarning === true) {
-                    $('#zoomLoaderDiv').hide();
-                }
-                else {
-                    $('#zoomLoaderDiv').show();
                 }
             }
         },

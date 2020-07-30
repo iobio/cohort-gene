@@ -1,19 +1,16 @@
-import { Client } from 'iobio-api-client';
 import iobiocmd from '../thirdparty/iobio.js';
+import { Client } from 'iobio-api-client';
 
 export default class EndpointCmd {
-    constructor(iobioServices, revelFile, useSSL, launchTimestamp, genomeBuildHelper, getHumanRefNamesFunc) {
+    constructor(iobioSource, iobioServices, revelFile, useSSL, launchTimestamp, genomeBuildHelper, getHumanRefNamesFunc) {
         this.launchTimestamp = launchTimestamp;
         this.genomeBuildHelper = genomeBuildHelper;
         this.getHumanRefNames = getHumanRefNamesFunc;
         this.vepRevelFile = revelFile;
-        this.launchedFromUtah = iobioServices.indexOf('mosaic.chpc.utah.edu') === 0;
+        this.gruBackend = true;
 
         // talk to gru
-        this.api = new Client('backend.iobio.io', {secure: true});
-        this.devApi = new Client('dev.backend.iobio.io:9002', {secure: false});
-
-        this.gruBackend = true;
+        this.api = new Client(iobioSource, { secure: true });
 
         // iobio services
         this.IOBIO = {};

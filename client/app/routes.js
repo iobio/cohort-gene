@@ -1,6 +1,5 @@
 import jQuery from 'jquery'
 import VModal from 'vue-js-modal'
-
 global.jQuery = jQuery
 global.$ = jQuery
 import d3 from 'd3'
@@ -34,7 +33,7 @@ Vue.use(Vuetify, {
         cherryRed: '#FF000D',
         appGray: '#888888'
     }
-})
+});
 
 global.bus = new Vue();
 
@@ -45,10 +44,43 @@ const routes = [
         name: 'home',
         path: '/',
         component: Home,
+        beforeEnter: (to, from, next) => {
+            console.log(to);
+            var idx = to.hash.indexOf("#access_token");
+            if (idx == 0) {
+                let queryParams = Qs.parse(to.hash.substring(1));
+                let { access_token, expires_in, token_type, ...otherQueryParams } = queryParams;
+                localStorage.setItem('hub-iobio-tkn', token_type + ' ' + access_token);
+                next('/' + Qs.stringify(otherQueryParams, { addQueryPrefix: true, arrayFormat: 'brackets' }));
+            } else {
+                var start = 0;
+                if (idx == 0) {
+                    start = 3;
+                } else {
+                    var idx = to.hash.indexOf("#\/");
+                    var start = 0;
+                    if (idx == 0) {
+                        start = 3;
+                    } else {
+                        idx = to.hash.indexOf("#");
+                        if (idx == 0) {
+                            start = 2;
+                        }
+                    }
+                }
+                if (idx == 0) {
+                    let queryParams = Qs.parse(to.hash.substring(start));
+                    next('/' + Qs.stringify(queryParams, { addQueryPrefix: true, arrayFormat: 'brackets' }));
+                } else {
+                    next();
+                }
+            }
+        },
         props: (route) => ({
             paramProjectId: route.query.project_id,
             paramOldProjectId: route.query.project_uuid,
             paramSource: route.query.source,
+            paramIobioSource: route.query.iobio_source,
             paramGene: route.query.gene,
             paramRef: route.query.reference
         })

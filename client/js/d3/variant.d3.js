@@ -330,6 +330,48 @@ function variantD3() {
         return stillVisible;
     };
 
+    var switchColorScheme = function (enrichmentMode, svgContainer) {
+        let variants = svgContainer.selectAll(".variant");
+        let varsToSwitch = variants;
+        // if (selectedVariants && selectedVariants.length > 0) {
+        //     let selectedIds = {};
+        //     selectedVariants[0].forEach(function (v) {
+        //         selectedIds[v.id] = true;
+        //     });
+        //     varsToSwitch = variants.filter(function (v) {
+        //         return selectedIds[v.id] == null;
+        //     })
+        // }
+
+        let highVars = varsToSwitch.filter(".iHIGH");
+        let moderateVars = varsToSwitch.filter(".iMODERATE");
+        let modifierVars = varsToSwitch.filter(".iMODIFIER");
+        let lowVars = varsToSwitch.filter(".iLOW");
+        let noVars = varsToSwitch.filter(".iNONE");
+
+        highVars.classed({
+            'impact_HIGH': true
+        });
+        moderateVars.classed({
+            'impact_MODERATE': true
+        });
+        modifierVars.classed({
+            'impact_MODIFIER': true
+        });
+        lowVars.classed({
+            'impact_LOW': true
+        });
+        noVars.classed({
+            'impact_none': true
+        });
+    };
+
+    /* Remove filter class from all variants. */
+    var removeFilterClass = function(svgContainer) {
+        let allVariants = svgContainer.selectAll(".variant");
+        allVariants.classed({'filtered': false});
+    }
+
     function chart(selection, options) {
         // merge options and defaults
         options = $.extend(defaults,options);
@@ -1039,6 +1081,18 @@ function variantD3() {
     chart.checkForSelectedVar = function (_) {
         if (!arguments.length) return checkForSelectedVar;
         checkForSelectedVar = _;
+        return chart;
+    };
+
+    chart.switchColorScheme = function (_) {
+        if (!arguments.length) return switchColorScheme;
+        switchColorScheme = _;
+        return chart;
+    };
+
+    chart.removeFilterClass = function (_) {
+        if (!arguments.length) return removeFilterClass;
+        removeFilterClass = _;
         return chart;
     };
 

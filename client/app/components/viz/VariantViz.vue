@@ -510,7 +510,22 @@
                 self.noPassingResults = false;
 
                 // Do actual filter removal
-                self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);            }
-        }
+                self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
+            },
+            refreshVariantColors: function(svg) {
+                let self = this;
+                self.extraAnnotationsLoaded = true;
+                self.update();
+                if (self.preColorLastSelectedVar) {
+                    self.$emit('refreshVariantClick', self.preColorLastSelectedVar);
+                }
+                self.variantChart.removeFilterClass()(svg);
+                let numPassingVariants = self.variantChart.filterVariants()(self.excludeFilters, self.cutoffFilters, svg);
+
+                if (numPassingVariants === 0) {
+                    self.noPassingResults = true;
+                }
+            },
+                },
     }
 </script>

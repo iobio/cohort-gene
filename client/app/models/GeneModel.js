@@ -1,5 +1,9 @@
 class GeneModel {
-  constructor() {
+  constructor(geneToPheno, geneInfo, clinvarGenesUrl) {
+
+    this.geneToPhenoServer = geneToPheno;
+    this.geneInfoServer = geneInfo;
+    this.clinvarGenesServer = clinvarGenesUrl;
 
     this.geneSource = null;
     this.refseqOnly = {};
@@ -533,7 +537,7 @@ class GeneModel {
       if (phenotypes != null) {
         resolve([phenotypes, geneName]);
       } else {
-        var url = geneToPhenoServer + "api/gene/" + geneName;
+        var url = me.geneToPhenoServer + "api/gene/" + geneName;
         $.ajax({
         url: url,
         jsonp: "callback",
@@ -592,7 +596,7 @@ class GeneModel {
     var me = this;
     return new Promise(function(resolve, reject) {
 
-      var url = geneInfoServer + 'api/gene/' + geneName;
+      var url = me.geneInfoServer + 'api/gene/' + geneName;
 
       // If current build not specified, default to GRCh37
       var buildName = me.genomeBuildHelper.getCurrentBuildName() ? me.genomeBuildHelper.getCurrentBuildName() : "GRCh37";

@@ -5,6 +5,7 @@ TD & SJG updated Jun2019 -->
     @import ../../../assets/sass/variables
     .app-card
         margin-bottom: 10px
+
     #data-sources-loader
         margin-top: 20px
         margin-left: auto
@@ -202,6 +203,7 @@ TD & SJG updated Jun2019 -->
     import allGenesData from '../../../data/genes.json'
     import simonsIdMap from '../../../data/new_id_map.json'
     import acmgBlacklist from '../../../data/ACMG_blacklist.json'
+
     export default {
         name: 'home',
         components: {
@@ -226,7 +228,11 @@ TD & SJG updated Jun2019 -->
                 type: String
             },
             paramSource: {
-                default: '',
+                default: null,
+                type: String
+            },
+            paramIobioSource: {
+                default: null,
                 type: String
             },
             paramGene: {
@@ -279,7 +285,29 @@ TD & SJG updated Jun2019 -->
                 selectedTab: 'summary-tab',
                 probandN: 0,
                 subsetN: 0,
-                DEMO_GENE: 'BRCA2'
+                DEMO_GENE: 'BRCA2',
+
+                // Source environment & services
+                hubToIobioSources: {
+                    "https://mosaic.chpc.utah.edu": {iobio: "mosaic.chpc.utah.edu/gru/api/v1", batchSize: 10},
+                    "https://mosaic-dev.genetics.utah.edu": {iobio: "mosaic.chpc.utah.edu/gru/api/v1", batchSize: 10},
+                    "http://mosaic-dev.genetics.utah.edu": {iobio: "mosaic.chpc.utah.edu/gru/api/v1", batchSize: 10},
+                    // backward compatible with old clin.iobio
+                    "mosaic.chpc.utah.edu": {iobio: "mosaic.chpc.utah.edu/gru/api/v1", batchSize: 10},
+                    "https://staging.frameshift.io": {iobio: "backend.iobio.io", batchSize: 10},
+                    "https://mosaic.frameshift.io": {iobio: "backend.iobio.io", batchSize: 10}
+                },
+                DEFAULT_IOBIO_BACKEND: 'backend.iobio.io',
+                IOBIO_SOURCE: null,
+                IOBIO_SERVICES: null,
+                HTTP_SERVICES: null,
+                launchedFromUtahMosaic: false,
+                geneInfoServer: null,
+                geneToPhenoServer: null,
+                phenolyzerOnlyServer: null,
+                genomeBuildServer: null,
+                hpoLookupUrl: null,
+                emailServer: null
             }
         },
         computed: {
@@ -290,7 +318,7 @@ TD & SJG updated Jun2019 -->
                     return null;
                 }
             },
-            allDataSets: function() {
+            allDataSets: function () {
                 let self = this;
                 if (self.variantModel) {
                     return self.variantModel.getAllDataSets();
@@ -298,7 +326,7 @@ TD & SJG updated Jun2019 -->
                     return [];
                 }
             },
-            totalNumTracks: function() {
+            totalNumTracks: function () {
                 let self = this;
                 if (self.variantModel) {
                     return self.variantModel.getAllDataSets().length;
@@ -307,7 +335,7 @@ TD & SJG updated Jun2019 -->
                 }
             }
         },
-        created: function() {
+        created: function () {
             // Quick check so no flashes before splash screen
             if (this.paramProjectId !== '0' || this.paramOldProjectId !== '0') {
                 this.showWelcome = false;
@@ -326,50 +354,59 @@ TD & SJG updated Jun2019 -->
             if (self.paramRef != null && self.paramRef !== "") {
                 currRef = self.paramRef;
             }
-            self.genomeBuildHelper = new GenomeBuildHelper();
-            self.genomeBuildHelper.promiseInit({DEFAULT_BUILD: currRef})
-                .then(function () {
-                    return self.promiseInitCache();
-                })
-                .then(function () {
-                    let glyph = new Glyph();
-                    let translator = new Translator(glyph);
-                    let genericAnnotation = new GenericAnnotation(glyph);
-                    self.geneModel = new GeneModel();
-                    self.geneModel.geneSource = siteGeneSource;
-                    self.geneModel.genomeBuildHelper = self.genomeBuildHelper;
-                    self.geneModel.setAllKnownGenes(self.allGenes);
-                    self.allGenes = []; // Free up some space
-                    self.geneModel.translator = translator;
-                    let endpoint = new EndpointCmd(CURRENT_IOBIO,
-                        vepREVELFile,
-                        useSSL,
-                        self.cacheHelper.launchTimestamp,
-                        self.genomeBuildHelper,
-                        utility.getHumanRefNames);
-                    self.variantModel = new VariantModel(endpoint,
-                        genericAnnotation,
-                        translator,
-                        self.geneModel,
-                        self.cacheHelper,
-                        self.genomeBuildHelper);
-                    self.variantModel.setIdMap(self.simonsIdMap);
-                    self.simonsIdMap = {};  // Free up this space
-                    self.inProgress = self.variantModel.inProgress;
-                    self.variantTooltip = new VariantTooltip(genericAnnotation,
-                        glyph,
-                        translator,
-                        self.variantModel.annotationScheme,
-                        self.genomeBuildHelper);
-                })
-                .then(function () {
-                        self.promiseDetermineSourceAndInit();
-                    },
-                    function (error) {
-                        console.log(error);
-                        alertify.set('notifier', 'position', 'top-left');
-                        alertify.warning("There was a problem contacting our iobio services. Please check your internet connection, or contact iobioproject@gmail.com if the problem persists.");
-                    })
+
+            self.promiseDetermineSource()
+                .then((sourceObj) => {
+                    self.genomeBuildHelper = new GenomeBuildHelper(self.genomeBuildServer);
+                    self.genomeBuildHelper.promiseInit({DEFAULT_BUILD: currRef})
+                        .then(function () {
+                            return self.promiseInitCache();
+                        })
+                        .then(function () {
+                            let glyph = new Glyph();
+                            let translator = new Translator(glyph);
+                            let genericAnnotation = new GenericAnnotation(glyph);
+                            self.geneModel = new GeneModel(self.geneToPhenoServer, self.geneInfoServer);
+                            self.geneModel.geneSource = siteGeneSource;
+                            self.geneModel.genomeBuildHelper = self.genomeBuildHelper;
+                            self.geneModel.setAllKnownGenes(self.allGenes);
+                            self.allGenes = []; // Free up some space
+                            self.geneModel.translator = translator;
+                            let endpoint = new EndpointCmd(self.IOBIO_SOURCE,
+                                self.IOBIO_SERVICES,
+                                vepREVELFile,
+                                useSSL,
+                                self.cacheHelper.launchTimestamp,
+                                self.genomeBuildHelper,
+                                utility.getHumanRefNames);
+                            self.variantModel = new VariantModel(endpoint,
+                                genericAnnotation,
+                                translator,
+                                self.geneModel,
+                                self.cacheHelper,
+                                self.genomeBuildHelper);
+                            self.variantModel.setIdMap(self.simonsIdMap);
+                            self.simonsIdMap = {};  // Free up this space
+                            self.inProgress = self.variantModel.inProgress;
+                            self.variantTooltip = new VariantTooltip(genericAnnotation,
+                                glyph,
+                                translator,
+                                self.variantModel.annotationScheme,
+                                self.genomeBuildHelper);
+                        })
+                        .then(function () {
+                                if (self.launchedFromHub) {
+                                    self.promiseInit(sourceObj.hubEndpoint, sourceObj.projectId, sourceObj.phenoFilters, sourceObj.initialLaunch, sourceObj.usingNewApi, sourceObj.selectedGene);
+                                }
+                            },
+                            function (error) {
+                                console.log(error);
+                                alertify.set('notifier', 'position', 'top-left');
+                                alertify.warning("There was a problem contacting our iobio services. Please check your internet connection, or contact iobioproject@gmail.com if the problem persists.");
+                            })
+                }).catch(error => {
+                reject('Could not determine launch source: ' + error);
+            })
         },
         methods: {
             initializeFiltering: function () {
@@ -383,7 +420,7 @@ TD & SJG updated Jun2019 -->
                 let self = this;
                 return new Promise(function (resolve, reject) {
                     self.cacheHelper = new CacheHelper();
-                    self.cacheHelper.on("geneAnalyzed", function(geneName) {
+                    self.cacheHelper.on("geneAnalyzed", function (geneName) {
                         //self.$refs.genesCardRef.determineFlaggedGenes();
                         self.$refs.navRef.onShowFlaggedVariants();
                     });
@@ -431,7 +468,10 @@ TD & SJG updated Jun2019 -->
                             .then((loadedCohortData) => {
                                 self.doneLoadingData = true;  // Display variants
                                 if (loadedCohortData) {
-                                    let nextOptions = {'getKnownVariants': self.showClinvarVariants, 'efficiencyMode': false};
+                                    let nextOptions = {
+                                        'getKnownVariants': self.showClinvarVariants,
+                                        'efficiencyMode': false
+                                    };
                                     let promises = [];
 
                                     // Fully annotate the enrichment track
@@ -502,7 +542,7 @@ TD & SJG updated Jun2019 -->
                     self.$refs.variantSummaryCardRef.assignBarChartValues(probandN, subsetN);
                 }
                 self.promiseClearCache()
-                    .then(function() {
+                    .then(function () {
                         if (self.variantModel.filterModel == null && self.selectedGene != null) {
                             self.initializeFiltering();
                         }
@@ -667,8 +707,7 @@ TD & SJG updated Jun2019 -->
                                         self.selectedVariant = self.variantModel.combineVariantInfo([clinvarVariant], true);
                                     })
                             })
-                    }
-                    else if (dataSetKey === 's0' || dataSetKey === 'Hub'){
+                    } else if (dataSetKey === 's0' || dataSetKey === 'Hub') {
                         // We've selected a variant in cohort track already loaded
                         self.$refs.variantSummaryCardRef.setCohortFieldsApplicable();
                         self.selectedVariant = variant;
@@ -686,14 +725,13 @@ TD & SJG updated Jun2019 -->
                     }
                     // Tab to summary card
                     self.selectedTab = 'summary-tab';
-                }
-                else {
+                } else {
                     self.selectedTrackId = null;
                     self.deselectVariant();
                 }
             },
             // Re-click variant after enrichment color change
-            refreshSummaryClick: function(variant) {
+            refreshSummaryClick: function (variant) {
                 let self = this;
                 // We've selected a variant in cohort track already loaded
                 self.$refs.variantSummaryCardRef.setCohortFieldsApplicable();
@@ -835,14 +873,36 @@ TD & SJG updated Jun2019 -->
             onSortGenes: function (sortBy) {
                 this.geneModel.sortGenes(sortBy);
             },
-            promiseDetermineSourceAndInit: function () {
-                let self = this;
-                return new Promise((resolve, reject) => {
+            promiseInit: function (hubEndpoint, projectId, phenoFilters, initialLaunch, usingNewApi, selectedGene) {
+                const self = this;
+                self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch, usingNewApi)
+                    .then(function (idNumList) {
+                        let probandN = idNumList[0].length;
+                        let subsetN = idNumList[1].length;
+                        if (self.$refs.variantSummaryCardRef != null) {
+                            self.$refs.variantSummaryCardRef.assignBarChartValues(probandN, subsetN);
+                        }
+                        let loadGene = self.DEMO_GENE;
+                        if (selectedGene === '' || selectedGene == null) {
+                            alert('Could not obtain selected gene from Hub. Initializing with demo gene.');
+                            selectedGene = loadGene;
+                        }
+                        self.geneModel.addGeneName(selectedGene);
+                        self.onGeneSelected(selectedGene);
+                        self.initializeFiltering();
+                        resolve();
+                    })
+            },
+            promiseDetermineSource: function () {
+                const self = this;
+                return new Promise((resolve) => {
                     let source = self.paramSource;
                     let projectId = self.paramProjectId;
                     let selectedGene = self.paramGene;
                     let phenoFilters = self.getHubPhenoFilters();
                     let usingNewApi = true;
+                    let hubEndpoint = null;
+                    let initialLaunch = false;
                     // If we still don't have a project id, we might be using the old API
                     if (projectId === '0') {
                         projectId = self.paramOldProjectId;
@@ -863,36 +923,83 @@ TD & SJG updated Jun2019 -->
                     }
                     // If we have a project ID here, coming from Hub launch
                     if (projectId !== '0') {
+                        if (self.paramIobioSource && self.paramIobioSource.length > 0) {
+                            self.IOBIO_SOURCE = self.paramIobioSource;
+                        }
+                        if (localStorage.getItem('hub-iobio-tkn') && localStorage.getItem('hub-iobio-tkn').length > 0
+                            && self.paramSource) {
+                            self.launchedFromHub = true;
+
+                            // Figure out which IOBIO backend we should be using
+                            if (self.paramIobioSource == null && self.hubToIobioSources[self.paramSource]) {
+                                let iobio_source = self.hubToIobioSources[self.paramSource].iobio;
+                                self.DEFAULT_BATCH_SIZE = self.hubToIobioSources[self.paramSource].batchSize;
+                                self.initBackendSource(iobio_source);
+                            } else {
+                                self.initBackendSource(self.DEFAULT_IOBIO_BACKEND);
+                            }
+                        } else {
+                            self.initServices(self.launchedFromHub);
+                        }
+
                         self.firstLaunch = false;       // Mark first launch as complete
                         self.showVariantCards = true;   // Show for hub launch
                         self.launchedFromHub = true;
-                        let hubEndpoint = new HubEndpoint(source, usingNewApi);
-                        let initialLaunch = !(self.paramProjectId === '0');
-                        self.variantModel.promiseInitFromHub(hubEndpoint, projectId, phenoFilters, initialLaunch, usingNewApi)
-                            .then(function (idNumList) {
-                                let probandN = idNumList[0].length;
-                                let subsetN = idNumList[1].length;
-                                if (self.$refs.variantSummaryCardRef != null) {
-                                    self.$refs.variantSummaryCardRef.assignBarChartValues(probandN, subsetN);
-                                }
-                                let loadGene = self.DEMO_GENE;
-                                if (selectedGene === '' || selectedGene == null) {
-                                    alert('Could not obtain selected gene from Hub. Initializing with demo gene.');
-                                    selectedGene = loadGene;
-                                }
-                                self.geneModel.addGeneName(selectedGene);
-                                self.onGeneSelected(selectedGene);
-                                self.initializeFiltering();
-                                resolve();
-                            })
+                        hubEndpoint = new HubEndpoint(source, usingNewApi);
+                        initialLaunch = !(self.paramProjectId === '0');
+                        resolve({
+                            hubEndpoint: hubEndpoint,
+                            projectId: projectId,
+                            phenoFilters: phenoFilters,
+                            initialLaunch: initialLaunch,
+                            usingNewApi: usingNewApi,
+                            selectedGene: selectedGene
+                        });
                     } else {
                         // Otherwise, wait for user to launch files menu
                         self.showWelcome = true;
                         self.launchedFromHub = false;
                         self.firstLaunch = true;
-                        resolve();
+                        self.initBackendSource(self.DEFAULT_IOBIO_BACKEND);
+                        resolve({
+                            hubEndpoint: hubEndpoint,
+                            projectId: projectId,
+                            phenoFilters: phenoFilters,
+                            initialLaunch: initialLaunch,
+                            usingNewApi: usingNewApi,
+                            selectedGene: selectedGene
+                        });
                     }
                 });
+            },
+            initBackendSource(iobioSource) {
+                this.IOBIO_SOURCE = iobioSource;
+                this.IOBIO_SERVICES = (useSSL ? "https://" : "http://") + iobioSource + "/";
+                this.HTTP_SERVICES = (useSSL ? "https://" : "http://") + "backend.iobio.io" + "/";
+                if (this.IOBIO_SERVICES.indexOf('mosaic.chpc.utah.edu') >= 0) {
+                    this.launchedFromUtahMosaic = true;
+                }
+                this.geneInfoServer = this.HTTP_SERVICES + "geneinfo/";
+                this.geneToPhenoServer = this.HTTP_SERVICES + "gene2pheno/";
+                this.phenolyzerOnlyServer = this.HTTP_SERVICES + "phenolyzer/";
+                this.genomeBuildServer = this.HTTP_SERVICES + "genomebuild/";
+                this.hpoLookupUrl = this.HTTP_SERVICES + "hpo/hot/lookup/?term=";
+                this.emailServer = (useSSL ? "wss://" : "ws://") + iobioSource + "email/";
+            },
+            initServices(useMosaicBackend) {
+                if (process.env.USE_SSL) {
+                    useSSL = process.env.USE_SSL === 'true';
+                }
+
+                // These are the public services.
+                if (useMosaicBackend && process.env.IOBIO_BACKEND_MOSAIC) {
+                    this.initBackendSource(process.env.IOBIO_BACKEND_MOSAIC)
+                } else if (process.env.IOBIO_BACKEND) {
+                    this.initBackendSource(process.env.IOBIO_BACKEND)
+                } else {
+                    console.log("No backend specified")
+                }
+
             },
             /* Returns array of phenotype objects {phenotypeName: phenotypeData} */
             getHubPhenoFilters: function () {
@@ -901,20 +1008,20 @@ TD & SJG updated Jun2019 -->
                 let {filter} = params;
                 return filter;
             },
-            onZoomClick: function(variant) {
+            onZoomClick: function (variant) {
                 // Work around for vue-js-modal implementation
                 let self = this;
                 let cohortKey = 's0';   // Hard-coding for now since only cohort track can be zoomed
                 self.onDataSetVariantClick(variant, cohortKey);
             },
-            drawZygCharts: function() {
+            drawZygCharts: function () {
                 let self = this;
                 let firstHubLaunch = self.firstLaunch && self.launchedFromHub;
                 if (self.$refs.variantSummaryCardRef != null && !firstHubLaunch) {
                     self.$refs.variantSummaryCardRef.assignBarChartValues(self.probandN, self.subsetN);
                 }
             },
-            filterRemovedFromTrack: function(filterObj, trackId) {
+            filterRemovedFromTrack: function (filterObj, trackId) {
                 let self = this;
 
                 if (self.$refs.filterSettingsMenuRef) {
@@ -922,7 +1029,7 @@ TD & SJG updated Jun2019 -->
                     self.$refs.filterSettingsMenuRef.removeFilterViaChip(originalFiltName, filterObj.parentName, filterObj.grandparentName, filterObj.type, trackId);
                 }
             },
-            filterBoxToggled: function(filterName, filterState, cohortOnlyFilter, sampleOnlyFilter, parentName, grandparentName, filterDisplayName, trackId) {
+            filterBoxToggled: function (filterName, filterState, cohortOnlyFilter, sampleOnlyFilter, parentName, grandparentName, filterDisplayName, trackId) {
                 let self = this;
                 let filterInfo = {
                     name: filterName,
@@ -937,7 +1044,7 @@ TD & SJG updated Jun2019 -->
                 };
                 self.onFilterSettingsApplied(filterInfo, trackId);
             },
-            filterCutoffApplied: function(filterName, filterLogic, cutoffValue, cohortOnlyFilter, sampleOnlyFilter, parentName, grandparentName, filterDisplayName) {
+            filterCutoffApplied: function (filterName, filterLogic, cutoffValue, cohortOnlyFilter, sampleOnlyFilter, parentName, grandparentName, filterDisplayName) {
                 let self = this;
                 let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
                 let filterInfo = {
@@ -955,7 +1062,7 @@ TD & SJG updated Jun2019 -->
                 };
                 self.onFilterSettingsApplied(filterInfo);
             },
-            filterCutoffCleared: function(filterName, cohortOnlyFilter, sampleOnlyFilter, parentName, grandparentName, filterDisplayName, trackId) {
+            filterCutoffCleared: function (filterName, cohortOnlyFilter, sampleOnlyFilter, parentName, grandparentName, filterDisplayName, trackId) {
                 let self = this;
                 let translatedFilterName = self.variantModel.translator.getTranslatedFilterName(filterName);
                 let filterInfo = {
@@ -1000,8 +1107,8 @@ TD & SJG updated Jun2019 -->
                     }
                 }
             },
-            clearAllFiltersAllTracks: function() {
-              let self = this;
+            clearAllFiltersAllTracks: function () {
+                let self = this;
                 if (self.$refs.enrichCardRef) {
                     self.$refs.enrichCardRef.forEach((cardRef) => {
                         cardRef.removeAllFilters();
@@ -1013,13 +1120,13 @@ TD & SJG updated Jun2019 -->
                     });
                 }
             },
-            openFileSelection: function() {
+            openFileSelection: function () {
                 let self = this;
                 if (self.$refs.navRef) {
                     self.$refs.navRef.openFileSelection();
                 }
             },
-            reloadGene: function(geneToReload) {
+            reloadGene: function (geneToReload) {
                 let self = this;
                 if (geneToReload !== self.selectedGene.gene_name) {
                     // Load gene
@@ -1028,12 +1135,12 @@ TD & SJG updated Jun2019 -->
                     self.$refs.navRef.setSelectedGeneText(geneToReload);
                 }
             },
-            tabToFilters: function(selectedFilter) {
+            tabToFilters: function (selectedFilter) {
                 let self = this;
                 // Tab to summary card
                 self.selectedTab = 'filter-tab';
             },
-            setBlacklistStatus: function(status) {
+            setBlacklistStatus: function (status) {
                 let self = this;
                 self.blacklistedGeneSelected = status;
                 self.variantModel.blacklistedGeneSelected = status;
