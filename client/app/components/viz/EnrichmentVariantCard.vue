@@ -347,14 +347,14 @@ Updated: SJG Jan2019
                 });
                 self.formattedInvalidReasons = sortedInvalidReasons;
             },
-            zoomMode: function () {
-                if (this.zoomMode) {
-                    this.displayVariantBrush();
-                }
-                else {
-                    this.hideVariantBrush();
-                }
-            }
+            // zoomMode: function () {
+            //     if (this.zoomMode) {
+            //         this.displayVariantBrush();
+            //     }
+            //     else {
+            //         this.hideVariantBrush();
+            //     }
+            // }
         },
         created: function () {
             this.depthVizYTickFormatFunc = this.depthVizYTickFormat ? this.depthVizYTickFormat : null;
@@ -646,9 +646,9 @@ Updated: SJG Jan2019
                 if (self.$refs.subsetVizRef) {
                     self.$refs.subsetVizRef.refreshVariantColors(self.getVariantSVG(self.$refs.subsetVizRef.name));
                 }
-                if (self.zoomMode) {
-                    self.zoomMode = true;
-                }
+                // if (self.zoomMode) {
+                //     self.zoomMode = true;
+                // }
             },
             filterVariants: function (filterInfo, selectedTrackId, selectedVariantId) {
                 let self = this;
