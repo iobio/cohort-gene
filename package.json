@@ -12,7 +12,7 @@
     "bootstrap": "^3.4.1",
     "d3": "^3.5.17",
     "debug": "^2.6.8",
-    "express": "^4.15.3",
+    "express": "^4.17.3",
     "iobio-api-client": "^0.7.0",
     "jquery": "^3.5.1",
     "latest-version": "^5.1.0",
